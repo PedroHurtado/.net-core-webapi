@@ -1,15 +1,17 @@
 namespace webapi.features.ingredients.models;
-public class Ingredient
+
+using webapi.common.domain;
+public class Ingredient:Entity
 {
-    public Guid Id { get; protected set; }
+    
     public string Name { get; protected set; }
     public decimal Cost { get; protected set; }
 
-    protected Ingredient(Guid id, string name, decimal cost)
+    protected Ingredient(Guid id, string name, decimal cost):base(id)
     {
         //bb.dd
         //usuario no puede hacer new
-        Id = id;
+        
         Name = name;
         Cost = cost;
     }
