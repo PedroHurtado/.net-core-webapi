@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using webapi.common.infrastructure;
 using webapi.infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,13 +12,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseInMemoryDatabase("PizzaDb");
-    
+
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
     }
 });
+
+
 
 var app = builder.Build();
 
