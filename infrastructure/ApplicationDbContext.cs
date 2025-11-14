@@ -7,7 +7,8 @@ using webapi.features.ingredients.models;
 namespace webapi.infrastructure;
 
 [Injectable]
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IGetOrThrowAsync, IQuery
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : 
+        DbContext(options), IGetOrThrowAsync, IQuery, IRespository, IUnitOfWork
 {
     public DbSet<Ingredient> Ingredients { get; set; }
 

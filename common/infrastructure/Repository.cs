@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using webapi.common.domain;
 
 namespace webapi.common.infrastructure;
@@ -26,6 +27,17 @@ public interface IQuery
     IQueryable<T> Query<T>() where T:Entity;
 }
 
+public interface IUnitOfWork
+{
+    
+    int SaveChanges();
+    
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+}
+public interface IRespository
+{
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
+}
 public interface IGetOrThrowAsync
 {
     Task<T> GetOrThrowAsync<T, ID>(ID id,
