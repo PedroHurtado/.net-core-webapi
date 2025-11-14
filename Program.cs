@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using webapi.common;
 using webapi.common.dependencyinjection;
 using webapi.infrastructure;
 
@@ -32,6 +33,7 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/swagger/index.html")).ExcludeFromDescription();
 }
 
+app.MapFeatures();
 
 app.UseHttpsRedirection();
 

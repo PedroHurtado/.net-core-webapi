@@ -6,10 +6,26 @@ using webapi.common.dependencyinjection;
 
 namespace webapi.features.ingredients.commands;
 
-public class CreateIngredient
+public class CreateIngredient : IFeatureModule
 {
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
 
-    public record Request(string Name, decimal Cost){}
+        app.MapPost("/ingredientes", async (IService service, Request request) =>
+       {
+           var response = await service.HandlerAsync(request);
+           return Results.Ok(response);
+       })
+       .WithOpenApi()
+       .WithName("CreateIngredient")
+       .WithSummary("Crear un nuevo ingrediente")
+       .WithDescription("Endpoint para crear un nuevo ingrediente con su nombre y costo")
+       .WithTags("Ingredientes")
+       .Produces<Response>(StatusCodes.Status200OK)
+       .ProducesProblem(StatusCodes.Status400BadRequest);
+    }
+
+    public record Request(string Name, decimal Cost) { }
     public record Response(Guid Id, string Name, decimal Cost) { }
 
     public interface IService
@@ -50,4 +66,6 @@ public class CreateIngredient
             _repository.Entry(entity).State = EntityState.Added;
         }
     }
+
+
 }
