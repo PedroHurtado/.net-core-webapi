@@ -2,6 +2,7 @@ using webapi.common.infrastructure;
 using webapi.features.ingredients.models;
 using webapi.common;
 using Microsoft.EntityFrameworkCore;
+using webapi.common.dependencyinjection;
 
 namespace webapi.features.ingredients.commands;
 
@@ -16,6 +17,7 @@ public class CreateIngredient
         Task<Response> HandlerAsync(Request request);
     }
 
+    [Injectable]
     public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
     {
         private IAdd<Ingredient> _repository = repository;
@@ -38,6 +40,7 @@ public class CreateIngredient
     }
 
     //public interface IRespository:IAdd<Ingredient>{}
+    [Injectable]
     public class Repository(IRepository repository) : IAdd<Ingredient>
     {
         private readonly IRepository _repository = repository;
