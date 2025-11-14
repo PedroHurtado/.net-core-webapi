@@ -27,6 +27,12 @@ public interface IQuery
     IQueryable<T> Query<T>() where T:Entity;
 }
 
+public interface IGetOrThrowAsync
+{
+    Task<T> GetOrThrowAsync<T, ID>(ID id,
+       bool tracking = true, CancellationToken cancellationToken = default) where T : Entity;
+}
+
 public interface IUnitOfWork
 {
     
@@ -34,12 +40,7 @@ public interface IUnitOfWork
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
-public interface IRespository
+public interface IRepository
 {
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
-}
-public interface IGetOrThrowAsync
-{
-    Task<T> GetOrThrowAsync<T, ID>(ID id,
-       bool tracking = true, CancellationToken cancellationToken = default) where T : Entity;
 }

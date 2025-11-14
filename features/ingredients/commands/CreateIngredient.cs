@@ -16,9 +16,9 @@ public class CreateIngredient
         Task<Response> HandlerAsync(Request request);
     }
 
-    public class Service(IAdd<Ingredient> respository, IUnitOfWork unitOfWork) : IService
+    public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
     {
-        private IAdd<Ingredient> _respository = respository;
+        private IAdd<Ingredient> _repository = repository;
         private IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Request request)
@@ -29,7 +29,7 @@ public class CreateIngredient
                 request.Cost
             ).ValueOrThrow();
 
-            _respository.Add(ingredient);
+            _repository.Add(ingredient);
 
             await _unifOfWork.SaveChangesAsync();
 
@@ -37,9 +37,10 @@ public class CreateIngredient
         }
     }
 
-    public class Repository(IRespository repository) : IAdd<Ingredient>
+    //public interface IRespository:IAdd<Ingredient>{}
+    public class Repository(IRepository repository) : IAdd<Ingredient>
     {
-        private readonly IRespository _repository = repository;
+        private readonly IRepository _repository = repository;
 
         public void Add(Ingredient entity)
         {

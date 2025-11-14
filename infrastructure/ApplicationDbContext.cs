@@ -8,7 +8,7 @@ namespace webapi.infrastructure;
 
 [Injectable]
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : 
-        DbContext(options), IGetOrThrowAsync, IQuery, IRespository, IUnitOfWork
+        DbContext(options), IGetOrThrowAsync, IQuery, IRepository, IUnitOfWork
 {
     public DbSet<Ingredient> Ingredients { get; set; }
 
