@@ -30,16 +30,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public IQueryable<T> Query<T>() where T : Entity
     {
         return Set<T>().AsQueryable().AsNoTracking();
-    }
-
-    /*public IQueryable<T> Query<T>(): where T Entity
-    {
-        
-        var query = Set<T>().AsQueryable();
-        query.AsNoTracking();
-        return query;
-
-    }*/
+    }   
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
