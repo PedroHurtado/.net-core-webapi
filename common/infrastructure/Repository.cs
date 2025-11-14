@@ -10,7 +10,7 @@ public interface IGet<T, ID>
 
 public interface IAdd<T>
 {
-    T Add();
+    void Add(T entity);
 }
 
 public interface IUpdate<T,ID>:IGet<T,ID>{
