@@ -25,6 +25,23 @@ public class GlobalErrorResponsesOperationFilter : IOperationFilter
             });
         }
 
+        if (!operation.Responses.ContainsKey("422"))
+        {
+            operation.Responses.Add("422", new OpenApiResponse
+            {
+                Description = "Unprocesed entity",
+                Content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["application/problem+json"] = new OpenApiMediaType
+                    {
+                        Schema = context.SchemaGenerator.GenerateSchema(
+                            typeof(CustomProblemDetails), 
+                            context.SchemaRepository)
+                    }
+                }
+            });
+        }
+
         // Agregar respuesta 404 si no existe (excepto para POST)
         if (!operation.Responses.ContainsKey("404") && 
             context.ApiDescription.HttpMethod?.ToUpper() != "POST")

@@ -31,7 +31,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 break;
 
             case ValidationException validationException:
-                problemDetails.Status = StatusCodes.Status400BadRequest;
+                problemDetails.Status = StatusCodes.Status422UnprocessableEntity;
                 problemDetails.Title = "Validation Error";
                 problemDetails.Detail = "One or more validation errors occurred.";
                 problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc4918#section-11.2";

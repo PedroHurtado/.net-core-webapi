@@ -32,7 +32,7 @@ public class CreateIngredient : IFeatureModule
        .WithDescription("Endpoint para crear un nuevo ingrediente con su nombre y costo")
        .WithTags("Ingredientes")
        .Produces<Response>(StatusCodes.Status200OK)
-       .ProducesProblem(StatusCodes.Status400BadRequest);
+       .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
     }
 
     
