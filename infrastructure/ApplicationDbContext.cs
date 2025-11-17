@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using webapi.common.dependencyinjection;
 using webapi.common.domain;
 using webapi.common.infrastructure;
 using webapi.features.ingredients.models;
