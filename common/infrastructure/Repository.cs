@@ -5,7 +5,7 @@ namespace webapi.common.infrastructure;
 
 public interface IGet<T, ID>
 {
-    T Get(ID id);
+    Task<T> Get(ID id);
 }
 
 public interface IAdd<T>
