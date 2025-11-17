@@ -8,11 +8,11 @@ namespace webapi.features.ingredients.commands;
 
 public class RemoveIngredient : IFeatureModule
 {
-    
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
 
-        app.MapDelete("/ingredientes/{id:guid}", async (IService service, Guid id) =>
+       app.MapDelete("/ingredientes/{id:guid}", async (IService service, Guid id) =>
        {
            await service.HandlerAsync(id);
            return Results.NoContent();
@@ -46,11 +46,11 @@ public class RemoveIngredient : IFeatureModule
         {
             var ingredient = await _repository.Get(id);
 
-            _repository.Remove(ingredient);            
+            _repository.Remove(ingredient);
 
             await _unifOfWork.SaveChangesAsync();
         }
-    }    
+    }
     [Injectable]
     public class Repository(IRepository repository, IGetOrThrowAsync getOrThrowAsync) : IRemove<Ingredient, Guid>
     {
@@ -69,7 +69,7 @@ public class RemoveIngredient : IFeatureModule
             _repository.Entry(entity).State = EntityState.Deleted;
         }
 
-        
+
     }
 
 
