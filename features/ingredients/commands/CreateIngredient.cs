@@ -48,16 +48,14 @@ public class CreateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IAdd<Ingredient> repository, ApplicationDbContext context, IUnitOfWork unitOfWork) : IService
+    public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
     {
-        private ApplicationDbContext _context = context;
+        
         private IAdd<Ingredient> _repository = repository;
         private IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Request request)
         {
-            var isSameInstance = ReferenceEquals(_context, _unifOfWork);
-            Console.WriteLine($"Same instance? {isSameInstance}");
             var ingredient = Ingredient.Create(
                 Guid.NewGuid(),
                 request.Name,

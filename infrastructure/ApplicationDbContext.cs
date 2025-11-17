@@ -6,7 +6,7 @@ using webapi.features.ingredients.models;
 
 namespace webapi.infrastructure;
 
-//[Injectable]
+
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : 
         DbContext(options), IGetOrThrowAsync, IQuery, IRepository, IUnitOfWork
 {

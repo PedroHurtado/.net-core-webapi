@@ -1,0 +1,86 @@
+using webapi.common.infrastructure;
+using webapi.features.ingredients.models;
+using webapi.common;
+using Microsoft.EntityFrameworkCore;
+using webapi.common.dependencyinjection;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.OpenApi.Any;
+
+
+namespace webapi.features.ingredients.commands;
+
+public class UpdateIngredient : IFeatureModule
+{
+    public record Request(
+        [Required][property: Required] string Name,
+        [Required][property: Required] decimal Cost
+    );
+    public record Response(
+        [Required][property: Required] Guid Id,
+        [Required][property: Required] string Name,
+        [Required][property: Required] decimal Cost
+    );
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+
+        app.MapPut("/ingredientes/{id:guid}", async (IService service, Guid id, Request request) =>
+       {
+           await service.HandlerAsync(id, request);
+           return Results.NoContent();
+       })
+       .WithStandardOpenApi(
+        name: "UpateIngredient",
+        summary: "Modificar un nuevo ingrediente",
+        description: "Endpoint para modificar un ingrediente",
+        tag: "Ingredientes",
+        successStatusCode: StatusCodes.Status204NoContent,
+        additionalErrorCodes: [StatusCodes.Status422UnprocessableEntity, StatusCodes.Status404NotFound]
+       );
+
+    }
+
+
+
+    public interface IService
+    {
+        Task HandlerAsync(Guid id, Request request);
+    }
+
+    [Injectable]
+    public class Service(IUpdate<Ingredient, Guid> repository, IUnitOfWork unitOfWork) : IService
+    {
+
+        private IUpdate<Ingredient, Guid> _repository = repository;
+        private IUnitOfWork _unifOfWork = unitOfWork;
+
+        public async Task HandlerAsync(Guid id, Request request)
+        {
+            var ingredient = await _repository.Get(id);
+            ingredient.Update(request.Name, request.Cost).SuccessOrThrow();
+
+            await _unifOfWork.SaveChangesAsync();
+        }
+    }
+
+    //public interface IRespository:IAdd<Ingredient>{}
+    [Injectable]
+    public class Repository(IRepository repository, IGetOrThrowAsync getOrThrowAsync) : IUpdate<Ingredient, Guid>
+    {
+        private readonly IRepository _repository = repository;
+        private readonly IGetOrThrowAsync _getOrThrowAsync = getOrThrowAsync;
+
+
+
+        public Task<Ingredient> Get(Guid id)
+        {
+            return _getOrThrowAsync.GetOrThrowAsync<Ingredient, Guid>(id);
+        }
+
+        public void Update(Ingredient entity)
+        {
+            _repository.Entry(entity).State = EntityState.Modified;
+        }
+    }
+
+
+}

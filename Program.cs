@@ -73,12 +73,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
     }
-});
+}).AddInterfacesFor<ApplicationDbContext>();
 
-builder.Services.AddScoped<IGetOrThrowAsync>(sp => sp.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddScoped<IQuery>(sp => sp.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddScoped<IRepository>(sp => sp.GetRequiredService<ApplicationDbContext>());
-builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

@@ -18,8 +18,7 @@ public static class EndpointExtensions
             .WithSummary(summary)
             .WithDescription(description)
             .WithTags(tag)
-            .Produces<TResponse>(successStatusCode)
-            .Produces<CustomProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<TResponse>(successStatusCode);            
 
         foreach (var errorCode in additionalErrorCodes)
         {
@@ -45,8 +44,8 @@ public static class EndpointExtensions
             .WithSummary(summary)
             .WithDescription(description)
             .WithTags(tag)
-            .Produces(successStatusCode) // Sin tipo genérico
-            .Produces<CustomProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces(successStatusCode); // Sin tipo genérico
+            //.Produces<CustomProblemDetails>(StatusCodes.Status400BadRequest);
 
         foreach (var errorCode in additionalErrorCodes)
         {
