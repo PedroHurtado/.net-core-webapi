@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using FluentValidation;
+
 using webapi.common.openapi;
 namespace webapi.common;
 
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 problemDetails.Status = StatusCodes.Status400BadRequest;
                 problemDetails.Title = "Validation Error";
                 problemDetails.Detail = "One or more validation errors occurred.";
-                problemDetails.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+                problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc4918#section-11.2";
                 
                 // Agregar los errores de validación al diccionario de extensiones
                 var errors = validationException.Errors

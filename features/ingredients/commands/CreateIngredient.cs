@@ -3,11 +3,21 @@ using webapi.features.ingredients.models;
 using webapi.common;
 using Microsoft.EntityFrameworkCore;
 using webapi.common.dependencyinjection;
+using System.ComponentModel.DataAnnotations;
 
 namespace webapi.features.ingredients.commands;
 
 public class CreateIngredient : IFeatureModule
 {
+    public record Request(
+        [Required][property: Required] string Name,
+        [Required][property: Required] decimal Cost
+    );
+    public record  Response(
+        [Required][property: Required] Guid Id,
+        [Required][property: Required] string Name, 
+        [Required][property: Required] decimal Cost
+    );
     public void AddRoutes(IEndpointRouteBuilder app)
     {
 
@@ -25,8 +35,7 @@ public class CreateIngredient : IFeatureModule
        .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 
-    public record Request(string Name, decimal Cost) { }
-    public record Response(Guid Id, string Name, decimal Cost) { }
+    
 
     public interface IService
     {

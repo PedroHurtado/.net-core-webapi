@@ -23,19 +23,19 @@ public abstract class Entity(Guid id)
 
     protected static Result ValidateEntity<T>(T entity, AbstractValidator<T> validator) where T : Entity
     {
-        // Primero validar el Id (común para todas las entidades)
         if (entity.Id == Guid.Empty)
         {
-            return Result.Failure("El id no puede estar vacío");
+            return Result.Failure("El id no puede estar vacío", nameof(Id));
         }
 
-        // Luego validar las reglas específicas de la entidad
         var result = validator.Validate(entity);
 
         if (!result.IsValid)
         {
-            var errors = result.Errors.Select(e => e.ErrorMessage);
-            return Result.Failure(errors);
+            var validationErrors = result.Errors.Select(e => 
+                new ValidationError(e.ErrorMessage, e.PropertyName));
+            
+            return Result.Failure(validationErrors);
         }
 
         return Result.Success();

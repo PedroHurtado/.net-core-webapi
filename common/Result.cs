@@ -1,37 +1,47 @@
 namespace webapi.common;
 
+public class ValidationError(string errorMessage, string propertyName = "")
+{
+    public string PropertyName { get; } = propertyName;
+    public string ErrorMessage { get; } = errorMessage;
+}
+
 public class Result
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public string? Error { get; }
-    public IEnumerable<string> Errors { get; }
+    public IEnumerable<ValidationError> Errors { get; }
 
-    protected Result(bool isSuccess, string? error, IEnumerable<string>? errors = null)
+    protected Result(bool isSuccess, IEnumerable<ValidationError>? errors = null)
     {
         IsSuccess = isSuccess;
-        Error = error;
-        Errors = errors ?? (error != null ? [error] : Array.Empty<string>());
+        Errors = errors ?? Array.Empty<ValidationError>();
     }
 
-    public static Result Success() => new(true, null);
-    public static Result Failure(string error) => new(false, error);
-    public static Result Failure(IEnumerable<string> errors) 
-        => new(false, string.Join(", ", errors), errors);
+    public static Result Success() => new(true);
+    
+    public static Result Failure(string error, string propertyName = "") 
+        => new(false, [new ValidationError(error, propertyName)]);
+    
+    public static Result Failure(IEnumerable<ValidationError> errors) 
+        => new(false, errors);
 }
 
 public class Result<T> : Result
 {
     public T? Value { get; }
 
-    protected Result(T? value, bool isSuccess, string? error, IEnumerable<string>? errors = null) 
-        : base(isSuccess, error, errors)
+    protected Result(T? value, bool isSuccess, IEnumerable<ValidationError>? errors = null) 
+        : base(isSuccess, errors)
     {
         Value = value;
     }
 
-    public static Result<T> Success(T value) => new(value, true, null);
-    public new static Result<T> Failure(string error) => new(default, false, error);
-    public new static Result<T> Failure(IEnumerable<string> errors) 
-        => new(default, false, string.Join(", ", errors), errors);
+    public static Result<T> Success(T value) => new(value, true);
+    
+    public new static Result<T> Failure(string error, string propertyName = "") 
+        => new(default, false, [new ValidationError(error, propertyName)]);
+    
+    public new static Result<T> Failure(IEnumerable<ValidationError> errors) 
+        => new(default, false, errors);
 }

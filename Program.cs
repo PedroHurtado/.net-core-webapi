@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(options =>
         },
         AdditionalPropertiesAllowed = false
     });
-
+}); // ← Faltaba este cierre
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -75,10 +75,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddInjectables();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -92,7 +95,4 @@ app.MapFeatures();
 
 app.UseHttpsRedirection();
 
-
-
 app.Run();
-
