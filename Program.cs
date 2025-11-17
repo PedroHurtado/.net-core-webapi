@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using webapi.common;
 using webapi.common.dependencyinjection;
+using webapi.common.infrastructure;
 using webapi.common.openapi;
 using webapi.infrastructure;
 
@@ -73,6 +74,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.EnableDetailedErrors();
     }
 });
+
+builder.Services.AddScoped<IGetOrThrowAsync>(sp => sp.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IQuery>(sp => sp.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IRepository>(sp => sp.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

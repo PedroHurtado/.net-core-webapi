@@ -6,10 +6,12 @@ using webapi.features.ingredients.models;
 
 namespace webapi.infrastructure;
 
-[Injectable]
+//[Injectable]
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : 
         DbContext(options), IGetOrThrowAsync, IQuery, IRepository, IUnitOfWork
 {
+
+    
     public DbSet<Ingredient> Ingredients { get; set; }
 
     public async Task<T> GetOrThrowAsync<T, ID>(ID id, bool tracking = true, CancellationToken cancellationToken = default) where T : Entity

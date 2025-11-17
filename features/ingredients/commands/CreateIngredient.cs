@@ -4,6 +4,9 @@ using webapi.common;
 using Microsoft.EntityFrameworkCore;
 using webapi.common.dependencyinjection;
 using System.ComponentModel.DataAnnotations;
+using webapi.common.openapi;
+using Microsoft.AspNetCore.Mvc;
+using webapi.infrastructure;
 
 namespace webapi.features.ingredients.commands;
 
@@ -13,9 +16,9 @@ public class CreateIngredient : IFeatureModule
         [Required][property: Required] string Name,
         [Required][property: Required] decimal Cost
     );
-    public record  Response(
+    public record Response(
         [Required][property: Required] Guid Id,
-        [Required][property: Required] string Name, 
+        [Required][property: Required] string Name,
         [Required][property: Required] decimal Cost
     );
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -24,18 +27,20 @@ public class CreateIngredient : IFeatureModule
         app.MapPost("/ingredientes", async (IService service, Request request) =>
        {
            var response = await service.HandlerAsync(request);
-           return Results.Ok(response);
+           return Results.Created("", response);
        })
-       .WithOpenApi()
-       .WithName("CreateIngredient")
-       .WithSummary("Crear un nuevo ingrediente")
-       .WithDescription("Endpoint para crear un nuevo ingrediente con su nombre y costo")
-       .WithTags("Ingredientes")
-       .Produces<Response>(StatusCodes.Status200OK)
-       .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+       .WithStandardOpenApi<Response>(
+        name: "CreateIngredient",
+        summary: "Crear un nuevo ingrediente",
+        description: "Endpoint para crear un nuevo ingrediente con su nombre y costo",
+        tag: "Ingredientes",
+        successStatusCode: StatusCodes.Status201Created,
+        additionalErrorCodes: [StatusCodes.Status422UnprocessableEntity]
+       );
+
     }
 
-    
+
 
     public interface IService
     {
@@ -43,13 +48,16 @@ public class CreateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
+    public class Service(IAdd<Ingredient> repository, ApplicationDbContext context, IUnitOfWork unitOfWork) : IService
     {
+        private ApplicationDbContext _context = context;
         private IAdd<Ingredient> _repository = repository;
         private IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Request request)
         {
+            var isSameInstance = ReferenceEquals(_context, _unifOfWork);
+            Console.WriteLine($"Same instance? {isSameInstance}");
             var ingredient = Ingredient.Create(
                 Guid.NewGuid(),
                 request.Name,
