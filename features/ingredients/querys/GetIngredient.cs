@@ -1,14 +1,3 @@
-/*
-    IGet<Ingredient,Guid>
-    class Repositori
-
-    IGetOrThrowAsync
-        GetOrThrowAsync<ingredient,Guid>(id,false)
-
-    controlador->404
-
-*/
-
 
 using System.ComponentModel.DataAnnotations;
 using webapi.common;
