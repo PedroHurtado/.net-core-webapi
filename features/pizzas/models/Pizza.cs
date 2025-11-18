@@ -1,5 +1,8 @@
 using webapi.common.domain;
 using webapi.features.ingredients.models;
+using webapi.common;
+using FluentValidation;
+
 
 namespace webapi.features.pizzas.models;
 
@@ -18,39 +21,115 @@ public class Pizza : Entity
 
     protected Pizza(Guid id, string name, string description, string url) : base(id)
     {
-        
-        
         Name = name;
         Description = description;
         Url = url;
     }
 
-    public void AddIngredient(Ingredient ingredient)
+    private Result ValidateIngredientNotNull(Ingredient ingredient)
     {
+        if (ingredient == null)
+        {
+            return Result.Failure("El ingrediente no puede ser nulo", "Ingredient");
+        }
         
-        _ingredients.Add(ingredient);
+        return Result.Success();
     }
 
-    public void RemoveIngredient(Ingredient ingredient)
-    {      
+    public Result AddIngredient(Ingredient ingredient)
+    {
+        var validationResult = ValidateIngredientNotNull(ingredient);
+        if (validationResult.IsFailure)
+        {
+            return validationResult;
+        }
+
+        if (_ingredients.Contains(ingredient))
+        {
+            return Result.Failure("El ingrediente ya existe en la pizza", "Ingredient");
+        }
+
+        _ingredients.Add(ingredient);
+        return Result.Success();
+    }
+
+    public Result RemoveIngredient(Ingredient ingredient)
+    {
+        var validationResult = ValidateIngredientNotNull(ingredient);
+        if (validationResult.IsFailure)
+        {
+            return validationResult;
+        }
+
+        if (!_ingredients.Contains(ingredient))
+        {
+            return Result.Failure("El ingrediente no existe en la pizza", "Ingredient");
+        }
 
         _ingredients.Remove(ingredient);
+        return Result.Success();
     }
 
-    public void Update(string name, string description, string url)
+    public Result Update(string name, string description, string url)
     {
-
-        //pizza:update
+        var tempPizza = new Pizza(Id, name, description, url);
+        var validationResult = ValidateEntity(tempPizza, new PizzaValidator());
+        
+        if (validationResult.IsFailure)
+        {
+            return validationResult;
+        }
+        
         Name = name;
         Description = description;
         Url = url;
+        
+        return Result.Success();
     }
 
-    public static Pizza Create(Guid id, string name, string description, string url)
+    public static Result<Pizza> Create(Guid id, string name, string description, string url)
     {
         var pizza = new Pizza(id, name, description, url);
-        //create pizza:create
-        return pizza;
+        var validationResult = ValidateEntity(pizza, new PizzaValidator());
+        
+        if (validationResult.IsFailure)
+        {
+            return Result<Pizza>.Failure(validationResult.Errors);
+        }
+        
+        return Result<Pizza>.Success(pizza);
+    }
+
+    protected class PizzaValidator : AbstractValidator<Pizza>
+    {
+        public PizzaValidator()
+        {
+            RuleFor(x => x.Name)
+                .NotEmpty()
+                .WithMessage("El nombre es requerido")
+                .MaximumLength(100)
+                .WithMessage("El nombre no puede exceder de 100 caracteres");
+
+            RuleFor(x => x.Description)
+                .NotEmpty()
+                .WithMessage("La descripción es requerida")
+                .MaximumLength(250)
+                .WithMessage("La descripción no puede exceder de 250 caracteres");
+
+            RuleFor(x => x.Url)
+                .NotEmpty()
+                .WithMessage("La URL es requerida")
+                .Must(BeAValidUrl)
+                .WithMessage("La URL no es válida");
+        }
+
+        private bool BeAValidUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
+                   && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        }
     }
 }
-

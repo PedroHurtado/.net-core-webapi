@@ -24,6 +24,7 @@ public interface IRemove<T, ID> : IGet<T, ID>
 public interface IQuery
 {
     IQueryable<T> Query<T>() where T:Entity;
+    //Task<List<T>> ToListAsync<T>(IQueryable<T> query);
 }
 
 public interface IGetOrThrowAsync
