@@ -13,8 +13,7 @@ public interface IAdd<T>
     void Add(T entity);
 }
 
-public interface IUpdate<T,ID>:IGet<T,ID>{
-    void Update(T entity);
+public interface IUpdate<T,ID>:IGet<T,ID>{    
 }
 
 public interface IRemove<T, ID> : IGet<T, ID>

@@ -60,6 +60,7 @@ public class CreateIngredient : IFeatureModule
             ).ValueOrThrow();
 
             _repository.Add(ingredient);
+            
 
             await _unifOfWork.SaveChangesAsync();
 
