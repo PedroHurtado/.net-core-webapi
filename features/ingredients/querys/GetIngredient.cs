@@ -36,7 +36,7 @@ public class GetIngredient:IFeatureModule
        .Produces<CustomProblemDetails>(StatusCodes.Status404NotFound);       
     }
     [Injectable]
-    class Repository(IGetOrThrowAsync repository) : IGet<Ingredient, Guid>
+    public class Repository(IGetOrThrowAsync repository) : IGet<Ingredient, Guid>
     {
         private readonly IGetOrThrowAsync _repository = repository;
 
