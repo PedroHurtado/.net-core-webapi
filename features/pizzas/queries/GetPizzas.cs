@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using webapi.common;
 using webapi.common.dependencyinjection;
 using webapi.common.infrastructure;
@@ -52,7 +53,7 @@ public class GetPizzas : IFeatureModule
 
         public Task<IQueryable<Response>> Handler(Query query)
         {
-            var pizzasQuery = _repository.Query<Pizza>();            
+            var pizzasQuery = _repository.Query<Pizza>().Include(p=>p.Ingredients);            
 
             var result = pizzasQuery
                 .Where(p => query.Name == null || p.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase))

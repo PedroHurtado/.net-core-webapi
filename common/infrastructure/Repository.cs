@@ -29,8 +29,11 @@ public interface IQuery
 
 public interface IGetOrThrowAsync
 {
-    Task<T> GetOrThrowAsync<T, ID>(ID id,
-       bool tracking = true, CancellationToken cancellationToken = default) where T : Entity;
+    Task<T> GetOrThrowAsync<T, ID>(
+        ID id,
+        bool tracking = true,
+        CancellationToken cancellationToken = default,
+        params string[] includeProperties) where T : Entity;
 }
 
 public interface IUnitOfWork

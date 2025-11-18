@@ -14,20 +14,28 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Ingredient> Ingredients { get; set; }
     public DbSet<Pizza> Pizzas { get; set; }
-    public async Task<T> GetOrThrowAsync<T, ID>(ID id, bool tracking = true, CancellationToken cancellationToken = default) where T : Entity
+
+    public async Task<T> GetOrThrowAsync<T, ID>(
+    ID id,
+    bool tracking = true,
+    CancellationToken cancellationToken = default,
+    params string[] includeProperties) where T : Entity
     {
         var query = Set<T>().AsQueryable();
+
+        // Aplicar includes
+        foreach (var includeProperty in includeProperties)
+        {
+            query = query.Include(includeProperty);
+        }
 
         if (!tracking)
         {
             query = query.AsNoTracking();
         }
 
-
         var entity = await query.Where(e => e.Id.Equals(id)).FirstOrDefaultAsync(cancellationToken);
         return entity ?? throw new KeyNotFoundException($"{typeof(T).Name} with ID '{id}' not found.");
-
-
     }
 
     public IQueryable<T> Query<T>() where T : Entity
