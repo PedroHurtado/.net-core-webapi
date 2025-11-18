@@ -19,7 +19,7 @@ public class RemoveIngredient : IFeatureModule
        })
        .WithStandardOpenApi(
         name: "RemoveIngreient",
-        summary: "Elimina un ingrediente,
+        summary:"Elimina un ingrediente",
         description: "Endpoint para eliminar un ingrediente por id",
         tag: "Ingredientes",
         successStatusCode: StatusCodes.Status204NoContent,
