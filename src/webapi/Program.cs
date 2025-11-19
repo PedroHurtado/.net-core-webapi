@@ -74,3 +74,5 @@ app.MapFeatures();
 app.UseHttpsRedirection();
 
 app.Run();
+
+public partial class Program { }
