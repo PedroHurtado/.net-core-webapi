@@ -1,8 +1,7 @@
 using webapi.features.ingredients.models;
-using Xunit;
 using FluentAssertions;
 
-namespace webapi.tests.features.ingredients.models;
+namespace WebApi.UnitTests;
 
 public class IngredientTests
 {
