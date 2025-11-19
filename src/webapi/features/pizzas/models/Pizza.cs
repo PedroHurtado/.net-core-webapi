@@ -26,7 +26,7 @@ public class Pizza : Entity
         Url = url;
     }
 
-    private Result ValidateIngredientNotNull(Ingredient ingredient)
+    private static Result ValidateIngredientNotNull(Ingredient ingredient)
     {
         if (ingredient == null)
         {

@@ -58,7 +58,7 @@ public class CreateIngredient : IFeatureModule
                 request.Name,
                 request.Cost
             ).ValueOrThrow();
-
+            
             _repository.Add(ingredient);
             
 

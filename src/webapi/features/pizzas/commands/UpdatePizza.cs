@@ -62,7 +62,10 @@ public class UpdatePizza : IFeatureModule
 
         public async Task<Response> HandlerAsync(Guid id, Request request)
         {
-            var pizza = await lookupRepository.GetOrThrowAsync<Pizza, Guid>(id);
+            var pizza = await lookupRepository.GetOrThrowAsync<Pizza, Guid>(
+                id,
+                includeProperties:nameof(Pizza.Ingredients)
+            );
 
             pizza.Update(request.Name, request.Description, request.Url).SuccessOrThrow();
 
