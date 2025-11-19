@@ -32,7 +32,7 @@ public class Pizza : Entity
         {
             return Result.Failure("El ingrediente no puede ser nulo", "Ingredient");
         }
-        
+
         return Result.Success();
     }
 
@@ -74,16 +74,16 @@ public class Pizza : Entity
     {
         var tempPizza = new Pizza(Id, name, description, url);
         var validationResult = ValidateEntity(tempPizza, new PizzaValidator());
-        
+
         if (validationResult.IsFailure)
         {
             return validationResult;
         }
-        
+
         Name = name;
         Description = description;
         Url = url;
-        
+
         return Result.Success();
     }
 
@@ -91,12 +91,12 @@ public class Pizza : Entity
     {
         var pizza = new Pizza(id, name, description, url);
         var validationResult = ValidateEntity(pizza, new PizzaValidator());
-        
+
         if (validationResult.IsFailure)
         {
             return Result<Pizza>.Failure(validationResult.Errors);
         }
-        
+
         return Result<Pizza>.Success(pizza);
     }
 
@@ -119,6 +119,8 @@ public class Pizza : Entity
             RuleFor(x => x.Url)
                 .NotEmpty()
                 .WithMessage("La URL es requerida")
+                .MaximumLength(500)
+                .WithMessage("La URL no puede exceder de 500 caracteres")
                 .Must(BeAValidUrl)
                 .WithMessage("La URL no es válida");
         }
