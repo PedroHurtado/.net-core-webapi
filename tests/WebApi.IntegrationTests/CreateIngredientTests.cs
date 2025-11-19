@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using webapi.infrastructure;
 using webapi.features.ingredients.commands;
 
+using webapi.common.infrastructure;
+
+
 namespace WebApi.IntegrationTests;
 
 public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program>>
@@ -29,11 +32,18 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
                     services.Remove(descriptor);
                 }
 
-                // Agregar DbContext en memoria para tests
+                // Agregar DbContext en memoria para tests con nombre único
+                var databaseName = "TestDatabase_" + Guid.NewGuid();
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("TestDatabase_" + Guid.NewGuid());
+                    options.UseInMemoryDatabase(databaseName);
                 });
+
+                // Re-registrar las interfaces que usa ApplicationDbContext
+                services.AddScoped<IRepository>(sp => sp.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IQuery>(sp => sp.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IGetOrThrowAsync>(sp => sp.GetRequiredService<ApplicationDbContext>());
             });
         });
 
@@ -76,6 +86,13 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
         var result = await response.Content.ReadFromJsonAsync<CreateIngredient.Response>();
 
         // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        result.Should().NotBeNull();
+
+        // Esperar un poco para asegurar que se completó la transacción
+        await Task.Delay(100);
+
+        // Verificar en base de datos
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
