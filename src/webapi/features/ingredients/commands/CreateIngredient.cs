@@ -1,7 +1,6 @@
 using webapi.common.infrastructure;
 using webapi.features.ingredients.models;
 using webapi.common;
-using Microsoft.EntityFrameworkCore;
 using webapi.common.dependencyinjection;
 using System.ComponentModel.DataAnnotations;
 
@@ -67,9 +66,9 @@ public class CreateIngredient : IFeatureModule
             return new Response(ingredient.Id, ingredient.Name, ingredient.Cost);
         }
     }
-
-    //public interface IRespository:IAdd<Ingredient>{}
-    [Injectable]
+    //[Injectable]
+    public interface IRepositoryIngredient:IAdd<Ingredient>{}
+    /*[Injectable]
     public class Repository(IRepository repository) : IAdd<Ingredient>
     {
         private readonly IRepository _repository = repository;
@@ -78,7 +77,7 @@ public class CreateIngredient : IFeatureModule
         {
             _repository.Entry(entity).State = EntityState.Added;
         }
-    }
+    }*/
 
 
 }
