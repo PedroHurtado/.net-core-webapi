@@ -1,0 +1,3 @@
+dotnet test tests/WebApi.UnitTests --collect:"XPlat Code Coverage"
+reportgenerator -reports:"tests/WebApi.UnitTests/TestResults/*/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
+start coveragereport/index.html
