@@ -1,5 +1,5 @@
 using FluentAssertions;
-using webapi.common;
+using Fudie;
 using webapi.features.ingredients.models;
 using webapi.features.pizzas.models;
 
@@ -43,8 +43,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Name" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Name" &&
             e.ErrorMessage == "El nombre es requerido");
     }
 
@@ -59,8 +59,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Name" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Name" &&
             e.ErrorMessage == "El nombre no puede exceder de 100 caracteres");
     }
 
@@ -75,8 +75,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Description" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Description" &&
             e.ErrorMessage == "La descripción es requerida");
     }
 
@@ -91,8 +91,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Description" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Description" &&
             e.ErrorMessage == "La descripción no puede exceder de 250 caracteres");
     }
 
@@ -107,8 +107,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Url" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Url" &&
             e.ErrorMessage == "La URL es requerida");
     }
 
@@ -124,8 +124,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Url" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Url" &&
             e.ErrorMessage == "La URL no es válida");
     }
 
@@ -242,8 +242,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Ingredient" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Ingredient" &&
             e.ErrorMessage == "El ingrediente no puede ser nulo");
         pizza.Ingredients.Should().BeEmpty();
     }
@@ -261,8 +261,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Ingredient" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Ingredient" &&
             e.ErrorMessage == "El ingrediente ya existe en la pizza");
         pizza.Ingredients.Should().ContainSingle();
     }
@@ -319,8 +319,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Ingredient" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Ingredient" &&
             e.ErrorMessage == "El ingrediente no puede ser nulo");
     }
 
@@ -336,8 +336,8 @@ public class PizzaTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Errors.Should().ContainSingle(e => 
-            e.PropertyName == "Ingredient" && 
+        result.Errors.Should().ContainSingle(e =>
+            e.PropertyName == "Ingredient" &&
             e.ErrorMessage == "El ingrediente no existe en la pizza");
         pizza.Ingredients.Should().BeEmpty();
     }
@@ -408,9 +408,9 @@ public class PizzaTests
         var ingredient1 = Ingredient.Create(Guid.NewGuid(), "Mozzarella", 2.00m).ValueOrThrow();
         var ingredient2 = Ingredient.Create(Guid.NewGuid(), "Tomate", 1.00m).ValueOrThrow();
         pizza.AddIngredient(ingredient1);
-        
+
         var priceWithOneIngredient = pizza.Price;
-        
+
         // Act
         pizza.AddIngredient(ingredient2);
         var priceWithTwoIngredients = pizza.Price;
@@ -429,9 +429,9 @@ public class PizzaTests
         var ingredient2 = Ingredient.Create(Guid.NewGuid(), "Tomate", 1.00m).ValueOrThrow();
         pizza.AddIngredient(ingredient1);
         pizza.AddIngredient(ingredient2);
-        
+
         var priceWithTwoIngredients = pizza.Price;
-        
+
         // Act
         pizza.RemoveIngredient(ingredient2);
         var priceWithOneIngredient = pizza.Price;
@@ -464,7 +464,7 @@ public class PizzaTests
         // Arrange
         var pizza = Pizza.Create(_testId, ValidName, ValidDescription, ValidUrl).ValueOrThrow();
         var ingredient = Ingredient.Create(Guid.NewGuid(), "Mozzarella", 2.50m).ValueOrThrow();
-        
+
         // Act & Assert
         var ingredients = pizza.Ingredients;
         ingredients.Should().BeAssignableTo<IReadOnlyCollection<Ingredient>>();

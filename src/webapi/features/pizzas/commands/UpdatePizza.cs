@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using webapi.common;
-using webapi.common.dependencyinjection;
-using webapi.common.infrastructure;
+using Fudie;
+using Fudie.DependencyInjection;
+using Fudie.Infrastructure;
 
 using webapi.features.pizzas.models;
 

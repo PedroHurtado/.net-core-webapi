@@ -1,8 +1,9 @@
-using webapi.common.infrastructure;
+using Fudie.Infrastructure;
 using webapi.features.ingredients.models;
-using webapi.common;
-using webapi.common.dependencyinjection;
+using Fudie;
+using Fudie.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace webapi.features.ingredients.commands;
 
@@ -46,9 +47,9 @@ public class CreateIngredient : IFeatureModule
     [Injectable]
     public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
     {
-        
-        private IAdd<Ingredient> _repository = repository;
-        private IUnitOfWork _unifOfWork = unitOfWork;
+
+        private readonly IAdd<Ingredient> _repository = repository;
+        private readonly IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Request request)
         {
@@ -57,18 +58,17 @@ public class CreateIngredient : IFeatureModule
                 request.Name,
                 request.Cost
             ).ValueOrThrow();
-            
+
             _repository.Add(ingredient);
-            
+
 
             await _unifOfWork.SaveChangesAsync();
 
             return new Response(ingredient.Id, ingredient.Name, ingredient.Cost);
         }
     }
-    //[Injectable]
-    public interface IRepositoryIngredient:IAdd<Ingredient>{}
-    /*[Injectable]
+
+    [Injectable]
     public class Repository(IRepository repository) : IAdd<Ingredient>
     {
         private readonly IRepository _repository = repository;
@@ -77,7 +77,7 @@ public class CreateIngredient : IFeatureModule
         {
             _repository.Entry(entity).State = EntityState.Added;
         }
-    }*/
+    }
 
 
 }

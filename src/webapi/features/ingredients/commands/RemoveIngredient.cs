@@ -1,8 +1,8 @@
-using webapi.common.infrastructure;
+using Fudie.Infrastructure;
 using webapi.features.ingredients.models;
-using webapi.common;
+using Fudie;
 using Microsoft.EntityFrameworkCore;
-using webapi.common.dependencyinjection;
+using Fudie.DependencyInjection;
 
 namespace webapi.features.ingredients.commands;
 

@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using webapi.common;
-using webapi.common.dependencyinjection;
-using webapi.common.infrastructure;
-using webapi.common.openapi;
+using Fudie;
+using Fudie.DependencyInjection;
+using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +62,16 @@ builder.Services.AddInjectables();
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirTodo", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -98,6 +108,9 @@ app.MapHealthChecks("/health", new HealthCheckOptions
         await context.Response.WriteAsync(result);
     }
 });
+
+
+app.UseCors("PermitirTodo");
 
 app.UseHttpsRedirection();
 

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using webapi.common.domain;
-using webapi.common.infrastructure;
+using Fudie.Domain;
+using Fudie.Infrastructure;
 using webapi.features.ingredients.models;
 using webapi.features.pizzas.models;
 
@@ -12,8 +12,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
 
 
-    public DbSet<Ingredient> Ingredients { get; set; }
-    public DbSet<Pizza> Pizzas { get; set; }
+    public required DbSet<Ingredient> Ingredients { get; set; }
+    public required DbSet<Pizza> Pizzas { get; set; }
 
     public async Task<T> GetOrThrowAsync<T, ID>(
     ID id,

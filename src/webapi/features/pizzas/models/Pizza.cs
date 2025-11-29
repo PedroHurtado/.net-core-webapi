@@ -1,6 +1,6 @@
-using webapi.common.domain;
+using Fudie.Domain;
 using webapi.features.ingredients.models;
-using webapi.common;
+using Fudie;
 using FluentValidation;
 
 

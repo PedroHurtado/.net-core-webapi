@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using webapi.common;
-using webapi.common.dependencyinjection;
-using webapi.common.infrastructure;
-using webapi.common.openapi;
+using Fudie;
+using Fudie.DependencyInjection;
+using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.features.pizzas.models;
 
 namespace webapi.features.pizzas.queries;

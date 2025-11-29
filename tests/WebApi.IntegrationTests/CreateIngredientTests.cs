@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using webapi.infrastructure;
 using webapi.features.ingredients.commands;
 
-using webapi.common.infrastructure;
+using Fudie.Infrastructure;
 
 
 namespace WebApi.IntegrationTests;
@@ -64,7 +64,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        
+
         var result = await response.Content.ReadFromJsonAsync<CreateIngredient.Response>();
         result.Should().NotBeNull();
         result!.Id.Should().NotBeEmpty();
@@ -95,7 +95,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
         // Verificar en base de datos
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
+
         var ingredient = await dbContext.Ingredients
             .FirstOrDefaultAsync(i => i.Id == result!.Id);
 
@@ -193,7 +193,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        
+
         var result = await response.Content.ReadFromJsonAsync<CreateIngredient.Response>();
         result!.Cost.Should().Be(0.01m);
     }
@@ -212,7 +212,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        
+
         var result = await response.Content.ReadFromJsonAsync<CreateIngredient.Response>();
         result!.Cost.Should().Be(9999.99m);
     }
@@ -232,7 +232,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        
+
         var result = await response.Content.ReadFromJsonAsync<CreateIngredient.Response>();
         result!.Name.Should().Be(name);
     }
@@ -266,7 +266,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
         // Verificar en base de datos
         using var scope = _factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
+
         var ingredients = await dbContext.Ingredients.ToListAsync();
         ingredients.Should().HaveCountGreaterThanOrEqualTo(3);
     }

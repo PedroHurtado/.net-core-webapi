@@ -1,7 +1,7 @@
 namespace webapi.features.ingredients.models;
 
-using webapi.common;
-using webapi.common.domain;
+using Fudie;
+using Fudie.Domain;
 using FluentValidation;
 
 public class Ingredient : Entity
