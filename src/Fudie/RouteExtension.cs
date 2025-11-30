@@ -28,7 +28,7 @@ public static class RouteExtension
                 catch (ReflectionTypeLoadException)
                 {
                     // Ignorar ensamblados que no se pueden cargar
-                    return Array.Empty<Type>();
+                    return [];
                 }
             })
             .Where(p => p.IsClass && !p.IsAbstract && p.IsPublic && p.IsAssignableTo(typeof(IFeatureModule)))
