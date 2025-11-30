@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Routing;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Fudie;
 
@@ -8,12 +7,31 @@ public static class RouteExtension
 {
     public static void MapFeatures(this IEndpointRouteBuilder builder)
     {
-        // Obtener el ensamblado del llamador basándose en el archivo
-        var callingAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        // Obtener el ensamblado donde está definido IFeatureModule
+        var interfaceAssembly = typeof(IFeatureModule).Assembly;
 
-        var features = callingAssembly
-            .GetTypes()
-            .Where(p => p.IsClass && p.IsPublic && p.IsAssignableTo(typeof(IFeatureModule)))
+        // Buscar en todos los ensamblados cargados que referencian a Fudie
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !a.IsDynamic &&
+                       (a == interfaceAssembly ||
+                        a.GetReferencedAssemblies().Any(ra => ra.Name == interfaceAssembly.GetName().Name)))
+            .ToList();
+
+        // Descubrir todos los tipos que implementan IFeatureModule
+        var features = assemblies
+            .SelectMany(a =>
+            {
+                try
+                {
+                    return a.GetTypes();
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    // Ignorar ensamblados que no se pueden cargar
+                    return Array.Empty<Type>();
+                }
+            })
+            .Where(p => p.IsClass && !p.IsAbstract && p.IsPublic && p.IsAssignableTo(typeof(IFeatureModule)))
             .Select(Activator.CreateInstance)
             .Cast<IFeatureModule>();
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Fudie;
 using Fudie.DependencyInjection;
 using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.features.ingredients.models;
 using webapi.features.pizzas.models;
 
@@ -31,22 +32,22 @@ public class CreatePizza : IFeatureModule
         [Required][property: Required] decimal Price,
         [Required][property: Required] IEnumerable<IngredientResponse> Ingredients
     );
-    
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-      app.MapPost("/pizzas", async (IService service, Request request) =>
-        {
-            var response = await service.HandlerAsync(request);
-            return Results.Created("", response);
-        })
-      .WithStandardOpenApi<Response>(
-       name: "CreatePizza",
-       summary: "Crear una nueva pizza",
-       description: "Endpoint para crear una nueva pizza con su nombre, descripción, url e ingredientes",
-       tag: "Pizzas",
-       successStatusCode: StatusCodes.Status201Created,
-       additionalErrorCodes: [StatusCodes.Status422UnprocessableEntity, StatusCodes.Status404NotFound]
-      );
+        app.MapPost("/pizzas", async (IService service, Request request) =>
+          {
+              var response = await service.HandlerAsync(request);
+              return Results.Created("", response);
+          })
+        .WithStandardOpenApi<Response>(
+         name: "CreatePizza",
+         summary: "Crear una nueva pizza",
+         description: "Endpoint para crear una nueva pizza con su nombre, descripción, url e ingredientes",
+         tag: "Pizzas",
+         successStatusCode: StatusCodes.Status201Created,
+         additionalErrorCodes: [StatusCodes.Status422UnprocessableEntity, StatusCodes.Status404NotFound]
+        );
     }
 
     public interface IService
@@ -92,12 +93,12 @@ public class CreatePizza : IFeatureModule
             return response;
         }
     }
-    
+
     [Injectable]
     public class Repository(IRepository repository) : IAdd<Pizza>
     {
         private readonly IRepository _repository = repository;
-        
+
         public void Add(Pizza entity)
         {
             _repository.Entry(entity).State = EntityState.Added;

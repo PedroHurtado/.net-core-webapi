@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Fudie;
 using Fudie.DependencyInjection;
 using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.features.pizzas.models;
 
 namespace webapi.features.pizzas.queries;
@@ -10,12 +11,12 @@ namespace webapi.features.pizzas.queries;
 public class GetPizzas : IFeatureModule
 {
     public record Query(string? Name, int Page = 1, int Size = 25);
-    
+
     public record IngredientResponse(
         [Required][property: Required] Guid Id,
         [Required][property: Required] string Name
     );
-    
+
     public record Response(
         [Required][property: Required] Guid Id,
         [Required][property: Required] string Name,
@@ -24,12 +25,12 @@ public class GetPizzas : IFeatureModule
         [Required][property: Required] decimal Price,
         [Required][property: Required] IEnumerable<IngredientResponse> Ingredients
     );
-      
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/pizzas", async (IService service, IQuery repository, [AsParameters] Query query) =>
         {
-            var queryResult = await service.Handler(query);            
+            var queryResult = await service.Handler(query);
             return Results.Ok(queryResult);
         })
         .WithStandardOpenApi<List<Response>>(
@@ -40,7 +41,7 @@ public class GetPizzas : IFeatureModule
             successStatusCode: StatusCodes.Status200OK
         );
     }
-    
+
     public interface IService
     {
         Task<IQueryable<Response>> Handler(Query query);
@@ -53,7 +54,7 @@ public class GetPizzas : IFeatureModule
 
         public Task<IQueryable<Response>> Handler(Query query)
         {
-            var pizzasQuery = _repository.Query<Pizza>().Include(p=>p.Ingredients);            
+            var pizzasQuery = _repository.Query<Pizza>().Include(p => p.Ingredients);
 
             var result = pizzasQuery
                 .Where(p => query.Name == null || p.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase))

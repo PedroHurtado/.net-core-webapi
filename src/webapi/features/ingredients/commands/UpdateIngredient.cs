@@ -1,4 +1,5 @@
 using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.features.ingredients.models;
 using Fudie;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +57,7 @@ public class UpdateIngredient : IFeatureModule
         public async Task HandlerAsync(Guid id, Request request)
         {
             var ingredient = await _repository.Get(id);
-            ingredient.Update(request.Name, request.Cost).SuccessOrThrow();                        
+            ingredient.Update(request.Name, request.Cost).SuccessOrThrow();
             await _unifOfWork.SaveChangesAsync();
         }
     }
@@ -75,7 +76,7 @@ public class UpdateIngredient : IFeatureModule
             return _getOrThrowAsync.GetOrThrowAsync<Ingredient, Guid>(id);
         }
 
-        
+
     }
 
 

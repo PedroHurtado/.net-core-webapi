@@ -10,7 +10,7 @@ using webapi.features.ingredients.commands;
 using Fudie.Infrastructure;
 
 
-namespace WebApi.IntegrationTests;
+namespace WebApi.IntegrationTests.Features.Ingredients;
 
 public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -19,6 +19,7 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
 
     public CreateIngredientTests(WebApplicationFactory<Program> factory)
     {
+
         _factory = factory.WithWebHostBuilder(builder =>
         {
             builder.ConfigureServices(services =>

@@ -1,36 +1,65 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
+        // ========================================
+        // 🚀 API
+        // ========================================
         {
-            // Use IntelliSense para averiguar qué atributos existen para la depuración de C#.
-            // Usar el puntero por encima para la descripción de los atributos existentes
-            // Para obtener más información, visite https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
-            "name": ".NET Core Launch (web)",
+            "name": "🚀 Debug Active API",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            // Si ha cambiado las plataformas de destino, asegúrese de actualizar la ruta de acceso del programa.
-            "program": "${workspaceFolder}/src/WebApi/bin/Debug/net8.0/webapi.dll",
+            "preLaunchTask": "build-active-api",
+            "program": "${workspaceFolder}/src/${config:active.api}/bin/Debug/net8.0/${config:active.api}.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/WebApi",
+            "cwd": "${workspaceFolder}/src/${config:active.api}",
             "stopAtEntry": false,
-            // Habilite el inicio de un explorador web cuando se inicie ASP.NET Core. Para obtener más información: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            "console": "internalConsole",
+            "justMyCode": true,
+            "suppressJITOptimizations": true,
+            "symbolOptions": {
+                "searchPaths": [],
+                "moduleFilter": {
+                    "mode": "loadAllButExcluded",
+                    "excludedModules": [
+                        "FluentValidation.dll",
+                        "Microsoft.*",
+                        "System.*"
+                    ]
+                }
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "sourceFileMap": {
-                "/Views": "${workspaceFolder}/Views"
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/swagger"
             }
         },
+        // ========================================
+        // 🧪 TESTS
+        // ========================================
         {
-            "name": ".NET Core Attach",
+            "name": "🧪 Debug Active Tests",
             "type": "coreclr",
-            "request": "attach"
+            "request": "launch",
+            "preLaunchTask": "build-active-tests",
+            "program": "dotnet",
+            "args": [
+                "exec",
+                "${config:dotnet.vstestPath}",
+                "${workspaceFolder}/tests/${config:active.test}/bin/Debug/net8.0/${config:active.test}.dll",
+                "/InIsolation",
+                "/Logger:console;verbosity=detailed"
+            ],
+            "cwd": "${workspaceFolder}/tests/${config:active.test}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "justMyCode": true,
+            "suppressJITOptimizations": true,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing"
+            }
         }
     ]
 }

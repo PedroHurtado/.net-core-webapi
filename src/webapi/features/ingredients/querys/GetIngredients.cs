@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Fudie;
 using Fudie.DependencyInjection;
 using Fudie.Infrastructure;
+using Fudie.OpenApi;
 using webapi.features.ingredients.models;
 
 namespace webapi.features.ingredients.querys;
@@ -14,12 +15,12 @@ public class GetIngredients : IFeatureModule
           [Required][property: Required] string Name,
           [Required][property: Required] decimal Cost
       );
-      
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/ingredients", async (IService service, IQuery repository, [AsParameters] Query query) =>
         {
-            var queryResult = await service.Handler(query);            
+            var queryResult = await service.Handler(query);
             return Results.Ok(queryResult);
         })
         .WithStandardOpenApi<List<Response>>(
@@ -30,7 +31,7 @@ public class GetIngredients : IFeatureModule
             successStatusCode: StatusCodes.Status200OK
         );
     }
-    
+
     public interface IService
     {
         Task<IQueryable<Response>> Handler(Query query);
@@ -43,7 +44,7 @@ public class GetIngredients : IFeatureModule
 
         public Task<IQueryable<Response>> Handler(Query query)
         {
-            var ingredientsQuery = _repository.Query<Ingredient>();            
+            var ingredientsQuery = _repository.Query<Ingredient>();
 
             var result = ingredientsQuery
                 .Where(i => query.Name == null || i.Name.Contains(query.Name, StringComparison.OrdinalIgnoreCase))

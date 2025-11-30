@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Fudie;
 using Fudie.DependencyInjection;
 using Fudie.Infrastructure;
+using Fudie.OpenApi;
 
 using webapi.features.pizzas.models;
 
@@ -28,7 +29,7 @@ public class UpdatePizza : IFeatureModule
         [Required][property: Required] decimal Price,
         [Required][property: Required] IEnumerable<IngredientResponse> Ingredients
     );
-    
+
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/pizzas/{id:guid}", async (Guid id, IService service, Request request) =>
@@ -64,7 +65,7 @@ public class UpdatePizza : IFeatureModule
         {
             var pizza = await lookupRepository.GetOrThrowAsync<Pizza, Guid>(
                 id,
-                includeProperties:nameof(Pizza.Ingredients)
+                includeProperties: nameof(Pizza.Ingredients)
             );
 
             pizza.Update(request.Name, request.Description, request.Url).SuccessOrThrow();
