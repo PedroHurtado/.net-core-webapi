@@ -6,16 +6,16 @@
 
 ## 📋 Índice
 
-1. [Visión General del Flujo](#visión-general-del-flujo)
-2. [Paso 0: Preparación](#paso-0-preparación)
-3. [Paso 1: Definir el Dominio](#paso-1-definir-el-dominio)
-4. [Paso 2: Generar Dominio + Tests](#paso-2-generar-dominio--tests)
-5. [Paso 3: Generar Persistencia](#paso-3-generar-persistencia)
-6. [Paso 4: Generar Queries (Lectura)](#paso-4-generar-queries-lectura)
-7. [Paso 5: Generar Commands (Escritura)](#paso-5-generar-commands-escritura)
-8. [Paso 6: Generar Tests de Integración](#paso-6-generar-tests-de-integración)
-9. [Paso 7: Validación Final](#paso-7-validación-final)
-10. [Checklist de Validación](#checklist-de-validación)
+1. [Visión General del Flujo](#-visión-general-del-flujo)
+2. [Paso 0: Preparación](#-paso-0-preparación)
+3. [Paso 1: Definir el Dominio](#-paso-1-definir-el-dominio-manual)
+4. [Paso 2: Generar Dominio + Tests](#-paso-2-generar-dominio--tests)
+5. [Paso 3: Generar Persistencia](#️-paso-3-generar-persistencia)
+6. [Paso 4: Generar Queries (Lectura)](#-paso-4-generar-queries-lectura)
+7. [Paso 5: Generar Commands (Escritura)](#️-paso-5-generar-commands-escritura)
+8. [Paso 6: Generar Tests de Integración](#-paso-6-generar-tests-de-integración)
+9. [Paso 7: Validación Final](#-paso-7-validación-final)
+10. [Checklist de Validación](#-checklist-de-validación)
 
 ---
 
