@@ -8,8 +8,7 @@
 .plans/
 ├── 📖 README.md                       ← Índice principal y guía de navegación
 ├── 🚀 WORKFLOW.md                     ← Flujo rápido y detallado
-├── 📋 AUTOMATION_GUIDE.md             ← Guía paso a paso con validaciones
-├── 🤖 AI_PROMPTS.md                   ← 9 prompts optimizados listos para usar
+├── ⭐ DEVELOPMENT_GUIDE.md             ← Guía completa con prompts integrados
 ├── 🏗️ ANALISIS_PROYECTO_FUDIE.md     ← Arquitectura completa del proyecto
 │
 └── templates/
@@ -100,11 +99,11 @@ webapi/
 
 ---
 
-### 2. Guía de Automatización (`AUTOMATION_GUIDE.md`)
+### 2. Guía de Desarrollo (`DEVELOPMENT_GUIDE.md`)
 
 **Contenido**:
 - ✅ Visión general del flujo completo
-- ✅ 7 pasos detallados con ejemplos
+- ✅ 7 pasos detallados con prompts integrados
 - ✅ Validación en cada paso
 - ✅ Checklist completo de validación
 - ✅ Tips para desarrolladores junior
@@ -124,7 +123,7 @@ Paso 7: Validación Final
 
 ---
 
-### 3. Prompts Optimizados (`AI_PROMPTS.md`)
+### 3. Prompts Optimizados (Integrados en DEVELOPMENT_GUIDE.md)
 
 **9 Prompts Listos para Usar**:
 
@@ -270,7 +269,7 @@ chmod +x validate-feature.sh
 **Documentos**:
 - `README.md` → Orientación
 - `ANALISIS_PROYECTO_FUDIE.md` → Entender arquitectura
-- `AUTOMATION_GUIDE.md` → Seguir paso a paso
+- `DEVELOPMENT_GUIDE.md` → Seguir paso a paso
 
 **Resultado**: Primera feature en 90 minutos
 
@@ -279,7 +278,7 @@ chmod +x validate-feature.sh
 ### Nivel 2: Mid (Semana 3-4)
 **Documentos**:
 - `WORKFLOW.md` → Flujo detallado
-- `AI_PROMPTS.md` → Prompts directos
+- `DEVELOPMENT_GUIDE.md` → Prompts integrados
 
 **Resultado**: Features en 60 minutos
 
@@ -288,7 +287,7 @@ chmod +x validate-feature.sh
 ### Nivel 3: Senior (Mes 2+)
 **Documentos**:
 - `WORKFLOW.md` → Flujo rápido
-- `AI_PROMPTS.md` → Referencia rápida
+- `DEVELOPMENT_GUIDE.md` → Referencia rápida de prompts
 
 **Resultado**: Features en 30-45 minutos
 
@@ -352,7 +351,7 @@ Total: 1 hora
 
 ### Corto Plazo (Esta Semana)
 
-1. ✅ Desarrolla primera feature siguiendo `AUTOMATION_GUIDE.md`
+1. ✅ Desarrolla primera feature siguiendo `DEVELOPMENT_GUIDE.md`
 2. ✅ Ejecuta script de validación
 3. ✅ Documenta problemas encontrados
 
@@ -381,8 +380,8 @@ Has creado un **sistema completo de automatización** que permite:
 ✅ **Documentación viva y actualizada**
 
 **El sistema incluye**:
-- 📚 5 documentos principales
-- 🤖 9 prompts optimizados
+- 📚 4 documentos principales
+- 🤖 Prompts integrados en guía completa
 - 🛠️ 2 scripts de validación
 - 📝 4 templates
 - 🎓 Guías para todos los niveles

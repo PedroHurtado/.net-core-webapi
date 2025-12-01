@@ -23,7 +23,7 @@
 
 ---
 
-## 🤖 Prompts ([AI_PROMPTS.md](./AI_PROMPTS.md))
+## 🤖 Prompts ([DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md))
 
 ### Prompt 1: Dominio + Tests
 ```
@@ -303,7 +303,7 @@ dotnet test
 
 ### Junior (60-90 min)
 ```
-□ Lee [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) completo
+□ Lee [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) completo
 □ Sigue paso a paso
 □ Valida después de cada paso
 ```
@@ -330,8 +330,7 @@ dotnet test
 |-----------|-------------|
 | [README.md](./README.md) | Primera vez |
 | [WORKFLOW.md](./WORKFLOW.md) | Siempre |
-| [AI_PROMPTS.md](./AI_PROMPTS.md) | Cada paso |
-| [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Dudas |
+| [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) | Cada paso |
 | [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) | Referencia |
 
 ---
@@ -342,7 +341,7 @@ dotnet test
 Swagger:     https://localhost:5001/swagger
 Health:      https://localhost:5001/health
 Docs:        .plans/README.md
-Prompts:     .plans/AI_PROMPTS.md
+Prompts:     .plans/DEVELOPMENT_GUIDE.md
 Workflow:    .plans/WORKFLOW.md
 ```
 

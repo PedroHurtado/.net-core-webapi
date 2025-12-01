@@ -8,8 +8,7 @@
 
 | Documento | Propósito |
 |-----------|-----------|
-| [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Guía completa paso a paso con validaciones |
-| [AI_PROMPTS.md](./AI_PROMPTS.md) | Prompts listos para copiar y pegar |
+| [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) | ⭐ Guía completa con prompts integrados |
 | [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) | Arquitectura y patrones del proyecto |
 | [style_guide_examples.md](./templates/style_guide_examples.md) | Ejemplos de código y estilo |
 | [domain_definition_template.md](./templates/domain_definition_template.md) | Plantilla para definir dominio |
@@ -27,16 +26,16 @@ code domain-specs/[Entidad].md
 
 ### 2️⃣ Generar Código (IA - 5 min por paso)
 ```bash
-# Copia prompts de: .plans/AI_PROMPTS.md
+# Copia prompts de: .plans/DEVELOPMENT_GUIDE.md
 # Ejecuta en orden:
-# - Prompt 1: Dominio + Tests
-# - Prompt 2: Persistencia
-# - Prompt 3: Query Get por ID
-# - Prompt 4: Query Get Lista
-# - Prompt 5: Command Create
-# - Prompt 6: Command Update
-# - Prompt 7: Command Delete (opcional)
-# - Prompt 8: Tests de Integración
+# - Paso 2: Dominio + Tests
+# - Paso 3: Persistencia
+# - Paso 4.1: Query Get por ID
+# - Paso 4.2: Query Get Lista
+# - Paso 5.1: Command Create
+# - Paso 5.2: Command Update
+# - Paso 5.3: Command Delete (opcional)
+# - Paso 6: Tests de Integración
 ```
 
 ### 3️⃣ Validar (Automático - 2 min)
@@ -51,8 +50,8 @@ chmod +x validate-feature.sh
 
 ### 4️⃣ Revisar y Optimizar (IA - 5 min)
 ```bash
-# Usa Prompt 9 de [AI_PROMPTS.md](./AI_PROMPTS.md)
-# Revisa sugerencias y aplica mejoras
+# Revisa el código generado
+# Aplica mejoras si es necesario
 ```
 
 **Tiempo total estimado**: 30-45 minutos por feature completa
@@ -96,8 +95,8 @@ chmod +x validate-feature.sh
 
 **Tiempo estimado**: 5 minutos
 
-1. Abre [AI_PROMPTS.md](./AI_PROMPTS.md)
-2. Copia **Prompt 1: Generar Dominio + Tests Unitarios**
+1. Abre [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md)
+2. Copia **Paso 2: Generar Dominio + Tests**
 3. Reemplaza `[Entidad]` y `[entidad]`
 4. Pega en tu IA (asegúrate de adjuntar archivos con @)
 5. Copia el código generado
@@ -114,7 +113,7 @@ dotnet test tests/WebApi.UnitTests/Features/[Entidad]/[Entidad]Tests.cs
 
 **Tiempo estimado**: 3 minutos
 
-1. Usa **Prompt 2: Generar Persistencia**
+1. Usa **Paso 3: Generar Persistencia** de DEVELOPMENT_GUIDE.md
 2. Crea archivo de configuración
 3. Actualiza `ApplicationDbContext.cs`
 
@@ -131,8 +130,8 @@ dotnet run --project src/webapi
 
 **Tiempo estimado**: 5 minutos
 
-1. Usa **Prompt 3: Generar Query Get por ID**
-2. Usa **Prompt 4: Generar Query Get Lista**
+1. Usa **Paso 4.1: Query Get por ID** de DEVELOPMENT_GUIDE.md
+2. Usa **Paso 4.2: Query Get Lista** de DEVELOPMENT_GUIDE.md
 
 **Validación**:
 ```bash
@@ -147,9 +146,9 @@ dotnet run --project src/webapi
 
 **Tiempo estimado**: 10 minutos
 
-1. Usa **Prompt 5: Generar Command Create**
-2. Usa **Prompt 6: Generar Command Update**
-3. Usa **Prompt 7: Generar Command Delete** (opcional)
+1. Usa **Paso 5.1: Command Create** de DEVELOPMENT_GUIDE.md
+2. Usa **Paso 5.2: Command Update** de DEVELOPMENT_GUIDE.md
+3. Usa **Paso 5.3: Command Delete** (opcional) de DEVELOPMENT_GUIDE.md
 
 **Validación**:
 ```bash
@@ -163,7 +162,7 @@ dotnet build
 
 **Tiempo estimado**: 5 minutos
 
-1. Usa **Prompt 8: Generar Tests de Integración**
+1. Usa **Paso 6: Tests de Integración** de DEVELOPMENT_GUIDE.md
 
 **Validación**:
 ```bash
@@ -190,9 +189,9 @@ dotnet test
 
 **Tiempo estimado**: 5 minutos
 
-1. Usa **Prompt 9: Revisar y Optimizar**
-2. Aplica sugerencias críticas
-3. Considera sugerencias opcionales
+1. Revisa el código generado
+2. Aplica mejoras críticas si es necesario
+3. Considera optimizaciones opcionales
 
 **Criterio de éxito**: ✅ Código revisado y optimizado
 
@@ -288,8 +287,7 @@ Antes de considerar la feature completa:
 Si te atascas:
 
 1. **Revisa la documentación**:
-   - [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Guía detallada
-   - [AI_PROMPTS.md](./AI_PROMPTS.md) - Prompts optimizados
+   - [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) - Guía completa con prompts
    - [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) - Arquitectura
 
 2. **Compara con ejemplos**:
@@ -358,9 +356,8 @@ Si encuentras:
 
 ## 🎉 ¡Listo para Empezar!
 
-1. Lee [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) completo (primera vez)
-2. Abre [AI_PROMPTS.md](./AI_PROMPTS.md) en una pestaña
-3. Crea tu `domain-specs/[Entidad].md`
-4. ¡Empieza a generar código!
+1. Lee [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) completo (primera vez)
+2. Crea tu `domain-specs/[Entidad].md`
+3. ¡Empieza a generar código!
 
 **¡Buena suerte! 🚀**
