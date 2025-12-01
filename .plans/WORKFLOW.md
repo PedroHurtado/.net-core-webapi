@@ -10,7 +10,7 @@
 |-----------|-----------|
 | [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Guía completa paso a paso con validaciones |
 | [AI_PROMPTS.md](./AI_PROMPTS.md) | Prompts listos para copiar y pegar |
-| [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) | Arquitectura y patrones del proyecto |
+| [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) | Arquitectura y patrones del proyecto |
 | [style_guide_examples.md](./templates/style_guide_examples.md) | Ejemplos de código y estilo |
 | [domain_definition_template.md](./templates/domain_definition_template.md) | Plantilla para definir dominio |
 
@@ -64,7 +64,7 @@ chmod +x validate-feature.sh
 ### Paso 0: Preparación
 
 1. **Lee la documentación**:
-   - [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Entiende la arquitectura
+   - [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) - Entiende la arquitectura
    - [style_guide_examples.md](./templates/style_guide_examples.md) - Aprende los patrones
 
 2. **Crea estructura de carpetas**:
@@ -290,7 +290,7 @@ Si te atascas:
 1. **Revisa la documentación**:
    - [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Guía detallada
    - [AI_PROMPTS.md](./AI_PROMPTS.md) - Prompts optimizados
-   - [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Arquitectura
+   - [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) - Arquitectura
 
 2. **Compara con ejemplos**:
    - `src/webapi/features/pizzas/` - Feature completa

@@ -332,7 +332,7 @@ dotnet test
 | [WORKFLOW.md](./WORKFLOW.md) | Siempre |
 | [AI_PROMPTS.md](./AI_PROMPTS.md) | Cada paso |
 | [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Dudas |
-| [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) | Referencia |
+| [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) | Referencia |
 
 ---
 

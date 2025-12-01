@@ -9,7 +9,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ### Para Desarrolladores Junior (Primera vez)
 
 1. **Lee primero** (30 min):
-   - 📖 [Análisis del Proyecto](./analisis-proyecto-fudie.md) - Entiende la arquitectura
+   - 📖 [Análisis del Proyecto](./ANALISIS_PROYECTO_FUDIE.md) - Entiende la arquitectura
    - 📖 [Guía de Estilo](./templates/style_guide_examples.md) - Aprende los patrones
 
 2. **Sigue el workflow** (1 hora por feature):
@@ -44,7 +44,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ├── WORKFLOW.md                        ← Flujo de desarrollo completo
 ├── AUTOMATION_GUIDE.md                ← Guía detallada con validaciones
 ├── AI_PROMPTS.md                      ← Prompts optimizados para IA
-├── analisis-proyecto-fudie.md         ← Arquitectura del proyecto
+├── ANALISIS_PROYECTO_FUDIE.md         ← Arquitectura del proyecto
 ├── RESUMEN_EJECUTIVO.md               ← Resumen del sistema
 ├── CHEAT_SHEET.md                     ← Referencia rápida
 │
@@ -116,7 +116,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 
 ---
 
-#### 4. [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Arquitectura
+#### 4. [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) - Arquitectura
 **Cuándo usar**: Al inicio (para entender el proyecto) y como referencia
 
 **Contenido**:
@@ -181,7 +181,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ### Flujo 1: Desarrollar Nueva Feature
 
 ```
-1. Lee: analisis-proyecto-fudie.md (si es tu primera vez)
+1. Lee: ANALISIS_PROYECTO_FUDIE.md (si es tu primera vez)
 2. Crea: domain-specs/[Entidad].md (usa template)
 3. Abre: AI_PROMPTS.md
 4. Ejecuta: Prompts 1-8 en orden
@@ -198,7 +198,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 
 ```
 1. Lee: README.md (este archivo) - 10 min
-2. Lee: analisis-proyecto-fudie.md - 45 min
+2. Lee: ANALISIS_PROYECTO_FUDIE.md - 45 min
 3. Lee: templates/style_guide_examples.md - 20 min
 4. Explora: src/webapi/features/pizzas/ - 15 min
 5. Lee: WORKFLOW.md - 10 min
@@ -216,7 +216,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 2. Consulta: WORKFLOW.md → Sección "Problemas Comunes"
 3. Valida: Ejecuta script de validación
 4. Compara: Con ejemplos en src/webapi/features/pizzas/
-5. Revisa: analisis-proyecto-fudie.md → Sección relevante
+5. Revisa: ANALISIS_PROYECTO_FUDIE.md → Sección relevante
 6. Pide ayuda: Si después de 3 intentos no funciona
 ```
 
@@ -273,7 +273,7 @@ Equivalente a la versión PowerShell.
 ### Junior (0-3 meses)
 
 **Documentos clave**:
-1. [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Lee completo
+1. [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) - Lee completo
 2. [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Sigue paso a paso
 3. [AI_PROMPTS.md](./AI_PROMPTS.md) - Copia prompts exactamente
 
@@ -316,18 +316,6 @@ Equivalente a la versión PowerShell.
 2. Ajusta el prompt
 3. Actualiza [AI_PROMPTS.md](./AI_PROMPTS.md)
 4. Comparte con el equipo
-
-**❌ Patrón que no funciona**
-1. Documenta el caso
-2. Propón solución
-3. Actualiza [style_guide_examples.md](./templates/style_guide_examples.md)
-4. Actualiza [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) si es necesario
-
-**❌ Validación que falta**
-1. Identifica qué falta validar
-2. Agrega al script `validate-feature.ps1` / `.sh`
-3. Actualiza [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md)
-
 **✅ Optimización encontrada**
 1. Documenta la mejora
 2. Actualiza documentación relevante
@@ -380,7 +368,7 @@ Equivalente a la versión PowerShell.
 ### Como Desarrollador
 
 1. **Hoy**: Lee este README completo (10 min)
-2. **Hoy**: Lee [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) (45 min)
+2. **Hoy**: Lee [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md) (45 min)
 3. **Mañana**: Desarrolla tu primera feature siguiendo [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md)
 4. **Esta semana**: Desarrolla 2-3 features más
 5. **Próxima semana**: Usa el flujo rápido de [WORKFLOW.md](./WORKFLOW.md)

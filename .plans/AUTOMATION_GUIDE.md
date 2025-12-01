@@ -84,7 +84,7 @@
 ### Antes de empezar, asegúrate de:
 
 1. **Leer el análisis del proyecto**:
-   - Lee: [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md)
+   - Lee: [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md)
 
 2. **Revisar la guía de estilo**:
    - Lee: [style_guide_examples.md](./templates/style_guide_examples.md)
@@ -731,7 +731,7 @@ Si encuentras un patrón que no funciona, documéntalo para mejorar las plantill
 
 ## 🎓 Recursos Adicionales
 
-- **Análisis del Proyecto**: [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md)
+- **Análisis del Proyecto**: [ANALISIS_PROYECTO_FUDIE.md](./ANALISIS_PROYECTO_FUDIE.md)
 - **Guía de Estilo**: [style_guide_examples.md](./templates/style_guide_examples.md)
 - **Plantilla de Dominio**: [domain_definition_template.md](./templates/domain_definition_template.md)
 - **Ejemplos Reales**: `src/webapi/features/pizzas/` y `src/webapi/features/ingredients/`

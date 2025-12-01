@@ -10,7 +10,7 @@
 ├── 🚀 WORKFLOW.md                     ← Flujo rápido y detallado
 ├── 📋 AUTOMATION_GUIDE.md             ← Guía paso a paso con validaciones
 ├── 🤖 AI_PROMPTS.md                   ← 9 prompts optimizados listos para usar
-├── 🏗️ analisis-proyecto-fudie.md     ← Arquitectura completa del proyecto
+├── 🏗️ ANALISIS_PROYECTO_FUDIE.md     ← Arquitectura completa del proyecto
 │
 └── templates/
     ├── domain_definition_template.md  ← Plantilla para definir dominio
@@ -84,7 +84,7 @@ webapi/
 
 ## 📊 Componentes del Sistema
 
-### 1. Análisis del Proyecto (`analisis-proyecto-fudie.md`)
+### 1. Análisis del Proyecto (`ANALISIS_PROYECTO_FUDIE.md`)
 
 **Contenido**:
 - ✅ Objetivos de Fudie
@@ -269,7 +269,7 @@ chmod +x validate-feature.sh
 ### Nivel 1: Junior (Semana 1-2)
 **Documentos**:
 - `README.md` → Orientación
-- `analisis-proyecto-fudie.md` → Entender arquitectura
+- `ANALISIS_PROYECTO_FUDIE.md` → Entender arquitectura
 - `AUTOMATION_GUIDE.md` → Seguir paso a paso
 
 **Resultado**: Primera feature en 90 minutos
@@ -347,7 +347,7 @@ Total: 1 hora
 ### Inmediato (Hoy)
 
 1. ✅ Lee `README.md` (10 min)
-2. ✅ Lee `analisis-proyecto-fudie.md` (45 min)
+2. ✅ Lee `ANALISIS_PROYECTO_FUDIE.md` (45 min)
 3. ✅ Explora `src/webapi/features/pizzas/` (15 min)
 
 ### Corto Plazo (Esta Semana)

@@ -34,19 +34,6 @@ Este archivo contiene prompts listos para copiar y pegar, optimizados para cada 
 📂 CONTEXTO DEL PROYECTO:
 Estoy trabajando en un microservicio .NET 8 que sigue:
 - Clean Architecture con Vertical Slices
-- Domain-Driven Design (DDD)
-- CQRS pattern
-- Result pattern para manejo de errores
-- FluentValidation para validaciones
-
-📖 ARCHIVOS DE REFERENCIA (léelos primero):
-1. @[.plans/analisis-proyecto-fudie.md] - Arquitectura completa del proyecto
-2. @[.plans/templates/style_guide_examples.md] - Patrones y estilo de código
-3. @[domain-specs/[Entidad].md] - Especificación del dominio a implementar
-
-🎯 TAREA:
-Genera la clase de dominio [Entidad] y sus tests unitarios siguiendo EXACTAMENTE los patrones del proyecto.
-
 📦 ENTREGABLES:
 
 ### 1. Clase de Dominio
