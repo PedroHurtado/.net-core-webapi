@@ -84,14 +84,10 @@
 ### Antes de empezar, asegúrate de:
 
 1. **Leer el análisis del proyecto**:
-   ```
-   Lee: .plans/analisis-proyecto-fudie.md
-   ```
+   - Lee: [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md)
 
 2. **Revisar la guía de estilo**:
-   ```
-   Lee: .plans/templates/style_guide_examples.md
-   ```
+   - Lee: [style_guide_examples.md](./templates/style_guide_examples.md)
 
 3. **Crear la estructura de carpetas**:
    ```bash
@@ -119,7 +115,7 @@
 
 Crea: `domain-specs/[Entidad].md`
 
-Usa la plantilla: `.plans/templates/domain_definition_template.md`
+Usa la plantilla: [domain_definition_template.md](./templates/domain_definition_template.md)
 
 ### 1.2 Completar la especificación
 
@@ -735,9 +731,9 @@ Si encuentras un patrón que no funciona, documéntalo para mejorar las plantill
 
 ## 🎓 Recursos Adicionales
 
-- **Análisis del Proyecto**: `.plans/analisis-proyecto-fudie.md`
-- **Guía de Estilo**: `.plans/templates/style_guide_examples.md`
-- **Plantilla de Dominio**: `.plans/templates/domain_definition_template.md`
+- **Análisis del Proyecto**: [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md)
+- **Guía de Estilo**: [style_guide_examples.md](./templates/style_guide_examples.md)
+- **Plantilla de Dominio**: [domain_definition_template.md](./templates/domain_definition_template.md)
 - **Ejemplos Reales**: `src/webapi/features/pizzas/` y `src/webapi/features/ingredients/`
 
 ---

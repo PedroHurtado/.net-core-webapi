@@ -9,12 +9,12 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ### Para Desarrolladores Junior (Primera vez)
 
 1. **Lee primero** (30 min):
-   - 📖 `analisis-proyecto-fudie.md` - Entiende la arquitectura
-   - 📖 `templates/style_guide_examples.md` - Aprende los patrones
+   - 📖 [Análisis del Proyecto](./analisis-proyecto-fudie.md) - Entiende la arquitectura
+   - 📖 [Guía de Estilo](./templates/style_guide_examples.md) - Aprende los patrones
 
 2. **Sigue el workflow** (1 hora por feature):
-   - 📋 `WORKFLOW.md` - Flujo detallado paso a paso
-   - 🤖 `AI_PROMPTS.md` - Prompts listos para copiar
+   - 📋 [WORKFLOW.md](./WORKFLOW.md) - Flujo detallado paso a paso
+   - 🤖 [AI_PROMPTS.md](./AI_PROMPTS.md) - Prompts listos para copiar
 
 3. **Valida tu trabajo**:
    ```bash
@@ -28,8 +28,8 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ### Para Desarrolladores Experimentados
 
 1. **Consulta rápida**:
-   - 📋 `WORKFLOW.md` - Sección "Flujo Rápido"
-   - 🤖 `AI_PROMPTS.md` - Copia prompts directamente
+   - 📋 [WORKFLOW.md](./WORKFLOW.md) - Sección "Flujo Rápido"
+   - 🤖 [AI_PROMPTS.md](./AI_PROMPTS.md) - Copia prompts directamente
 
 2. **Desarrolla** (30-45 min por feature):
    - Define dominio → Genera código con IA → Valida
@@ -45,6 +45,8 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 ├── AUTOMATION_GUIDE.md                ← Guía detallada con validaciones
 ├── AI_PROMPTS.md                      ← Prompts optimizados para IA
 ├── analisis-proyecto-fudie.md         ← Arquitectura del proyecto
+├── RESUMEN_EJECUTIVO.md               ← Resumen del sistema
+├── CHEAT_SHEET.md                     ← Referencia rápida
 │
 ├── templates/
 │   ├── domain_definition_template.md  ← Plantilla para definir dominio
@@ -61,7 +63,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 
 ### 🎯 Documentos Principales
 
-#### 1. **WORKFLOW.md** - Tu Guía Principal
+#### 1. [WORKFLOW.md](./WORKFLOW.md) - Tu Guía Principal
 **Cuándo usar**: Siempre que desarrolles una nueva feature
 
 **Contenido**:
@@ -71,12 +73,12 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 - ✅ Métricas de éxito
 - ✅ Troubleshooting
 
-**Tiempo de lectura**: 10 minutos
+**Tiempo de lectura**: 10 minutos  
 **Tiempo de aplicación**: 30-60 minutos por feature
 
 ---
 
-#### 2. **AI_PROMPTS.md** - Prompts Listos para Usar
+#### 2. [AI_PROMPTS.md](./AI_PROMPTS.md) - Prompts Listos para Usar
 **Cuándo usar**: En cada paso del desarrollo
 
 **Contenido**:
@@ -99,7 +101,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 
 ---
 
-#### 3. **AUTOMATION_GUIDE.md** - Guía Detallada
+#### 3. [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Guía Detallada
 **Cuándo usar**: Primera vez o cuando tengas dudas
 
 **Contenido**:
@@ -109,12 +111,12 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 - 📋 Checklist completo
 - 📋 Tips para juniors
 
-**Tiempo de lectura**: 30 minutos
+**Tiempo de lectura**: 30 minutos  
 **Referencia**: Consulta cuando tengas dudas específicas
 
 ---
 
-#### 4. **analisis-proyecto-fudie.md** - Arquitectura
+#### 4. [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Arquitectura
 **Cuándo usar**: Al inicio (para entender el proyecto) y como referencia
 
 **Contenido**:
@@ -126,14 +128,25 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 - 🏗️ Patrones y arquitectura
 - 🏗️ Recomendaciones
 
-**Tiempo de lectura**: 45 minutos
+**Tiempo de lectura**: 45 minutos  
 **Importancia**: ⭐⭐⭐⭐⭐ (Crítico para entender el proyecto)
+
+---
+
+#### 5. [CHEAT_SHEET.md](./CHEAT_SHEET.md) - Referencia Rápida
+**Cuándo usar**: Como recordatorio rápido
+
+**Contenido**:
+- ⚡ Checklist de 1 página
+- ⚡ Comandos útiles
+- ⚡ Patrones clave
+- ⚡ Troubleshooting rápido
 
 ---
 
 ### 📝 Templates
 
-#### **domain_definition_template.md**
+#### [domain_definition_template.md](./templates/domain_definition_template.md)
 **Cuándo usar**: Al definir una nueva entidad
 
 **Contenido**:
@@ -149,7 +162,7 @@ Esta carpeta contiene toda la documentación necesaria para desarrollar features
 
 ---
 
-#### **style_guide_examples.md**
+#### [style_guide_examples.md](./templates/style_guide_examples.md)
 **Cuándo usar**: Como referencia al escribir código
 
 **Contenido**:
@@ -260,9 +273,9 @@ Equivalente a la versión PowerShell.
 ### Junior (0-3 meses)
 
 **Documentos clave**:
-1. `analisis-proyecto-fudie.md` - Lee completo
-2. `AUTOMATION_GUIDE.md` - Sigue paso a paso
-3. `AI_PROMPTS.md` - Copia prompts exactamente
+1. [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Lee completo
+2. [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Sigue paso a paso
+3. [AI_PROMPTS.md](./AI_PROMPTS.md) - Copia prompts exactamente
 
 **Tiempo por feature**: 60-90 minutos
 
@@ -273,8 +286,8 @@ Equivalente a la versión PowerShell.
 ### Mid (3-6 meses)
 
 **Documentos clave**:
-1. `WORKFLOW.md` - Flujo detallado
-2. `AI_PROMPTS.md` - Personaliza prompts si es necesario
+1. [WORKFLOW.md](./WORKFLOW.md) - Flujo detallado
+2. [AI_PROMPTS.md](./AI_PROMPTS.md) - Personaliza prompts si es necesario
 
 **Tiempo por feature**: 45-60 minutos
 
@@ -285,8 +298,8 @@ Equivalente a la versión PowerShell.
 ### Senior (6+ meses)
 
 **Documentos clave**:
-1. `WORKFLOW.md` - Flujo rápido
-2. `AI_PROMPTS.md` - Referencia rápida
+1. [WORKFLOW.md](./WORKFLOW.md) - Flujo rápido
+2. [AI_PROMPTS.md](./AI_PROMPTS.md) - Referencia rápida
 
 **Tiempo por feature**: 30-45 minutos
 
@@ -301,19 +314,19 @@ Equivalente a la versión PowerShell.
 **❌ Prompt que genera código incorrecto**
 1. Documenta el problema
 2. Ajusta el prompt
-3. Actualiza `AI_PROMPTS.md`
+3. Actualiza [AI_PROMPTS.md](./AI_PROMPTS.md)
 4. Comparte con el equipo
 
 **❌ Patrón que no funciona**
 1. Documenta el caso
 2. Propón solución
-3. Actualiza `style_guide_examples.md`
-4. Actualiza `analisis-proyecto-fudie.md` si es necesario
+3. Actualiza [style_guide_examples.md](./templates/style_guide_examples.md)
+4. Actualiza [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) si es necesario
 
 **❌ Validación que falta**
 1. Identifica qué falta validar
 2. Agrega al script `validate-feature.ps1` / `.sh`
-3. Actualiza `AUTOMATION_GUIDE.md`
+3. Actualiza [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md)
 
 **✅ Optimización encontrada**
 1. Documenta la mejora
@@ -344,11 +357,11 @@ Equivalente a la versión PowerShell.
 
 ### Objetivos Alcanzados
 
-✅ **Reducir tiempo de desarrollo**: De 4-6 horas a 30-60 minutos por feature
-✅ **Estandarizar código**: Todos siguen los mismos patrones
-✅ **Reducir errores**: Validación automática
-✅ **Facilitar onboarding**: Juniors productivos en días, no semanas
-✅ **Documentación viva**: Se actualiza con el proyecto
+✅ **Reducir tiempo de desarrollo**: De 4-6 horas a 30-60 minutos por feature  
+✅ **Estandarizar código**: Todos siguen los mismos patrones  
+✅ **Reducir errores**: Validación automática  
+✅ **Facilitar onboarding**: Juniors productivos en días, no semanas  
+✅ **Documentación viva**: Se actualiza con el proyecto  
 
 ### Métricas
 
@@ -367,10 +380,10 @@ Equivalente a la versión PowerShell.
 ### Como Desarrollador
 
 1. **Hoy**: Lee este README completo (10 min)
-2. **Hoy**: Lee `analisis-proyecto-fudie.md` (45 min)
-3. **Mañana**: Desarrolla tu primera feature siguiendo `AUTOMATION_GUIDE.md`
+2. **Hoy**: Lee [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) (45 min)
+3. **Mañana**: Desarrolla tu primera feature siguiendo [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md)
 4. **Esta semana**: Desarrolla 2-3 features más
-5. **Próxima semana**: Usa el flujo rápido de `WORKFLOW.md`
+5. **Próxima semana**: Usa el flujo rápido de [WORKFLOW.md](./WORKFLOW.md)
 
 ### Como Equipo
 
@@ -395,16 +408,16 @@ Equivalente a la versión PowerShell.
 
 **Para tu primera feature**:
 
-1. Abre `AUTOMATION_GUIDE.md`
+1. Abre [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md)
 2. Sigue el Paso 0: Preparación
 3. Define tu dominio (Paso 1)
-4. Abre `AI_PROMPTS.md` y empieza con Prompt 1
+4. Abre [AI_PROMPTS.md](./AI_PROMPTS.md) y empieza con Prompt 1
 5. ¡Disfruta viendo cómo la IA genera código de calidad!
 
 **¡Buena suerte! 🚀**
 
 ---
 
-**Última actualización**: 2025-12-01
-**Versión**: 1.0
+**Última actualización**: 2025-12-01  
+**Versión**: 1.0  
 **Mantenido por**: Equipo de Arquitectura

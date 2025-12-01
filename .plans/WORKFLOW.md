@@ -8,11 +8,11 @@
 
 | Documento | Propósito |
 |-----------|-----------|
-| **AUTOMATION_GUIDE.md** | Guía completa paso a paso con validaciones |
-| **AI_PROMPTS.md** | Prompts listos para copiar y pegar |
-| **analisis-proyecto-fudie.md** | Arquitectura y patrones del proyecto |
-| **templates/style_guide_examples.md** | Ejemplos de código y estilo |
-| **templates/domain_definition_template.md** | Plantilla para definir dominio |
+| [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Guía completa paso a paso con validaciones |
+| [AI_PROMPTS.md](./AI_PROMPTS.md) | Prompts listos para copiar y pegar |
+| [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) | Arquitectura y patrones del proyecto |
+| [style_guide_examples.md](./templates/style_guide_examples.md) | Ejemplos de código y estilo |
+| [domain_definition_template.md](./templates/domain_definition_template.md) | Plantilla para definir dominio |
 
 ---
 
@@ -51,7 +51,7 @@ chmod +x validate-feature.sh
 
 ### 4️⃣ Revisar y Optimizar (IA - 5 min)
 ```bash
-# Usa Prompt 9 de AI_PROMPTS.md
+# Usa Prompt 9 de [AI_PROMPTS.md](./AI_PROMPTS.md)
 # Revisa sugerencias y aplica mejoras
 ```
 
@@ -64,8 +64,8 @@ chmod +x validate-feature.sh
 ### Paso 0: Preparación
 
 1. **Lee la documentación**:
-   - `.plans/analisis-proyecto-fudie.md` - Entiende la arquitectura
-   - `.plans/templates/style_guide_examples.md` - Aprende los patrones
+   - [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Entiende la arquitectura
+   - [style_guide_examples.md](./templates/style_guide_examples.md) - Aprende los patrones
 
 2. **Crea estructura de carpetas**:
    ```bash
@@ -83,7 +83,7 @@ chmod +x validate-feature.sh
 **Tiempo estimado**: 15-30 minutos
 
 1. Crea `domain-specs/[Entidad].md`
-2. Usa plantilla: `.plans/templates/domain_definition_template.md`
+2. Usa plantilla: [domain_definition_template.md](./templates/domain_definition_template.md)
 3. Completa:
    - ✅ Propiedades y validaciones
    - ✅ Relaciones
@@ -96,7 +96,7 @@ chmod +x validate-feature.sh
 
 **Tiempo estimado**: 5 minutos
 
-1. Abre `.plans/AI_PROMPTS.md`
+1. Abre [AI_PROMPTS.md](./AI_PROMPTS.md)
 2. Copia **Prompt 1: Generar Dominio + Tests Unitarios**
 3. Reemplaza `[Entidad]` y `[entidad]`
 4. Pega en tu IA (asegúrate de adjuntar archivos con @)
@@ -288,9 +288,9 @@ Antes de considerar la feature completa:
 Si te atascas:
 
 1. **Revisa la documentación**:
-   - `AUTOMATION_GUIDE.md` - Guía detallada
-   - `AI_PROMPTS.md` - Prompts optimizados
-   - `analisis-proyecto-fudie.md` - Arquitectura
+   - [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) - Guía detallada
+   - [AI_PROMPTS.md](./AI_PROMPTS.md) - Prompts optimizados
+   - [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) - Arquitectura
 
 2. **Compara con ejemplos**:
    - `src/webapi/features/pizzas/` - Feature completa
@@ -358,8 +358,8 @@ Si encuentras:
 
 ## 🎉 ¡Listo para Empezar!
 
-1. Lee `AUTOMATION_GUIDE.md` completo (primera vez)
-2. Abre `AI_PROMPTS.md` en una pestaña
+1. Lee [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) completo (primera vez)
+2. Abre [AI_PROMPTS.md](./AI_PROMPTS.md) en una pestaña
 3. Crea tu `domain-specs/[Entidad].md`
 4. ¡Empieza a generar código!
 

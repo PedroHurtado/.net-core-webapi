@@ -23,7 +23,7 @@
 
 ---
 
-## 🤖 Prompts (AI_PROMPTS.md)
+## 🤖 Prompts ([AI_PROMPTS.md](./AI_PROMPTS.md))
 
 ### Prompt 1: Dominio + Tests
 ```
@@ -303,21 +303,21 @@ dotnet test
 
 ### Junior (60-90 min)
 ```
-□ Lee AUTOMATION_GUIDE.md completo
+□ Lee [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) completo
 □ Sigue paso a paso
 □ Valida después de cada paso
 ```
 
 ### Mid (45-60 min)
 ```
-□ Lee WORKFLOW.md detallado
+□ Lee [WORKFLOW.md](./WORKFLOW.md) detallado
 □ Usa prompts directamente
 □ Valida al final
 ```
 
 ### Senior (30-45 min)
 ```
-□ Lee WORKFLOW.md rápido
+□ Lee [WORKFLOW.md](./WORKFLOW.md) rápido
 □ Prompts directos
 □ Validación final
 ```
@@ -328,11 +328,11 @@ dotnet test
 
 | Documento | Cuándo Usar |
 |-----------|-------------|
-| `README.md` | Primera vez |
-| `WORKFLOW.md` | Siempre |
-| `AI_PROMPTS.md` | Cada paso |
-| `AUTOMATION_GUIDE.md` | Dudas |
-| `analisis-proyecto-fudie.md` | Referencia |
+| [README.md](./README.md) | Primera vez |
+| [WORKFLOW.md](./WORKFLOW.md) | Siempre |
+| [AI_PROMPTS.md](./AI_PROMPTS.md) | Cada paso |
+| [AUTOMATION_GUIDE.md](./AUTOMATION_GUIDE.md) | Dudas |
+| [analisis-proyecto-fudie.md](./analisis-proyecto-fudie.md) | Referencia |
 
 ---
 
