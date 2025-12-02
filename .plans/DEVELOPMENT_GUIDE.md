@@ -95,12 +95,12 @@
 3. **Crear la estructura de carpetas**:
    ```bash
    # Reemplaza [entidad] con el nombre de tu entidad en minúsculas (ej: pedidos)
-   mkdir -p src/webapi/features/[entidad]/models
-   mkdir -p src/webapi/features/[entidad]/queries
-   mkdir -p src/webapi/features/[entidad]/commands
-   mkdir -p tests/WebApi.UnitTests/Features/[Entidad]
-   mkdir -p tests/WebApi.IntegrationTests/Features/[Entidad]
-   mkdir -p src/webapi/infrastructure/Configurations
+    mkdir -p src/ScheDule/features/ScheDule/Models
+    mkdir -p src/ScheDule/features/ScheDule/Queries
+    mkdir -p src/ScheDule/features/ScheDule/Commands
+    mkdir -p tests/ScheDule.UnitTests/Features/ScheDule
+    mkdir -p tests/ScheDule.IntegrationTests/Features/ScheDule
+    mkdir -p src/ScheDule/Infrastructure/Configurations
    ```
 
 4. **Crear carpeta de especificaciones de dominio** (si no existe):
