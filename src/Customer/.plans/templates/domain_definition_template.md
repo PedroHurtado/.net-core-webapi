@@ -1,10 +1,16 @@
 Tenemos un Bar
+
+	defaultLanguage: "es"
+    availableLanguages: ["es", "en", "fr"]
+	stripePaymentIntentId
+	
 Entities
 	->Planes
 	->Paises
 	->ScheDule
 	->Menu
 	->Capacity
+	->Currency
 ->Tenemos que facturar(AgregateRoot)
 	Nombre->ValueObject
 	Direccion->ValueObject
@@ -19,6 +25,7 @@ Entities
 /Create(Nombre,Direccion,Telefono,Email,Dni,Plan,Pago)
 	El propietario lo obtenemos de Principal
 	El estado tiene que estar al crear en Pending
+/Update(Nombre,Direccion,Email,Telefono,Dni)
 
 /UpdatePlan(Plan)
 /UpdatePago(Pago)
@@ -28,11 +35,14 @@ Entities
 	El menu está completo?
 	Capacidad está completada?
 		Mesas y Sitios
-/Update(Nombre,Direccion,Email,Telefono,Dni)
 
 /AddMenu
+/UpdateMenu
 /RemoveMenu
+
 /AddSchedule
+/UpdateSchedule
 /RemoveSchedule
 /AddCapacity
+/UpdateCapacity
 /RemoveCapacity
