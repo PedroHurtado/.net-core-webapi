@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Fudie;
-using Schedule.Features.Schedule.models;
+using Schedule.Features.Schedule.Models;
 
 namespace ScheDule.UnitTests;
 
@@ -15,7 +15,7 @@ public class ScheduleTests
     public void Create_WithValidRestaurantId_ShouldReturnSuccess()
     {
         // Act
-        var result = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId);
+        var result = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -30,7 +30,7 @@ public class ScheduleTests
     public void Create_WithEmptyRestaurantId_ShouldReturnFailure()
     {
         // Act
-        var result = Schedule.Features.Schedule.models.Schedule.Create(_testId, Guid.Empty);
+        var result = Schedule.Features.Schedule.Models.Schedule.Create(_testId, Guid.Empty);
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -43,7 +43,7 @@ public class ScheduleTests
     public void Create_ShouldInitializeAllDaysAsClosed()
     {
         // Act
-        var result = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId);
+        var result = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -63,7 +63,7 @@ public class ScheduleTests
     public void SetWeeklyHours_WithValidTimeSlot_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
         var slots = new List<TimeSlot> { timeSlot };
 
@@ -83,7 +83,7 @@ public class ScheduleTests
     public void SetWeeklyHours_WithInvalidTimeSlot_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(23, 0), new TimeOnly(13, 0));
         var slots = new List<TimeSlot> { timeSlot };
 
@@ -101,7 +101,7 @@ public class ScheduleTests
     public void SetWeeklyHours_WithMultipleSlotsNoOverlap_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var slot1 = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(16, 0));
         var slot2 = new TimeSlot(new TimeOnly(20, 0), new TimeOnly(23, 0));
         var slots = new List<TimeSlot> { slot1, slot2 };
@@ -119,7 +119,7 @@ public class ScheduleTests
     public void SetWeeklyHours_WithOverlappingSlots_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var slot1 = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(16, 0));
         var slot2 = new TimeSlot(new TimeOnly(15, 0), new TimeOnly(18, 0));
         var slots = new List<TimeSlot> { slot1, slot2 };
@@ -142,7 +142,7 @@ public class ScheduleTests
     public void MarkDayAsClosed_ShouldSetDayAsClosedWithNoSlots()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
         schedule.SetWeeklyHours(DayOfWeek.Sunday, new List<TimeSlot> { timeSlot });
 
@@ -164,7 +164,7 @@ public class ScheduleTests
     public void AddSpecialDate_WithValidClosedDate_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
 
         // Act
@@ -184,7 +184,7 @@ public class ScheduleTests
     public void AddSpecialDate_WithValidOpenDate_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 2, 14);
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 59));
         var slots = new List<TimeSlot> { timeSlot };
@@ -205,7 +205,7 @@ public class ScheduleTests
     public void AddSpecialDate_WithDuplicateDate_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
         schedule.AddSpecialDate(date, true, "Navidad", null);
 
@@ -223,7 +223,7 @@ public class ScheduleTests
     public void AddSpecialDate_ClosedWithSlots_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(16, 0));
         var slots = new List<TimeSlot> { timeSlot };
@@ -242,7 +242,7 @@ public class ScheduleTests
     public void AddSpecialDate_OpenWithoutSlots_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 2, 14);
 
         // Act
@@ -263,7 +263,7 @@ public class ScheduleTests
     public void RemoveSpecialDate_WithExistingDate_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
         schedule.AddSpecialDate(date, true, "Navidad", null);
 
@@ -279,7 +279,7 @@ public class ScheduleTests
     public void RemoveSpecialDate_WithNonExistingDate_ShouldReturnFailure()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
 
         // Act
@@ -300,7 +300,7 @@ public class ScheduleTests
     public void UpdateSpecialDate_WithExistingDate_ShouldReturnSuccess()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
         schedule.AddSpecialDate(date, true, "Navidad", null);
 
@@ -326,7 +326,7 @@ public class ScheduleTests
     public void IsOpen_WithinWeeklyHours_ShouldReturnTrue()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
         schedule.SetWeeklyHours(DayOfWeek.Tuesday, new List<TimeSlot> { timeSlot });
 
@@ -343,7 +343,7 @@ public class ScheduleTests
     public void IsOpen_OutsideWeeklyHours_ShouldReturnFalse()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
         schedule.SetWeeklyHours(DayOfWeek.Tuesday, new List<TimeSlot> { timeSlot });
 
@@ -360,7 +360,7 @@ public class ScheduleTests
     public void IsOpen_OnClosedDay_ShouldReturnFalse()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         // Sunday está cerrado por defecto
 
         var testDate = new DateTime(2025, 4, 20, 15, 0, 0); // Sunday, 15:00
@@ -376,7 +376,7 @@ public class ScheduleTests
     public void IsOpen_WithSpecialDateOpen_ShouldUseSpecialDate()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
 
         // Configurar viernes normal: 13:00-23:00
         var weeklySlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
@@ -400,7 +400,7 @@ public class ScheduleTests
     public void IsOpen_WithSpecialDateClosed_ShouldReturnFalse()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
 
         // Configurar lunes normal: 13:00-23:00
         var weeklySlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
@@ -423,7 +423,7 @@ public class ScheduleTests
     public void IsOpen_BetweenMultipleSlots_ShouldReturnFalse()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var slot1 = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(16, 0));
         var slot2 = new TimeSlot(new TimeOnly(20, 0), new TimeOnly(23, 0));
         schedule.SetWeeklyHours(DayOfWeek.Friday, new List<TimeSlot> { slot1, slot2 });
@@ -445,7 +445,7 @@ public class ScheduleTests
     public void GetHoursFor_WithNormalDay_ShouldReturnWeeklyHours()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
         schedule.SetWeeklyHours(DayOfWeek.Tuesday, new List<TimeSlot> { timeSlot });
 
@@ -464,7 +464,7 @@ public class ScheduleTests
     public void GetHoursFor_WithClosedDay_ShouldReturnEmptyList()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         // Sunday está cerrado por defecto
 
         var date = new DateOnly(2025, 4, 20); // Sunday
@@ -480,7 +480,7 @@ public class ScheduleTests
     public void GetHoursFor_WithSpecialDate_ShouldReturnSpecialDateHours()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
 
         // Configurar viernes normal
         var weeklySlot = new TimeSlot(new TimeOnly(13, 0), new TimeOnly(23, 0));
@@ -508,7 +508,7 @@ public class ScheduleTests
     public void IsSpecialDate_WithExistingSpecialDate_ShouldReturnTrue()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
         schedule.AddSpecialDate(date, true, "Navidad", null);
 
@@ -523,7 +523,7 @@ public class ScheduleTests
     public void IsSpecialDate_WithNonExistingSpecialDate_ShouldReturnFalse()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var date = new DateOnly(2025, 12, 25);
 
         // Act
@@ -541,7 +541,7 @@ public class ScheduleTests
     public void Schedule_With24HourDay_ShouldWork()
     {
         // Arrange
-        var schedule = Schedule.Features.Schedule.models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
+        var schedule = Schedule.Features.Schedule.Models.Schedule.Create(_testId, _testRestaurantId).ValueOrThrow();
         var timeSlot = new TimeSlot(new TimeOnly(0, 0), new TimeOnly(23, 59));
         schedule.SetWeeklyHours(DayOfWeek.Friday, new List<TimeSlot> { timeSlot });
 

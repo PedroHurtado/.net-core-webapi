@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Políticas de Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: #c41e3a;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-tabs {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .nav-tabs a:hover {
+            background: #f0f0f0;
+        }
+
+        .nav-tabs a.active {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #c41e3a;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #c41e3a;
+        }
+
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-with-unit input {
+            max-width: 200px;
+        }
+
+        .help-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: #f0f0f0;
+            margin: 40px 0;
+        }
+
+        .duration-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .duration-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #a01729;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #c41e3a;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs ul {
+                flex-direction: column;
+            }
+
+            .input-with-unit {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .input-with-unit input {
+                max-width: 100%;
+            }
+
+            .duration-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>⚙️ Políticas de Reserva</h1>
+    </div>
+
+    <div class="container">
+        <a href="admin-dashboard.html" class="back-link">← Volver al Dashboard</a>
+
+        <div class="nav-tabs">
+            <ul>
+                <li><a href="admin-dashboard.html">Dashboard</a></li>
+                <li><a href="admin-schedule.html">Horarios del Restaurante</a></li>
+                <li><a href="admin-services.html">Servicios de Reserva</a></li>
+                <li><a href="admin-policy.html" class="active">Políticas de Reserva</a></li>
+                <li><a href="#">Reservas</a></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🕐 Tiempos y Antelación</h2>
+
+            <div class="form-group">
+                <label>Antelación Mínima</label>
+                <div class="input-with-unit">
+                    <input type="number" value="2" min="0">
+                    <span>horas</span>
+                </div>
+                <span class="help-text">ℹ️ Los clientes deben reservar con al menos este tiempo de adelanto</span>
+            </div>
+
+            <div class="form-group">
+                <label>Antelación Máxima</label>
+                <div class="input-with-unit">
+                    <input type="number" value="30" min="1">
+                    <span>días</span>
+                </div>
+                <span class="help-text">ℹ️ Los clientes pueden reservar hasta este tiempo adelante</span>
+            </div>
+
+            <div class="form-group">
+                <label>Intervalo de Slots</label>
+                <div class="input-with-unit">
+                    <input type="number" value="15" min="5" step="5">
+                    <span>minutos</span>
+                </div>
+                <span class="help-text">ℹ️ Reservas cada: 13:00, 13:15, 13:30, 13:45...</span>
+            </div>
+
+            <div class="form-group">
+                <label>Buffer entre Reservas</label>
+                <div class="input-with-unit">
+                    <input type="number" value="15" min="0" step="5">
+                    <span>minutos</span>
+                </div>
+                <span class="help-text">ℹ️ Tiempo para limpiar/preparar mesa entre clientes</span>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h2>👥 Tamaño de Grupos</h2>
+
+            <div class="form-group">
+                <label>Mínimo de Personas</label>
+                <div class="input-with-unit">
+                    <input type="number" value="1" min="1">
+                    <span>persona(s)</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Máximo de Personas</label>
+                <div class="input-with-unit">
+                    <input type="number" value="8" min="1">
+                    <span>personas</span>
+                </div>
+                <span class="help-text">ℹ️ Para grupos más grandes, mostrar mensaje: "Contacte directamente al
+                    restaurante"</span>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h2>⏱️ Duraciones Estándar por Servicio</h2>
+
+            <div class="duration-grid">
+                <div class="duration-item">
+                    <span><strong>🍳 Desayuno</strong></span>
+                    <div class="input-with-unit">
+                        <input type="time" value="01:00">
+                    </div>
+                </div>
+
+                <div class="duration-item">
+                    <span><strong>🍝 Comida</strong></span>
+                    <div class="input-with-unit">
+                        <input type="time" value="01:30">
+                    </div>
+                </div>
+
+                <div class="duration-item">
+                    <span><strong>🍷 Cena</strong></span>
+                    <div class="input-with-unit">
+                        <input type="time" value="02:00">
+                    </div>
+                </div>
+            </div>
+
+            <span class="help-text" style="margin-top: 15px; display: block;">ℹ️ Tiempo estimado que el cliente ocupará
+                la mesa</span>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary">❌ Cancelar</button>
+                <button class="btn btn-primary">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

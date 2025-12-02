@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #c41e3a;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #c41e3a;
+            width: 100%;
+        }
+
+        .step-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .summary-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            display: flex;
+            margin: 12px 0;
+            gap: 10px;
+        }
+
+        .summary-item strong {
+            min-width: 150px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #ddd;
+            margin: 20px 0;
+        }
+
+        .important-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .important-box h3 {
+            margin-bottom: 15px;
+            color: #856404;
+        }
+
+        .important-box ul {
+            margin-left: 20px;
+        }
+
+        .important-box li {
+            margin: 8px 0;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #c41e3a;
+            color: white;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background: #a01729;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 768px) {
+            .summary-item {
+                flex-direction: column;
+            }
+
+            .summary-item strong {
+                min-width: auto;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>✅ Confirmar Reserva</h1>
+            <div class="step-info">
+                Paso 4 de 4: Revisa y confirma tu reserva
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <h2>📋 Resumen de tu Reserva</h2>
+
+            <div class="summary-section">
+                <div class="summary-item">
+                    <strong>🏪 Restaurante:</strong>
+                    <span>LA BELLA ITALIA</span>
+                </div>
+                <div class="summary-item">
+                    <strong>📅 Fecha:</strong>
+                    <span>Viernes 05 Diciembre 2025</span>
+                </div>
+                <div class="summary-item">
+                    <strong>🕐 Hora:</strong>
+                    <span>21:15</span>
+                </div>
+                <div class="summary-item">
+                    <strong>🍽️ Servicio:</strong>
+                    <span>CENA</span>
+                </div>
+                <div class="summary-item">
+                    <strong>👥 Personas:</strong>
+                    <span>4 personas</span>
+                </div>
+                <div class="summary-item">
+                    <strong>⏱️ Duración:</strong>
+                    <span>Aproximadamente 2 horas (hasta 23:15)</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="summary-item">
+                    <strong>👤 Nombre:</strong>
+                    <span>Juan Pérez</span>
+                </div>
+                <div class="summary-item">
+                    <strong>📧 Email:</strong>
+                    <span>juan.perez@email.com</span>
+                </div>
+                <div class="summary-item">
+                    <strong>📞 Teléfono:</strong>
+                    <span>+34 612 345 678</span>
+                </div>
+                <div class="summary-item">
+                    <strong>💬 Comentarios:</strong>
+                    <span>Mesa cerca de la ventana si es posible</span>
+                </div>
+            </div>
+
+            <div class="important-box">
+                <h3>ℹ️ Importante</h3>
+                <ul>
+                    <li>Recibirás un email de confirmación</li>
+                    <li>Puedes cancelar gratis hasta 2 horas antes</li>
+                    <li>Si llegas más de 15 minutos tarde, podemos dar tu mesa</li>
+                    <li>Por favor avísanos de cualquier alergia alimentaria</li>
+                </ul>
+            </div>
+
+            <div class="button-group">
+                <a href="reserva-step3.html" class="btn btn-secondary">← Atrás</a>
+                <a href="reserva-success.html" class="btn btn-primary">✅ CONFIRMAR RESERVA</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

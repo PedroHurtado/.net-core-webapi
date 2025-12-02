@@ -2,7 +2,7 @@ using Fudie.Domain;
 using Fudie;
 using FluentValidation;
 
-namespace Schedule.Features.Schedule.models;
+namespace Schedule.Features.Schedule.Models;
 
 public class Schedule : Entity
 {

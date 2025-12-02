@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Servicios de Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: #c41e3a;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-tabs {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .nav-tabs a:hover {
+            background: #f0f0f0;
+        }
+
+        .nav-tabs a.active {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .service-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .service-card.active {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .service-card.inactive {
+            border-color: #dc3545;
+            background: #fff5f5;
+            opacity: 0.85;
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .service-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .service-icon {
+            font-size: 2rem;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info-row {
+            display: flex;
+            margin: 10px 0;
+            gap: 10px;
+        }
+
+        .info-row strong {
+            min-width: 180px;
+        }
+
+        .info-row input,
+        .info-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .schedule-list {
+            margin: 20px 0;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #a01729;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #c41e3a;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs ul {
+                flex-direction: column;
+            }
+
+            .service-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .info-row {
+                flex-direction: column;
+            }
+
+            .info-row strong {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🍽️ Servicios de Reserva</h1>
+    </div>
+
+    <div class="container">
+        <a href="admin-dashboard.html" class="back-link">← Volver al Dashboard</a>
+
+        <div class="nav-tabs">
+            <ul>
+                <li><a href="admin-dashboard.html">Dashboard</a></li>
+                <li><a href="admin-schedule.html">Horarios del Restaurante</a></li>
+                <li><a href="admin-services.html" class="active">Servicios de Reserva</a></li>
+                <li><a href="admin-policy.html">Políticas de Reserva</a></li>
+                <li><a href="#">Reservas</a></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="service-card inactive">
+                <div class="service-header">
+                    <div class="service-title">
+                        <span class="service-icon">🍳</span>
+                        <h2>DESAYUNO</h2>
+                    </div>
+                    <span class="status-badge inactive">❌ INACTIVO</span>
+                </div>
+
+                <div class="info-row">
+                    <strong>Capacidad Máxima:</strong>
+                    <input type="number" value="20" min="1"> personas
+                </div>
+
+                <div class="info-row">
+                    <strong>Duración Estándar:</strong>
+                    <input type="time" value="01:00"> horas
+                </div>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <span>Lunes: ❌ No disponible</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Resto de días: ❌ No disponible</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-success">✅ Activar Servicio</button>
+                    <button class="btn btn-secondary">✏️ Configurar Horarios</button>
+                </div>
+            </div>
+
+            <div class="service-card active">
+                <div class="service-header">
+                    <div class="service-title">
+                        <span class="service-icon">🍝</span>
+                        <h2>COMIDA</h2>
+                    </div>
+                    <span class="status-badge active">✅ ACTIVO</span>
+                </div>
+
+                <div class="info-row">
+                    <strong>Capacidad Máxima:</strong>
+                    <input type="number" value="50" min="1"> personas
+                </div>
+
+                <div class="info-row">
+                    <strong>Duración Estándar:</strong>
+                    <input type="time" value="01:30"> horas
+                </div>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <span>Lunes-Viernes: ✅ 13:00 - 16:00 (Cap: 50)</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Sábado: ✅ 12:00 - 17:00 (Cap: 60) ⬆️</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Domingo: ✅ 12:00 - 17:00 (Cap: 60) ⬆️</span>
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin: 15px 0;">
+                    <strong>Fechas Especiales:</strong> 2 configuradas<br>
+                    • 31 Dic: 12:00-16:00 (Cap: 70) 🎉<br>
+                    • 14 Feb: 12:00-17:00 (Cap: 60) 💕
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">✏️ Editar</button>
+                    <button class="btn btn-danger">🗑️ Desactivar</button>
+                    <button class="btn btn-primary">📅 Fechas Especiales</button>
+                </div>
+            </div>
+
+            <div class="service-card active">
+                <div class="service-header">
+                    <div class="service-title">
+                        <span class="service-icon">🍷</span>
+                        <h2>CENA</h2>
+                    </div>
+                    <span class="status-badge active">✅ ACTIVO</span>
+                </div>
+
+                <div class="info-row">
+                    <strong>Capacidad Máxima:</strong>
+                    <input type="number" value="50" min="1"> personas
+                </div>
+
+                <div class="info-row">
+                    <strong>Duración Estándar:</strong>
+                    <input type="time" value="02:00"> horas
+                </div>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
+                <div class="schedule-list">
+                    <div class="schedule-item">
+                        <span>Lunes-Jueves: ✅ 20:00 - 23:00 (Cap: 50)</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Viernes: ✅ 20:00 - 00:00 (Cap: 60) ⬆️</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Sábado: ✅ 20:00 - 00:00 (Cap: 60) ⬆️</span>
+                    </div>
+                    <div class="schedule-item">
+                        <span>Domingo: ❌ No disponible</span>
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin: 15px 0;">
+                    <strong>Fechas Especiales:</strong> 2 configuradas<br>
+                    • 31 Dic: 19:00-02:00 (Cap: 80) 🎉<br>
+                    • 14 Feb: 19:00-02:00 (Cap: 65) 💕
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">✏️ Editar</button>
+                    <button class="btn btn-danger">🗑️ Desactivar</button>
+                    <button class="btn btn-primary">📅 Fechas Especiales</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
