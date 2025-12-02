@@ -11,11 +11,11 @@ public class Schedule : Entity
     public IReadOnlyDictionary<DayOfWeek, DaySchedule> WeeklyHours =>
         _weeklyHours.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-    protected Dictionary<DayOfWeek, DaySchedule> _weeklyHours = new();
+    protected Dictionary<DayOfWeek, DaySchedule> _weeklyHours = [];
 
     public IReadOnlyCollection<SpecialDate> SpecialDates => _specialDates.AsReadOnly();
 
-    protected List<SpecialDate> _specialDates = new();
+    protected List<SpecialDate> _specialDates = [];
 
     protected Schedule(Guid id, Guid restaurantId) : base(id)
     {
@@ -24,7 +24,7 @@ public class Schedule : Entity
         // Inicializar todos los días de la semana como cerrados por defecto
         foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
         {
-            _weeklyHours[day] = new DaySchedule(day, true, new List<TimeSlot>());
+            _weeklyHours[day] = new DaySchedule(day, true, []);
         }
     }
 
@@ -63,7 +63,7 @@ public class Schedule : Entity
 
     public Result MarkDayAsClosed(DayOfWeek day)
     {
-        _weeklyHours[day] = new DaySchedule(day, true, new List<TimeSlot>());
+        _weeklyHours[day] = new DaySchedule(day, true, []);
         return Result.Success();
     }
 
@@ -76,7 +76,7 @@ public class Schedule : Entity
         }
 
         // Si está cerrado, no debe tener slots
-        if (isClosed && slots != null && slots.Any())
+        if (isClosed && slots != null && slots.Count != 0)
         {
             return Result.Failure("Un día cerrado no puede tener horarios", nameof(slots));
         }
@@ -170,14 +170,14 @@ public class Schedule : Entity
 
         if (specialDate != null)
         {
-            return specialDate.IsClosed ? new List<TimeSlot>() : specialDate.TimeSlots.ToList();
+            return specialDate.IsClosed ? [] : [.. specialDate.TimeSlots];
         }
 
         // Usar horario semanal
         var dayOfWeek = date.DayOfWeek;
         var daySchedule = _weeklyHours[dayOfWeek];
 
-        return daySchedule.IsClosed ? new List<TimeSlot>() : daySchedule.TimeSlots.ToList();
+        return daySchedule.IsClosed ? [] : daySchedule.TimeSlots.ToList();
     }
 
     public bool IsSpecialDate(DateOnly date)
