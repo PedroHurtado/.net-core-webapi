@@ -4,307 +4,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservar - Paso 1</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            color: #c41e3a;
-            margin-bottom: 10px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #c41e3a;
-            width: 25%;
-            transition: width 0.3s;
-        }
-
-        .step-info {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-
-        .calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin: 20px 0;
-        }
-
-        .calendar-header {
-            text-align: center;
-            font-weight: bold;
-            padding: 10px;
-            background: #f9f9f9;
-        }
-
-        .calendar-day {
-            text-align: center;
-            padding: 15px 10px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .calendar-day:hover {
-            background: #f0f0f0;
-        }
-
-        .calendar-day.disabled {
-            background: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-        }
-
-        .calendar-day.selected {
-            background: #c41e3a;
-            color: white;
-            border-color: #c41e3a;
-        }
-
-        .service-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .service-card {
-            border: 2px solid #ddd;
-            padding: 30px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .service-card:hover {
-            border-color: #c41e3a;
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .service-card.selected {
-            border-color: #c41e3a;
-            background: #fff5f5;
-        }
-
-        .service-icon {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        .service-time {
-            color: #666;
-            margin: 10px 0;
-        }
-
-        .service-status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
-        .service-status.available {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #a01729;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .selected-info {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .calendar {
-                gap: 2px;
-            }
-
-            .calendar-day {
-                padding: 10px 5px;
-                font-size: 0.9rem;
-            }
-
-            .service-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
+    <title>Reservar | Fudie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                }
             }
         }
-    </style>
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <div class="card">
-            <h1>📅 Hacer una Reserva</h1>
-            <div class="step-info">
-                Paso 1 de 4: Selecciona fecha y servicio
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
+<body class="bg-light font-sans text-gray-900 min-h-screen flex flex-col">
 
-            <h2>📅 ¿Qué día quieres venir?</h2>
-            <p style="text-align: center; margin-bottom: 20px;">Diciembre 2025</p>
+    <!-- Navbar Simple -->
+    <nav class="bg-white border-b border-gray-100 py-4">
+        <div class="max-w-3xl mx-auto px-4 flex justify-between items-center">
+            <a href="public.html" class="font-bold text-xl tracking-tight">fudie<span
+                    class="text-primary">.demo</span></a>
+            <div class="text-sm text-gray-500">Paso 1 de 4</div>
+        </div>
+    </nav>
 
-            <div class="calendar">
-                <div class="calendar-header">L</div>
-                <div class="calendar-header">M</div>
-                <div class="calendar-header">X</div>
-                <div class="calendar-header">J</div>
-                <div class="calendar-header">V</div>
-                <div class="calendar-header">S</div>
-                <div class="calendar-header">D</div>
-
-                <div class="calendar-day">1</div>
-                <div class="calendar-day">2</div>
-                <div class="calendar-day">3</div>
-                <div class="calendar-day">4</div>
-                <div class="calendar-day selected">5</div>
-                <div class="calendar-day">6</div>
-                <div class="calendar-day">7</div>
-                <div class="calendar-day">8</div>
-                <div class="calendar-day">9</div>
-                <div class="calendar-day">10</div>
-                <div class="calendar-day">11</div>
-                <div class="calendar-day">12</div>
-                <div class="calendar-day">13</div>
-                <div class="calendar-day">14</div>
-                <div class="calendar-day">15</div>
-                <div class="calendar-day">16</div>
-                <div class="calendar-day">17</div>
-                <div class="calendar-day">18</div>
-                <div class="calendar-day">19</div>
-                <div class="calendar-day">20</div>
-                <div class="calendar-day">21</div>
-                <div class="calendar-day">22</div>
-                <div class="calendar-day">23</div>
-                <div class="calendar-day disabled">24</div>
-                <div class="calendar-day disabled">25</div>
-                <div class="calendar-day">26</div>
-                <div class="calendar-day">27</div>
-                <div class="calendar-day">28</div>
-                <div class="calendar-day">29</div>
-                <div class="calendar-day">30</div>
-                <div class="calendar-day">31</div>
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-3xl bg-white rounded-3xl shadow-soft overflow-hidden">
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-100 h-1.5">
+                <div class="bg-primary h-1.5 rounded-r-full" style="width: 25%"></div>
             </div>
 
-            <div class="selected-info">
-                Fecha seleccionada: <strong>Viernes 05 Diciembre 2025</strong>
-            </div>
-
-            <h2>🍽️ ¿Para qué servicio?</h2>
-
-            <div class="service-grid">
-                <div class="service-card">
-                    <div class="service-icon">🍝</div>
-                    <h3>COMIDA</h3>
-                    <div class="service-time">13:00 - 16:00</div>
-                    <span class="service-status available">✅ Disponible</span>
+            <div class="p-8 md:p-12">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-bold mb-2">¿Cuándo nos visitas?</h1>
+                    <p class="text-gray-500">Selecciona el día y el servicio para tu reserva.</p>
                 </div>
 
-                <div class="service-card selected">
-                    <div class="service-icon">🍷</div>
-                    <h3>CENA</h3>
-                    <div class="service-time">20:00 - 00:00</div>
-                    <span class="service-status available">✅ Disponible</span>
-                </div>
-            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Calendar Section -->
+                    <div>
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg">Diciembre 2025</h3>
+                            <div class="flex gap-2">
+                                <button
+                                    class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors"><i
+                                        class="fas fa-chevron-left text-xs"></i></button>
+                                <button
+                                    class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors"><i
+                                        class="fas fa-chevron-right text-xs"></i></button>
+                            </div>
+                        </div>
 
-            <div class="button-group">
-                <a href="index.html" class="btn btn-secondary">← Atrás</a>
-                <a href="reserva-step2.html" class="btn btn-primary">Siguiente →</a>
+                        <div class="grid grid-cols-7 gap-2 text-center mb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase">L</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">M</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">X</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">J</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">V</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">S</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">D</span>
+                        </div>
+
+                        <div class="grid grid-cols-7 gap-2">
+                            <!-- Empty days -->
+                            <span></span><span></span><span></span>
+
+                            <!-- Days -->
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-400">1</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-400">2</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-400">3</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-400">4</button>
+
+                            <!-- Selected Day -->
+                            <button
+                                class="aspect-square rounded-xl bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center text-sm font-bold transform scale-110">5</button>
+
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">6</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">7</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">8</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">9</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">10</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">11</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">12</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">13</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">14</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">15</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">16</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">17</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">18</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">19</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">20</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">21</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">22</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">23</button>
+
+                            <!-- Disabled Days -->
+                            <button
+                                class="aspect-square rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed flex items-center justify-center text-sm font-medium">24</button>
+                            <button
+                                class="aspect-square rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed flex items-center justify-center text-sm font-medium">25</button>
+
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">26</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">27</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">28</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">29</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">30</button>
+                            <button
+                                class="aspect-square rounded-xl hover:bg-gray-50 flex items-center justify-center text-sm font-medium text-gray-700">31</button>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-blue-50 rounded-2xl flex items-center gap-3 text-blue-800 text-sm">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span class="font-medium">Viernes, 05 Diciembre 2025</span>
+                        </div>
+                    </div>
+
+                    <!-- Services Section -->
+                    <div class="flex flex-col justify-center">
+                        <h3 class="font-bold text-lg mb-6">Servicios Disponibles</h3>
+
+                        <div class="space-y-4">
+                            <!-- Service Option 1 -->
+                            <label class="relative block cursor-pointer group">
+                                <input type="radio" name="service" class="peer sr-only">
+                                <div
+                                    class="p-5 rounded-2xl border-2 border-gray-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all hover:border-gray-200">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                                                <i class="fas fa-utensils"></i>
+                                            </div>
+                                            <span class="font-bold text-gray-900">Comida</span>
+                                        </div>
+                                        <div
+                                            class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                                            <i
+                                                class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 pl-[52px]">13:00 - 16:00</p>
+                                </div>
+                            </label>
+
+                            <!-- Service Option 2 (Selected) -->
+                            <label class="relative block cursor-pointer group">
+                                <input type="radio" name="service" class="peer sr-only" checked>
+                                <div
+                                    class="p-5 rounded-2xl border-2 border-gray-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all hover:border-gray-200 shadow-sm ring-1 ring-primary/5">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
+                                                <i class="fas fa-wine-glass-alt"></i>
+                                            </div>
+                                            <span class="font-bold text-gray-900">Cena</span>
+                                        </div>
+                                        <div
+                                            class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
+                                            <i
+                                                class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 pl-[52px]">20:00 - 00:00</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="mt-10 flex gap-4">
+                            <a href="public.html"
+                                class="flex-1 py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-colors text-center">
+                                Cancelar
+                            </a>
+                            <a href="reserva-step2.html"
+                                class="flex-[2] bg-primary hover:bg-primaryDark text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-glow transition-all text-center flex items-center justify-center gap-2">
+                                Continuar <i class="fas fa-arrow-right text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </body>
 
 </html>

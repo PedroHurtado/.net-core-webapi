@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fudie | Restaurante Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
+                        'glow': '0 0 20px rgba(255, 79, 90, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-out;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="font-sans text-gray-900 bg-light antialiased selection:bg-primary selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='public.html'">
+                    <span class="font-bold text-2xl tracking-tight text-gray-900">fudie<span
+                            class="text-primary">.demo</span></span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#horarios"
+                        class="text-gray-600 hover:text-primary font-medium transition-colors">Horarios</a>
+                    <a href="#servicios"
+                        class="text-gray-600 hover:text-primary font-medium transition-colors">Servicios</a>
+                    <a href="#contacto"
+                        class="text-gray-600 hover:text-primary font-medium transition-colors">Contacto</a>
+                    <a href="reserva-step1.html"
+                        class="bg-primary hover:bg-primaryDark text-white px-6 py-2.5 rounded-full font-semibold transition-all shadow-lg hover:shadow-glow transform hover:-translate-y-0.5">
+                        Reservar Mesa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-tight mb-6 fade-up">
+                La Bella Italia <br> <span class="text-primary">Experience</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto fade-up" style="transition-delay: 100ms;">
+                Descubre la auténtica cocina italiana con la tecnología de reservas más avanzada. Sin esperas, sin
+                complicaciones.
+            </p>
+            <div class="flex justify-center gap-4 fade-up" style="transition-delay: 200ms;">
+                <a href="reserva-step1.html"
+                    class="bg-primary hover:bg-primaryDark text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl hover:shadow-glow transform hover:-translate-y-1 flex items-center gap-2">
+                    <i class="fas fa-calendar-alt"></i> Reservar Ahora
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Grid -->
+    <section id="horarios" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- Horarios Card -->
+                <div class="bg-light rounded-3xl p-8 shadow-soft fade-up">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div
+                            class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-xl">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Horarios de Apertura</h2>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 mb-6 border border-gray-100 text-center">
+                        <p class="text-sm text-gray-500 font-bold uppercase tracking-wider mb-2">Estado Actual</p>
+                        <div
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold text-sm">
+                            <i class="fas fa-circle text-[10px]"></i> ABIERTO AHORA
+                        </div>
+                        <p class="text-gray-400 text-sm mt-2">Cierra a las 23:00</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-100">
+                            <span class="font-bold text-gray-700">Lunes - Viernes</span>
+                            <span class="text-gray-500">13:00 - 16:00, 20:00 - 23:00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-100">
+                            <span class="font-bold text-gray-700">Sábado</span>
+                            <span class="text-gray-500">12:00 - 00:00</span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center p-4 bg-gray-50 rounded-xl border border-gray-100 opacity-75">
+                            <span class="font-bold text-gray-500">Domingo</span>
+                            <span class="text-red-500 font-bold text-sm">CERRADO</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-100 flex gap-3">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-yellow-800 text-sm">Fechas Especiales</h4>
+                            <p class="text-yellow-700 text-sm mt-1">24-25 Dic: Cerrado | 31 Dic: 12:00 - 02:00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Servicios Card -->
+                <div id="servicios" class="bg-light rounded-3xl p-8 shadow-soft fade-up"
+                    style="transition-delay: 100ms;">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div
+                            class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-xl">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Servicios</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div
+                            class="group bg-white p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-all cursor-default">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-lg text-gray-900">🍝 Comida</h3>
+                                <span
+                                    class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">Disponible</span>
+                            </div>
+                            <p class="text-gray-500 text-sm">Disfruta de nuestro menú del día o carta.</p>
+                            <div class="mt-3 text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                L-V: 13:00-16:00 | S: 12:00-17:00
+                            </div>
+                        </div>
+
+                        <div
+                            class="group bg-white p-6 rounded-2xl border border-gray-100 hover:shadow-md transition-all cursor-default">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-lg text-gray-900">🍷 Cena</h3>
+                                <span
+                                    class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">Disponible</span>
+                            </div>
+                            <p class="text-gray-500 text-sm">Ambiente relajado y nuestra mejor selección de vinos.</p>
+                            <div class="mt-3 text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                L-J: 20:00-23:00 | V-S: 20:00-00:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <a href="reserva-step1.html"
+                            class="inline-flex items-center justify-center w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-colors">
+                            Reservar Mesa
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto -->
+    <section id="contacto" class="py-16 bg-white border-t border-gray-100">
+        <div class="max-w-3xl mx-auto px-4 text-center fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Encuéntranos</h2>
+            <div class="bg-light p-8 rounded-3xl shadow-sm inline-block w-full">
+                <div class="flex flex-col md:flex-row justify-center gap-8 md:gap-16">
+                    <div class="text-center">
+                        <div
+                            class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3 shadow-sm">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <p class="font-bold text-gray-900">Calle Mayor 123</p>
+                        <p class="text-gray-500 text-sm">28001 Madrid</p>
+                    </div>
+                    <div class="text-center">
+                        <div
+                            class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3 shadow-sm">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <p class="font-bold text-gray-900">+34 912 345 678</p>
+                        <p class="text-gray-500 text-sm">Reservas telefónicas</p>
+                    </div>
+                    <div class="text-center">
+                        <div
+                            class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3 shadow-sm">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <p class="font-bold text-gray-900">info@labellaitalia.es</p>
+                        <p class="text-gray-500 text-sm">Consultas generales</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-8 bg-white text-center border-t border-gray-100">
+        <p class="text-gray-400 text-sm">&copy; 2025 Fudie App. Demo Restaurant.</p>
+        <a href="admin.html"
+            class="inline-block mt-4 text-xs font-bold text-gray-300 hover:text-primary transition-colors">
+            <i class="fas fa-lock"></i> Admin Access
+        </a>
+    </footer>
+
+    <script>
+        // Simple Intersection Observer for fade-up animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>

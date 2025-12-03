@@ -4,326 +4,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Fechas Especiales</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        .header {
-            background: #c41e3a;
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .nav-tabs {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-tabs ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .nav-tabs a {
-            text-decoration: none;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            transition: all 0.3s;
-            display: block;
-        }
-
-        .nav-tabs a:hover {
-            background: #f0f0f0;
-        }
-
-        .nav-tabs a.active {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .card h2 {
-            color: #c41e3a;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-
-        .sub-tabs {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .sub-tabs a {
-            text-decoration: none;
-            color: #666;
-            padding: 10px 20px;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .sub-tabs a:hover {
-            color: #c41e3a;
-        }
-
-        .sub-tabs a.active {
-            color: #c41e3a;
-            border-bottom-color: #c41e3a;
-        }
-
-        .special-date-card {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-
-        .special-date-card.closed {
-            border-color: #dc3545;
-            background: #fff5f5;
-        }
-
-        .special-date-card.open {
-            border-color: #ffc107;
-            background: #fffcf5;
-        }
-
-        .date-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .date-icon {
-            font-size: 1.5rem;
-            margin-right: 10px;
-        }
-
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .status-badge.open {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-badge.closed {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-
-        .btn-primary {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #a01729;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: #c41e3a;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .nav-tabs ul {
-                flex-direction: column;
-            }
-
-            .sub-tabs {
-                flex-direction: column;
-            }
-
-            .date-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+    <title>Fechas Especiales | Fudie Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                }
             }
         }
-    </style>
+    </script>
 </head>
 
-<body>
-    <div class="header">
-        <h1>🎄 Fechas Especiales (Festivos, Vacaciones, Eventos)</h1>
-    </div>
+<body class="bg-light font-sans text-gray-900 flex h-screen overflow-hidden">
 
-    <div class="container">
-        <a href="admin-dashboard.html" class="back-link">← Volver al Dashboard</a>
-
-        <div class="nav-tabs">
-            <ul>
-                <li><a href="admin-dashboard.html">Dashboard</a></li>
-                <li><a href="admin-schedule.html" class="active">Horarios del Restaurante</a></li>
-                <li><a href="admin-services.html">Servicios de Reserva</a></li>
-                <li><a href="admin-policy.html">Políticas de Reserva</a></li>
-                <li><a href="#">Reservas</a></li>
-            </ul>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.admin</span></span>
         </div>
 
-        <div class="card">
-            <div class="sub-tabs">
-                <a href="admin-schedule.html">📅 Semana Regular</a>
-                <a href="admin-schedule-special.html" class="active">🎄 Fechas Especiales</a>
-            </div>
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="admin.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="admin-schedule.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-bold">
+                <i class="fas fa-clock w-5"></i> Horarios
+            </a>
+            <a href="admin-services.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-utensils w-5"></i> Servicios
+            </a>
+            <a href="admin-policy.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-cog w-5"></i> Políticas
+            </a>
+        </nav>
 
-            <button class="btn btn-success">+ Agregar Nueva Fecha Especial</button>
-
-            <h2>📅 Fechas Especiales Configuradas</h2>
-
-            <div class="special-date-card closed">
-                <div class="date-header">
-                    <div>
-                        <span class="date-icon">🎄</span>
-                        <strong>24 Diciembre 2025 - Nochebuena</strong>
-                    </div>
-                    <span class="status-badge closed">❌ CERRADO TODO EL DÍA</span>
+        <div class="p-4 border-t border-gray-50">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="fas fa-user"></i>
                 </div>
-                <p><strong>Razón:</strong> "Festivo - Nochebuena"</p>
-                <div style="margin-top: 15px;">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Eliminar</button>
-                </div>
-            </div>
-
-            <div class="special-date-card closed">
-                <div class="date-header">
-                    <div>
-                        <span class="date-icon">🎄</span>
-                        <strong>25 Diciembre 2025 - Navidad</strong>
-                    </div>
-                    <span class="status-badge closed">❌ CERRADO TODO EL DÍA</span>
-                </div>
-                <p><strong>Razón:</strong> "Festivo - Navidad"</p>
-                <div style="margin-top: 15px;">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Eliminar</button>
-                </div>
-            </div>
-
-            <div class="special-date-card open">
-                <div class="date-header">
-                    <div>
-                        <span class="date-icon">🎉</span>
-                        <strong>31 Diciembre 2025 - Nochevieja</strong>
-                    </div>
-                    <span class="status-badge open">✅ ABIERTO (Horario Especial)</span>
-                </div>
-                <p><strong>Horario:</strong> 12:00 - 02:00 (día siguiente)</p>
-                <p><strong>Razón:</strong> "Nochevieja - Horario extendido"</p>
-                <div style="margin-top: 15px;">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Eliminar</button>
-                </div>
-            </div>
-
-            <div class="special-date-card open">
-                <div class="date-header">
-                    <div>
-                        <span class="date-icon">💕</span>
-                        <strong>14 Febrero 2026 - San Valentín</strong>
-                    </div>
-                    <span class="status-badge open">✅ ABIERTO (Horario Especial)</span>
-                </div>
-                <p><strong>Horario:</strong> 13:00 - 16:00, 19:00 - 02:00</p>
-                <p><strong>Razón:</strong> "San Valentín - Cena romántica"</p>
-                <div style="margin-top: 15px;">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Eliminar</button>
+                <div>
+                    <p class="text-sm font-bold">Admin User</p>
+                    <p class="text-xs text-gray-400">Restaurante Demo</p>
                 </div>
             </div>
         </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Topbar Mobile -->
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-xl">fudie<span class="text-primary">.admin</span></span>
+            <button class="text-gray-500"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Horarios de Apertura</h1>
+                        <p class="text-gray-500">Configura los turnos semanales del restaurante.</p>
+                    </div>
+                    <div class="flex bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+                        <a href="admin-schedule.html"
+                            class="px-4 py-2 rounded-lg text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors">Semana
+                            Regular</a>
+                        <a href="admin-schedule-special.html"
+                            class="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-bold shadow-md">Fechas
+                            Especiales</a>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mb-6">
+                    <button
+                        class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:bg-primaryDark hover:shadow-glow transition-all flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nueva Fecha Especial
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+
+                    <!-- Nochebuena (Closed) -->
+                    <div class="bg-red-50 p-6 rounded-3xl border border-red-100">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-red-500 text-xl shadow-sm">
+                                    <i class="fas fa-tree"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg">24 Diciembre 2025</h3>
+                                    <p class="text-red-700 text-sm">Nochebuena</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-red-200 text-red-800 text-xs font-bold uppercase">Cerrado</span>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-red-400 transition-colors"><i
+                                            class="fas fa-pen"></i></button>
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-red-400 transition-colors"><i
+                                            class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navidad (Closed) -->
+                    <div class="bg-red-50 p-6 rounded-3xl border border-red-100">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-red-500 text-xl shadow-sm">
+                                    <i class="fas fa-gift"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-red-900 text-lg">25 Diciembre 2025</h3>
+                                    <p class="text-red-700 text-sm">Navidad</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-red-200 text-red-800 text-xs font-bold uppercase">Cerrado</span>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-red-400 transition-colors"><i
+                                            class="fas fa-pen"></i></button>
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-white hover:bg-red-100 flex items-center justify-center text-red-400 transition-colors"><i
+                                            class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nochevieja (Open Special) -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-500 text-xl shadow-sm">
+                                    <i class="fas fa-glass-cheers"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-lg">31 Diciembre 2025</h3>
+                                    <p class="text-gray-500 text-sm">Nochevieja - Horario Extendido</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right mr-4 hidden md:block">
+                                    <span class="block text-sm font-bold text-gray-900">12:00 - 02:00</span>
+                                    <span class="text-xs text-green-600 font-bold">Horario Especial</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"><i
+                                            class="fas fa-pen"></i></button>
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"><i
+                                            class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- San Valentín (Open Special) -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-pink-50 rounded-2xl flex items-center justify-center text-pink-500 text-xl shadow-sm">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900 text-lg">14 Febrero 2026</h3>
+                                    <p class="text-gray-500 text-sm">San Valentín</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right mr-4 hidden md:block">
+                                    <span class="block text-sm font-bold text-gray-900">13:00 - 16:00, 19:00 -
+                                        02:00</span>
+                                    <span class="text-xs text-green-600 font-bold">Horario Especial</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"><i
+                                            class="fas fa-pen"></i></button>
+                                    <button
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"><i
+                                            class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
     </div>
+
 </body>
 
 </html>

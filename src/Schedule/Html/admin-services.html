@@ -4,398 +4,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Servicios de Reserva</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        .header {
-            background: #c41e3a;
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .nav-tabs {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-tabs ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .nav-tabs a {
-            text-decoration: none;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 6px;
-            transition: all 0.3s;
-            display: block;
-        }
-
-        .nav-tabs a:hover {
-            background: #f0f0f0;
-        }
-
-        .nav-tabs a.active {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .service-card {
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .service-card.active {
-            border-color: #28a745;
-            background: #f8fff9;
-        }
-
-        .service-card.inactive {
-            border-color: #dc3545;
-            background: #fff5f5;
-            opacity: 0.85;
-        }
-
-        .service-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .service-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .service-icon {
-            font-size: 2rem;
-        }
-
-        .status-badge {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .status-badge.active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .info-row {
-            display: flex;
-            margin: 10px 0;
-            gap: 10px;
-        }
-
-        .info-row strong {
-            min-width: 180px;
-        }
-
-        .info-row input,
-        .info-row select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .schedule-list {
-            margin: 20px 0;
-        }
-
-        .schedule-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 4px;
-            margin: 5px 0;
-        }
-
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-
-        .btn-primary {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #a01729;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .action-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: #c41e3a;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .nav-tabs ul {
-                flex-direction: column;
-            }
-
-            .service-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .info-row {
-                flex-direction: column;
-            }
-
-            .info-row strong {
-                min-width: auto;
+    <title>Servicios | Fudie Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                }
             }
         }
-    </style>
+    </script>
 </head>
 
-<body>
-    <div class="header">
-        <h1>🍽️ Servicios de Reserva</h1>
-    </div>
+<body class="bg-light font-sans text-gray-900 flex h-screen overflow-hidden">
 
-    <div class="container">
-        <a href="admin-dashboard.html" class="back-link">← Volver al Dashboard</a>
-
-        <div class="nav-tabs">
-            <ul>
-                <li><a href="admin-dashboard.html">Dashboard</a></li>
-                <li><a href="admin-schedule.html">Horarios del Restaurante</a></li>
-                <li><a href="admin-services.html" class="active">Servicios de Reserva</a></li>
-                <li><a href="admin-policy.html">Políticas de Reserva</a></li>
-                <li><a href="#">Reservas</a></li>
-            </ul>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.admin</span></span>
         </div>
 
-        <div class="card">
-            <div class="service-card inactive">
-                <div class="service-header">
-                    <div class="service-title">
-                        <span class="service-icon">🍳</span>
-                        <h2>DESAYUNO</h2>
-                    </div>
-                    <span class="status-badge inactive">❌ INACTIVO</span>
-                </div>
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="admin.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="admin-schedule.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-clock w-5"></i> Horarios
+            </a>
+            <a href="admin-services.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-bold">
+                <i class="fas fa-utensils w-5"></i> Servicios
+            </a>
+            <a href="admin-policy.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-cog w-5"></i> Políticas
+            </a>
+        </nav>
 
-                <div class="info-row">
-                    <strong>Capacidad Máxima:</strong>
-                    <input type="number" value="20" min="1"> personas
+        <div class="p-4 border-t border-gray-50">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="fas fa-user"></i>
                 </div>
-
-                <div class="info-row">
-                    <strong>Duración Estándar:</strong>
-                    <input type="time" value="01:00"> horas
-                </div>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
-                <div class="schedule-list">
-                    <div class="schedule-item">
-                        <span>Lunes: ❌ No disponible</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Resto de días: ❌ No disponible</span>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-success">✅ Activar Servicio</button>
-                    <button class="btn btn-secondary">✏️ Configurar Horarios</button>
-                </div>
-            </div>
-
-            <div class="service-card active">
-                <div class="service-header">
-                    <div class="service-title">
-                        <span class="service-icon">🍝</span>
-                        <h2>COMIDA</h2>
-                    </div>
-                    <span class="status-badge active">✅ ACTIVO</span>
-                </div>
-
-                <div class="info-row">
-                    <strong>Capacidad Máxima:</strong>
-                    <input type="number" value="50" min="1"> personas
-                </div>
-
-                <div class="info-row">
-                    <strong>Duración Estándar:</strong>
-                    <input type="time" value="01:30"> horas
-                </div>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
-                <div class="schedule-list">
-                    <div class="schedule-item">
-                        <span>Lunes-Viernes: ✅ 13:00 - 16:00 (Cap: 50)</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Sábado: ✅ 12:00 - 17:00 (Cap: 60) ⬆️</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Domingo: ✅ 12:00 - 17:00 (Cap: 60) ⬆️</span>
-                    </div>
-                </div>
-
-                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin: 15px 0;">
-                    <strong>Fechas Especiales:</strong> 2 configuradas<br>
-                    • 31 Dic: 12:00-16:00 (Cap: 70) 🎉<br>
-                    • 14 Feb: 12:00-17:00 (Cap: 60) 💕
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Desactivar</button>
-                    <button class="btn btn-primary">📅 Fechas Especiales</button>
-                </div>
-            </div>
-
-            <div class="service-card active">
-                <div class="service-header">
-                    <div class="service-title">
-                        <span class="service-icon">🍷</span>
-                        <h2>CENA</h2>
-                    </div>
-                    <span class="status-badge active">✅ ACTIVO</span>
-                </div>
-
-                <div class="info-row">
-                    <strong>Capacidad Máxima:</strong>
-                    <input type="number" value="50" min="1"> personas
-                </div>
-
-                <div class="info-row">
-                    <strong>Duración Estándar:</strong>
-                    <input type="time" value="02:00"> horas
-                </div>
-
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Horarios Semanales:</h3>
-                <div class="schedule-list">
-                    <div class="schedule-item">
-                        <span>Lunes-Jueves: ✅ 20:00 - 23:00 (Cap: 50)</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Viernes: ✅ 20:00 - 00:00 (Cap: 60) ⬆️</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Sábado: ✅ 20:00 - 00:00 (Cap: 60) ⬆️</span>
-                    </div>
-                    <div class="schedule-item">
-                        <span>Domingo: ❌ No disponible</span>
-                    </div>
-                </div>
-
-                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin: 15px 0;">
-                    <strong>Fechas Especiales:</strong> 2 configuradas<br>
-                    • 31 Dic: 19:00-02:00 (Cap: 80) 🎉<br>
-                    • 14 Feb: 19:00-02:00 (Cap: 65) 💕
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-secondary">✏️ Editar</button>
-                    <button class="btn btn-danger">🗑️ Desactivar</button>
-                    <button class="btn btn-primary">📅 Fechas Especiales</button>
+                <div>
+                    <p class="text-sm font-bold">Admin User</p>
+                    <p class="text-xs text-gray-400">Restaurante Demo</p>
                 </div>
             </div>
         </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Topbar Mobile -->
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-xl">fudie<span class="text-primary">.admin</span></span>
+            <button class="text-gray-500"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Servicios de Reserva</h1>
+                        <p class="text-gray-500">Gestiona los tipos de servicio y sus capacidades.</p>
+                    </div>
+                    <button
+                        class="bg-gray-900 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:bg-black transition-all">
+                        + Nuevo Servicio
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+
+                    <!-- Desayuno (Inactivo) -->
+                    <div
+                        class="bg-gray-50 p-6 rounded-3xl border border-gray-200 opacity-75 hover:opacity-100 transition-opacity">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-gray-400 text-2xl shadow-sm">
+                                    <i class="fas fa-coffee"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-500">Desayuno</h2>
+                                    <span
+                                        class="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-600 text-[10px] font-bold uppercase tracking-wide">Inactivo</span>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Capacidad</label>
+                                <input type="number" value="20" disabled
+                                    class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Duración</label>
+                                <input type="text" value="60 min" disabled
+                                    class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-500">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button class="text-sm font-bold text-primary hover:underline">Activar Servicio</button>
+                        </div>
+                    </div>
+
+                    <!-- Comida (Activo) -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 text-2xl shadow-sm">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Comida</h2>
+                                    <span
+                                        class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">Activo</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button
+                                    class="w-8 h-8 rounded-full hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors"><i
+                                        class="fas fa-pen"></i></button>
+                                <button
+                                    class="w-8 h-8 rounded-full hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors"><i
+                                        class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Capacidad</label>
+                                <div class="relative">
+                                    <input type="number" value="50"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 font-medium focus:border-primary outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-400">pax</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Duración</label>
+                                <div class="relative">
+                                    <input type="number" value="90"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 font-medium focus:border-primary outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-400">min</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                            <h4 class="text-sm font-bold text-gray-700 mb-2">Horario Semanal</h4>
+                            <div class="space-y-1 text-sm text-gray-500">
+                                <div class="flex justify-between">
+                                    <span>Lunes - Viernes</span>
+                                    <span class="font-medium text-gray-900">13:00 - 16:00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Sábado - Domingo</span>
+                                    <span class="font-medium text-gray-900">12:00 - 17:00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 rounded-xl p-3 flex items-start gap-3">
+                            <i class="fas fa-star text-yellow-500 mt-1"></i>
+                            <div class="text-sm">
+                                <p class="font-bold text-yellow-800">Fechas Especiales (2)</p>
+                                <p class="text-yellow-700 text-xs">31 Dic (70 pax), 14 Feb (60 pax)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cena (Activo) -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 text-2xl shadow-sm">
+                                    <i class="fas fa-wine-glass-alt"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900">Cena</h2>
+                                    <span
+                                        class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wide">Activo</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button
+                                    class="w-8 h-8 rounded-full hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors"><i
+                                        class="fas fa-pen"></i></button>
+                                <button
+                                    class="w-8 h-8 rounded-full hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors"><i
+                                        class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Capacidad</label>
+                                <div class="relative">
+                                    <input type="number" value="50"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 font-medium focus:border-primary outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-400">pax</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Duración</label>
+                                <div class="relative">
+                                    <input type="number" value="120"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-900 font-medium focus:border-primary outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-400">min</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                            <h4 class="text-sm font-bold text-gray-700 mb-2">Horario Semanal</h4>
+                            <div class="space-y-1 text-sm text-gray-500">
+                                <div class="flex justify-between">
+                                    <span>Lunes - Jueves</span>
+                                    <span class="font-medium text-gray-900">20:00 - 23:00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Viernes - Sábado</span>
+                                    <span class="font-medium text-gray-900">20:00 - 00:00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
     </div>
+
 </body>
 
 </html>

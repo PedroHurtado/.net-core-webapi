@@ -4,238 +4,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservar - Paso 3</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            color: #c41e3a;
-            margin-bottom: 10px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #c41e3a;
-            width: 75%;
-        }
-
-        .step-info {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .current-selection {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #c41e3a;
-        }
-
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        label .required {
-            color: #c41e3a;
-        }
-
-        input,
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #c41e3a;
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-top: 4px;
-        }
-
-        .checkbox-group label {
-            margin: 0;
-            font-weight: normal;
-        }
-
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #c41e3a;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #a01729;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        @media (max-width: 768px) {
-            .button-group {
-                flex-direction: column;
+    <title>Reservar | Fudie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                }
             }
         }
-    </style>
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <div class="card">
-            <h1>📅 Hacer una Reserva</h1>
-            <div class="step-info">
-                Paso 3 de 4: Tus datos de contacto
+<body class="bg-light font-sans text-gray-900 min-h-screen flex flex-col">
+
+    <!-- Navbar Simple -->
+    <nav class="bg-white border-b border-gray-100 py-4">
+        <div class="max-w-3xl mx-auto px-4 flex justify-between items-center">
+            <a href="public.html" class="font-bold text-xl tracking-tight">fudie<span
+                    class="text-primary">.demo</span></a>
+            <div class="text-sm text-gray-500">Paso 3 de 4</div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="w-full max-w-3xl bg-white rounded-3xl shadow-soft overflow-hidden">
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-100 h-1.5">
+                <div class="bg-primary h-1.5 rounded-r-full" style="width: 75%"></div>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
 
-            <div class="current-selection">
-                <strong>Reserva para:</strong> Viernes 05 Diciembre 2025 - 🍷 CENA - 21:15
-                <br>
-                <strong>4 personas</strong> |
-                <a href="reserva-step2.html" style="color: #c41e3a; text-decoration: none; font-size: 0.9rem;">←
-                    Cambiar</a>
-            </div>
-
-            <h2>👤 Tus Datos</h2>
-
-            <form>
-                <div class="form-group">
-                    <label>
-                        Nombre completo <span class="required">*</span>
-                    </label>
-                    <input type="text" name="name" placeholder="Juan Pérez" required>
+            <div class="p-8 md:p-12">
+                <!-- Current Selection Summary -->
+                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl mb-8 border border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-bold uppercase">Tu Reserva</p>
+                            <p class="font-bold text-sm">Vie, 05 Dic • 21:15 • 4 Personas</p>
+                        </div>
+                    </div>
+                    <a href="reserva-step2.html"
+                        class="text-sm font-bold text-primary hover:text-primaryDark">Cambiar</a>
                 </div>
 
-                <div class="form-group">
-                    <label>
-                        Email <span class="required">*</span>
-                    </label>
-                    <input type="email" name="email" placeholder="juan.perez@email.com" required>
-                </div>
+                <div class="max-w-xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-2 text-center">Tus Datos</h2>
+                    <p class="text-gray-500 text-center mb-8">Necesitamos tus datos para confirmar la reserva.</p>
 
-                <div class="form-group">
-                    <label>
-                        Teléfono <span class="required">*</span>
-                    </label>
-                    <input type="tel" name="phone" placeholder="+34 612 345 678" required>
-                </div>
+                    <form class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Nombre completo <span
+                                    class="text-primary">*</span></label>
+                            <input type="text" placeholder="Ej. Juan Pérez"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                required>
+                        </div>
 
-                <div class="form-group">
-                    <label>
-                        Comentarios o peticiones especiales (opcional)
-                    </label>
-                    <textarea name="comments" placeholder="Mesa cerca de la ventana si es posible"></textarea>
-                </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Email <span
+                                        class="text-primary">*</span></label>
+                                <input type="email" placeholder="juan@ejemplo.com"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Teléfono <span
+                                        class="text-primary">*</span></label>
+                                <input type="tel" placeholder="+34 600 000 000"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    required>
+                            </div>
+                        </div>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">
-                        Acepto la política de cancelación (Cancelación gratuita hasta 2h antes)
-                    </label>
-                </div>
-            </form>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Comentarios (Opcional)</label>
+                            <textarea rows="3" placeholder="Alergias, mesa especial, celebración..."
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+                        </div>
 
-            <div class="button-group">
-                <a href="reserva-step2.html" class="btn btn-secondary">← Atrás</a>
-                <a href="reserva-step4.html" class="btn btn-primary">Siguiente →</a>
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+                            <input type="checkbox" id="terms"
+                                class="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                            <label for="terms" class="text-sm text-gray-600">
+                                Acepto la <a href="#" class="text-primary font-bold hover:underline">política de
+                                    cancelación</a>. Cancelación gratuita hasta 2 horas antes de la reserva.
+                            </label>
+                        </div>
+                    </form>
+
+                    <div class="mt-10 flex gap-4">
+                        <a href="reserva-step2.html"
+                            class="flex-1 py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-colors text-center">
+                            Atrás
+                        </a>
+                        <a href="reserva-step4.html"
+                            class="flex-[2] bg-primary hover:bg-primaryDark text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-glow transition-all text-center flex items-center justify-center gap-2">
+                            Continuar <i class="fas fa-arrow-right text-sm"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 </body>
 
 </html>
