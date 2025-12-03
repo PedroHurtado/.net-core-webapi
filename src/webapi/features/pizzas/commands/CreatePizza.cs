@@ -58,12 +58,12 @@ public class CreatePizza : IFeatureModule
     [Injectable]
     public class Service(
         IAdd<Pizza> pizzaRepository,
-        IGetOrThrowAsync lookupRepository,
+        IEntityLookup lookupRepository,
         IUnitOfWork unitOfWork
         ) : IService
     {
         private readonly IAdd<Pizza> pizzaRepository = pizzaRepository;
-        private readonly IGetOrThrowAsync lookupRepository = lookupRepository;
+        private readonly IEntityLookup lookupRepository = lookupRepository;
         private readonly IUnitOfWork unitOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Request request)
@@ -72,7 +72,7 @@ public class CreatePizza : IFeatureModule
 
             foreach (var ingredientId in request.Ingredients)
             {
-                var ingredient = await lookupRepository.GetOrThrowAsync<Ingredient, Guid>(ingredientId);
+                var ingredient = await lookupRepository.GetRequiredAsync<Ingredient, Guid>(ingredientId);
                 pizza.AddIngredient(ingredient).SuccessOrThrow();
             }
 
@@ -95,9 +95,9 @@ public class CreatePizza : IFeatureModule
     }
 
     [Injectable]
-    public class Repository(IRepository repository) : IAdd<Pizza>
+    public class Repository(IChangeTracker repository) : IAdd<Pizza>
     {
-        private readonly IRepository _repository = repository;
+        private readonly IChangeTracker _repository = repository;
 
         public void Add(Pizza entity)
         {

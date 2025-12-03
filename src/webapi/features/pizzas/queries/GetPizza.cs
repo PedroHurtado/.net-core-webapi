@@ -48,17 +48,17 @@ public class GetPizza : IFeatureModule
     }
 
     [Injectable]
-    public class Repository(IGetOrThrowAsync repository) : IGet<Pizza, Guid>
+    public class Repository(IEntityLookup repository) : IGet<Pizza, Guid>
     {
-        private readonly IGetOrThrowAsync _repository = repository;
+        private readonly IEntityLookup _repository = repository;
 
         public Task<Pizza> Get(Guid id)
         {
-            return _repository.GetOrThrowAsync<Pizza, Guid>(
-                id, 
-                tracking:false,
-                includeProperties:nameof(Pizza.Ingredients)
-            
+            return _repository.GetRequiredAsync<Pizza, Guid>(
+                id,
+                tracking: false,
+                includeProperties: nameof(Pizza.Ingredients)
+
             );
         }
     }

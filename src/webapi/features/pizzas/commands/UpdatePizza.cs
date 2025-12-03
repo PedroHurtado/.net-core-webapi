@@ -54,16 +54,16 @@ public class UpdatePizza : IFeatureModule
 
     [Injectable]
     public class Service(
-        IGetOrThrowAsync lookupRepository,
+        IEntityLookup lookupRepository,
         IUnitOfWork unitOfWork
     ) : IService
     {
-        private readonly IGetOrThrowAsync lookupRepository = lookupRepository;
+        private readonly IEntityLookup lookupRepository = lookupRepository;
         private readonly IUnitOfWork unitOfWork = unitOfWork;
 
         public async Task<Response> HandlerAsync(Guid id, Request request)
         {
-            var pizza = await lookupRepository.GetOrThrowAsync<Pizza, Guid>(
+            var pizza = await lookupRepository.GetRequiredAsync<Pizza, Guid>(
                 id,
                 includeProperties: nameof(Pizza.Ingredients)
             );

@@ -53,16 +53,16 @@ public class RemoveIngredient : IFeatureModule
         }
     }
     [Injectable]
-    public class Repository(IRepository repository, IGetOrThrowAsync getOrThrowAsync) : IRemove<Ingredient, Guid>
+    public class Repository(IChangeTracker repository, IEntityLookup getOrThrowAsync) : IRemove<Ingredient, Guid>
     {
-        private readonly IRepository _repository = repository;
-        private readonly IGetOrThrowAsync _getOrThrowAsync = getOrThrowAsync;
+        private readonly IChangeTracker _repository = repository;
+        private readonly IEntityLookup _getOrThrowAsync = getOrThrowAsync;
 
 
 
         public Task<Ingredient> Get(Guid id)
         {
-            return _getOrThrowAsync.GetOrThrowAsync<Ingredient, Guid>(id);
+            return _getOrThrowAsync.GetRequiredAsync<Ingredient, Guid>(id);
         }
 
         public void Remove(Ingredient entity)

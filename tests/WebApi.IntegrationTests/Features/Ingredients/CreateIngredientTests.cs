@@ -41,10 +41,10 @@ public class CreateIngredientTests : IClassFixture<WebApplicationFactory<Program
                 });
 
                 // Re-registrar las interfaces que usa ApplicationDbContext
-                services.AddScoped<IRepository>(sp => sp.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IChangeTracker>(sp => sp.GetRequiredService<ApplicationDbContext>());
                 services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
                 services.AddScoped<IQuery>(sp => sp.GetRequiredService<ApplicationDbContext>());
-                services.AddScoped<IGetOrThrowAsync>(sp => sp.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IEntityLookup>(sp => sp.GetRequiredService<ApplicationDbContext>());
             });
         });
 

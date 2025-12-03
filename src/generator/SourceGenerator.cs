@@ -17,13 +17,13 @@ public class AddRepositoryGenerator : IIncrementalGenerator
                 transform: static (ctx, _) => GetAddInterfaceInfo(ctx))
             .Where(static m => m is not null);
 
-        context.RegisterSourceOutput(interfaceDeclarations, 
+        context.RegisterSourceOutput(interfaceDeclarations,
             (spc, info) => GenerateAddRepository(spc, info!));
     }
 
     private static bool IsInterfaceWithBaseTypes(SyntaxNode node)
     {
-        return node is InterfaceDeclarationSyntax interfaceDecl 
+        return node is InterfaceDeclarationSyntax interfaceDecl
                && interfaceDecl.BaseList?.Types.Count > 0;
     }
 
@@ -31,7 +31,7 @@ public class AddRepositoryGenerator : IIncrementalGenerator
     {
         var interfaceDecl = (InterfaceDeclarationSyntax)context.Node;
         var symbol = context.SemanticModel.GetDeclaredSymbol(interfaceDecl) as INamedTypeSymbol;
-        
+
         if (symbol == null) return null;
 
         // Buscar si hereda de IAdd<T>
@@ -61,7 +61,7 @@ public class AddRepositoryGenerator : IIncrementalGenerator
     private static void GenerateAddRepository(SourceProductionContext context, AddInterfaceInfo info)
     {
         var className = info.InterfaceName.TrimStart('I');
-        
+
         var source = $@"using Microsoft.EntityFrameworkCore;
 using webapi.common.infrastructure;
 using webapi.common.dependencyinjection;
@@ -69,9 +69,9 @@ using webapi.common.dependencyinjection;
 namespace {info.Namespace};
 
 [Injectable]
-public class {className}(IRepository repository) : {info.FullInterfaceName}
+public class {className}(IChangeTracker repository) : {info.FullInterfaceName}
 {{
-    private readonly IRepository _repository = repository;
+    private readonly IChangeTracker _repository = repository;
 
     public void Add({info.EntityType} entity)
     {{

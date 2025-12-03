@@ -64,16 +64,16 @@ public class UpdateIngredient : IFeatureModule
 
     //public interface IRespository:IAdd<Ingredient>{}
     [Injectable]
-    public class Repository(IRepository repository, IGetOrThrowAsync getOrThrowAsync) : IUpdate<Ingredient, Guid>
+    public class Repository(IChangeTracker repository, IEntityLookup getOrThrowAsync) : IUpdate<Ingredient, Guid>
     {
-        private readonly IRepository _repository = repository;
-        private readonly IGetOrThrowAsync _getOrThrowAsync = getOrThrowAsync;
+        private readonly IChangeTracker _repository = repository;
+        private readonly IEntityLookup _getOrThrowAsync = getOrThrowAsync;
 
 
 
         public Task<Ingredient> Get(Guid id)
         {
-            return _getOrThrowAsync.GetOrThrowAsync<Ingredient, Guid>(id);
+            return _getOrThrowAsync.GetRequiredAsync<Ingredient, Guid>(id);
         }
 
 

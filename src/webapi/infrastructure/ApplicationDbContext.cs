@@ -8,14 +8,14 @@ namespace webapi.infrastructure;
 
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) :
-        DbContext(options), IGetOrThrowAsync, IQuery, IRepository, IUnitOfWork
+        DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
 {
 
 
     public required DbSet<Ingredient> Ingredients { get; set; }
     public required DbSet<Pizza> Pizzas { get; set; }
 
-    public async Task<T> GetOrThrowAsync<T, ID>(
+    public async Task<T> GetRequiredAsync<T, ID>(
     ID id,
     bool tracking = true,
     CancellationToken cancellationToken = default,

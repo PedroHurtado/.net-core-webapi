@@ -70,9 +70,9 @@ public class CreateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Repository(IRepository repository) : IAdd<Ingredient>
+    public class Repository(IChangeTracker repository) : IAdd<Ingredient>
     {
-        private readonly IRepository _repository = repository;
+        private readonly IChangeTracker _repository = repository;
 
         public void Add(Ingredient entity)
         {
