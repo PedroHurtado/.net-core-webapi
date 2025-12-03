@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Item | Fudie Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF'
+                    },
+                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-light font-sans text-gray-900 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.admin</span></span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="admin.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="admin-schedule.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-clock w-5"></i> Horarios
+            </a>
+            <a href="admin-services.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-utensils w-5"></i> Servicios
+            </a>
+            <a href="admin-menus.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-bold">
+                <i class="fas fa-book-open w-5"></i> Menús
+            </a>
+            <a href="admin-policy.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-cog w-5"></i> Políticas
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-50">
+            <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Admin User</p>
+                    <p class="text-xs text-gray-400">Restaurante Demo</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Topbar Mobile -->
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-xl">fudie<span class="text-primary">.admin</span></span>
+            <button class="text-gray-500"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-5xl mx-auto">
+
+                <!-- Header & Actions -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                            <a href="admin-menus.html" class="hover:text-primary transition-colors">Menús</a>
+                            <i class="fas fa-chevron-right text-xs"></i>
+                            <a href="admin-menu-detail.html" class="hover:text-primary transition-colors">Carta
+                                Principal</a>
+                            <i class="fas fa-chevron-right text-xs"></i>
+                            <span>Editar Item</span>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-900">Chuletón de Vaca Vieja</h1>
+                    </div>
+                    <div class="flex gap-3">
+                        <button
+                            class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                            onclick="window.history.back()">
+                            Cancelar
+                        </button>
+                        <button
+                            class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <!-- Left Column: Main Info -->
+                    <div class="lg:col-span-2 space-y-8">
+
+                        <!-- Basic Info -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-gray-900 mb-6">Información Básica</h3>
+
+                            <div class="flex gap-6 mb-6">
+                                <div
+                                    class="w-32 h-32 rounded-2xl bg-gray-100 flex-shrink-0 relative group overflow-hidden cursor-pointer">
+                                    <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                                        alt="Item" class="w-full h-full object-cover">
+                                    <div
+                                        class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <i class="fas fa-camera text-white text-xl"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1 space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre del
+                                            Item</label>
+                                        <input type="text" value="Chuletón de Vaca Vieja"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 font-medium focus:border-primary outline-none">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-gray-500 uppercase mb-1">Categoría</label>
+                                        <select
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 font-medium focus:border-primary outline-none appearance-none">
+                                            <option>Entrantes</option>
+                                            <option selected>Principales</option>
+                                            <option>Postres</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descripción</label>
+                                <textarea rows="3"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 font-medium focus:border-primary outline-none resize-none">Maduración 45 días, precio por kg. Se sirve con pimientos de padrón y patatas fritas caseras.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Options -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold text-lg text-gray-900">Opciones de Precio</h3>
+                                <button class="text-sm font-bold text-primary hover:underline">+ Agregar Opción</button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <!-- Option 1 -->
+                                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div class="flex-1 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo
+                                                de Porción</label>
+                                            <select
+                                                class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                                <option>Tapa</option>
+                                                <option>Media Ración</option>
+                                                <option selected>Ración</option>
+                                                <option>Según Mercado</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio
+                                                (€)</label>
+                                            <input type="number" value="55.00"
+                                                class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-5">
+                                        <button
+                                            class="w-8 h-8 rounded-full hover:bg-white hover:text-red-500 transition-colors flex items-center justify-center text-gray-400"><i
+                                                class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Option 2 (Market Price Example) -->
+                                <div
+                                    class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 opacity-75">
+                                    <div class="flex-1 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo
+                                                de Porción</label>
+                                            <select
+                                                class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                                <option>Tapa</option>
+                                                <option>Media Ración</option>
+                                                <option>Ración</option>
+                                                <option selected>Según Mercado</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Precio
+                                                Actual (€)</label>
+                                            <input type="number" placeholder="S/M"
+                                                class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-5">
+                                        <button
+                                            class="w-8 h-8 rounded-full hover:bg-white hover:text-red-500 transition-colors flex items-center justify-center text-gray-400"><i
+                                                class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Settings -->
+                    <div class="space-y-6">
+
+                        <!-- Availability -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-gray-900 mb-4">Disponibilidad</h3>
+
+                            <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">Item Activo</p>
+                                    <p class="text-xs text-gray-400">Visible en el menú</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="flex items-center justify-between py-3 border-b border-gray-50">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">Disponible Hoy</p>
+                                    <p class="text-xs text-gray-400">Stock para el servicio actual</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="pt-4">
+                                <label class="flex items-center gap-2 mb-3 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-primary focus:ring-primary" checked>
+                                    <span class="text-sm font-medium text-gray-700">Siempre Disponible</span>
+                                </label>
+
+                                <!-- Days Selector (Disabled if Always Available) -->
+                                <div class="grid grid-cols-4 gap-2 opacity-50 pointer-events-none">
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">L</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">M</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">X</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">J</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">V</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">S</button>
+                                    <button
+                                        class="py-2 rounded-lg bg-gray-100 text-xs font-bold text-gray-400">D</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Rules -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-gray-900 mb-4">Reglas Avanzadas</h3>
+
+                            <!-- High Risk -->
+                            <div class="mb-6">
+                                <label class="flex items-center gap-2 mb-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-primary focus:ring-primary" checked>
+                                    <span class="text-sm font-bold text-gray-700">Item de Alto Riesgo</span>
+                                </label>
+                                <p class="text-xs text-gray-400 pl-6">Habilita opciones de pedido anticipado.</p>
+                            </div>
+
+                            <!-- Advance Order -->
+                            <div class="mb-6 pl-4 border-l-2 border-primary/20">
+                                <label class="flex items-center gap-2 mb-3 cursor-pointer">
+                                    <input type="checkbox" class="rounded text-primary focus:ring-primary" checked>
+                                    <span class="text-sm font-medium text-gray-700">Requiere Pedido Anticipado</span>
+                                </label>
+                                <div class="pl-6">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cantidad
+                                        Mínima</label>
+                                    <input type="number" placeholder="Opcional"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Deposit Override -->
+                            <div class="pt-4 border-t border-gray-50">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-sm font-bold text-gray-700">Fianza Específica</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div
+                                            class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
+                                        </div>
+                                    </label>
+                                </div>
+                                <p class="text-xs text-gray-400 mb-3">Sobrescribe la política del menú para este item.
+                                </p>
+
+                                <div class="space-y-3 opacity-50 pointer-events-none">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Importe
+                                            Fianza (€)</label>
+                                        <input type="number"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Mínimo
+                                            Unidades</label>
+                                        <input type="number"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>

@@ -49,7 +49,7 @@
             <div class="p-8 md:p-12">
                 <div class="text-center mb-10">
                     <h1 class="text-3xl font-bold mb-2">¿Cuándo nos visitas?</h1>
-                    <p class="text-gray-500">Selecciona el día y el servicio para tu reserva.</p>
+                    <p class="text-gray-500">Selecciona el día y el número de personas para tu reserva.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -158,57 +158,30 @@
                         </div>
                     </div>
 
-                    <!-- Services Section -->
+                    <!-- People Selector Section (Moved from step 2) -->
                     <div class="flex flex-col justify-center">
-                        <h3 class="font-bold text-lg mb-6">Servicios Disponibles</h3>
+                        <h3 class="font-bold text-lg mb-6">¿Cuántos sois?</h3>
 
-                        <div class="space-y-4">
-                            <!-- Service Option 1 -->
-                            <label class="relative block cursor-pointer group">
-                                <input type="radio" name="service" class="peer sr-only">
-                                <div
-                                    class="p-5 rounded-2xl border-2 border-gray-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all hover:border-gray-200">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-                                                <i class="fas fa-utensils"></i>
-                                            </div>
-                                            <span class="font-bold text-gray-900">Comida</span>
-                                        </div>
-                                        <div
-                                            class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
-                                            <i
-                                                class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-500 pl-[52px]">13:00 - 16:00</p>
-                                </div>
-                            </label>
-
-                            <!-- Service Option 2 (Selected) -->
-                            <label class="relative block cursor-pointer group">
-                                <input type="radio" name="service" class="peer sr-only" checked>
-                                <div
-                                    class="p-5 rounded-2xl border-2 border-gray-100 peer-checked:border-primary peer-checked:bg-primary/5 transition-all hover:border-gray-200 shadow-sm ring-1 ring-primary/5">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">
-                                                <i class="fas fa-wine-glass-alt"></i>
-                                            </div>
-                                            <span class="font-bold text-gray-900">Cena</span>
-                                        </div>
-                                        <div
-                                            class="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary flex items-center justify-center">
-                                            <i
-                                                class="fas fa-check text-white text-[10px] opacity-0 peer-checked:opacity-100"></i>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-500 pl-[52px]">20:00 - 00:00</p>
-                                </div>
-                            </label>
+                        <div class="grid grid-cols-4 gap-3 mb-4">
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">1</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">2</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">3</button>
+                            <button
+                                class="aspect-square rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center font-bold text-lg transform scale-105">4</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">5</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">6</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">7</button>
+                            <button
+                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">8</button>
                         </div>
+                        <p class="text-xs text-gray-400 text-center">Para grupos de +8, por favor llámanos.</p>
+                        
 
                         <div class="mt-10 flex gap-4">
                             <a href="public.html"

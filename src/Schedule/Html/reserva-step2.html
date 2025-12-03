@@ -47,7 +47,7 @@
             </div>
 
             <div class="p-8 md:p-12">
-                <!-- Current Selection Summary -->
+                <!-- Current Selection Summary (Updated to reflect Step 1 changes: Date + People) -->
                 <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl mb-8 border border-gray-100">
                     <div class="flex items-center gap-3">
                         <div
@@ -56,78 +56,98 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 font-bold uppercase">Tu Reserva</p>
-                            <p class="font-bold text-sm">Vie, 05 Dic 2025 • Cena</p>
+                            <p class="font-bold text-sm">Vie, 05 Dic 2025 • 4 Personas</p>
                         </div>
                     </div>
                     <a href="reserva-step1.html"
                         class="text-sm font-bold text-primary hover:text-primaryDark">Cambiar</a>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-
-                    <!-- People Selector -->
-                    <div>
-                        <h2 class="text-2xl font-bold mb-6">¿Cuántos sois?</h2>
-                        <div class="grid grid-cols-4 gap-3 mb-4">
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">1</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">2</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">3</button>
-                            <button
-                                class="aspect-square rounded-2xl bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center font-bold text-lg transform scale-105">4</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">5</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">6</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">7</button>
-                            <button
-                                class="aspect-square rounded-2xl border-2 border-gray-100 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center font-bold text-lg transition-all">8</button>
+                <!-- Time Selector (Main Content) -->
+                <div class="w-full">
+                    <h2 class="text-2xl font-bold mb-6 text-center">¿A qué hora?</h2>
+                    
+                    <!-- Time Legend -->
+                    <div class="flex items-center justify-center gap-4 text-xs text-gray-400 mb-8">
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-gray-200"></div> Libre
                         </div>
-                        <p class="text-xs text-gray-400 text-center">Para grupos de +8, por favor llámanos.</p>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-yellow-400"></div> Pocas mesas
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-primary"></div> Seleccionado
+                        </div>
                     </div>
-
-                    <!-- Time Selector -->
-                    <div>
-                        <h2 class="text-2xl font-bold mb-6">¿A qué hora?</h2>
-                        <div class="grid grid-cols-3 gap-3 mb-6">
+                    
+                    <!-- Service Slots (Franjas de servicio) -->
+                    
+                    <!-- Desayuno (Breakfast) -->
+                    <div class="mb-8 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-bold text-secondary mb-4 flex items-center gap-3">
+                            <i class="fas fa-mug-hot text-amber-500"></i> Desayuno
+                        </h3>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
                             <button
-                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">20:00</button>
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">09:00</button>
                             <button
-                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">20:15</button>
-                            <button
-                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">20:30</button>
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">09:30</button>
                             <button
                                 class="py-3 rounded-xl border border-yellow-400 bg-yellow-50 text-yellow-700 font-medium text-sm transition-all relative overflow-hidden">
-                                20:45
+                                10:00
                                 <div class="absolute top-0 right-0 w-2 h-2 bg-yellow-400 rounded-full m-1"></div>
                             </button>
                             <button
-                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">21:00</button>
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">10:30</button>
                             <button
-                                class="py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/30 transform scale-105">21:15</button>
+                                class="py-3 rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed font-medium text-sm border border-transparent">11:00</button>
+                            <button
+                                class="py-3 rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed font-medium text-sm border border-transparent">11:30</button>
+                        </div>
+                    </div>
+
+                    <!-- Comida (Lunch) -->
+                    <div class="mb-8 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-bold text-secondary mb-4 flex items-center gap-3">
+                            <i class="fas fa-utensils text-orange-500"></i> Comida
+                        </h3>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">13:00</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">13:30</button>
+                            <button
+                                class="py-3 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/30 transform scale-105">14:00</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">14:30</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">15:00</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">15:30</button>
+                        </div>
+                    </div>
+
+                    <!-- Cena (Dinner) -->
+                    <div class="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                        <h3 class="text-xl font-bold text-secondary mb-4 flex items-center gap-3">
+                            <i class="fas fa-wine-glass-alt text-purple-500"></i> Cena
+                        </h3>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">20:00</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">20:30</button>
+                            <button
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">21:00</button>
                             <button
                                 class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">21:30</button>
                             <button
-                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">21:45</button>
+                                class="py-3 rounded-xl border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-all">22:00</button>
                             <button
-                                class="py-3 rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed font-medium text-sm border border-transparent">22:00</button>
-                        </div>
-
-                        <div class="flex items-center justify-center gap-4 text-xs text-gray-400">
-                            <div class="flex items-center gap-1">
-                                <div class="w-2 h-2 rounded-full bg-gray-200"></div> Libre
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <div class="w-2 h-2 rounded-full bg-yellow-400"></div> Pocas mesas
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <div class="w-2 h-2 rounded-full bg-primary"></div> Seleccionado
-                            </div>
+                                class="py-3 rounded-xl bg-gray-50 text-gray-300 cursor-not-allowed font-medium text-sm border border-transparent">22:30</button>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="mt-12 flex gap-4">
