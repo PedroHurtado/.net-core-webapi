@@ -1,7 +1,4 @@
 using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Fudie.Generator;
@@ -47,7 +44,7 @@ internal static class CodeBuilder
 
             // Generar nombre de parámetro para el tipo actual
             string currentParameter;
-            
+
             if (previousSegment.IsCollection)
             {
                 // Si el anterior era colección, usamos el tipo del elemento
@@ -363,27 +360,43 @@ internal static class CodeBuilder
     /// <summary>
     /// Genera un nombre de parámetro para lambdas basado en el nombre del tipo
     /// </summary>
-    /// <param name="typeName">Nombre del tipo (ej: "Customer", "Order")</param>
-    /// <returns>Nombre de parámetro (ej: "c", "o")</returns>
+    /// <param name="typeName">Nombre del tipo (ej: "Customer", "Order", "OrderItem")</param>
+    /// <returns>Nombre de parámetro (ej: "c", "o", "oi")</returns>
     private static string GenerateParameterName(string typeName)
     {
         if (string.IsNullOrWhiteSpace(typeName))
             return "x";
 
-        // Usar primera letra en minúscula
-        var firstChar = char.ToLowerInvariant(typeName[0]);
+        // Detectar si es un nombre compuesto (ej: OrderItem, ProductCategory)
+        // Un nombre compuesto tiene una mayúscula después de la primera letra
+        bool isCompoundName = typeName.Length > 1 &&
+                             typeName.Skip(1).Any(c => char.IsUpper(c));
 
-        // Si es una vocal común que puede confundirse, usar dos letras
-        if (firstChar == 'i' || firstChar == 'o')
+        if (isCompoundName)
         {
-            if (typeName.Length > 1)
+            // Para nombres compuestos, usar las iniciales de las palabras
+            // Ej: OrderItem -> oi, ProductCategory -> pc
+            var initials = new List<char>();
+
+            // Agregar primera letra
+            initials.Add(char.ToLowerInvariant(typeName[0]));
+
+            // Agregar iniciales de palabras siguientes (letras mayúsculas)
+            for (int i = 1; i < typeName.Length; i++)
             {
-                return $"{firstChar}{char.ToLowerInvariant(typeName[1])}";
+                if (char.IsUpper(typeName[i]))
+                {
+                    initials.Add(char.ToLowerInvariant(typeName[i]));
+                }
             }
+
+            return string.Join("", initials);
         }
 
-        return firstChar.ToString();
+        // Para nombres simples, usar solo la primera letra
+        return char.ToLowerInvariant(typeName[0]).ToString();
     }
+
 
     /// <summary>
     /// Configuración para generación de repositorio
