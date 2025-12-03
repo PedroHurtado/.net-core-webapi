@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Item | Fudie Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Aseguramos que Font Awesome 6 esté cargado para los iconos -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -25,6 +26,89 @@
                 }
             }
         }
+
+        // Definición de los 14 alérgenos de la legislación europea
+        const ALLERGENS_MAP = {
+            'A': { name: 'Gluten', icon: 'fa-bread-slice', color: 'text-yellow-600' },
+            'B': { name: 'Crustáceos', icon: 'fa-shrimp', color: 'text-red-500' },
+            'C': { name: 'Huevos', icon: 'fa-egg', color: 'text-amber-500' },
+            'D': { name: 'Pescado', icon: 'fa-fish', color: 'text-blue-500' },
+            'E': { name: 'Cacahuetes', icon: 'fa-seedling', color: 'text-orange-500' },
+            'F': { name: 'Soja', icon: 'fa-seedling', color: 'text-green-500' },
+            'G': { name: 'Lácteos', icon: 'fa-cheese', color: 'text-sky-400' },
+            'H': { name: 'Frutos Secos', icon: 'fa-walnut', color: 'text-yellow-700' },
+            'I': { name: 'Apio', icon: 'fa-leaf', color: 'text-green-700' },
+            'J': { name: 'Mostaza', icon: 'fa-seedling', color: 'text-amber-600' },
+            'K': { name: 'Sésamo', icon: 'fa-circle-dot', color: 'text-stone-500' },
+            'L': { name: 'Sulfitos', icon: 'fa-wine-glass-empty', color: 'text-purple-500' },
+            'M': { name: 'Altramuces', icon: 'fa-cookie-bite', color: 'text-pink-500' },
+            // CORREGIDO: Usamos fa-wave-square, un icono libre y visible, ya que fa-snail a veces falla al cargar.
+            'N': { name: 'Moluscos', icon: 'fa-wave-square', color: 'text-cyan-500' } 
+        };
+
+        // Estado inicial de ejemplo (Chuletón: Lácteos, Huevos, Pescado)
+        let selectedAllergens = ['G', 'C', 'D'];
+
+        /**
+         * Inicializa la interfaz de selección de alérgenos.
+         */
+        function initializeAllergens() {
+            const container = document.getElementById('allergens-selector-grid');
+            container.innerHTML = '';
+            
+            // Generar los botones de selección y añadir el estado inicial
+            Object.keys(ALLERGENS_MAP).forEach(key => {
+                const allergen = ALLERGENS_MAP[key];
+                const isSelected = selectedAllergens.includes(key);
+
+                const button = document.createElement('button');
+                button.id = `allergen-${key}`;
+                // Las clases se actualizan dinámicamente según el estado de selección
+                button.className = `flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all text-gray-500 hover:bg-gray-50 ${isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-gray-200 bg-white'}`;
+                button.setAttribute('data-key', key);
+                button.setAttribute('onclick', 'toggleAllergen(this)');
+
+                // Aseguramos que la clase del icono se genere correctamente, usando el color del mapa si no está seleccionado
+                const iconColorClass = isSelected ? 'text-primary' : allergen.color;
+                button.innerHTML = `
+                    <i class="fas ${allergen.icon} text-lg ${iconColorClass}"></i>
+                    <span class="text-[10px] font-semibold mt-1 leading-none text-center">${allergen.name}</span>
+                `;
+                container.appendChild(button);
+            });
+        }
+
+        /**
+         * Añade o quita un alérgeno de la lista de seleccionados y actualiza la UI.
+         * @param {HTMLElement} button El botón que fue pulsado.
+         */
+        function toggleAllergen(button) {
+            const key = button.getAttribute('data-key');
+            const allergen = ALLERGENS_MAP[key];
+            const index = selectedAllergens.indexOf(key);
+            const iconElement = button.querySelector('i');
+
+            if (index > -1) {
+                // Deseleccionar
+                selectedAllergens.splice(index, 1);
+                button.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
+                button.classList.add('border-gray-200', 'bg-white');
+                // Icono a su color original
+                iconElement.classList.remove('text-primary');
+                iconElement.classList.add(allergen.color);
+            } else {
+                // Seleccionar
+                selectedAllergens.push(key);
+                button.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+                button.classList.remove('border-gray-200', 'bg-white');
+                // Icono al color primario
+                iconElement.classList.remove(allergen.color);
+                iconElement.classList.add('text-primary');
+            }
+        }
+        
+        // Ejecutar la inicialización al cargar la página
+        window.onload = initializeAllergens;
     </script>
 </head>
 
@@ -94,6 +178,8 @@
                             <i class="fas fa-chevron-right text-xs"></i>
                             <span>Editar Item</span>
                         </div>
+
+                        <!-- Título del Item -->
                         <h1 class="text-2xl font-bold text-gray-900">Chuletón de Vaca Vieja</h1>
                     </div>
                     <div class="flex gap-3">
@@ -111,7 +197,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    <!-- Left Column: Main Info -->
+                    <!-- Left Column: Main Info, Pricing, and Nutrition -->
                     <div class="lg:col-span-2 space-y-8">
 
                         <!-- Basic Info -->
@@ -224,10 +310,84 @@
                             </div>
                         </div>
 
+                        <!-- Nutritional Info -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-gray-900 mb-6">Información Nutricional</h3>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Calorías -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="calories">Calorías (kcal)</label>
+                                    <input type="number" id="calories" value="550" min="0" max="10000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                                <!-- Tamaño de Ración -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="serving-size">Ración (g)</label>
+                                    <input type="number" id="serving-size" value="200" min="1" max="10000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                            </div>
+
+                            <h4 class="font-bold text-sm text-gray-700 mt-6 mb-4 border-t pt-4 border-gray-100">Macronutrientes por ración (g)</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Proteínas -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="protein">Proteínas</label>
+                                    <input type="number" id="protein" value="40.5" step="0.1" min="0" max="1000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                                <!-- Carbohidratos -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="carbs">Carbohidratos</label>
+                                    <input type="number" id="carbs" value="2.1" step="0.1" min="0" max="1000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                                <!-- Grasas -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="fat">Grasas</label>
+                                    <input type="number" id="fat" value="42.0" step="0.1" min="0" max="1000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                            </div>
+
+                            <h4 class="font-bold text-sm text-gray-700 mt-6 mb-4 border-t pt-4 border-gray-100">Opcional (g)</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <!-- Fibra -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="fiber">Fibra</label>
+                                    <input type="number" id="fiber" value="1.2" step="0.1" min="0" max="1000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                                <!-- Azúcares -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="sugar">Azúcares</label>
+                                    <input type="number" id="sugar" value="0.5" step="0.1" min="0" max="1000"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                                <!-- Sal -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1" for="salt">Sal</label>
+                                    <input type="number" id="salt" value="1.1" step="0.1" min="0" max="100"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:border-primary outline-none text-right">
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
 
-                    <!-- Right Column: Settings -->
-                    <div class="space-y-6">
+                    <!-- Right Column: Settings and Allergens -->
+                    <div class="space-y-8">
+
+                        <!-- Allergen Selector -->
+                        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <h3 class="font-bold text-lg text-gray-900 mb-4">Alérgenos (EU)</h3>
+                            <p class="text-xs text-gray-400 mb-4">Selecciona los alérgenos que contiene este plato.</p>
+                            <div id="allergens-selector-grid" class="grid grid-cols-4 gap-2">
+                                <!-- Los botones de alérgenos se insertarán aquí por JavaScript -->
+                            </div>
+                        </div>
 
                         <!-- Availability -->
                         <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
