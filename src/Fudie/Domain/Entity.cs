@@ -21,6 +21,26 @@ public abstract class Entity(Guid id)
         return Id.GetHashCode();
     }
 
+    public static bool operator ==(Entity? left, Entity? right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is null || right is null)
+        {
+            return false;
+        }
+
+        return left.Id == right.Id;
+    }
+
+    public static bool operator !=(Entity? left, Entity? right)
+    {
+        return !(left == right);
+    }
+
     protected static Result ValidateEntity<T>(T entity, AbstractValidator<T> validator) where T : Entity
     {
         if (entity.Id == Guid.Empty)
@@ -32,9 +52,9 @@ public abstract class Entity(Guid id)
 
         if (!result.IsValid)
         {
-            var validationErrors = result.Errors.Select(e => 
+            var validationErrors = result.Errors.Select(e =>
                 new ValidationError(e.ErrorMessage, e.PropertyName));
-            
+
             return Result.Failure(validationErrors);
         }
 
