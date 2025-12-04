@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Fudie.UnitTests;
+namespace Fudie.UnitTests.Generator;
 
 /// <summary>
 /// Helper para crear compilaciones en memoria con entidades de prueba

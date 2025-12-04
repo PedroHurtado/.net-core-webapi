@@ -217,14 +217,67 @@ internal static class CodeBuilder
     }
 
     /// <summary>
+    /// Genera el método Get completo para IUpdate&lt;T, ID&gt;
+    /// Igual que IGet pero con tracking habilitado (usa Set en lugar de Query)
+    /// </summary>
+    public static string GenerateUpdateGetMethod(
+        string entityTypeName,
+        string idTypeName,
+        IEnumerable<PathValidator.IncludePathInfo> includePaths,
+        bool asSplitQuery)
+    {
+        var sb = new StringBuilder();
+        var entityParameter = GenerateParameterName(entityTypeName);
+
+        sb.AppendLine($"public async Task<{entityTypeName}> Get({idTypeName} id)");
+        sb.AppendLine("{");
+        sb.AppendLine($"    var query = _entityLookup.Set<{entityTypeName}>();  // Tracking habilitado para updates");
+        sb.AppendLine();
+
+        // Includes
+        var validPaths = includePaths.Where(p => p.IsValid).ToArray();
+        if (validPaths.Any())
+        {
+            sb.AppendLine("    // Apply includes");
+            foreach (var path in validPaths)
+            {
+                var includeCode = GenerateIncludeChain(path, entityTypeName, "query");
+                sb.AppendLine($"    {includeCode}");
+            }
+            sb.AppendLine();
+        }
+
+        // Query modifiers (solo AsSplitQuery, tracking ya está habilitado por defecto)
+        if (asSplitQuery)
+        {
+            sb.AppendLine("    // Apply query modifiers");
+            sb.AppendLine($"    {GenerateAsSplitQuery("query")}");
+            sb.AppendLine();
+        }
+
+        // Execute query
+        sb.AppendLine($"    var entity = await query.FirstOrDefaultAsync({entityParameter} => {entityParameter}.Id == id);");
+        sb.AppendLine();
+        sb.AppendLine("    if (entity == null)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        throw new KeyNotFoundException($\"{entityTypeName} with ID '{{id}}' not found.\");");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    return entity;");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
+
+    /// <summary>
     /// Genera una clase de repositorio completa
     /// </summary>
     public static string GenerateRepositoryClass(
-        string className,
-        string namespaceName,
-        string entityTypeName,
-        string idTypeName,
-        RepositoryConfig config)
+    string className,
+    string namespaceName,
+    string entityTypeName,
+    string idTypeName,
+    RepositoryConfig config)
     {
         var sb = new StringBuilder();
 
@@ -303,8 +356,31 @@ internal static class CodeBuilder
         sb.AppendLine();
 
         // Methods
-        if (config.ImplementIGet)
+        // IMPORTANTE: IUpdate hereda de IGet, así que si implementa IUpdate, 
+        // debe generar Get() con tracking habilitado
+        if (config.ImplementIUpdate)
         {
+            // IUpdate necesita Get() con tracking habilitado
+            var updateGetMethod = GenerateUpdateGetMethod(
+                entityTypeName,
+                idTypeName,
+                config.IncludePaths,
+                config.AsSplitQuery);
+
+            // Indent method
+            var lines = updateGetMethod.Split('\n');
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    sb.AppendLine($"    {line.TrimEnd()}");
+                }
+            }
+            sb.AppendLine();
+        }
+        else if (config.ImplementIGet)
+        {
+            // Solo IGet (sin IUpdate): genera Get() con AsNoTracking
             var getMethod = GenerateGetMethod(
                 entityTypeName,
                 idTypeName,

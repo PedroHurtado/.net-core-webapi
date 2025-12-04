@@ -2,7 +2,7 @@ using FluentAssertions;
 using Fudie.Generator;
 using Microsoft.CodeAnalysis;
 
-namespace Fudie.UnitTests;
+namespace Fudie.UnitTests.Generator;
 
 public class CodeBuilderMethodTests
 {
@@ -162,7 +162,7 @@ public class CodeBuilderMethodTests
 
         // Assert
         result.Should().Contain("// Apply query modifiers");
-        
+
         // Verificar orden: AsSplitQuery -> AsNoTracking -> IgnoreQueryFilters
         var splitIndex = result.IndexOf("AsSplitQuery");
         var trackingIndex = result.IndexOf("AsNoTracking");
@@ -232,6 +232,175 @@ public class CodeBuilderMethodTests
         // Assert
         result.Should().Contain("public void Remove(Customer entity)");
         result.Should().Contain("_changeTracker.Entry(entity).State = EntityState.Deleted;");
+    }
+
+    #endregion
+
+    #region Update Method
+
+    [Fact]
+    public void GenerateUpdateGetMethod_WithNoIncludes_ShouldGenerateBasicMethodWithTracking()
+    {
+        // Arrange
+        var paths = Array.Empty<PathValidator.IncludePathInfo>();
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert
+        result.Should().Contain("public async Task<Customer> Get(Guid id)");
+        result.Should().Contain("var query = _entityLookup.Set<Customer>();  // Tracking habilitado para updates");
+        result.Should().Contain("var entity = await query.FirstOrDefaultAsync(c => c.Id == id);");
+        result.Should().Contain("if (entity == null)");
+        result.Should().Contain("throw new KeyNotFoundException");
+        result.Should().Contain("return entity;");
+        result.Should().NotContain("Include");
+        result.Should().NotContain("AsNoTracking");  // KEY: NO debe tener AsNoTracking
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_ShouldUseSetInsteadOfQuery()
+    {
+        // Arrange
+        var paths = Array.Empty<PathValidator.IncludePathInfo>();
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert
+        result.Should().Contain("_entityLookup.Set<Customer>()");
+        result.Should().NotContain("_entityLookup.Query<Customer>()");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_WithSingleInclude_ShouldIncludeIncludeCode()
+    {
+        // Arrange
+        var path = PathValidator.ValidatePath("Orders", _testData.customerSymbol, _testData.compilation);
+        var paths = new[] { path };
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert
+        result.Should().Contain("// Apply includes");
+        result.Should().Contain("query = query.Include(c => c.Orders);");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_WithMultipleIncludes_ShouldIncludeAllIncludes()
+    {
+        // Arrange
+        var path1 = PathValidator.ValidatePath("Orders.OrderItems", _testData.customerSymbol, _testData.compilation);
+        var path2 = PathValidator.ValidatePath("Address", _testData.customerSymbol, _testData.compilation);
+        var paths = new[] { path1, path2 };
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert
+        result.Should().Contain("query = query.Include(c => c.Orders)");
+        result.Should().Contain(".ThenInclude(o => o.OrderItems);");
+        result.Should().Contain("query = query.Include(c => c.Address);");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_WithAsSplitQuery_ShouldIncludeAsSplitQuery()
+    {
+        // Arrange
+        var paths = Array.Empty<PathValidator.IncludePathInfo>();
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: true);
+
+        // Assert
+        result.Should().Contain("// Apply query modifiers");
+        result.Should().Contain("query = query.AsSplitQuery();");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_WithComplexScenario_ShouldGenerateCompleteMethodWithTracking()
+    {
+        // Arrange
+        var path1 = PathValidator.ValidatePath("Orders.OrderItems.Product", _testData.customerSymbol, _testData.compilation);
+        var path2 = PathValidator.ValidatePath("Address", _testData.customerSymbol, _testData.compilation);
+        var paths = new[] { path1, path2 };
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: true);
+
+        // Assert
+        result.Should().Contain("public async Task<Customer> Get(Guid id)");
+        result.Should().Contain("var query = _entityLookup.Set<Customer>();  // Tracking habilitado para updates");
+        result.Should().Contain("// Apply includes");
+        result.Should().Contain("query = query.Include(c => c.Orders)");
+        result.Should().Contain(".ThenInclude(o => o.OrderItems)");
+        result.Should().Contain(".ThenInclude(oi => oi.Product);");
+        result.Should().Contain("query = query.Include(c => c.Address);");
+        result.Should().Contain("// Apply query modifiers");
+        result.Should().Contain("query = query.AsSplitQuery();");
+        result.Should().NotContain("AsNoTracking");  // KEY: NO debe tener AsNoTracking
+        result.Should().NotContain("IgnoreQueryFilters");  // KEY: NO debe tener IgnoreQueryFilters
+        result.Should().Contain("var entity = await query.FirstOrDefaultAsync(c => c.Id == id);");
+        result.Should().Contain("return entity;");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_ShouldNotIncludeAsNoTracking()
+    {
+        // Arrange - Escenario que tendría AsNoTracking en Get normal
+        var paths = Array.Empty<PathValidator.IncludePathInfo>();
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert - Verificar explícitamente que NO tiene AsNoTracking
+        result.Should().NotContain("AsNoTracking");
+    }
+
+    [Fact]
+    public void GenerateUpdateGetMethod_ShouldNotIncludeIgnoreQueryFilters()
+    {
+        // Arrange
+        var paths = Array.Empty<PathValidator.IncludePathInfo>();
+
+        // Act
+        var result = CodeBuilder.GenerateUpdateGetMethod(
+            "Customer",
+            "Guid",
+            paths,
+            asSplitQuery: false);
+
+        // Assert - Verificar explícitamente que NO tiene IgnoreQueryFilters
+        result.Should().NotContain("IgnoreQueryFilters");
     }
 
     #endregion

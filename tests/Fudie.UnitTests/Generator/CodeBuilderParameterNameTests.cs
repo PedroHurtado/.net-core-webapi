@@ -2,7 +2,7 @@ using FluentAssertions;
 using Fudie.Generator;
 using Microsoft.CodeAnalysis;
 
-namespace Fudie.UnitTests;
+namespace Fudie.UnitTests.Generator;
 
 public class CodeBuilderParameterNameTests
 {

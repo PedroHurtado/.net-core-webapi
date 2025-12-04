@@ -1,9 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
+
 
 namespace Fudie.Generator;
 
@@ -40,8 +38,7 @@ public class RepositorySourceGenerator : IIncrementalGenerator
     private static bool IsCandidateInterface(SyntaxNode node)
     {
         // Buscar interfaces con atributos
-        return node is InterfaceDeclarationSyntax interfaceDecl &&
-               interfaceDecl.AttributeLists.Count > 0;
+        return node is InterfaceDeclarationSyntax;
     }
 
     private static RepositoryInterfaceInfo? GetRepositoryInterfaceInfo(GeneratorSyntaxContext context)
@@ -52,11 +49,21 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         if (interfaceSymbol == null)
             return null;
 
-        // Verificar si tiene atributos de Fudie (Include, Tracking, etc.)
-        var hasFudieAttributes = interfaceSymbol.GetAttributes()
-            .Any(attr => attr.AttributeClass?.ContainingNamespace?.ToDisplayString() == "Fudie.Attributes");
+        // ✅ NUEVO: No procesar las interfaces base de Fudie
+        if (interfaceSymbol.ContainingNamespace?.ToDisplayString() == "Fudie.Infrastructure")
+            return null;
 
-        if (!hasFudieAttributes)
+        // ✅ Detectar si hereda de interfaces de repositorio Fudie
+        var isRepositoryInterface = interfaceSymbol.AllInterfaces.Any(i =>
+        {
+            var fullName = i.ConstructedFrom.ToDisplayString();
+            return fullName == "Fudie.Infrastructure.IGet<T, ID>" ||
+                   fullName == "Fudie.Infrastructure.IAdd<T>" ||
+                   fullName == "Fudie.Infrastructure.IUpdate<T, ID>" ||
+                   fullName == "Fudie.Infrastructure.IRemove<T, ID>";
+        });
+
+        if (!isRepositoryInterface)
             return null;
 
         return new RepositoryInterfaceInfo(interfaceDecl, interfaceSymbol);
@@ -356,5 +363,5 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         CodeBuilder.RepositoryConfig BuilderConfig
     );
 
-    
+
 }
