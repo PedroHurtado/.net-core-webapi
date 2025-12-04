@@ -1,4 +1,4 @@
-namespace Fudie;
+namespace Fudie.Domain;
 
 using FluentValidation;
 using FluentValidation.Results;
@@ -9,22 +9,22 @@ public static class ResultExtensions
     {
         if (result.IsFailure)
         {
-            var failures = result.Errors.Select(e => 
+            var failures = result.Errors.Select(e =>
                 new ValidationFailure(e.PropertyName, e.ErrorMessage));
-            
+
             throw new ValidationException(failures);
         }
-        
+
         return result.Value!;
     }
-    
+
     public static void SuccessOrThrow(this Result result)
     {
         if (result.IsFailure)
         {
-            var failures = result.Errors.Select(e => 
+            var failures = result.Errors.Select(e =>
                 new ValidationFailure(e.PropertyName, e.ErrorMessage));
-            
+
             throw new ValidationException(failures);
         }
     }

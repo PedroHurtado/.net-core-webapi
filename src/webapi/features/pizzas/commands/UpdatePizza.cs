@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Fudie;
+using Fudie.Domain;
 using Fudie.DependencyInjection;
 using Fudie.Infrastructure;
 using Fudie.OpenApi;

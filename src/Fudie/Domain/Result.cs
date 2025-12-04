@@ -1,4 +1,4 @@
-namespace Fudie;
+namespace Fudie.Domain;
 
 public class ValidationError(string errorMessage, string propertyName = "")
 {
@@ -19,11 +19,11 @@ public class Result
     }
 
     public static Result Success() => new(true);
-    
-    public static Result Failure(string error, string propertyName = "") 
+
+    public static Result Failure(string error, string propertyName = "")
         => new(false, [new ValidationError(error, propertyName)]);
-    
-    public static Result Failure(IEnumerable<ValidationError> errors) 
+
+    public static Result Failure(IEnumerable<ValidationError> errors)
         => new(false, errors);
 }
 
@@ -31,17 +31,17 @@ public class Result<T> : Result
 {
     public T? Value { get; }
 
-    protected Result(T? value, bool isSuccess, IEnumerable<ValidationError>? errors = null) 
+    protected Result(T? value, bool isSuccess, IEnumerable<ValidationError>? errors = null)
         : base(isSuccess, errors)
     {
         Value = value;
     }
 
     public static Result<T> Success(T value) => new(value, true);
-    
-    public new static Result<T> Failure(string error, string propertyName = "") 
+
+    public new static Result<T> Failure(string error, string propertyName = "")
         => new(default, false, [new ValidationError(error, propertyName)]);
-    
-    public new static Result<T> Failure(IEnumerable<ValidationError> errors) 
+
+    public new static Result<T> Failure(IEnumerable<ValidationError> errors)
         => new(default, false, errors);
 }

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Fudie;
+using Fudie.Domain;
 using Schedule.Features.Schedule.Models;
 
 namespace ScheDule.UnitTests;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Fudie;
+using Fudie.Domain;
 using webapi.features.ingredients.models;
 using webapi.features.pizzas.models;
 

@@ -2,6 +2,7 @@ using Fudie.Infrastructure;
 using Fudie.OpenApi;
 using webapi.features.ingredients.models;
 using Fudie;
+using Fudie.Domain;
 using Fudie.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
