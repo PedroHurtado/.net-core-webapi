@@ -338,6 +338,21 @@ public class PlanTests
     }
 
     [Fact]
+    public void AddFeature_WithInvalidUnlimitedFeature_ShouldReturnFailure()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+        var invalidFeature = new Feature("EXTRA_FEATURE", "Extra", null, FeatureType.Unlimited, 100);
+
+        // Act
+        var result = plan.AddFeature(invalidFeature);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "Feature");
+    }
+
+    [Fact]
     public void UpdateFeature_WithValidData_ShouldReturnSuccess()
     {
         // Arrange
@@ -380,6 +395,37 @@ public class PlanTests
         // Assert
         result.IsFailure.Should().BeTrue();
         result.Errors.Should().Contain(e => e.PropertyName == "Feature.Code");
+    }
+
+    [Fact]
+    public void UpdateFeature_ChangingCodeToExistingCode_ShouldReturnFailure()
+    {
+        // Arrange
+        var features = new[] { CreateValidLimitFeature(), CreateValidBooleanFeature() };
+        var plan = CreateValidPlan(features: features);
+        var updatedFeature = CreateValidLimitFeature("PRIORITY_SUPPORT", 200);
+
+        // Act
+        var result = plan.UpdateFeature("RESERVATIONS_MONTHLY", updatedFeature);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "Feature.Code");
+    }
+
+    [Fact]
+    public void UpdateFeature_WithInvalidFeature_ShouldReturnFailure()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+        var invalidFeature = new Feature("RESERVATIONS_MONTHLY", "Reservas", null, FeatureType.Limit, null);
+
+        // Act
+        var result = plan.UpdateFeature("RESERVATIONS_MONTHLY", invalidFeature);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "Feature");
     }
 
     [Fact]
@@ -508,6 +554,19 @@ public class PlanTests
     }
 
     [Fact]
+    public void GetLimitForFeature_WithBooleanType_ShouldReturnNull()
+    {
+        // Arrange
+        var plan = CreateValidPlan(features: [CreateValidBooleanFeature()]);
+
+        // Act
+        var limit = plan.GetLimitForFeature("PRIORITY_SUPPORT");
+
+        // Assert
+        limit.Should().BeNull();
+    }
+
+    [Fact]
     public void HasFeature_WithExistingCode_ShouldReturnTrue()
     {
         // Arrange
@@ -554,6 +613,19 @@ public class PlanTests
 
         // Act
         var isUnlimited = plan.IsFeatureUnlimited("RESERVATIONS_MONTHLY");
+
+        // Assert
+        isUnlimited.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsFeatureUnlimited_WithNonExistentCode_ShouldReturnFalse()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+
+        // Act
+        var isUnlimited = plan.IsFeatureUnlimited("NONEXISTENT");
 
         // Assert
         isUnlimited.Should().BeFalse();
@@ -672,6 +744,25 @@ public class PlanTests
     }
 
     [Fact]
+    public void DeactivateProviderConfiguration_WithNonExistentProvider_ShouldReturnFailure()
+    {
+        // Arrange
+        var providerConfigs = new[]
+        {
+            CreateValidProviderConfig("Stripe"),
+            CreateValidProviderConfig("Paddle")
+        };
+        var plan = CreateValidPlan(providerConfigurations: providerConfigs);
+
+        // Act
+        var result = plan.DeactivateProviderConfiguration("Nonexistent");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "ProviderConfiguration.Provider");
+    }
+
+    [Fact]
     public void ActivateProviderConfiguration_WithInactiveConfig_ShouldReturnSuccess()
     {
         // Arrange
@@ -703,6 +794,20 @@ public class PlanTests
 
         // Act
         var result = plan.ActivateProviderConfiguration("Stripe");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "ProviderConfiguration.Provider");
+    }
+
+    [Fact]
+    public void ActivateProviderConfiguration_WithNonExistentInactiveConfig_ShouldReturnFailure()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+
+        // Act
+        var result = plan.ActivateProviderConfiguration("Nonexistent");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -797,6 +902,35 @@ public class PlanTests
         // Assert
         result.IsFailure.Should().BeTrue();
         result.Errors.Should().Contain(e => e.PropertyName == "Name");
+    }
+
+    [Fact]
+    public void Update_WithInvalidDescription_ShouldReturnFailure()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+
+        // Act
+        var result = plan.Update("Plan Premium", "", CreateValidPrice(), BillingPeriod.Monthly);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "Description");
+    }
+
+    [Fact]
+    public void Update_WithNegativePrice_ShouldReturnFailure()
+    {
+        // Arrange
+        var plan = CreateValidPlan();
+        var negativePrice = new Money(-10m, Currency.EUR);
+
+        // Act
+        var result = plan.Update("Plan Premium", "Description", negativePrice, BillingPeriod.Monthly);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "Price.Amount");
     }
 
     [Fact]
@@ -908,6 +1042,28 @@ public class PlanTests
         // Assert
         result.IsFailure.Should().BeTrue();
         result.Errors.Should().Contain(e => e.PropertyName == "Currency.Code");
+    }
+
+    [Fact]
+    public void Currency_FromCode_WithUSD_ShouldReturnSuccess()
+    {
+        // Act
+        var result = Currency.FromCode("USD");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(Currency.USD);
+    }
+
+    [Fact]
+    public void Currency_FromCode_WithGBP_ShouldReturnSuccess()
+    {
+        // Act
+        var result = Currency.FromCode("GBP");
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(Currency.GBP);
     }
 
     [Fact]
@@ -1027,6 +1183,41 @@ public class PlanTests
 
         // Assert
         feature.DisplayValue.Should().Be("Incluido");
+    }
+
+    [Fact]
+    public void Feature_Properties_ShouldReturnCorrectValues()
+    {
+        // Arrange
+        var feature = new Feature("TEST_CODE", "Test Name", "Test Description", FeatureType.Limit, 50, "units");
+
+        // Assert
+        feature.Code.Should().Be("TEST_CODE");
+        feature.Name.Should().Be("Test Name");
+        feature.Description.Should().Be("Test Description");
+        feature.Type.Should().Be(FeatureType.Limit);
+        feature.Limit.Should().Be(50);
+        feature.Unit.Should().Be("units");
+    }
+
+    [Fact]
+    public void Feature_IsValid_WithInvalidFeatureType_ShouldBeFalse()
+    {
+        // Arrange - Using an undefined enum value
+        var feature = new Feature("TEST", "Test", null, (FeatureType)999, null);
+
+        // Assert
+        feature.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Feature_DisplayValue_WithInvalidFeatureType_ShouldReturnEmpty()
+    {
+        // Arrange - Using an undefined enum value
+        var feature = new Feature("TEST", "Test", null, (FeatureType)999, null);
+
+        // Assert
+        feature.DisplayValue.Should().BeEmpty();
     }
 
     #endregion
