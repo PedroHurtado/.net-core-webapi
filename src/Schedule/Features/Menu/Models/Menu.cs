@@ -102,24 +102,16 @@ public class Menu : Entity
     }
 }
 
-public class MenuCategory : Entity
+public class MenuCategory(Guid id, string name, string? description, int displayOrder) : Entity(id)
 {
-    public string Name { get; protected set; }
-    public string? Description { get; protected set; }
-    public int DisplayOrder { get; protected set; }
-    public bool IsActive { get; protected set; }
-    
+    public string Name { get; protected set; } = name;
+    public string? Description { get; protected set; } = description;
+    public int DisplayOrder { get; protected set; } = displayOrder;
+    public bool IsActive { get; protected set; } = true;
+
     public IReadOnlyCollection<MenuItem> Items => _items.ToList().AsReadOnly();
     protected HashSet<MenuItem> _items = [];
 
-    public MenuCategory(Guid id, string name, string? description, int displayOrder) : base(id)
-    {
-        Name = name;
-        Description = description;
-        DisplayOrder = displayOrder;
-        IsActive = true;
-    }
-    
     public Result AddItem(string name, string? description, List<PriceOption> priceOptions)
     {
         if (_items.Any(i => i.Name == name))
@@ -134,24 +126,15 @@ public class MenuCategory : Entity
     }
 }
 
-public class MenuItem : Entity
+public class MenuItem(Guid id, string name, string? description, List<PriceOption> priceOptions) : Entity(id)
 {
-    public string Name { get; protected set; }
-    public string? Description { get; protected set; }
-    public bool IsActive { get; protected set; }
-    public bool IsAvailable { get; protected set; }
-    
-    public IReadOnlyCollection<PriceOption> PriceOptions => _priceOptions.ToList().AsReadOnly();
-    protected HashSet<PriceOption> _priceOptions = [];
+    public string Name { get; protected set; } = name;
+    public string? Description { get; protected set; } = description;
+    public bool IsActive { get; protected set; } = true;
+    public bool IsAvailable { get; protected set; } = true;
 
-    public MenuItem(Guid id, string name, string? description, List<PriceOption> priceOptions) : base(id)
-    {
-        Name = name;
-        Description = description;
-        IsActive = true;
-        IsAvailable = true;
-        _priceOptions = new HashSet<PriceOption>(priceOptions);
-    }
+    public IReadOnlyCollection<PriceOption> PriceOptions => _priceOptions.ToList().AsReadOnly();
+    protected HashSet<PriceOption> _priceOptions = new HashSet<PriceOption>(priceOptions);
 }
 
 public record DepositPolicy(DepositType DepositType, decimal Amount, decimal? Percentage, decimal? MinimumBillForDeposit, int? MinimumGuestsForDeposit);
