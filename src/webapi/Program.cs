@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Fudie;
 using Fudie.DependencyInjection;
 using Fudie.OpenApi;
 using webapi.infrastructure;
 using Fudie.Features;
+using Fudie.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 

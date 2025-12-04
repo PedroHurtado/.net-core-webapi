@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using FluentValidation;
 using Fudie.OpenApi;
 
-namespace Fudie;
+namespace Fudie.Http;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {
