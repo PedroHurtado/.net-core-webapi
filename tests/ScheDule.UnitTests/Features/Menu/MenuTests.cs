@@ -119,12 +119,228 @@ public class MenuTests
         menu.AddCategory("Starters");
         var category = menu.Categories.First();
         var priceOptions = new List<PriceOption> { new PriceOption(Guid.NewGuid(), PortionType.Racion, 10m) };
-        
+
         // Act
         var result = category.AddItem("Soup", "Hot", priceOptions);
-        
+
         // Assert
         result.IsSuccess.Should().BeTrue();
         category.Items.Should().ContainSingle(i => i.Name == "Soup");
+    }
+
+    [Fact]
+    public void SetDepositPolicy_WithPercentageOnNonPercentageType_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.SetDepositPolicy(DepositType.PerPerson, 10m, 50m);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "percentage");
+    }
+
+    [Fact]
+    public void SetDepositPolicy_WithZeroAmount_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.SetDepositPolicy(DepositType.FixedAmount, 0m);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "amount");
+    }
+
+    [Fact]
+    public void RemoveDepositPolicy_ShouldClearPolicy()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        menu.SetDepositPolicy(DepositType.PerPerson, 10m);
+
+        // Act
+        var result = menu.RemoveDepositPolicy();
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        menu.DepositPolicy.Should().BeNull();
+    }
+
+    [Fact]
+    public void AddCategory_WithEmptyName_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.AddCategory("");
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "name");
+    }
+
+    [Fact]
+    public void AddCategory_WithNameExceedingMaxLength_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        var longName = new string('A', 101);
+
+        // Act
+        var result = menu.AddCategory(longName);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "name");
+    }
+
+    [Fact]
+    public void AddItem_WithDuplicateName_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        menu.AddCategory("Starters");
+        var category = menu.Categories.First();
+        var priceOptions = new List<PriceOption> { new PriceOption(Guid.NewGuid(), PortionType.Racion, 10m) };
+        category.AddItem("Soup", "Hot", priceOptions);
+
+        // Act
+        var result = category.AddItem("Soup", "Different description", priceOptions);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "name");
+    }
+
+    [Fact]
+    public void AddItem_WithEmptyPriceOptions_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        menu.AddCategory("Starters");
+        var category = menu.Categories.First();
+
+        // Act
+        var result = category.AddItem("Soup", "Hot", new List<PriceOption>());
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "priceOptions");
+    }
+
+    [Fact]
+    public void AddItem_WithNullPriceOptions_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        menu.AddCategory("Starters");
+        var category = menu.Categories.First();
+
+        // Act
+        var result = category.AddItem("Soup", "Hot", null!);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "priceOptions");
+    }
+
+    [Fact]
+    public void MenuItem_ShouldHaveCorrectDefaultValues()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+        menu.AddCategory("Starters");
+        var category = menu.Categories.First();
+        var priceOptions = new List<PriceOption> { new PriceOption(Guid.NewGuid(), PortionType.Racion, 10m) };
+        category.AddItem("Soup", "Hot soup", priceOptions);
+
+        // Act
+        var item = category.Items.First();
+
+        // Assert
+        item.IsActive.Should().BeTrue();
+        item.IsAvailable.Should().BeTrue();
+        item.Name.Should().Be("Soup");
+        item.Description.Should().Be("Hot soup");
+        item.PriceOptions.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void MenuCategory_ShouldHaveCorrectDefaultValues()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        menu.AddCategory("Starters", "First courses");
+        var category = menu.Categories.First();
+
+        // Assert
+        category.IsActive.Should().BeTrue();
+        category.Name.Should().Be("Starters");
+        category.Description.Should().Be("First courses");
+        category.DisplayOrder.Should().Be(1);
+    }
+
+    [Fact]
+    public void SetDepositPolicy_PercentageOfBill_WithoutPercentage_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.SetDepositPolicy(DepositType.PercentageOfBill, 0m, null);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "percentage");
+    }
+
+    [Fact]
+    public void SetDepositPolicy_PercentageOfBill_WithPercentageLessThanOne_ShouldReturnFailure()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.SetDepositPolicy(DepositType.PercentageOfBill, 0m, 0m);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.PropertyName == "percentage");
+    }
+
+    [Fact]
+    public void SetDepositPolicy_PercentageOfBill_WithValidPercentage_ShouldReturnSuccess()
+    {
+        // Arrange
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Menu").Value!;
+
+        // Act
+        var result = menu.SetDepositPolicy(DepositType.PercentageOfBill, 0m, 50m);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        menu.DepositPolicy.Should().NotBeNull();
+        menu.DepositPolicy!.Percentage.Should().Be(50m);
+    }
+
+    [Fact]
+    public void Menu_ShouldHaveCorrectDefaultValues()
+    {
+        // Arrange & Act
+        var menu = Schedule.Features.Menu.Models.Menu.Create(Guid.NewGuid(), Guid.NewGuid(), "Test Menu", "Description").Value!;
+
+        // Assert
+        menu.DisplayOrder.Should().Be(0);
+        menu.Description.Should().Be("Description");
+        menu.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        menu.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 }
