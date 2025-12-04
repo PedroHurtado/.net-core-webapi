@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Fudie;
 using Fudie.DependencyInjection;
-using Fudie.Infrastructure;
 using Fudie.OpenApi;
 using webapi.infrastructure;
+using Fudie.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 

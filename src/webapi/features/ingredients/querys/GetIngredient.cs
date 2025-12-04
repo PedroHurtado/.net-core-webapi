@@ -1,7 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
-using Fudie;
 using Fudie.DependencyInjection;
+using Fudie.Features;
 using Fudie.Infrastructure;
 using Fudie.OpenApi;
 using webapi.features.ingredients.models;

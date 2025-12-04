@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Routing;
 
-namespace Fudie;
+namespace Fudie.Features;
 
 public interface IFeatureModule
 {

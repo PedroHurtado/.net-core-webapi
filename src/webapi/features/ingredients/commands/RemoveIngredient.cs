@@ -1,9 +1,9 @@
 using Fudie.Infrastructure;
 using Fudie.OpenApi;
 using webapi.features.ingredients.models;
-using Fudie;
 using Microsoft.EntityFrameworkCore;
 using Fudie.DependencyInjection;
+using Fudie.Features;
 
 namespace webapi.features.ingredients.commands;
 

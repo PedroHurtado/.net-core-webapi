@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Routing;
 using System.Reflection;
 
-namespace Fudie;
+namespace Fudie.Features;
 
 public static class RouteExtension
 {
