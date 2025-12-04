@@ -6,19 +6,16 @@ Tenemos un Bar
 	
 Entities
 	->Planes
-	->Paises
-	->ScheDule
-	->Menu
-	->Capacity
+	->Paises	
 	->Currency
 ->Tenemos que facturar(AgregateRoot)
-	Nombre->ValueObject
-	Direccion->ValueObject
-	Telefono->ValueObject
-	Email->ValueObject
-	Dni->ValueObject
-        Plan->Reference
-	Pago->Reference
+	Nombre
+	Direccion
+	Telefono-
+	Email
+	Dni
+    Plan
+	stripePaymentIntentId
 	Estado->Pending|Cancelado|Active (Enum)
 	Propietario->Id
 
