@@ -1,8 +1,7 @@
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Fudie.OpenApi;
 
-namespace Fudie;
+namespace Fudie.OpenApi;
 
 public class GlobalErrorResponsesOperationFilter : IOperationFilter
 {
