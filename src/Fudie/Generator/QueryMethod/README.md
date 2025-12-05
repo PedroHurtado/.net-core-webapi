@@ -204,5 +204,4 @@ El sistema incluye 145 tests unitarios (100% pasando):
 
 ## 🔗 Ver También
 
-- [Especificación Completa](./query-method-generator-spec.md) - Gramática y detalles técnicos
-- [Resumen de Implementación](./IMPLEMENTATION_SUMMARY.md) - Estado y métricas del proyecto
+- [Especificación Completa](../.task/query-method-generator-spec.md) - Gramática y detalles técnicos

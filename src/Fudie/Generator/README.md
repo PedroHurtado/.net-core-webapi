@@ -231,8 +231,8 @@ El sistema de generadores incluye **145 tests unitarios** (100% pasando):
 ## 📚 Documentación Adicional
 
 - **[Query Method Generator](./QueryMethod/README.md)** - Generación de métodos de consulta
-- **[Especificación de Query Methods](./QueryMethod/query-method-generator-spec.md)** - Gramática completa
-- **[Resumen de Implementación](./QueryMethod/IMPLEMENTATION_SUMMARY.md)** - Estado del proyecto
+- **[Especificación de Query Methods](./.task/query-method-generator-spec.md)** - Gramática completa
+- **[Comparativa con Spring Data](./.task/Comparativa-Metodos-Spring-Data.md)** - Análisis comparativo
 
 ## 🔧 Desarrollo
 
