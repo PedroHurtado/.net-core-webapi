@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Fudie.Infrastructure.Atributes;
+using Fudie.Infrastructure;
 
 namespace Fudie.UnitTests.Infrastructure.Atributes;
 
@@ -305,7 +305,7 @@ public class IgnoreQueryFiltersAttributeTests
         var namespaceName = attributeType.Namespace;
 
         // Assert
-        namespaceName.Should().Be("Fudie.Infrastructure.Atributes");
+        namespaceName.Should().Be("Fudie.Infrastructure");
     }
 
     #endregion

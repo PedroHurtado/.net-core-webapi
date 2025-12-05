@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Fudie.Infrastructure.Atributes;
+using Fudie.Infrastructure;
 
 namespace Fudie.UnitTests.Infrastructure.Atributes;
 

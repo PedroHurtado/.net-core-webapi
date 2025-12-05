@@ -1,5 +1,4 @@
-
-namespace Fudie.Infrastructure.Atributes;
+namespace Fudie.Infrastructure;
 
 /// <summary>
 /// Especifica las propiedades de navegación a incluir (eager loading) en las queries del repository.
