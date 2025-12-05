@@ -428,6 +428,16 @@ internal static class CodeBuilder
             }
         }
 
+        // Query Methods
+        if (config.QueryMethods.Any())
+        {
+            var queryMethodsCode = GenerateQueryMethods(config.QueryMethods, entityTypeName);
+            if (!string.IsNullOrWhiteSpace(queryMethodsCode))
+            {
+                sb.Append(queryMethodsCode);
+            }
+        }
+
         sb.AppendLine("}");
 
         return sb.ToString();
@@ -475,6 +485,60 @@ internal static class CodeBuilder
 
 
     /// <summary>
+    /// Genera métodos de query basados en nombres de métodos
+    /// </summary>
+    public static string GenerateQueryMethods(
+        IEnumerable<QueryMethodInfo> queryMethods,
+        string entityTypeName)
+    {
+        if (queryMethods == null || !queryMethods.Any())
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        var emitter = new QueryMethod.LinqEmitter();
+
+        foreach (var queryMethod in queryMethods)
+        {
+            if (!queryMethod.ParseResult.Success || queryMethod.ParseResult.Query == null)
+                continue;
+
+            var query = queryMethod.ParseResult.Query;
+            var methodName = queryMethod.MethodName;
+            var parameters = queryMethod.Parameters.ToArray();
+
+            // Generar firma del método
+            var signature = emitter.EmitMethodSignature(
+                query,
+                methodName,
+                entityTypeName,
+                parameters);
+
+            sb.AppendLine($"    {signature}");
+            sb.AppendLine("    {");
+
+            // Generar cuerpo del método
+            var paramNames = parameters.Select(p => p.name).ToArray();
+            var queryCode = emitter.Emit(query, methodName, entityTypeName, paramNames);
+
+            sb.AppendLine($"        return await {queryCode};");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Información de un método de query
+    /// </summary>
+    public class QueryMethodInfo
+    {
+        public string MethodName { get; set; } = string.Empty;
+        public QueryMethod.ParseResult ParseResult { get; set; } = QueryMethod.ParseResult.Error("Not parsed");
+        public List<(string name, string type)> Parameters { get; set; } = new();
+    }
+
+    /// <summary>
     /// Configuración para generación de repositorio
     /// </summary>
     public class RepositoryConfig
@@ -488,5 +552,7 @@ internal static class CodeBuilder
         public bool AsNoTracking { get; set; }
         public bool AsSplitQuery { get; set; }
         public bool IgnoreQueryFilters { get; set; }
+
+        public List<QueryMethodInfo> QueryMethods { get; set; } = new();
     }
 }
