@@ -1,8 +1,7 @@
-using Fudie.Generator;
-using Fudie.Generator.QueryMethod;
-using Xunit;
+using Fudie.Infrastructure.Generator.QueryMethod;
+using Fudie.Infrastructure.Generator;
 
-namespace Fudie.UnitTests.Generator;
+namespace Fudie.UnitTests.Infrastructure.Generator;
 
 /// <summary>
 /// Tests para la generación de query methods en CodeBuilder

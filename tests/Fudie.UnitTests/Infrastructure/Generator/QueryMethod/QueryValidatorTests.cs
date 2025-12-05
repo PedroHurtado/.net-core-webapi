@@ -1,4 +1,4 @@
-using Fudie.Generator.QueryMethod;
+using Fudie.Infrastructure.Generator.QueryMethod;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;

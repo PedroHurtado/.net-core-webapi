@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 
 
-namespace Fudie.Generator;
+namespace Fudie.Infrastructure.Generator;
 
 /// <summary>
 /// Source Generator que genera implementaciones de repositorios automáticamente
@@ -80,7 +80,7 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             {
                 GenerateRepository(compilation, info, context);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 // Reportar error de generación
                 var descriptor = new DiagnosticDescriptor(
@@ -219,8 +219,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
 
         // Extraer atributos de tracking
         var asNoTracking = HasAttribute(interfaceSymbol, "Fudie.Attributes.AsNoTrackingAttribute") ||
-                          (HasAttribute(interfaceSymbol, "Fudie.Attributes.TrackingAttribute") &&
-                           GetTrackingAttributeValue(interfaceSymbol) == false);
+                          HasAttribute(interfaceSymbol, "Fudie.Attributes.TrackingAttribute") &&
+                           GetTrackingAttributeValue(interfaceSymbol) == false;
 
         var asSplitQuery = HasAttribute(interfaceSymbol, "Fudie.Attributes.AsSplitQueryAttribute");
         var ignoreQueryFilters = HasAttribute(interfaceSymbol, "Fudie.Attributes.IgnoreQueryFiltersAttribute");

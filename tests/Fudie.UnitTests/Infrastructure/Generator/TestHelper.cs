@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Fudie.UnitTests.Generator;
+namespace Fudie.UnitTests.Infrastructure.Generator;
 
 /// <summary>
 /// Helper para crear compilaciones en memoria con entidades de prueba
@@ -117,8 +117,8 @@ namespace TestDomain
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
         };
 
         var compilation = CSharpCompilation.Create(
@@ -145,7 +145,7 @@ namespace TestDomain
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
         };
 
         var compilation = CSharpCompilation.Create(

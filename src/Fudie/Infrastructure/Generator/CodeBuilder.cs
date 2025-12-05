@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using System.Text;
 
-namespace Fudie.Generator;
+namespace Fudie.Infrastructure.Generator;
 
 /// <summary>
 /// Genera código C# para implementaciones de repositorios

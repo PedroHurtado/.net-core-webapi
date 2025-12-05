@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 
 
-namespace Fudie.Generator;
+namespace Fudie.Infrastructure.Generator;
 
 /// <summary>
 /// Valida paths de navegación para Include en Entity Framework

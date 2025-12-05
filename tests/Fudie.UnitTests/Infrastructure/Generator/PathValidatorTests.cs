@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Fudie.Generator;
+using Fudie.Infrastructure.Generator;
 using Microsoft.CodeAnalysis;
 
-namespace Fudie.UnitTests.Generator;
+namespace Fudie.UnitTests.Infrastructure.Generator;
 
 public class PathValidatorTests
 {

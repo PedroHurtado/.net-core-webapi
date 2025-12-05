@@ -1,9 +1,9 @@
 using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Fudie.Generator;
+using Fudie.Infrastructure.Generator;
 
-namespace Fudie.UnitTests.Generator;
+namespace Fudie.UnitTests.Infrastructure.Generator;
 
 public class RepositorySourceGeneratorTests
 {
@@ -17,8 +17,8 @@ public class RepositorySourceGeneratorTests
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
         };
 
         var compilation = CSharpCompilation.Create(

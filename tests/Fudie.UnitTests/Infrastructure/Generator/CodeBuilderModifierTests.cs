@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Fudie.Generator;
+using Fudie.Infrastructure.Generator;
 
-namespace Fudie.UnitTests.Generator;
+namespace Fudie.UnitTests.Infrastructure.Generator;
 
 public class CodeBuilderModifierTests
 {

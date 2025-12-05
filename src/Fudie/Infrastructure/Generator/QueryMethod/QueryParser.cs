@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Fudie.Generator.QueryMethod;
+namespace Fudie.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Parser de nombres de métodos de query basados en convenciones
@@ -117,7 +117,7 @@ public class QueryParser
             // Separar si:
             // 1. Encontramos mayúscula y ya hay contenido
             // 2. Cambiamos de letra a número o viceversa
-            if (currentToken.Length > 0 && (isUpper || (isDigit != lastWasDigit)))
+            if (currentToken.Length > 0 && (isUpper || isDigit != lastWasDigit))
             {
                 tokens.Add(currentToken.ToString());
                 currentToken.Clear();

@@ -1,7 +1,7 @@
-using Fudie.Generator.QueryMethod;
-using Xunit;
+using Fudie.Infrastructure.Generator.QueryMethod;
 
-namespace Fudie.UnitTests.Generator.QueryMethod;
+
+namespace Fudie.UnitTests.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Tests para el generador de código LINQ

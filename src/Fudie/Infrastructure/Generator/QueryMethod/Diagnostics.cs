@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Fudie.Generator.QueryMethod;
+namespace Fudie.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Definiciones de diagnósticos para el Query Method Generator

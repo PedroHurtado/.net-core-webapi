@@ -1,4 +1,4 @@
-using Fudie.Generator.QueryMethod;
+using Fudie.Infrastructure.Generator.QueryMethod;
 using Xunit;
 
 namespace Fudie.UnitTests.Generator.QueryMethod;

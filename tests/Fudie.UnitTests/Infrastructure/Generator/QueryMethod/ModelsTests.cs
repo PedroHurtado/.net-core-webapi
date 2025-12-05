@@ -1,7 +1,6 @@
-using Fudie.Generator.QueryMethod;
-using Xunit;
+using Fudie.Infrastructure.Generator.QueryMethod;
 
-namespace Fudie.UnitTests.Generator.QueryMethod;
+namespace Fudie.UnitTests.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Tests para los modelos de datos del Query Method Generator

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Fudie.Generator.QueryMethod;
+namespace Fudie.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Generador de código LINQ para queries parseadas

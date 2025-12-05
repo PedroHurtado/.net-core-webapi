@@ -1,8 +1,7 @@
-using Fudie.Generator.QueryMethod;
+using Fudie.Infrastructure.Generator.QueryMethod;
 using Microsoft.CodeAnalysis;
-using Xunit;
 
-namespace Fudie.UnitTests.Generator.QueryMethod;
+namespace Fudie.UnitTests.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Tests para las definiciones de diagnósticos del Query Method Generator

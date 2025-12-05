@@ -1,4 +1,4 @@
-namespace Fudie.Generator.QueryMethod;
+namespace Fudie.Infrastructure.Generator.QueryMethod;
 
 /// <summary>
 /// Tipo de query a ejecutar
