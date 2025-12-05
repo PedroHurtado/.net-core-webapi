@@ -225,6 +225,9 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         var asSplitQuery = HasAttribute(interfaceSymbol, "Fudie.Attributes.AsSplitQueryAttribute");
         var ignoreQueryFilters = HasAttribute(interfaceSymbol, "Fudie.Attributes.IgnoreQueryFiltersAttribute");
 
+        // Extraer query methods
+        var queryMethods = ExtractQueryMethods(interfaceSymbol, entitySymbol, context);
+
         // Crear configuración del builder
         var builderConfig = new CodeBuilder.RepositoryConfig
         {
@@ -235,7 +238,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             IncludePaths = includePaths,
             AsNoTracking = asNoTracking,
             AsSplitQuery = asSplitQuery,
-            IgnoreQueryFilters = ignoreQueryFilters
+            IgnoreQueryFilters = ignoreQueryFilters,
+            QueryMethods = queryMethods
         };
 
         return new RepositoryConfiguration(
@@ -350,6 +354,99 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         return null;
     }
 
+    /// <summary>
+    /// Extrae y valida query methods de la interfaz del repositorio
+    /// </summary>
+    private static List<CodeBuilder.QueryMethodInfo> ExtractQueryMethods(
+        INamedTypeSymbol interfaceSymbol,
+        INamedTypeSymbol entitySymbol,
+        SourceProductionContext context)
+    {
+        var queryMethods = new List<CodeBuilder.QueryMethodInfo>();
+        var parser = new QueryMethod.QueryParser();
+        var validator = new QueryMethod.QueryValidator();
+
+        // Extraer nombres de propiedades de la entidad
+        var entityProperties = entitySymbol.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Select(p => p.Name)
+            .ToList();
+
+        // Obtener todos los métodos de la interfaz (excluyendo los heredados de IGet, IAdd, etc.)
+        var methods = interfaceSymbol.GetMembers()
+            .OfType<IMethodSymbol>()
+            .Where(m => !IsInfrastructureMethod(m))
+            .ToList();
+
+        foreach (var method in methods)
+        {
+            // Parsear el nombre del método
+            var parseResult = parser.Parse(method.Name, entityProperties);
+
+            if (!parseResult.Success)
+            {
+                // Reportar error de parsing
+                var diagnostic = QueryMethod.Diagnostics.CreateParseError(
+                    method.Name,
+                    parseResult.ErrorMessage ?? "Unknown error",
+                    method.Locations.FirstOrDefault());
+                context.ReportDiagnostic(diagnostic);
+                continue;
+            }
+
+            // Validar la query
+            var validationDiagnostics = validator.Validate(
+                parseResult.Query!,
+                method,
+                entitySymbol,
+                method.Locations.FirstOrDefault());
+
+            // Reportar diagnósticos de validación
+            foreach (var diagnostic in validationDiagnostics)
+            {
+                context.ReportDiagnostic(diagnostic);
+            }
+
+            // Si hay errores de validación, no agregar el método
+            if (validationDiagnostics.Any())
+            {
+                continue;
+            }
+
+            // Extraer información de parámetros
+            var parameters = method.Parameters
+                .Select(p => (p.Name, p.Type.ToDisplayString()))
+                .ToList();
+
+            // Agregar query method válido
+            queryMethods.Add(new CodeBuilder.QueryMethodInfo
+            {
+                MethodName = method.Name,
+                ParseResult = parseResult,
+                Parameters = parameters
+            });
+        }
+
+        return queryMethods;
+    }
+
+    /// <summary>
+    /// Determina si un método pertenece a las interfaces de infraestructura (IGet, IAdd, etc.)
+    /// </summary>
+    private static bool IsInfrastructureMethod(IMethodSymbol method)
+    {
+        var containingType = method.ContainingType;
+        if (containingType == null)
+            return false;
+
+        var fullName = containingType.ConstructedFrom.ToDisplayString();
+
+        return fullName == "Fudie.Infrastructure.IGet<T, ID>" ||
+               fullName == "Fudie.Infrastructure.IAdd<T>" ||
+               fullName == "Fudie.Infrastructure.IUpdate<T, ID>" ||
+               fullName == "Fudie.Infrastructure.IRemove<T, ID>";
+    }
+
     private record RepositoryInterfaceInfo(
         InterfaceDeclarationSyntax Syntax,
         INamedTypeSymbol Symbol
@@ -362,6 +459,5 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         string IdTypeName,
         CodeBuilder.RepositoryConfig BuilderConfig
     );
-
 
 }
