@@ -58,9 +58,44 @@ Define los diagnósticos de compilación:
 
 Incluye métodos helper para crear cada tipo de diagnóstico con mensajes formateados.
 
+### 3. **QueryParser.cs** ✅
+Parser de nombres de métodos que tokeniza y extrae información de queries:
+
+**Características:**
+- **Tokenización PascalCase mejorada**: Separa correctamente letras y números (ej: `FindTop10By` → `["Find", "Top", "10", "By"]`)
+- **Detección de prefijos**: `FindBy`, `FindFirstBy`, `FindTopNBy`, `CountBy`, `ExistsBy`, `DeleteBy`
+- **17 operadores soportados**: Equal (implícito), NotEqual, LessThan, GreaterThan, Between, In, NotIn, StartsWith, EndsWith, Contains, Like, IsNull, IsNotNull, True, False, etc.
+- **Operadores lógicos**: `And`, `Or`
+- **OrderBy**: Con soporte para `Asc`/`Desc`
+- **Propiedades compuestas**: Reconoce propiedades como `CreatedAt`, `FirstName`, etc.
+- **IgnoreCase**: Soporte para comparaciones case-insensitive
+- **Manejo de errores**: Retorna `ParseResult` con mensajes descriptivos
+
+**Métodos principales:**
+- `Parse(methodName, entityProperties)` - Punto de entrada principal
+- `TokenizePascalCase(input)` - Tokenización inteligente
+- `DetectPrefix(tokens, position)` - Identifica el tipo de query
+- `ParseConditions(tokens, position, properties)` - Extrae condiciones
+- `ParseOrderBy(tokens, position, properties)` - Extrae ordenamiento
+- `FindProperty(tokens, position, properties)` - Encuentra propiedades (incluso compuestas)
+
+**Ejemplos de parsing:**
+```csharp
+// FindByEmail → { Type: Find, Conditions: [{ Property: "Email", Op: Equal }] }
+// FindTop10ByActiveTrue → { Type: Find, Top: 10, Conditions: [{ Property: "Active", Op: True }] }
+// FindByAgeGreaterThanAndActiveTrueOrderByCreatedAtDesc → 
+//   { Type: Find, 
+//     Conditions: [
+//       { Property: "Age", Op: GreaterThan },
+//       { Property: "Active", Op: True }
+//     ],
+//     OrderBy: [{ Property: "CreatedAt", Descending: true }]
+//   }
+```
+
 ## Tests Unitarios
 
-### **ModelsTests.cs** (37 tests)
+### **ModelsTests.cs** (25 tests) ✅
 - ✅ Validación de todos los valores de enums
 - ✅ Creación de Conditions con diferentes configuraciones
 - ✅ Creación de OrderBy ascendente/descendente
@@ -68,27 +103,36 @@ Incluye métodos helper para crear cada tipo de diagnóstico con mensajes format
 - ✅ ParseResult para casos de éxito y error
 - ✅ Igualdad de records
 
-### **DiagnosticsTests.cs** (incluido en los 37 tests)
+### **DiagnosticsTests.cs** (12 tests) ✅
 - ✅ Validación de IDs de diagnósticos (REPO001-REPO007)
 - ✅ Severidad y habilitación por defecto
 - ✅ Creación de diagnósticos con mensajes correctos
 - ✅ Categoría consistente para todos los diagnósticos
 
+### **QueryParserTests.cs** (45 tests) ✅
+- ✅ Detección de prefijos (FindBy, FindFirstBy, FindTopNBy, CountBy, ExistsBy, DeleteBy)
+- ✅ Condiciones simples (And, Or)
+- ✅ Todos los 17 operadores
+- ✅ IgnoreCase
+- ✅ OrderBy (Asc, Desc)
+- ✅ Propiedades compuestas (CreatedAt, FirstName)
+- ✅ Queries complejas con múltiples condiciones y ordenamiento
+- ✅ Casos de error (prefijo inválido, nombre vacío, solo prefijo)
+
 ## Resultados
 
 ```
 ✅ Compilación exitosa
-✅ 37 tests pasando
+✅ 82 tests pasando (37 Models/Diagnostics + 45 QueryParser)
 ✅ 0 errores
 ✅ 0 advertencias
 ```
 
 ## Próximos Pasos
 
-1. **QueryParser.cs** - Parser de nombres de métodos
-2. **QueryValidator.cs** - Validador de queries
-3. **LinqEmitter.cs** - Generador de código LINQ
-4. **Integración** - Modificar RepositorySourceGenerator
+1. **QueryValidator.cs** - Validador de queries (propiedades, tipos, parámetros)
+2. **LinqEmitter.cs** - Generador de código LINQ
+3. **Integración** - Modificar RepositorySourceGenerator
 
 ## Ejemplo de Uso Futuro
 
