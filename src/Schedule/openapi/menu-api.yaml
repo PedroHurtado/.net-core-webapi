@@ -8,12 +8,13 @@ info:
     email: support@fudie.com
 
 servers:
-  - url: https://api.fudie.com/v1
-    description: Production
+  - url: http://localhost:5181/v1
+    description: Development
   - url: https://api-staging.fudie.com/v1
     description: Staging
-  - url: http://localhost:5000/v1
-    description: Development
+  - url: https://api.fudie.com/v1
+    description: Production  
+  
 
 tags:
   - name: Menus
