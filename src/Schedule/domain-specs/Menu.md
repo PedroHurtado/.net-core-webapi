@@ -289,47 +289,65 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 ## 2. Comportamiento y Reglas (Event Storming)
 
+### Leyenda de Colores
+| Color | Elemento | Símbolo | Descripción |
+|-------|----------|---------|-------------|
+| 🟠 Naranja | Domain Event | `<EventName>` | Algo que ocurrió (pasado) |
+| 🔵 Azul | Command | `(CommandName)` | Intención/Acción (imperativo) |
+| 🟡 Amarillo | Actor | `[ActorName]` | Usuario o sistema que inicia |
+| 🟣 Púrpura | Policy | `{PolicyName}` | Regla de negocio/Política |
+| 🟤 Marrón | Aggregate | `[[AggregateName]]` | Entidad raíz del agregado |
+| 🔴 Rojo | Hot Spot | `⚠️` | Dudas o conflictos pendientes |
+| 🟢 Verde | Read Model | `📊` | Vista/Proyección de datos |
+| 🩷 Rosa | External System | `⚡` | Sistema externo |
+
+---
+
 ### Flujo 1: Gestión de Menú
 
 #### 1.1 Crear Menú
 ```
-[RestaurantOwner] -> (CreateMenu) -> [Menu] -> <MenuCreated>
+🟡[RestaurantOwner] → 🔵(CreateMenu) → 🟤[[Menu]] → 🟠<MenuCreated>
 ```
-- **Input**: RestaurantId, Name, Description, EffectiveFrom?, EffectiveUntil?
-- **Validaciones**:
-  * RestaurantId debe existir
-  * Name no puede estar vacío
-  * MaxLength(Name) = 100
-  * MaxLength(Description) = 500
-  * EffectiveFrom < EffectiveUntil (si ambos presentes)
-- **Resultado**: Menu creado con Id único, IsActive = true, sin categorías (ej: "Carta Principal" para restaurante "El Pulpo Feliz")
+
+**Input**: RestaurantId, Name, Description, EffectiveFrom?, EffectiveUntil?
+
+**Validaciones** 🟣{MenuCreationPolicy}:
+- RestaurantId debe existir
+- Name no puede estar vacío (MaxLength: 100)
+- MaxLength(Description) = 500
+- EffectiveFrom < EffectiveUntil (si ambos presentes)
+
+**Resultado**: Menu creado con Id único, IsActive = true, sin categorías
 
 ---
 
 #### 1.2 Configurar Política de Fianzas del Menú
 ```
-[RestaurantOwner] -> (SetDepositPolicy) -> [Menu] -> <DepositPolicyConfigured>
+🟡[RestaurantOwner] → 🔵(SetDepositPolicy) → 🟤[[Menu]] → 🟠<DepositPolicyConfigured>
+                                                    │
+                                          🟣{DepositValidationPolicy}
 ```
-- **Input**: DepositType, Amount, Percentage?, MinimumBillForDeposit?, MinimumGuestsForDeposit?
-- **Validaciones**:
-  * Menu debe existir
-  * Amount > 0
-  * Si DepositType = PercentageOfBill, Percentage entre 1-100 y no null
-  * Si DepositType != PercentageOfBill, Percentage debe ser null
-  * MinimumGuestsForDeposit >= 1 (si se especifica)
-  * MinimumBillForDeposit >= 0 (si se especifica)
-- **Resultado**: DepositPolicy configurado, se aplicará a todos los items sin override (ej: "€15 por persona si son 6+ comensales")
+
+**Input**: DepositType, Amount, Percentage?, MinimumBillForDeposit?, MinimumGuestsForDeposit?
+
+**Validaciones** 🟣{DepositValidationPolicy}:
+- Menu debe existir
+- Amount > 0
+- Si DepositType = PercentageOfBill → Percentage entre 1-100 y no null
+- Si DepositType != PercentageOfBill → Percentage debe ser null
+- MinimumGuestsForDeposit >= 1 (si se especifica)
+
+**Resultado**: DepositPolicy configurado, se aplicará a todos los items sin override
 
 ---
 
 #### 1.3 Eliminar Política de Fianzas del Menú
 ```
-[RestaurantOwner] -> (RemoveDepositPolicy) -> [Menu] -> <DepositPolicyRemoved>
+🟡[RestaurantOwner] → 🔵(RemoveDepositPolicy) → 🟤[[Menu]] → 🟠<DepositPolicyRemoved>
 ```
-- **Input**: (ninguno)
-- **Validaciones**:
-  * Menu debe existir
-- **Resultado**: Menu.DepositPolicy = null, solo se aplicarán fianzas de items con override (ej: "Menú del Día sin fianzas")
+
+**Resultado**: Menu.DepositPolicy = null
 
 ---
 
@@ -337,47 +355,44 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 #### 2.1 Agregar Categoría
 ```
-[RestaurantOwner] -> (AddCategory) -> [Menu] -> <CategoryAdded>
+🟡[RestaurantOwner] → 🔵(AddCategory) → 🟤[[Menu]] → 🟠<CategoryAdded>
+                                              │
+                                    🟣{UniqueCategoryNamePolicy}
 ```
-- **Input**: Name, Description, DisplayOrder
-- **Validaciones**:
-  * Menu debe existir
-  * Name no puede estar vacío
-  * MaxLength(Name) = 100
-  * MaxLength(Description) = 500
-  * Name no duplicado en el menú
-- **Resultado**: Nueva categoría agregada a Menu.Categories, IsActive = true (ej: "Pescados y Mariscos")
+
+**Input**: Name, Description, DisplayOrder
+
+**Validaciones** 🟣{UniqueCategoryNamePolicy}:
+- Menu debe existir
+- Name no puede estar vacío (MaxLength: 100)
+- Name no duplicado en el menú
+
+**Resultado**: Nueva categoría agregada, IsActive = true
 
 ---
 
 #### 2.2 Renombrar Categoría
 ```
-[RestaurantOwner] -> (RenameCategory) -> [MenuCategory] -> <CategoryRenamed>
+🟡[RestaurantOwner] → 🔵(RenameCategory) → 🟤[[MenuCategory]] → 🟠<CategoryRenamed>
+                                                      │
+                                            🟣{UniqueCategoryNamePolicy}
 ```
-- **Input**: CategoryId, NewName
-- **Validaciones**:
-  * Categoría debe existir
-  * NewName no puede estar vacío
-  * MaxLength(NewName) = 100
-  * NewName no duplicado en el menú
-- **Resultado**: Categoría renombrada con nuevo nombre
 
-**Validación de Fallo**:
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (RenameCategory con nombre duplicado) -> [MenuCategory] -> <Error: CategoryNameAlreadyExists>
+🟡[RestaurantOwner] → 🔵(RenameCategory) → 🟤[[MenuCategory]] → 🔴<Error: CategoryNameAlreadyExists>
+                                                      │
+                                            🟣{UniqueCategoryNamePolicy} ❌
 ```
 
 ---
 
 #### 2.3 Reordenar Categorías
 ```
-[RestaurantOwner] -> (ReorderCategories) -> [Menu] -> <CategoriesReordered>
+🟡[RestaurantOwner] → 🔵(ReorderCategories) → 🟤[[Menu]] → 🟠<CategoriesReordered>
 ```
-- **Input**: List<CategoryId, NewDisplayOrder>
-- **Validaciones**:
-  * Todas las categorías deben existir en el menú
-  * No puede haber DisplayOrder duplicados
-- **Resultado**: DisplayOrder actualizado para cada categoría
+
+**Input**: List<CategoryId, NewDisplayOrder>
 
 ---
 
@@ -385,168 +400,165 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 #### 3.1 Agregar Item a Categoría
 ```
-[RestaurantOwner] -> (AddItemToCategory) -> [MenuCategory] -> <ItemAdded>
+🟡[RestaurantOwner] → 🔵(AddItemToCategory) → 🟤[[MenuCategory]] → 🟠<ItemAdded>
+                                                        │
+                                              🟣{ItemValidationPolicy}
+                                              🟣{UniqueItemNamePolicy}
+                                              🟣{RequirePriceOptionPolicy}
 ```
-- **Input**: CategoryId, Name, Description, ImageUrl, PriceOptions[], DisplayOrder
-- **Validaciones**:
-  * Categoría debe existir
-  * Name no puede estar vacío
-  * MaxLength(Name) = 100
-  * MaxLength(Description) = 1000
-  * MaxLength(ImageUrl) = 500
-  * ImageUrl debe ser URL válida (si se proporciona)
-  * Debe tener al menos una PriceOption
-  * Name no duplicado en la categoría
-- **Resultado**: Item agregado a Category.Items, IsActive = true, IsAvailable = true (ej: "Pulpo al Horno")
 
-**Validación de Fallo**:
+**Input**: CategoryId, Name, Description, ImageUrl, PriceOptions[], DisplayOrder
+
+**Validaciones**:
+- 🟣{ItemValidationPolicy}: Name no vacío, MaxLength correcto, URL válida
+- 🟣{UniqueItemNamePolicy}: Name no duplicado en la categoría
+- 🟣{RequirePriceOptionPolicy}: Debe tener al menos una PriceOption
+
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (AddItem sin PriceOptions) -> [MenuCategory] -> <Error: ItemMustHavePriceOptions>
+🟡[RestaurantOwner] → 🔵(AddItem sin PriceOptions) → 🟤[[MenuCategory]] → 🔴<Error: ItemMustHavePriceOptions>
+                                                              │
+                                                    🟣{RequirePriceOptionPolicy} ❌
 ```
 
 ---
 
 #### 3.2 Marcar Item como Alto Riesgo
 ```
-[RestaurantOwner] -> (MarkAsHighRisk) -> [MenuItem] -> <ItemMarkedAsHighRisk>
+🟡[RestaurantOwner] → 🔵(MarkAsHighRisk) → 🟤[[MenuItem]] → 🟠<ItemMarkedAsHighRisk>
 ```
-- **Input**: ItemId
-- **Validaciones**:
-  * Item debe existir
-- **Resultado**: IsHighRiskItem = true, puede requerir pedido anticipado (ej: "Pulpo al Horno" como alto riesgo)
+
+**Resultado**: IsHighRiskItem = true
 
 ---
 
 #### 3.3 Requerir Pedido Anticipado
 ```
-[RestaurantOwner] -> (RequireAdvanceOrder) -> [MenuItem] -> <AdvanceOrderRequired>
+🟡[RestaurantOwner] → 🔵(RequireAdvanceOrder) → 🟤[[MenuItem]] → 🟠<AdvanceOrderRequired>
+                                                        │
+                                              🟣{HighRiskRequiredPolicy}
 ```
-- **Input**: ItemId, MinimumAdvanceOrderQuantity?
-- **Validaciones**:
-  * Item debe existir
-  * IsHighRiskItem debe ser true
-  * MinimumAdvanceOrderQuantity >= 1 (si se especifica)
-- **Resultado**: RequiresAdvanceOrder = true, MinimumAdvanceOrderQuantity configurado (ej: Pulpo requiere pedido anticipado si son 4+ raciones)
+
+**Validaciones** 🟣{HighRiskRequiredPolicy}:
+- IsHighRiskItem debe ser true
+- MinimumAdvanceOrderQuantity >= 1 (si se especifica)
+
+**Flujo de Error**:
+```
+🟡[RestaurantOwner] → 🔵(RequireAdvanceOrder) → 🟤[[MenuItem]] → 🔴<Error: MustBeHighRiskFirst>
+                                                        │
+                                              🟣{HighRiskRequiredPolicy} ❌
+```
 
 ---
 
 #### 3.4 Configurar Override de Fianza para Item
 ```
-[RestaurantOwner] -> (SetItemDepositOverride) -> [MenuItem] -> <ItemDepositOverrideConfigured>
+🟡[RestaurantOwner] → 🔵(SetItemDepositOverride) → 🟤[[MenuItem]] → 🟠<ItemDepositOverrideConfigured>
+                                                           │
+                                                 🟣{DepositAmountPositivePolicy}
 ```
-- **Input**: ItemId, DepositAmount, MinimumQuantityForDeposit?
-- **Validaciones**:
-  * Item debe existir
-  * DepositAmount > 0
-  * MinimumQuantityForDeposit >= 1 (si se especifica)
-- **Resultado**: ItemDepositOverride configurado, item ignora DepositPolicy del menú (ej: Pulpo requiere €30 si se piden 4+ raciones)
+
+**Input**: ItemId, DepositAmount, MinimumQuantityForDeposit?
+
+**Validaciones** 🟣{DepositAmountPositivePolicy}:
+- DepositAmount > 0
+- MinimumQuantityForDeposit >= 1 (si se especifica)
 
 ---
 
 #### 3.5 Eliminar Override de Fianza para Item
 ```
-[RestaurantOwner] -> (RemoveItemDepositOverride) -> [MenuItem] -> <ItemDepositOverrideRemoved>
+🟡[RestaurantOwner] → 🔵(RemoveItemDepositOverride) → 🟤[[MenuItem]] → 🟠<ItemDepositOverrideRemoved>
 ```
-- **Input**: ItemId
-- **Validaciones**:
-  * Item debe existir
-  * ItemDepositOverride debe existir
-- **Resultado**: ItemDepositOverride = null, item vuelve a usar DepositPolicy del menú
+
+**Resultado**: ItemDepositOverride = null, vuelve a usar DepositPolicy del menú
 
 ---
 
 #### 3.6 Configurar Disponibilidad por Días
 ```
-[RestaurantOwner] -> (SetAvailability) -> [MenuItem] -> <AvailabilityConfigured>
+🟡[RestaurantOwner] → 🔵(SetAvailability) → 🟤[[MenuItem]] → 🟠<AvailabilityConfigured>
+                                                    │
+                                          🟣{RequireDaysWhenNotAlwaysPolicy}
 ```
-- **Input**: ItemId, IsAlwaysAvailable, AvailableDays[]
-- **Validaciones**:
-  * Item debe existir
-  * Si IsAlwaysAvailable = false, debe tener al menos un día en AvailableDays
-  * AvailableDays debe ser valores válidos de DayOfWeek (0-6)
-- **Resultado**: AvailableDays configurado, IsAvailableToday se calcula automáticamente (ej: "Pulpo al Horno" solo los sábados)
 
-**Validación de Fallo**:
+**Input**: ItemId, IsAlwaysAvailable, AvailableDays[]
+
+**Validaciones** 🟣{RequireDaysWhenNotAlwaysPolicy}:
+- Si IsAlwaysAvailable = false → debe tener al menos un día en AvailableDays
+
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (SetAvailability sin días cuando IsAlwaysAvailable=false) -> [MenuItem] -> <Error: MustSpecifyAtLeastOneDay>
+🟡[RestaurantOwner] → 🔵(SetAvailability) → 🟤[[MenuItem]] → 🔴<Error: MustSpecifyAtLeastOneDay>
+                                                    │
+                                          🟣{RequireDaysWhenNotAlwaysPolicy} ❌
 ```
 
 ---
 
 #### 3.7 Marcar Item como Agotado/Disponible
 ```
-[Waiter] -> (MarkAsUnavailable) -> [MenuItem] -> <ItemMarkedUnavailable>
+🟡[Waiter] → 🔵(MarkAsUnavailable) → 🟤[[MenuItem]] → 🟠<ItemMarkedUnavailable>
 ```
-- **Input**: ItemId
-- **Validaciones**:
-  * Item debe existir
-- **Resultado**: IsAvailable = false, CanBeOrdered = false (ej: "Se acabó el pulpo de hoy")
 
 ```
-[Waiter] -> (MarkAsAvailable) -> [MenuItem] -> <ItemMarkedAvailable>
+🟡[Waiter] → 🔵(MarkAsAvailable) → 🟤[[MenuItem]] → 🟠<ItemMarkedAvailable>
 ```
-- **Input**: ItemId
-- **Validaciones**:
-  * Item debe existir
-- **Resultado**: IsAvailable = true, CanBeOrdered recalculado según otras condiciones
 
 ---
 
 #### 3.8 Agregar Alérgeno a Item
 ```
-[RestaurantOwner] -> (AddAllergen) -> [MenuItem] -> <AllergenAdded>
+🟡[RestaurantOwner] → 🔵(AddAllergen) → 🟤[[MenuItem]] → 🟠<AllergenAdded>
+                                               │
+                                     🟣{AllergenExistsPolicy}
+                                     🟣{AllergenActivePolicy}
+                                     🟣{AllergenUniquePolicy}
 ```
-- **Input**: ItemId, AllergenId
-- **Validaciones**:
-  * Item debe existir
-  * Allergen debe existir en el catálogo del sistema
-  * Allergen debe estar activo (IsActive = true)
-  * Allergen no puede estar duplicado en el item
-- **Resultado**: Allergen agregado a MenuItem.Allergens (ej: Agregar "Gluten" a "Pan con Tomate")
 
-**Validación de Fallo**:
+**Validaciones**:
+- 🟣{AllergenExistsPolicy}: Allergen debe existir en el catálogo
+- 🟣{AllergenActivePolicy}: Allergen.IsActive = true
+- 🟣{AllergenUniquePolicy}: No puede estar duplicado en el item
+
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (AddAllergen duplicado) -> [MenuItem] -> <Error: AllergenAlreadyExists>
+🟡[RestaurantOwner] → 🔵(AddAllergen duplicado) → 🟤[[MenuItem]] → 🔴<Error: AllergenAlreadyExists>
+                                                         │
+                                               🟣{AllergenUniquePolicy} ❌
 ```
 
 ---
 
 #### 3.9 Remover Alérgeno de Item
 ```
-[RestaurantOwner] -> (RemoveAllergen) -> [MenuItem] -> <AllergenRemoved>
+🟡[RestaurantOwner] → 🔵(RemoveAllergen) → 🟤[[MenuItem]] → 🟠<AllergenRemoved>
 ```
-- **Input**: ItemId, AllergenId
-- **Validaciones**:
-  * Item debe existir
-  * Allergen debe existir en el item
-- **Resultado**: Allergen removido de MenuItem.Allergens
 
 ---
 
 #### 3.10 Configurar Información Nutricional
 ```
-[RestaurantOwner] -> (SetNutritionalInfo) -> [MenuItem] -> <NutritionalInfoConfigured>
+🟡[RestaurantOwner] → 🔵(SetNutritionalInfo) → 🟤[[MenuItem]] → 🟠<NutritionalInfoConfigured>
+                                                       │
+                                             🟣{NutritionalValuesValidPolicy}
 ```
-- **Input**: ItemId, Calories, Protein, Carbohydrates, Fat, Fiber?, Sugar?, Salt?, ServingSize
-- **Validaciones**:
-  * Item debe existir
-  * Todos los valores >= 0
-  * ServingSize > 0
-  * Calories <= 10000
-  * Macronutrientes <= 1000g
-- **Resultado**: NutritionalInfo configurado en el item (ej: "Jamón Ibérico" 600 kcal por ración de 200g)
+
+**Input**: ItemId, Calories, Protein, Carbohydrates, Fat, Fiber?, Sugar?, Salt?, ServingSize
+
+**Validaciones** 🟣{NutritionalValuesValidPolicy}:
+- Todos los valores >= 0
+- ServingSize > 0
+- Calories <= 10000
+- Macronutrientes <= 1000g
 
 ---
 
 #### 3.11 Eliminar Información Nutricional
 ```
-[RestaurantOwner] -> (RemoveNutritionalInfo) -> [MenuItem] -> <NutritionalInfoRemoved>
+🟡[RestaurantOwner] → 🔵(RemoveNutritionalInfo) → 🟤[[MenuItem]] → 🟠<NutritionalInfoRemoved>
 ```
-- **Input**: ItemId
-- **Validaciones**:
-  * Item debe existir
-  * NutritionalInfo debe existir
-- **Resultado**: NutritionalInfo = null
 
 ---
 
@@ -554,49 +566,53 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 #### 4.1 Agregar Opción de Precio
 ```
-[RestaurantOwner] -> (AddPriceOption) -> [MenuItem] -> <PriceOptionAdded>
+🟡[RestaurantOwner] → 🔵(AddPriceOption) → 🟤[[MenuItem]] → 🟠<PriceOptionAdded>
+                                                  │
+                                        🟣{UniquePortionTypePolicy}
+                                        🟣{PriceRequiredForFixedPolicy}
 ```
-- **Input**: ItemId, PortionType, Price?
-- **Validaciones**:
-  * Item debe existir
-  * PortionType no duplicado en el item
-  * Si PortionType != SegunMercado, Price debe tener valor y ser > 0
-  * Si PortionType = SegunMercado, Price puede ser null
-- **Resultado**: PriceOption agregada al item (ej: Agregar "Tapa: €3.50" a "Jamón Ibérico")
 
-**Validación de Fallo**:
+**Validaciones**:
+- 🟣{UniquePortionTypePolicy}: PortionType no duplicado en el item
+- 🟣{PriceRequiredForFixedPolicy}: Si PortionType != SegunMercado → Price requerido y > 0
+
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (AddPriceOption con PortionType duplicado) -> [MenuItem] -> <Error: PriceOptionAlreadyExists>
+🟡[RestaurantOwner] → 🔵(AddPriceOption duplicado) → 🟤[[MenuItem]] → 🔴<Error: PriceOptionAlreadyExists>
+                                                            │
+                                                  🟣{UniquePortionTypePolicy} ❌
 ```
 
 ---
 
 #### 4.2 Actualizar Precio "Según Mercado"
 ```
-[RestaurantOwner] -> (UpdateMarketPrice) -> [PriceOption] -> <MarketPriceUpdated>
+🟡[RestaurantOwner] → 🔵(UpdateMarketPrice) → 🟤[[PriceOption]] → 🟠<MarketPriceUpdated>
+                                                       │
+                                             🟣{OnlyMarketPricePolicy}
 ```
-- **Input**: PriceOptionId, NewPrice
-- **Validaciones**:
-  * PriceOption debe existir
-  * PortionType debe ser SegunMercado
-  * NewPrice >= 0
-- **Resultado**: Price actualizado, RequiresMarketPrice = false (ej: "Hoy el pulpo está a €22/kg")
+
+**Validaciones** 🟣{OnlyMarketPricePolicy}:
+- PortionType debe ser SegunMercado
+- NewPrice >= 0
 
 ---
 
 #### 4.3 Activar/Desactivar Opción de Precio
 ```
-[RestaurantOwner] -> (TogglePriceOption) -> [PriceOption] -> <PriceOptionToggled>
+🟡[RestaurantOwner] → 🔵(TogglePriceOption) → 🟤[[PriceOption]] → 🟠<PriceOptionToggled>
+                                                       │
+                                             🟣{AtLeastOnePriceOptionPolicy}
 ```
-- **Input**: PriceOptionId, IsActive
-- **Validaciones**:
-  * PriceOption debe existir
-  * Si se desactiva, debe quedar al menos una PriceOption activa en el item
-- **Resultado**: IsActive actualizado (ej: Temporalmente no ofrecer tapas hoy)
 
-**Validación de Fallo**:
+**Validaciones** 🟣{AtLeastOnePriceOptionPolicy}:
+- Si se desactiva → debe quedar al menos una PriceOption activa
+
+**Flujo de Error**:
 ```
-[RestaurantOwner] -> (Desactivar última PriceOption activa) -> [MenuItem] -> <Error: MustHaveAtLeastOnePriceOption>
+🟡[RestaurantOwner] → 🔵(Desactivar última) → 🟤[[MenuItem]] → 🔴<Error: MustHaveAtLeastOnePriceOption>
+                                                      │
+                                            🟣{AtLeastOnePriceOptionPolicy} ❌
 ```
 
 ---
@@ -605,51 +621,128 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 #### 5.1 Calcular Fianza de Reserva
 ```
-[System] -> (CalculateReservationDeposit) -> [Menu] -> Resultado: decimal
+🟡[System] → 🔵(CalculateReservationDeposit) → 🟤[[Menu]] → 📊 DepositCalculationResult
+                                                    │
+                                          🟣{DepositCalculationPolicy}
 ```
-- **Input**: MenuId, GuestCount, EstimatedBill, AdvanceOrderedItems{ItemId, Quantity}
-- **Validaciones**:
-  * Menu debe existir
-  * GuestCount > 0
-  * EstimatedBill >= 0
-  * Todos los items en AdvanceOrderedItems deben existir
-- **Resultado**: Fianza total calculada según algoritmo (ver ejemplos abajo)
 
-**Algoritmo**:
+**Input**: MenuId, GuestCount, EstimatedBill, AdvanceOrderedItems{ItemId, Quantity}
+
+**Algoritmo** 🟣{DepositCalculationPolicy}:
+```
 1. Verificar si el menú tiene DepositPolicy
-2. Si no tiene, DepositaMenu = 0
-3. Si tiene, evaluar IsApplicable(guestCount, estimatedBill)
-4. Si aplica, DepositaMenu = CalculateDeposit(guestCount, estimatedBill)
+2. Si no tiene → DepositaMenu = 0
+3. Si tiene → evaluar IsApplicable(guestCount, estimatedBill)
+4. Si aplica → DepositaMenu = CalculateDeposit(guestCount, estimatedBill)
 5. Para cada item pedido anticipadamente:
    - Si tiene ItemDepositOverride:
-     - Si IsApplicable(quantity): DepositoItem = DepositAmount
-     - Sino: DepositoItem = 0
-   - Si no tiene override: DepositoItem = 0 (ya cubierto por menú)
-6. **FianzaTotal = MAX(DepositoMenu, SUM(DepositosItemsConOverride))**
+     - Si IsApplicable(quantity) → DepositoItem = DepositAmount
+     - Sino → DepositoItem = 0
+   - Si no tiene override → DepositoItem = 0
+6. FianzaTotal = MAX(DepositoMenu, SUM(DepositosItemsConOverride))
+```
 
-**Ejemplo 1 - Solo política de menú**:
-- Menu: €10/persona si son 6+ comensales
-- Reserva: 8 personas
-- Items: Ninguno con override
-- **Fianza**: €80
+**Ejemplos Visuales**:
 
-**Ejemplo 2 - Solo item con override**:
-- Menu: Sin DepositPolicy
-- Reserva: 8 personas, piden 2 raciones de Pulpo
-- Pulpo: Override €30 si 4+ porciones (2 raciones = 8 porciones)
-- **Fianza**: €30
+```
+📊 Ejemplo 1 - Solo política de menú
+┌────────────────────────────────────────┐
+│ Menu: €10/persona si 6+ comensales     │
+│ Reserva: 8 personas                    │
+│ Items: Ninguno con override            │
+├────────────────────────────────────────┤
+│ DepositoMenu = €10 × 8 = €80           │
+│ DepositosItems = €0                    │
+│ FianzaTotal = MAX(€80, €0) = €80       │
+└────────────────────────────────────────┘
+```
 
-**Ejemplo 3 - Ambos (toma el mayor)**:
-- Menu: €10/persona si son 6+ comensales → €80
-- Reserva: 8 personas, piden Pulpo
-- Pulpo: Override €30 si 4+ porciones
-- **Fianza**: MAX(€80, €30) = €80
+```
+📊 Ejemplo 2 - Solo item con override
+┌────────────────────────────────────────┐
+│ Menu: Sin DepositPolicy                │
+│ Reserva: 8 personas, piden 2 raciones  │
+│ Pulpo: Override €30 si 4+ porciones    │
+├────────────────────────────────────────┤
+│ DepositoMenu = €0                      │
+│ DepositosItems = €30 (8 >= 4 ✓)        │
+│ FianzaTotal = MAX(€0, €30) = €30       │
+└────────────────────────────────────────┘
+```
 
-**Ejemplo 4 - Override mayor que política**:
-- Menu: €5/persona si son 4+ comensales → €20
-- Reserva: 4 personas, piden Cochinillo entero
-- Cochinillo: Override €60
-- **Fianza**: MAX(€20, €60) = €60
+```
+📊 Ejemplo 3 - Ambos (toma el mayor)
+┌────────────────────────────────────────┐
+│ Menu: €10/persona si 6+ → €80          │
+│ Reserva: 8 personas + Pulpo            │
+│ Pulpo: Override €30 si 4+ porciones    │
+├────────────────────────────────────────┤
+│ DepositoMenu = €80                     │
+│ DepositosItems = €30                   │
+│ FianzaTotal = MAX(€80, €30) = €80      │
+└────────────────────────────────────────┘
+```
+
+```
+📊 Ejemplo 4 - Override mayor que política
+┌────────────────────────────────────────┐
+│ Menu: €5/persona si 4+ → €20           │
+│ Reserva: 4 personas + Cochinillo       │
+│ Cochinillo: Override €60               │
+├────────────────────────────────────────┤
+│ DepositoMenu = €20                     │
+│ DepositosItems = €60                   │
+│ FianzaTotal = MAX(€20, €60) = €60      │
+└────────────────────────────────────────┘
+```
+
+---
+
+### Hot Spots ⚠️ (Preguntas Pendientes)
+
+| # | Pregunta | Estado |
+|---|----------|--------|
+| 1 | ⚠️ ¿Cómo manejamos conflictos de reserva simultánea? | Pendiente |
+| 2 | ⚠️ ¿El menú debe tener versiones o solo estados? | Pendiente |
+| 3 | ⚠️ ¿Límite de categorías por menú? | Pendiente |
+| 4 | ⚠️ ¿Qué pasa si un alérgeno cambia de nombre? | Documentado en Edge Cases |
+| 5 | ⚠️ ¿Se permite "Según Mercado" sin precio actualizado? | Sí, CanBeOrdered = false |
+
+---
+
+### Resumen de Políticas 🟣
+
+| Política | Trigger | Descripción |
+|----------|---------|-------------|
+| `{MenuCreationPolicy}` | `(CreateMenu)` | Validar datos básicos del menú |
+| `{DepositValidationPolicy}` | `(SetDepositPolicy)` | Validar coherencia de política de fianzas |
+| `{UniqueCategoryNamePolicy}` | `(AddCategory)`, `(RenameCategory)` | Nombres de categorías únicos |
+| `{UniqueItemNamePolicy}` | `(AddItemToCategory)` | Nombres de items únicos en categoría |
+| `{RequirePriceOptionPolicy}` | `(AddItemToCategory)` | Al menos una opción de precio |
+| `{HighRiskRequiredPolicy}` | `(RequireAdvanceOrder)` | Debe ser alto riesgo primero |
+| `{RequireDaysWhenNotAlwaysPolicy}` | `(SetAvailability)` | Especificar días si no siempre |
+| `{AllergenExistsPolicy}` | `(AddAllergen)` | Alérgeno debe existir en catálogo |
+| `{AllergenActivePolicy}` | `(AddAllergen)` | Alérgeno debe estar activo |
+| `{AllergenUniquePolicy}` | `(AddAllergen)` | No duplicar alérgenos |
+| `{UniquePortionTypePolicy}` | `(AddPriceOption)` | PortionType único en item |
+| `{PriceRequiredForFixedPolicy}` | `(AddPriceOption)` | Precio requerido si no es S/M |
+| `{OnlyMarketPricePolicy}` | `(UpdateMarketPrice)` | Solo actualizar precios S/M |
+| `{AtLeastOnePriceOptionPolicy}` | `(TogglePriceOption)` | Mantener al menos una activa |
+| `{DepositCalculationPolicy}` | `(CalculateReservationDeposit)` | Algoritmo MAX(menu, items) |
+| `{NutritionalValuesValidPolicy}` | `(SetNutritionalInfo)` | Valores en rangos válidos |
+| `{DepositAmountPositivePolicy}` | `(SetItemDepositOverride)` | Fianza > 0 |
+
+---
+
+### Read Models 📊
+
+| Vista | Propósito | Actualizado por |
+|-------|-----------|-----------------|
+| `MenuPublicView` | Menú para clientes (PWA) | `<MenuCreated>`, `<CategoryAdded>`, `<ItemAdded>`, `<PriceOptionAdded>` |
+| `MenuAdminView` | Menú para gestión (admin) | Todos los eventos del menú |
+| `DepositCalculationResult` | Resultado de cálculo de fianza | `(CalculateReservationDeposit)` |
+| `ItemAvailabilityView` | Disponibilidad de items HOY | `<ItemMarkedAvailable>`, `<ItemMarkedUnavailable>`, `<AvailabilityConfigured>` |
+| `AllergenCatalogView` | Catálogo de alérgenos | Eventos del sistema (admin) |
 
 ---
 
