@@ -1,0 +1,1821 @@
+openapi: 3.0.3
+info:
+  title: Fudie Menu API
+  description: API para gestión de menús de restaurantes con soporte multi-tenant
+  version: 1.0.0
+  contact:
+    name: Fudie API Support
+    email: support@fudie.com
+
+servers:
+  - url: https://api.fudie.com/v1
+    description: Production
+  - url: https://api-staging.fudie.com/v1
+    description: Staging
+  - url: http://localhost:5000/v1
+    description: Development
+
+tags:
+  - name: Menus
+    description: Gestión de menús
+  - name: Categories
+    description: Gestión de categorías de menú
+  - name: Items
+    description: Gestión de items de menú
+  - name: Availability
+    description: Gestión de disponibilidad de items
+  - name: Allergens
+    description: Gestión de alérgenos
+  - name: Nutrition
+    description: Información nutricional
+  - name: Prices
+    description: Gestión de precios
+  - name: Deposits
+    description: Gestión de fianzas
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ==================== MENUS ====================
+  /menus:
+    post:
+      tags: [Menus]
+      summary: Crear menú nuevo
+      operationId: createMenu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMenuRequest'
+      responses:
+        '201':
+          description: Menú creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    get:
+      tags: [Menus]
+      summary: Listar menús del restaurante (admin)
+      operationId: listMenus
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+        - name: effectiveDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Lista de menús
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /menus/public:
+    get:
+      tags: [Menus]
+      summary: Listar menús activos (público)
+      operationId: listPublicMenus
+      security: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Lista de menús públicos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuPublicResponse'
+
+  /menus/{menuId}:
+    get:
+      tags: [Menus]
+      summary: Obtener menú por ID
+      operationId: getMenuById
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      responses:
+        '200':
+          description: Detalle del menú
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Menus]
+      summary: Actualizar menú
+      operationId: updateMenu
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuRequest'
+      responses:
+        '200':
+          description: Menú actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/activate:
+    post:
+      tags: [Menus]
+      summary: Activar menú
+      operationId: activateMenu
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      responses:
+        '204':
+          description: Menú activado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/deactivate:
+    post:
+      tags: [Menus]
+      summary: Desactivar menú
+      operationId: deactivateMenu
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      responses:
+        '204':
+          description: Menú desactivado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/deposit-policy:
+    post:
+      tags: [Deposits]
+      summary: Configurar política de fianzas del menú
+      operationId: setDepositPolicy
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDepositPolicyRequest'
+      responses:
+        '204':
+          description: Política configurada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Deposits]
+      summary: Eliminar política de fianzas del menú
+      operationId: removeDepositPolicy
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      responses:
+        '204':
+          description: Política eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== CATEGORIES ====================
+  /menus/{menuId}/categories:
+    post:
+      tags: [Categories]
+      summary: Agregar categoría al menú
+      operationId: addCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCategoryRequest'
+      responses:
+        '201':
+          description: Categoría agregada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags: [Categories]
+      summary: Listar categorías del menú
+      operationId: listCategories
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/categories/{categoryId}:
+    get:
+      tags: [Categories]
+      summary: Obtener categoría por ID
+      operationId: getCategoryById
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Detalle de la categoría
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Categories]
+      summary: Actualizar categoría
+      operationId: updateCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '200':
+          description: Categoría actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/categories/{categoryId}/name:
+    put:
+      tags: [Categories]
+      summary: Renombrar categoría
+      operationId: renameCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenameCategoryRequest'
+      responses:
+        '204':
+          description: Categoría renombrada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/categories/reorder:
+    post:
+      tags: [Categories]
+      summary: Reordenar categorías
+      operationId: reorderCategories
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderCategoriesRequest'
+      responses:
+        '204':
+          description: Categorías reordenadas
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/categories/{categoryId}/activate:
+    post:
+      tags: [Categories]
+      summary: Activar categoría
+      operationId: activateCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '204':
+          description: Categoría activada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/categories/{categoryId}/deactivate:
+    post:
+      tags: [Categories]
+      summary: Desactivar categoría
+      operationId: deactivateCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '204':
+          description: Categoría desactivada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== ITEMS ====================
+  /menus/{menuId}/categories/{categoryId}/items:
+    post:
+      tags: [Items]
+      summary: Agregar item a categoría
+      operationId: addItemToCategory
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddItemRequest'
+      responses:
+        '201':
+          description: Item agregado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items:
+    get:
+      tags: [Items]
+      summary: Listar items del menú con filtros
+      operationId: listItems
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: isAvailable
+          in: query
+          schema:
+            type: boolean
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+        - name: dayOfWeek
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+      responses:
+        '200':
+          description: Lista de items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/available-today:
+    get:
+      tags: [Availability]
+      summary: Items disponibles hoy
+      operationId: getItemsAvailableToday
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      responses:
+        '200':
+          description: Items disponibles hoy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}:
+    get:
+      tags: [Items]
+      summary: Obtener item por ID
+      operationId: getItemById
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Detalle del item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Items]
+      summary: Actualizar item
+      operationId: updateItem
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItemRequest'
+      responses:
+        '200':
+          description: Item actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/mark-high-risk:
+    post:
+      tags: [Items]
+      summary: Marcar item como alto riesgo
+      operationId: markAsHighRisk
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Item marcado como alto riesgo
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/require-advance-order:
+    post:
+      tags: [Items]
+      summary: Configurar pedido anticipado
+      operationId: requireAdvanceOrder
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequireAdvanceOrderRequest'
+      responses:
+        '204':
+          description: Pedido anticipado configurado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/mark-available:
+    post:
+      tags: [Availability]
+      summary: Marcar item como disponible
+      operationId: markAsAvailable
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Item marcado como disponible
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/mark-unavailable:
+    post:
+      tags: [Availability]
+      summary: Marcar item como agotado
+      operationId: markAsUnavailable
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Item marcado como agotado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/activate:
+    post:
+      tags: [Items]
+      summary: Activar item
+      operationId: activateItem
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Item activado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/deactivate:
+    post:
+      tags: [Items]
+      summary: Desactivar item
+      operationId: deactivateItem
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Item desactivado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== AVAILABILITY ====================
+  /menus/{menuId}/items/{itemId}/availability:
+    post:
+      tags: [Availability]
+      summary: Configurar disponibilidad por días
+      operationId: setAvailability
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetAvailabilityRequest'
+      responses:
+        '204':
+          description: Disponibilidad configurada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== ALLERGENS ====================
+  /allergens:
+    get:
+      tags: [Allergens]
+      summary: Obtener catálogo de alérgenos
+      operationId: getAllergensCatalog
+      security: []
+      parameters:
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo de alérgenos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AllergenResponse'
+
+  /menus/{menuId}/items/{itemId}/allergens:
+    get:
+      tags: [Allergens]
+      summary: Listar alérgenos del item
+      operationId: getItemAllergens
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Lista de alérgenos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AllergenResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Allergens]
+      summary: Agregar alérgeno a item
+      operationId: addAllergen
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddAllergenRequest'
+      responses:
+        '204':
+          description: Alérgeno agregado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/allergens/{allergenId}:
+    delete:
+      tags: [Allergens]
+      summary: Remover alérgeno de item
+      operationId: removeAllergen
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - $ref: '#/components/parameters/AllergenId'
+      responses:
+        '204':
+          description: Alérgeno removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/allergen-notes:
+    put:
+      tags: [Allergens]
+      summary: Configurar notas de alérgenos
+      operationId: setAllergenNotes
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetAllergenNotesRequest'
+      responses:
+        '204':
+          description: Notas configuradas
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== NUTRITION ====================
+  /menus/{menuId}/items/{itemId}/nutritional-info:
+    get:
+      tags: [Nutrition]
+      summary: Obtener información nutricional
+      operationId: getNutritionalInfo
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - name: portion
+          in: query
+          description: Porcentaje de la ración (ej. 0.25 para tapa)
+          schema:
+            type: number
+            format: decimal
+            minimum: 0
+            maximum: 1
+      responses:
+        '200':
+          description: Información nutricional
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NutritionalInfoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Nutrition]
+      summary: Configurar información nutricional
+      operationId: setNutritionalInfo
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetNutritionalInfoRequest'
+      responses:
+        '204':
+          description: Información nutricional configurada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Nutrition]
+      summary: Eliminar información nutricional
+      operationId: removeNutritionalInfo
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Información nutricional eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== PRICE OPTIONS ====================
+  /menus/{menuId}/items/{itemId}/price-options:
+    get:
+      tags: [Prices]
+      summary: Listar opciones de precio
+      operationId: listPriceOptions
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de opciones de precio
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PriceOptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Prices]
+      summary: Agregar opción de precio
+      operationId: addPriceOption
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPriceOptionRequest'
+      responses:
+        '201':
+          description: Opción de precio agregada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceOptionCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/price-options/{priceOptionId}:
+    put:
+      tags: [Prices]
+      summary: Actualizar opción de precio
+      operationId: updatePriceOption
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - $ref: '#/components/parameters/PriceOptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePriceOptionRequest'
+      responses:
+        '200':
+          description: Opción de precio actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceOptionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/price-options/{priceOptionId}/market-price:
+    put:
+      tags: [Prices]
+      summary: Actualizar precio según mercado
+      operationId: updateMarketPrice
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - $ref: '#/components/parameters/PriceOptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMarketPriceRequest'
+      responses:
+        '204':
+          description: Precio actualizado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/price-options/{priceOptionId}/activate:
+    post:
+      tags: [Prices]
+      summary: Activar opción de precio
+      operationId: activatePriceOption
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - $ref: '#/components/parameters/PriceOptionId'
+      responses:
+        '204':
+          description: Opción activada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/items/{itemId}/price-options/{priceOptionId}/deactivate:
+    post:
+      tags: [Prices]
+      summary: Desactivar opción de precio
+      operationId: deactivatePriceOption
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+        - $ref: '#/components/parameters/PriceOptionId'
+      responses:
+        '204':
+          description: Opción desactivada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== DEPOSIT OVERRIDE ====================
+  /menus/{menuId}/items/{itemId}/deposit-override:
+    post:
+      tags: [Deposits]
+      summary: Configurar override de fianza para item
+      operationId: setItemDepositOverride
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetItemDepositOverrideRequest'
+      responses:
+        '204':
+          description: Override configurado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Deposits]
+      summary: Eliminar override de fianza
+      operationId: removeItemDepositOverride
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '204':
+          description: Override eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== DEPOSIT CALCULATION ====================
+  /menus/{menuId}/calculate-deposit:
+    post:
+      tags: [Deposits]
+      summary: Calcular fianza de reserva
+      operationId: calculateReservationDeposit
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateDepositRequest'
+      responses:
+        '200':
+          description: Resultado del cálculo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositCalculationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /menus/{menuId}/deposit-estimate:
+    get:
+      tags: [Deposits]
+      summary: Estimar fianza de reserva (query)
+      operationId: estimateDeposit
+      parameters:
+        - $ref: '#/components/parameters/MenuId'
+        - name: guestCount
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: estimatedBill
+          in: query
+          required: true
+          schema:
+            type: number
+            format: decimal
+            minimum: 0
+        - name: items
+          in: query
+          description: 'Items pedidos anticipadamente en formato itemId:quantity,itemId:quantity'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estimación de fianza
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositCalculationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token con RestaurantId en claims
+
+  parameters:
+    MenuId:
+      name: menuId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    PriceOptionId:
+      name: priceOptionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    AllergenId:
+      name: allergenId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Petición inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    Unauthorized:
+      description: No autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+  schemas:
+    # ==================== ERROR SCHEMA ====================
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        extensions:
+          type: object
+          additionalProperties: true
+
+    # ==================== MENU SCHEMAS ====================
+    CreateMenuRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: Nombre del menú
+        description:
+          type: [string, "null"]
+          maxLength: 500
+        effectiveFrom:
+          type: [string, "null"]
+          format: date-time
+        effectiveUntil:
+          type: [string, "null"]
+          format: date-time
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    UpdateMenuRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: [string, "null"]
+          maxLength: 500
+        effectiveFrom:
+          type: [string, "null"]
+          format: date-time
+        effectiveUntil:
+          type: [string, "null"]
+          format: date-time
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    MenuCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    MenuResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        restaurantId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        isActive:
+          type: boolean
+        effectiveFrom:
+          type: [string, "null"]
+          format: date-time
+        effectiveUntil:
+          type: [string, "null"]
+          format: date-time
+        displayOrder:
+          type: integer
+        depositPolicy:
+          anyOf:
+            - $ref: '#/components/schemas/DepositPolicyResponse'
+            - type: "null"
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    MenuPublicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        displayOrder:
+          type: integer
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryPublicResponse'
+
+    # ==================== DEPOSIT POLICY SCHEMAS ====================
+    SetDepositPolicyRequest:
+      type: object
+      required:
+        - depositType
+        - amount
+      properties:
+        depositType:
+          $ref: '#/components/schemas/DepositType'
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 10000
+        percentage:
+          type: [number, "null"]
+          format: decimal
+          minimum: 1
+          maximum: 100
+        minimumBillForDeposit:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 100000
+        minimumGuestsForDeposit:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 100
+
+    DepositPolicyResponse:
+      type: object
+      properties:
+        depositType:
+          $ref: '#/components/schemas/DepositType'
+        amount:
+          type: number
+          format: decimal
+        percentage:
+          type: [number, "null"]
+          format: decimal
+        minimumBillForDeposit:
+          type: [number, "null"]
+          format: decimal
+        minimumGuestsForDeposit:
+          type: [integer, "null"]
+
+    DepositType:
+      type: integer
+      enum: [1, 2, 3]
+      description: |
+        1 = PerPerson
+        2 = PercentageOfBill
+        3 = FixedAmount
+
+    # ==================== CATEGORY SCHEMAS ====================
+    AddCategoryRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: [string, "null"]
+          maxLength: 500
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    UpdateCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: [string, "null"]
+          maxLength: 500
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    RenameCategoryRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+
+    ReorderCategoriesRequest:
+      type: object
+      required:
+        - categories
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryOrderItem'
+
+    CategoryOrderItem:
+      type: object
+      required:
+        - categoryId
+        - displayOrder
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    CategoryCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+
+    CategoryPublicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        displayOrder:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemPublicResponse'
+
+    # ==================== ITEM SCHEMAS ====================
+    AddItemRequest:
+      type: object
+      required:
+        - name
+        - priceOptions
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: [string, "null"]
+          maxLength: 1000
+        imageUrl:
+          type: [string, "null"]
+          maxLength: 500
+        displayOrder:
+          type: integer
+          minimum: 0
+        priceOptions:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CreatePriceOptionRequest'
+
+    UpdateItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: [string, "null"]
+          maxLength: 1000
+        imageUrl:
+          type: [string, "null"]
+          maxLength: 500
+        displayOrder:
+          type: integer
+          minimum: 0
+
+    RequireAdvanceOrderRequest:
+      type: object
+      properties:
+        minimumAdvanceOrderQuantity:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 100
+
+    ItemCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        imageUrl:
+          type: [string, "null"]
+        displayOrder:
+          type: integer
+        isActive:
+          type: boolean
+        isAvailable:
+          type: boolean
+        isHighRiskItem:
+          type: boolean
+        requiresAdvanceOrder:
+          type: boolean
+        minimumAdvanceOrderQuantity:
+          type: [integer, "null"]
+        isAlwaysAvailable:
+          type: boolean
+        availableDays:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+        allergenNotes:
+          type: [string, "null"]
+        priceOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceOptionResponse'
+        allergens:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllergenResponse'
+        nutritionalInfo:
+          anyOf:
+            - $ref: '#/components/schemas/NutritionalInfoResponse'
+            - type: "null"
+        itemDepositOverride:
+          anyOf:
+            - $ref: '#/components/schemas/ItemDepositOverrideResponse'
+            - type: "null"
+        isAvailableToday:
+          type: boolean
+        canBeOrdered:
+          type: boolean
+
+    ItemPublicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: [string, "null"]
+        imageUrl:
+          type: [string, "null"]
+        displayOrder:
+          type: integer
+        isAvailable:
+          type: boolean
+        allergenNotes:
+          type: [string, "null"]
+        priceOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceOptionPublicResponse'
+        allergens:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllergenResponse'
+        nutritionalInfo:
+          anyOf:
+            - $ref: '#/components/schemas/NutritionalInfoResponse'
+            - type: "null"
+
+    # ==================== AVAILABILITY SCHEMAS ====================
+    SetAvailabilityRequest:
+      type: object
+      required:
+        - isAlwaysAvailable
+      properties:
+        isAlwaysAvailable:
+          type: boolean
+        availableDays:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+
+    # ==================== ALLERGEN SCHEMAS ====================
+    AddAllergenRequest:
+      type: object
+      required:
+        - allergenId
+      properties:
+        allergenId:
+          type: string
+          format: uuid
+
+    SetAllergenNotesRequest:
+      type: object
+      properties:
+        notes:
+          type: [string, "null"]
+          maxLength: 500
+
+    AllergenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        iconUrl:
+          type: [string, "null"]
+        isActive:
+          type: boolean
+        displayOrder:
+          type: integer
+
+    # ==================== NUTRITIONAL INFO SCHEMAS ====================
+    SetNutritionalInfoRequest:
+      type: object
+      required:
+        - calories
+        - protein
+        - carbohydrates
+        - fat
+        - servingSize
+      properties:
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        protein:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+        carbohydrates:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+        fat:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+        fiber:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 1000
+        sugar:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 1000
+        salt:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 100
+        servingSize:
+          type: integer
+          minimum: 1
+          maximum: 10000
+
+    NutritionalInfoResponse:
+      type: object
+      properties:
+        calories:
+          type: integer
+        protein:
+          type: number
+          format: decimal
+        carbohydrates:
+          type: number
+          format: decimal
+        fat:
+          type: number
+          format: decimal
+        fiber:
+          type: [number, "null"]
+          format: decimal
+        sugar:
+          type: [number, "null"]
+          format: decimal
+        salt:
+          type: [number, "null"]
+          format: decimal
+        servingSize:
+          type: integer
+
+    # ==================== PRICE OPTION SCHEMAS ====================
+    CreatePriceOptionRequest:
+      type: object
+      required:
+        - portionType
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 10000
+
+    AddPriceOptionRequest:
+      type: object
+      required:
+        - portionType
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 10000
+
+    UpdatePriceOptionRequest:
+      type: object
+      properties:
+        price:
+          type: [number, "null"]
+          format: decimal
+          minimum: 0
+          maximum: 10000
+
+    UpdateMarketPriceRequest:
+      type: object
+      required:
+        - price
+      properties:
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 10000
+
+    PriceOptionCreatedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    PriceOptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: [number, "null"]
+          format: decimal
+        isActive:
+          type: boolean
+        requiresMarketPrice:
+          type: boolean
+        displayPrice:
+          type: string
+
+    PriceOptionPublicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: [number, "null"]
+          format: decimal
+        displayPrice:
+          type: string
+
+    PortionType:
+      type: integer
+      enum: [1, 2, 3, 4]
+      description: |
+        1 = Tapa
+        2 = MediaRacion
+        3 = Racion
+        4 = SegunMercado
+
+    # ==================== ITEM DEPOSIT OVERRIDE SCHEMAS ====================
+    SetItemDepositOverrideRequest:
+      type: object
+      required:
+        - depositAmount
+      properties:
+        depositAmount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          maximum: 10000
+        minimumQuantityForDeposit:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 100
+
+    ItemDepositOverrideResponse:
+      type: object
+      properties:
+        depositAmount:
+          type: number
+          format: decimal
+        minimumQuantityForDeposit:
+          type: [integer, "null"]
+
+    # ==================== DEPOSIT CALCULATION SCHEMAS ====================
+    CalculateDepositRequest:
+      type: object
+      required:
+        - guestCount
+        - estimatedBill
+      properties:
+        guestCount:
+          type: integer
+          minimum: 1
+        estimatedBill:
+          type: number
+          format: decimal
+          minimum: 0
+        advanceOrderedItems:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 1
+          description: 'Mapa de itemId -> cantidad'
+
+    DepositCalculationResponse:
+      type: object
+      properties:
+        menuDeposit:
+          type: number
+          format: decimal
+        itemsDeposit:
+          type: number
+          format: decimal
+        totalDeposit:
+          type: number
+          format: decimal
+        breakdown:
+          $ref: '#/components/schemas/DepositBreakdown'
+
+    DepositBreakdown:
+      type: object
+      properties:
+        menuPolicy:
+          anyOf:
+            - $ref: '#/components/schemas/MenuPolicyBreakdown'
+            - type: "null"
+        itemOverrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemOverrideBreakdown'
+
+    MenuPolicyBreakdown:
+      type: object
+      properties:
+        type:
+          type: string
+        amount:
+          type: number
+          format: decimal
+        guestsApplied:
+          type: [integer, "null"]
+        percentageApplied:
+          type: [number, "null"]
+          format: decimal
+
+    ItemOverrideBreakdown:
+      type: object
+      properties:
+        itemId:
+          type: string
+          format: uuid
+        itemName:
+          type: string
+        depositAmount:
+          type: number
+          format: decimal
+        quantityOrdered:
+          type: integer

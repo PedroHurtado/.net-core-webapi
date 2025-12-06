@@ -42,7 +42,7 @@ Desde el Domain Spec adjunto, extrae la tabla de endpoints.
 ## Paso 2: Generar OpenAPI
 
 ```
-Genera OpenAPI 3.1 (YAML) usando:
+Genera OpenAPI 3.0.3 (YAML) usando:
 - Domain Spec adjunto (schemas, validaciones)
 - Tabla de endpoints validada (abajo)
 
@@ -55,6 +55,7 @@ Genera OpenAPI 3.1 (YAML) usando:
 - Schemas: PascalCase (`CreateMenuRequest`, `MenuResponse`)
 - Validaciones del dominio → `required`, `maxLength`, `minimum`
 - IDs: `uuid`, Dinero: `decimal`
+- Nullable: `nullable: true` (NO `type: [string, "null"]`)
 
 ## Errores: CustomProblemDetails
 
