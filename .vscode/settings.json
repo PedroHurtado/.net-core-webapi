@@ -1,5 +1,6 @@
 {
     "active.api": "Customer",
     "active.test": "WebApi.IntegrationTests",
-    "dotnet.vstestPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400\\vstest.console.dll"
+    "dotnet.vstestPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400\\vstest.console.dll",
+    "liveServer.settings.port": 5501
 }
