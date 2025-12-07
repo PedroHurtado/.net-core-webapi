@@ -26,29 +26,7 @@
             }
         }
     </script>
-    <style>
-        .accordion-content {
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease;
-            max-height: 2000px;
-            /* Arbitrary large height */
-            opacity: 1;
-            overflow: hidden;
-        }
-
-        .collapsed .accordion-content {
-            max-height: 0;
-            opacity: 0;
-            margin-top: 0;
-        }
-
-        .accordion-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .collapsed .accordion-icon {
-            transform: rotate(-90deg);
-        }
-    </style>
+    <!-- Modules -->
     <script type="module" src="fudie-text-field.js"></script>
     <script type="module" src="fudie-number-field.js"></script>
     <script type="module" src="fudie-select-field.js"></script>
@@ -90,38 +68,22 @@
             <p class="text-gray-400">Design System & Web Components Library</p>
         </div>
 
-        <!-- fudie-text-field Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-keyboard text-primary w-6 text-center"></i> fudie-text-field
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
+        <fudie-accordion>
 
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Basic Example -->
+            <!-- fudie-text-field -->
+            <fudie-accordion-item title="fudie-text-field" icon="keyboard">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Estados Básicos</h3>
-
                         <fudie-text-field label="Nombre del Producto" placeholder="Ej. Chuletón de Vaca"
                             hint="Nombre visible en la carta"></fudie-text-field>
-
                         <fudie-text-field label="Usuario (Required)" value="admin_user" required></fudie-text-field>
-
                         <fudie-text-field label="Solo Lectura (Disabled)" value="ID-29384" disabled></fudie-text-field>
                     </div>
-
-                    <!-- Validation & Types -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Validación</h3>
-
                         <fudie-text-field label="Email (Con Error)" value="usuario@ejemplo" type="email"
                             error="El formato del email no es válido"></fudie-text-field>
-
                         <div class="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                             <h4 class="text-xs font-bold text-gray-500 mb-2">Interactivo (Test Eventos)</h4>
                             <fudie-text-field id="demo-input" label="Escribe algo..."
@@ -129,278 +91,146 @@
                             <p id="demo-output" class="text-xs text-primary mt-2 font-mono h-4"></p>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-number-field Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-hashtag text-primary w-6 text-center"></i> fudie-number-field
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Basic Example -->
+            <!-- fudie-number-field -->
+            <fudie-accordion-item title="fudie-number-field" icon="hashtag">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Nutrición</h3>
-
                         <fudie-number-field label="Calorías (kcal)" value="550" min="0"></fudie-number-field>
-
                         <fudie-number-field label="Grasas (g)" value="42.0" step="0.1"></fudie-number-field>
                     </div>
-
-                    <!-- Pricing Example -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Precios</h3>
-
                         <fudie-number-field label="Precio Base (€)" value="12.50" step="0.01"
                             min="0"></fudie-number-field>
-
                         <fudie-number-field label="Descuento (%)" placeholder="Opcional" max="100"></fudie-number-field>
                     </div>
-
-                    <!-- Validation constraints -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Restricciones</h3>
-
                         <fudie-number-field label="Min 10 - Max 20" value="5" min="10" max="20"
                             error="El valor debe estar entre 10 y 20"></fudie-number-field>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-select-field Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-list text-primary w-6 text-center"></i> fudie-select-field
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Basic Options -->
+            <!-- fudie-select-field -->
+            <fudie-accordion-item title="fudie-select-field" icon="list">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Categorías (JSON
-                            Array)</h3>
-
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Categorías</h3>
                         <fudie-select-field label="Categoría" options='["Entrantes", "Principales", "Postres"]'
                             value="Principales"></fudie-select-field>
-
                         <fudie-select-field label="Tipo de Porción"
                             options='[{"label":"Tapa","value":"tapa"},{"label":"Ración","value":"racion"},{"label":"Media Ración","value":"media"}]'
                             value="racion"></fudie-select-field>
                     </div>
-
-                    <!-- States -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Estados</h3>
-
-                        <fudie-select-field label="Selecciona una opción (Placeholder)" placeholder="Elige uno..."
+                        <fudie-select-field label="Selecciona una opción" placeholder="Elige uno..."
                             options='["Opción A", "Opción B"]'></fudie-select-field>
-
                         <fudie-select-field label="Deshabilitado" value="A" options='["A", "B"]'
                             disabled></fudie-select-field>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-textarea-field Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-align-left text-primary w-6 text-center"></i> fudie-textarea-field
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 gap-8 border-t border-gray-50 pt-8">
-
+            <!-- fudie-textarea-field -->
+            <fudie-accordion-item title="fudie-textarea-field" icon="align-left">
+                <div class="grid grid-cols-1 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Descripción</h3>
-
                         <fudie-textarea-field label="Descripción del Plato" placeholder="Describe el plato aquí..."
                             value="Maduración 45 días, precio por kg. Se sirve con pimientos de padrón."
                             rows="3"></fudie-textarea-field>
-
-                        <fudie-textarea-field label="Notas Internas (Required & Error)" required
+                        <fudie-textarea-field label="Notas Internas (Required)" required
                             error="Este campo es obligatorio" rows="2"></fudie-textarea-field>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-input-date & time Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-clock text-primary w-6 text-center"></i> fudie-input-date & time
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Date Examples -->
+            <!-- fudie-input-date & time -->
+            <fudie-accordion-item title="fudie-input-date & time" icon="clock">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Fechas</h3>
-
                         <fudie-input-date label="Fecha de Nacimiento" required></fudie-input-date>
-
                         <fudie-input-date label="Fecha (Min & Max)" min="2023-01-01" max="2023-12-31"
                             hint="Solo año 2023"></fudie-input-date>
-
                         <fudie-input-date label="Deshabilitado" disabled value="2023-10-15"></fudie-input-date>
                     </div>
-
-                    <!-- Time Examples -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Horas</h3>
-
                         <fudie-input-time label="Hora de Apertura" value="09:00"></fudie-input-time>
-
                         <fudie-input-time label="Hora (Min & Max)" min="09:00" max="18:00"
                             hint="Horario laboral (09:00 - 18:00)"></fudie-input-time>
-
                         <fudie-input-time label="Con Error" value="20:00" error="Fuera de horario"></fudie-input-time>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-toggle Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-toggle-on text-primary w-6 text-center"></i> fudie-toggle & checkbox
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Toggle Examples -->
+            <!-- fudie-toggle & checkbox -->
+            <fudie-accordion-item title="fudie-toggle & checkbox" icon="toggle-on">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Switches (Toggles)
-                        </h3>
-
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Switches</h3>
                         <fudie-toggle label="Disponible" description="Visible en la carta digital"
                             checked></fudie-toggle>
-
                         <fudie-toggle label="Destacado"
                             description="Se muestra al inicio de la categoría"></fudie-toggle>
-
                         <fudie-toggle label="Temporada (Disabled)" checked disabled></fudie-toggle>
                     </div>
-
-                    <!-- Checkbox Examples -->
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Checkboxes</h3>
-
                         <fudie-checkbox label="Vegetariano"
                             description="Apto para dietas vegetarianas"></fudie-checkbox>
-
                         <fudie-checkbox label="Sin Gluten" checked></fudie-checkbox>
-
                         <fudie-checkbox label="Picante (Disabled)" disabled></fudie-checkbox>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-button Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-square-check text-primary w-6 text-center"></i> fudie-button
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Variants -->
+            <!-- fudie-button -->
+            <fudie-accordion-item title="fudie-button" icon="square-check">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Variantes</h3>
-
                         <div class="flex flex-wrap gap-4">
                             <fudie-button>Primary</fudie-button>
                             <fudie-button variant="secondary">Secondary</fudie-button>
                             <fudie-button variant="danger">Danger</fudie-button>
                             <fudie-button variant="ghost">Guest</fudie-button>
                         </div>
-
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">Estados</h3>
                         <div class="flex flex-wrap gap-4">
                             <fudie-button disabled>Disabled</fudie-button>
                             <fudie-button variant="secondary" disabled>Disabled</fudie-button>
                         </div>
                     </div>
-
-                    <!-- Sizes & Full Width -->
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tamaños</h3>
-
                         <div class="flex flex-wrap items-center gap-4">
                             <fudie-button size="sm">Small</fudie-button>
                             <fudie-button size="md">Medium</fudie-button>
                             <fudie-button size="lg">Large</fudie-button>
                         </div>
-
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">Ancho Completo
                         </h3>
                         <div class="w-full">
                             <fudie-button full-width>Full Width Button</fudie-button>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-nav-item & fudie-card Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-cube text-primary w-6 text-center"></i> fudie-card & nav
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Nav Items -->
+            <!-- fudie-card & nav -->
+            <fudie-accordion-item title="fudie-card & nav" icon="cube">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Navegación Lateral
                         </h3>
-
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 w-64">
                             <fudie-nav-item href="#" icon="utensils" label="Carta" active></fudie-nav-item>
                             <fudie-nav-item href="#" icon="calendar-check" label="Reservas">
@@ -410,12 +240,8 @@
                             <fudie-nav-item href="#" icon="cog" label="Configuración"></fudie-nav-item>
                         </div>
                     </div>
-
-                    <!-- Cards -->
                     <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Contenedores (Cards)
-                        </h3>
-
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Contenedores</h3>
                         <fudie-card title="Información General" subtitle="Detalles del restaurante">
                             <div class="text-sm text-gray-600">
                                 <p>Aquí puedes editar la información básica de tu restaurante, logo, y descripción
@@ -426,7 +252,6 @@
                                 <fudie-button size="sm">Guardar</fudie-button>
                             </div>
                         </fudie-card>
-
                         <fudie-card>
                             <div class="flex items-center gap-4">
                                 <div class="bg-green-100 p-3 rounded-full text-green-600">
@@ -440,107 +265,52 @@
                             </div>
                         </fudie-card>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-radio-grid Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-th-large text-primary w-6 text-center"></i> fudie-radio-grid
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 gap-8 border-t border-gray-50 pt-8">
-
+            <!-- fudie-radio-grid -->
+            <fudie-accordion-item title="fudie-radio-grid" icon="th-large">
+                <div class="grid grid-cols-1 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Selección Visual</h3>
-
-                        <fudie-radio-grid label="Método de Pago" name="payment" value="card" options='[
-                                {"label": "Efectivo", "value": "cash", "icon": "money-bill-wave"},
-                                {"label": "Tarjeta", "value": "card", "icon": "credit-card"},
-                                {"label": "Online", "value": "online", "icon": "globe"}
-                            ]'></fudie-radio-grid>
-
-                        <fudie-radio-grid label="Ubicación de Mesa" name="location" value="terrace" options='[
-                                {"label": "Interior", "value": "indoor", "icon": "chair"},
-                                {"label": "Terraza", "value": "terrace", "icon": "sun"},
-                                {"label": "Barra", "value": "bar", "icon": "glass-martini-alt"}
-                            ]'></fudie-radio-grid>
+                        <fudie-radio-grid label="Método de Pago" name="payment" value="card"
+                            options='[{"label": "Efectivo", "value": "cash", "icon": "money-bill-wave"},{"label": "Tarjeta", "value": "card", "icon": "credit-card"},{"label": "Online", "value": "online", "icon": "globe"}]'></fudie-radio-grid>
+                        <fudie-radio-grid label="Ubicación de Mesa" name="location" value="terrace"
+                            options='[{"label": "Interior", "value": "indoor", "icon": "chair"},{"label": "Terraza", "value": "terrace", "icon": "sun"},{"label": "Barra", "value": "bar", "icon": "glass-martini-alt"}]'></fudie-radio-grid>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-progress Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-spinner text-primary w-6 text-center"></i> fudie-progress
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Basic Progress -->
+            <!-- fudie-progress -->
+            <fudie-accordion-item title="fudie-progress" icon="spinner">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Básico</h3>
-
                         <fudie-progress value="50" label="Paso 1 de 2"></fudie-progress>
-
                         <fudie-progress value="75" label="Progreso del Perfil" show-value
                             variant="success"></fudie-progress>
-
                         <fudie-progress value="30" show-value variant="danger" size="sm"></fudie-progress>
                     </div>
-
-                    <!-- Fancy Progress -->
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Avanzado</h3>
-
                         <fudie-progress value="60" label="Cargando datos..." striped></fudie-progress>
-
                         <fudie-progress value="90" label="Procesando pago" show-value striped animated
                             variant="info"></fudie-progress>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-calendar Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-calendar-alt text-primary w-6 text-center"></i> fudie-calendar
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
+            <!-- fudie-calendar -->
+            <fudie-accordion-item title="fudie-calendar" icon="calendar-alt">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Calendario Interactivo
                         </h3>
-
-                        <!-- Calendar with Event Listener -->
                         <div class="flex flex-col gap-4">
                             <span id="calendar-output" class="text-sm font-semibold text-primary block h-6">Selecciona
                                 una fecha:</span>
                             <fudie-calendar id="demo-calendar"></fudie-calendar>
                         </div>
-
                         <script>
                             const calendar = document.getElementById('demo-calendar');
                             const calOutput = document.getElementById('calendar-output');
@@ -552,162 +322,94 @@
                             }
                         </script>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-grid-picker Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-th text-primary w-6 text-center"></i> fudie-grid-picker
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Multi-select Allergens -->
+            <!-- fudie-grid-picker -->
+            <fudie-accordion-item title="fudie-grid-picker" icon="th">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Alérgenos (Multiple
-                            Select)</h3>
-
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Alérgenos (Multiple)
+                        </h3>
                         <fudie-grid-picker label="Alérgenos del Plato" name="allergens" multiple
-                            value='["gluten", "dairy"]' options='[
-                                {"label": "Gluten", "value": "gluten", "icon": "bread-slice"},
-                                {"label": "Lácteos", "value": "dairy", "icon": "cheese"},
-                                {"label": "Huevo", "value": "egg", "icon": "egg"},
-                                {"label": "Pescado", "value": "fish", "icon": "fish"}
-                            ]'></fudie-grid-picker>
+                            value='["gluten", "dairy"]'
+                            options='[{"label": "Gluten", "value": "gluten", "icon": "bread-slice"},{"label": "Lácteos", "value": "dairy", "icon": "cheese"},{"label": "Huevo", "value": "egg", "icon": "egg"},{"label": "Pescado", "value": "fish", "icon": "fish"}]'></fudie-grid-picker>
                     </div>
-
-                    <!-- Single-select People (Fill Variant) -->
                     <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Personas (Single
-                            Select & Variant)</h3>
-
-                        <fudie-grid-picker label="Número de Personas" name="people" variant="fill" value="2" options='[
-                                {"label": "1", "value": "1"}, {"label": "2", "value": "2"},
-                                {"label": "3", "value": "3"}, {"label": "4", "value": "4"},
-                                {"label": "5", "value": "5"}, {"label": "6", "value": "6"},
-                                {"label": "7", "value": "7"}, {"label": "8", "value": "8"}
-                            ]'></fudie-grid-picker>
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Personas (Single)</h3>
+                        <fudie-grid-picker label="Número de Personas" name="people" variant="fill" value="2"
+                            options='[{"label": "1", "value": "1"}, {"label": "2", "value": "2"},{"label": "3", "value": "3"}, {"label": "4", "value": "4"},{"label": "5", "value": "5"}, {"label": "6", "value": "6"},{"label": "7", "value": "7"}, {"label": "8", "value": "8"}]'></fudie-grid-picker>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-modal Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-window-restore text-primary w-6 text-center"></i> fudie-modal
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
+            <!-- fudie-modal -->
+            <fudie-accordion-item title="fudie-modal" icon="window-restore">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Modales</h3>
-
                         <div class="flex gap-4">
                             <fudie-button onclick="document.getElementById('demo-modal').open()">Abrir
                                 Modal</fudie-button>
                         </div>
-
-                        <!-- The Modal (Hidden by default until opened) -->
                         <fudie-modal id="demo-modal" title="Confirmación de Pedido">
                             <p>¿Estás seguro de que deseas enviar este pedido a cocina?</p>
                             <div class="mt-4 p-4 bg-yellow-50 rounded-xl text-yellow-700 text-sm">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 Esta acción no se puede deshacer.
                             </div>
-
                             <div slot="footer">
                                 <fudie-button variant="ghost"
                                     onclick="document.getElementById('demo-modal').close()">Cancelar</fudie-button>
                                 <fudie-button
                                     onclick="document.getElementById('demo-modal').close()">Confirmar</fudie-button>
-
-
                             </div>
                         </fudie-modal>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-badge, avatar & spinner Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-gem text-primary w-6 text-center"></i> UI Elements (Level 1)
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Badges -->
+            <!-- UI Elements (Level 1) -->
+            <fudie-accordion-item title="UI Elements (Level 1)" icon="gem">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Badges</h3>
-
                         <div class="flex flex-wrap gap-2">
                             <fudie-badge label="Default"></fudie-badge>
                             <fudie-badge label="Primary" variant="primary"></fudie-badge>
                             <fudie-badge label="Success" variant="success" icon="check"></fudie-badge>
                         </div>
-
                         <div class="flex flex-wrap gap-2">
                             <fudie-badge label="Warning" variant="warning"></fudie-badge>
                             <fudie-badge label="Error" variant="danger"></fudie-badge>
                             <fudie-badge label="Info" variant="info"></fudie-badge>
                         </div>
-
                         <div class="flex flex-wrap gap-2 items-center">
                             <fudie-badge label="Small" size="sm" variant="secondary"></fudie-badge>
                             <fudie-badge label="Large" size="lg" variant="secondary"></fudie-badge>
                             <fudie-badge label="Square" shape="square"></fudie-badge>
                         </div>
                     </div>
-
-                    <!-- Avatars -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Avatars</h3>
-
                         <div class="flex items-center gap-4">
                             <fudie-avatar src="https://i.pravatar.cc/150?img=32" status="online"></fudie-avatar>
                             <fudie-avatar initials="JD" status="busy"></fudie-avatar>
                             <fudie-avatar status="offline"></fudie-avatar>
                         </div>
-
                         <div class="flex items-center gap-4">
                             <fudie-avatar src="https://i.pravatar.cc/150?img=12" size="sm"></fudie-avatar>
                             <fudie-avatar src="https://i.pravatar.cc/150?img=5" size="lg" shape="square"></fudie-avatar>
                             <fudie-avatar initials="ADMIN" size="xl" status="away"></fudie-avatar>
                         </div>
                     </div>
-
-                    <!-- Spinners -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Spinners</h3>
-
                         <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
                             <fudie-spinner></fudie-spinner>
                             <fudie-spinner variant="primary" size="lg"></fudie-spinner>
                             <fudie-spinner variant="secondary" size="sm"></fudie-spinner>
                         </div>
-
                         <div class="flex items-center gap-2">
                             <fudie-button>
                                 <fudie-spinner variant="white" size="sm"></fudie-spinner>
@@ -715,56 +417,32 @@
                             </fudie-button>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- fudie-alert, stepper & rating Section -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-layer-group text-primary w-6 text-center"></i> Forms & Feedback (Level 2)
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50 pt-8">
-
-                    <!-- Alerts -->
+            <!-- Forms & Feedback (Level 2) -->
+            <fudie-accordion-item title="Forms & Feedback (Level 2)" icon="layer-group">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Alertas</h3>
-
-                        <fudie-alert title="Información" dismissible>
-                            El restaurante cerrará hoy a las 22:00 por mantenimiento.
-                        </fudie-alert>
-
-                        <fudie-alert variant="warning" title="Stock Bajo">
-                            Quedan menos de 5 unidades de este producto.
-                        </fudie-alert>
-
-                        <fudie-alert variant="danger" title="Error de Conexión">
-                            No se ha podido procesar el pago. Inténtalo de nuevo.
-                        </fudie-alert>
+                        <fudie-alert title="Información" dismissible>El restaurante cerrará hoy a las 22:00 por
+                            mantenimiento.</fudie-alert>
+                        <fudie-alert variant="warning" title="Stock Bajo">Quedan menos de 5 unidades de este
+                            producto.</fudie-alert>
+                        <fudie-alert variant="danger" title="Error de Conexión">No se ha podido procesar el pago.
+                            Inténtalo de nuevo.</fudie-alert>
                     </div>
-
-                    <!-- Interactive Inputs -->
                     <div class="space-y-8">
                         <div>
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Steppers
-                                (Cantidad)</h3>
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Steppers</h3>
                             <div class="flex items-center gap-8">
                                 <fudie-stepper value="1" min="1" max="10"></fudie-stepper>
                                 <fudie-stepper value="0" min="0" size="sm"></fudie-stepper>
                                 <fudie-stepper value="5" disabled></fudie-stepper>
                             </div>
                         </div>
-
                         <div>
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Rating
-                                (Valoración)</h3>
+                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Rating</h3>
                             <div class="flex flex-col gap-4">
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm font-medium w-20">Editable:</span>
@@ -781,28 +459,14 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- Layout & Navigation (Level 3) -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-columns text-primary w-6 text-center"></i> Layout & Navigation (Level 3)
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="flex flex-col gap-12 border-t border-gray-50 pt-8">
-
-                    <!-- Tabs -->
+            <!-- Layout & Navigation (Level 3) -->
+            <fudie-accordion-item title="Layout & Navigation (Level 3)" icon="columns">
+                <div class="flex flex-col gap-12 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tabs</h3>
-
                         <fudie-tabs>
                             <div data-tab="Usuarios" class="p-4 bg-gray-50 rounded-xl">
                                 <p class="text-gray-600">Contenido de la pestaña de Usuarios. Aquí iría una tabla o
@@ -818,136 +482,81 @@
                             </div>
                         </fudie-tabs>
                     </div>
-
-                    <!-- Table -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Data Table</h3>
-
                         <div class="overflow-hidden border border-gray-200 rounded-2xl">
-                            <fudie-table columns='[
-                                    {"label": "", "key": "avatar", "type": "image"},
-                                    {"label": "Nombre", "key": "name"},
-                                    {"label": "Rol", "key": "role"},
-                                    {"label": "Estado", "key": "status", "type": "badge"},
-                                    {"label": "", "key": "actions", "type": "actions"}
-                                ]' data='[
-                                    {"id": 1, "avatar": "https://i.pravatar.cc/150?img=12", "name": "Alex Morgan", "role": "Admin", "status": "Active"},
-                                    {"id": 2, "avatar": "https://i.pravatar.cc/150?img=5", "name": "Sarah Connor", "role": "Manager", "status": "Pending"},
-                                    {"id": 3, "avatar": "https://i.pravatar.cc/150?img=32", "name": "John Doe", "role": "User", "status": "Inactive"}
-                                ]'></fudie-table>
+                            <fudie-table
+                                columns='[{"label": "", "key": "avatar", "type": "image"},{"label": "Nombre", "key": "name"},{"label": "Rol", "key": "role"},{"label": "Estado", "key": "status", "type": "badge"},{"label": "", "key": "actions", "type": "actions"}]'
+                                data='[{"id": 1, "avatar": "https://i.pravatar.cc/150?img=12", "name": "Alex Morgan", "role": "Admin", "status": "Active"},{"id": 2, "avatar": "https://i.pravatar.cc/150?img=5", "name": "Sarah Connor", "role": "Manager", "status": "Pending"},{"id": 3, "avatar": "https://i.pravatar.cc/150?img=32", "name": "John Doe", "role": "User", "status": "Inactive"}]'></fudie-table>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- Business Components (Level 4) -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-briefcase text-primary w-6 text-center"></i> Business Components (Level 4)
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="grid grid-cols-1 gap-12 border-t border-gray-50 pt-8">
-
-                    <!-- Stats Grid -->
+            <!-- Business Components (Level 4) -->
+            <fudie-accordion-item title="Business Components (Level 4)" icon="briefcase">
+                <div class="grid grid-cols-1 gap-12 pt-4">
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Dashboard Stats</h3>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <fudie-stat-card label="Ventas Totales" value="24.500€" trend="12" icon="wallet"
                                 variant="primary"></fudie-stat-card>
-
                             <fudie-stat-card label="Nuevos Clientes" value="1,230" trend="5" icon="users"
                                 variant="info"></fudie-stat-card>
-
                             <fudie-stat-card label="Pedidos" value="845" trend="-2" icon="shopping-bag"
                                 variant="warning"></fudie-stat-card>
-
                             <fudie-stat-card label="Satisfacción" value="4.9" trend="0" icon="star"
                                 variant="success"></fudie-stat-card>
                         </div>
                     </div>
-
-                    <!-- Product Cards -->
                     <div class="space-y-4">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Menu Items</h3>
-
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <fudie-product-card title="Hamburguesa Clásica"
                                 description="Carne 100% vacuno, lechuga, tomate y salsa especial." price="12.50"
                                 image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
                                 tag="Top Ventas">
                                 <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
+                                        class="fas fa-plus"></i></button>
                             </fudie-product-card>
-
                             <fudie-product-card title="Pizza Margarita"
                                 description="Tomate San Marzano, mozzarella di bufala y albahaca fresca." price="14.00"
                                 image="https://images.unsplash.com/photo-1574071318500-d0d593129f3c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60">
                                 <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
+                                        class="fas fa-plus"></i></button>
                             </fudie-product-card>
-
                             <fudie-product-card title="Ensalada César"
                                 description="Lechuga romana, crutones, parmesano y aderezo césar casero." price="10.50"
                                 image="https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
                                 tag="Veggie">
                                 <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
+                                        class="fas fa-plus"></i></button>
                             </fudie-product-card>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
+            </fudie-accordion-item>
 
-        <!-- Navigation & Utilities -->
-        <section class="bg-white rounded-3xl shadow-soft p-8 mb-8 border border-gray-100 accordion-section collapsed">
-            <div class="flex justify-between items-center cursor-pointer accordion-header"
-                onclick="toggleAccordion(this)">
-                <h2 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fas fa-compass text-primary w-6 text-center"></i> Navigation & Utilities
-                </h2>
-                <i class="fas fa-chevron-down text-gray-400 accordion-icon"></i>
-            </div>
-
-            <div class="accordion-content mt-8">
-                <div class="flex flex-col gap-12 border-t border-gray-50 pt-8">
-
-                    <!-- Navigation -->
+            <!-- Navigation & Utilities -->
+            <fudie-accordion-item title="Navigation & Utilities" icon="compass">
+                <div class="flex flex-col gap-12 pt-4">
                     <div class="space-y-6">
                         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Breadcrumbs &
                             Pagination</h3>
-
                         <fudie-breadcrumb>
                             <fudie-breadcrumb-item href="#">Inicio</fudie-breadcrumb-item>
                             <fudie-breadcrumb-item href="#">Admin</fudie-breadcrumb-item>
                             <fudie-breadcrumb-item href="#">Productos</fudie-breadcrumb-item>
                             <fudie-breadcrumb-item active>Nuevo Producto</fudie-breadcrumb-item>
                         </fudie-breadcrumb>
-
                         <div class="h-4"></div>
-
                         <fudie-pagination current="1" total="5"></fudie-pagination>
                         <fudie-pagination current="4" total="10" class="mt-4"></fudie-pagination>
                     </div>
-
-                    <!-- Interactive Utilities -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Accordion -->
                         <div class="space-y-4">
                             <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Accordion</h3>
                             <fudie-accordion>
@@ -965,53 +574,20 @@
                                 </fudie-accordion-item>
                             </fudie-accordion>
                         </div>
-
-                        <!-- Search & Upload -->
                         <div class="space-y-6">
                             <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Search & Files
                             </h3>
-
                             <fudie-search placeholder="Buscar platos, ingredientes..."></fudie-search>
-
                             <fudie-file-upload label="Subir Imagen del Plato" accept="image/*"></fudie-file-upload>
-
                             <fudie-file-upload label="Documentos adjuntos" multiple
                                 accept=".pdf,.doc"></fudie-file-upload>
                         </div>
                     </div>
-
                 </div>
-            </div>
-        </section>
-
+            </fudie-accordion-item>
+        </fudie-accordion>
     </div>
-    </div>
-
     <script>
-        // Accordion functionality
-        function toggleAccordion(element) {
-            const section = element.closest('.accordion-section');
-            const content = section.querySelector('.accordion-content');
-
-            // Toggle collapsed class
-            section.classList.toggle('collapsed');
-
-            // Handle max-height for smooth transition
-            if (section.classList.contains('collapsed')) {
-                content.style.maxHeight = '0px';
-                // content.style.marginTop = '0px'; 
-            } else {
-                content.style.maxHeight = content.scrollHeight + 'px';
-                // content.style.marginTop = '2rem';
-            }
-        }
-
-        // Initialize accordions (set height for expanded ones)
-        document.querySelectorAll('.accordion-section:not(.collapsed) .accordion-content').forEach(content => {
-            content.style.maxHeight = content.scrollHeight + 'px';
-        });
-
-        // Simple script to demonstrate event handling
         const demoInput = document.getElementById('demo-input');
         const demoOutput = document.getElementById('demo-output');
 

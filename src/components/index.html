@@ -1,607 +1,522 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fudie Web Components Demo</title>
+    <title>Fudie | Guía de Estilo & Sistema de Diseño</title>
+
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+
+    <!-- Configuration -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace']
+                    },
                     colors: {
                         primary: '#FF4F5A',
                         primaryDark: '#E63E49',
                         secondary: '#1F2937',
                         light: '#F9FAFB',
-                        surface: '#FFFFFF'
+                        surface: '#FFFFFF',
+                        gray: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
+                        }
                     },
-                    boxShadow: { 'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)' }
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
+                        'glow': '0 0 20px rgba(255, 79, 90, 0.3)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+                    }
                 }
             }
         }
     </script>
-    <!-- Modules -->
-    <script type="module" src="fudie-text-field.js"></script>
-    <script type="module" src="fudie-number-field.js"></script>
-    <script type="module" src="fudie-select-field.js"></script>
-    <script type="module" src="fudie-textarea-field.js"></script>
-    <script type="module" src="fudie-toggle.js"></script>
-    <script type="module" src="fudie-checkbox.js"></script>
-    <script type="module" src="fudie-button.js"></script>
-    <script type="module" src="fudie-nav-item.js"></script>
-    <script type="module" src="fudie-card.js"></script>
-    <script type="module" src="fudie-radio-grid.js"></script>
-    <script type="module" src="fudie-progress.js"></script>
-    <script type="module" src="fudie-calendar.js"></script>
-    <script type="module" src="fudie-grid-picker.js"></script>
-    <script type="module" src="fudie-modal.js"></script>
-    <script type="module" src="fudie-input-date.js"></script>
-    <script type="module" src="fudie-input-time.js"></script>
-    <script type="module" src="fudie-badge.js"></script>
-    <script type="module" src="fudie-spinner.js"></script>
-    <script type="module" src="fudie-avatar.js"></script>
-    <script type="module" src="fudie-alert.js"></script>
-    <script type="module" src="fudie-stepper.js"></script>
-    <script type="module" src="fudie-rating.js"></script>
-    <script type="module" src="fudie-tabs.js"></script>
-    <script type="module" src="fudie-table.js"></script>
-    <script type="module" src="fudie-product-card.js"></script>
-    <script type="module" src="fudie-stat-card.js"></script>
-    <script type="module" src="fudie-search.js"></script>
-    <script type="module" src="fudie-file-upload.js"></script>
-    <script type="module" src="fudie-accordion.js"></script>
-    <script type="module" src="fudie-pagination.js"></script>
-    <script type="module" src="fudie-breadcrumb.js"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .swatch-card {
+            transition: transform 0.2s;
+        }
+
+        .swatch-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .component-preview {
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+
+    <!-- Web Components -->
+    <script type="module" src="./fudie-text-field.js"></script>
+    <script type="module" src="./fudie-number-field.js"></script>
+    <script type="module" src="./fudie-select-field.js"></script>
+    <script type="module" src="./fudie-textarea-field.js"></script>
+    <script type="module" src="./fudie-toggle.js"></script>
+    <script type="module" src="./fudie-checkbox.js"></script>
+    <script type="module" src="./fudie-button.js"></script>
+    <script type="module" src="./fudie-nav-item.js"></script>
+    <script type="module" src="./fudie-card.js"></script>
+    <script type="module" src="./fudie-radio-grid.js"></script>
+    <script type="module" src="./fudie-progress.js"></script>
+    <script type="module" src="./fudie-calendar.js"></script>
+    <script type="module" src="./fudie-grid-picker.js"></script>
+    <script type="module" src="./fudie-modal.js"></script>
+    <script type="module" src="./fudie-input-date.js"></script>
+    <script type="module" src="./fudie-input-time.js"></script>
+    <script type="module" src="./fudie-badge.js"></script>
+    <script type="module" src="./fudie-spinner.js"></script>
+    <script type="module" src="./fudie-avatar.js"></script>
+    <script type="module" src="./fudie-alert.js"></script>
+    <script type="module" src="./fudie-stepper.js"></script>
+    <script type="module" src="./fudie-rating.js"></script>
+    <script type="module" src="./fudie-tabs.js"></script>
+    <script type="module" src="./fudie-table.js"></script>
+    <script type="module" src="./fudie-product-card.js"></script>
+    <script type="module" src="./fudie-stat-card.js"></script>
+    <script type="module" src="./fudie-search.js"></script>
+    <script type="module" src="./fudie-file-upload.js"></script>
+    <script type="module" src="./fudie-accordion.js"></script>
+    <script type="module" src="./fudie-pagination.js"></script>
+    <script type="module" src="./fudie-breadcrumb.js"></script>
+
 </head>
 
-<body class="bg-gray-50 p-8">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="mb-10 text-center">
-            <h1 class="font-bold text-3xl tracking-tight mb-2">fudie<span class="text-primary">.components</span></h1>
-            <p class="text-gray-400">Design System & Web Components Library</p>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+
+    <!-- Sidebar / Navigation -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-50 overflow-y-auto">
+        <div class="p-6">
+            <div class="flex items-center gap-2 mb-8">
+                <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.ds</span></span>
+            </div>
+
+            <nav class="space-y-1">
+                <a href="#intro"
+                    class="block px-3 py-2 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg">Introducción</a>
+                <a href="#branding"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Branding
+                    & Colores</a>
+                <a href="#typography"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Tipografía</a>
+
+                <div class="my-4 border-t border-gray-100"></div>
+
+                <a href="components.html"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">
+                    Components
+                </a>
+
+                <div class="pt-4 pb-2">
+                    <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Componentes</p>
+                </div>
+                <a href="#buttons"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Buttons
+                    & Actions</a>
+                <a href="#forms"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Form
+                    Inputs</a>
+                <a href="#feedback"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Feedback
+                    & Status</a>
+                <a href="#data"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Data
+                    Display</a>
+                <a href="#navigation"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Navigation</a>
+                <a href="#layout"
+                    class="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg">Layout
+                    & Containers</a>
+            </nav>
         </div>
+    </div>
 
-        <fudie-accordion>
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
 
-            <!-- fudie-text-field -->
-            <fudie-accordion-item title="fudie-text-field" icon="keyboard">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Estados Básicos</h3>
-                        <fudie-text-field label="Nombre del Producto" placeholder="Ej. Chuletón de Vaca"
-                            hint="Nombre visible en la carta"></fudie-text-field>
-                        <fudie-text-field label="Usuario (Required)" value="admin_user" required></fudie-text-field>
-                        <fudie-text-field label="Solo Lectura (Disabled)" value="ID-29384" disabled></fudie-text-field>
+        <!-- Header -->
+        <header id="intro" class="bg-white border-b border-gray-200 sticky top-0 z-40">
+            <div class="max-w-5xl mx-auto px-8 py-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Guía de Estilo & Web Components</h1>
+                        <p class="text-gray-500 text-sm mt-1">Sistema de diseño unificado para la aplicación Schedule.
+                        </p>
                     </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Validación</h3>
-                        <fudie-text-field label="Email (Con Error)" value="usuario@ejemplo" type="email"
-                            error="El formato del email no es válido"></fudie-text-field>
-                        <div class="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                            <h4 class="text-xs font-bold text-gray-500 mb-2">Interactivo (Test Eventos)</h4>
-                            <fudie-text-field id="demo-input" label="Escribe algo..."
-                                placeholder="Detectando cambios..."></fudie-text-field>
-                            <p id="demo-output" class="text-xs text-primary mt-2 font-mono h-4"></p>
-                        </div>
+                    <div class="flex gap-2">
+                        <fudie-badge label="v1.0.0" variant="success" size="sm"></fudie-badge>
                     </div>
                 </div>
-            </fudie-accordion-item>
+            </div>
+        </header>
 
-            <!-- fudie-number-field -->
-            <fudie-accordion-item title="fudie-number-field" icon="hashtag">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Nutrición</h3>
-                        <fudie-number-field label="Calorías (kcal)" value="550" min="0"></fudie-number-field>
-                        <fudie-number-field label="Grasas (g)" value="42.0" step="0.1"></fudie-number-field>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Precios</h3>
-                        <fudie-number-field label="Precio Base (€)" value="12.50" step="0.01"
-                            min="0"></fudie-number-field>
-                        <fudie-number-field label="Descuento (%)" placeholder="Opcional" max="100"></fudie-number-field>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Restricciones</h3>
-                        <fudie-number-field label="Min 10 - Max 20" value="5" min="10" max="20"
-                            error="El valor debe estar entre 10 y 20"></fudie-number-field>
-                    </div>
+        <div class="max-w-5xl mx-auto px-8 py-12 space-y-20">
+
+            <!-- Branding Section -->
+            <section id="branding" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Colores</h2>
+                    <p class="text-gray-500">Paleta de colores principal utilizada para jerarquía visual y estados.</p>
                 </div>
-            </fudie-accordion-item>
 
-            <!-- fudie-select-field -->
-            <fudie-accordion-item title="fudie-select-field" icon="list">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Categorías</h3>
-                        <fudie-select-field label="Categoría" options='["Entrantes", "Principales", "Postres"]'
-                            value="Principales"></fudie-select-field>
-                        <fudie-select-field label="Tipo de Porción"
-                            options='[{"label":"Tapa","value":"tapa"},{"label":"Ración","value":"racion"},{"label":"Media Ración","value":"media"}]'
-                            value="racion"></fudie-select-field>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Estados</h3>
-                        <fudie-select-field label="Selecciona una opción" placeholder="Elige uno..."
-                            options='["Opción A", "Opción B"]'></fudie-select-field>
-                        <fudie-select-field label="Deshabilitado" value="A" options='["A", "B"]'
-                            disabled></fudie-select-field>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-textarea-field -->
-            <fudie-accordion-item title="fudie-textarea-field" icon="align-left">
-                <div class="grid grid-cols-1 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Descripción</h3>
-                        <fudie-textarea-field label="Descripción del Plato" placeholder="Describe el plato aquí..."
-                            value="Maduración 45 días, precio por kg. Se sirve con pimientos de padrón."
-                            rows="3"></fudie-textarea-field>
-                        <fudie-textarea-field label="Notas Internas (Required)" required
-                            error="Este campo es obligatorio" rows="2"></fudie-textarea-field>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-input-date & time -->
-            <fudie-accordion-item title="fudie-input-date & time" icon="clock">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Fechas</h3>
-                        <fudie-input-date label="Fecha de Nacimiento" required></fudie-input-date>
-                        <fudie-input-date label="Fecha (Min & Max)" min="2023-01-01" max="2023-12-31"
-                            hint="Solo año 2023"></fudie-input-date>
-                        <fudie-input-date label="Deshabilitado" disabled value="2023-10-15"></fudie-input-date>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Horas</h3>
-                        <fudie-input-time label="Hora de Apertura" value="09:00"></fudie-input-time>
-                        <fudie-input-time label="Hora (Min & Max)" min="09:00" max="18:00"
-                            hint="Horario laboral (09:00 - 18:00)"></fudie-input-time>
-                        <fudie-input-time label="Con Error" value="20:00" error="Fuera de horario"></fudie-input-time>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-toggle & checkbox -->
-            <fudie-accordion-item title="fudie-toggle & checkbox" icon="toggle-on">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Switches</h3>
-                        <fudie-toggle label="Disponible" description="Visible en la carta digital"
-                            checked></fudie-toggle>
-                        <fudie-toggle label="Destacado"
-                            description="Se muestra al inicio de la categoría"></fudie-toggle>
-                        <fudie-toggle label="Temporada (Disabled)" checked disabled></fudie-toggle>
-                    </div>
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Checkboxes</h3>
-                        <fudie-checkbox label="Vegetariano"
-                            description="Apto para dietas vegetarianas"></fudie-checkbox>
-                        <fudie-checkbox label="Sin Gluten" checked></fudie-checkbox>
-                        <fudie-checkbox label="Picante (Disabled)" disabled></fudie-checkbox>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-button -->
-            <fudie-accordion-item title="fudie-button" icon="square-check">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Variantes</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <fudie-button>Primary</fudie-button>
-                            <fudie-button variant="secondary">Secondary</fudie-button>
-                            <fudie-button variant="danger">Danger</fudie-button>
-                            <fudie-button variant="ghost">Guest</fudie-button>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">Estados</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <fudie-button disabled>Disabled</fudie-button>
-                            <fudie-button variant="secondary" disabled>Disabled</fudie-button>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tamaños</h3>
-                        <div class="flex flex-wrap items-center gap-4">
-                            <fudie-button size="sm">Small</fudie-button>
-                            <fudie-button size="md">Medium</fudie-button>
-                            <fudie-button size="lg">Large</fudie-button>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 mt-6">Ancho Completo
-                        </h3>
-                        <div class="w-full">
-                            <fudie-button full-width>Full Width Button</fudie-button>
-                        </div>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-card & nav -->
-            <fudie-accordion-item title="fudie-card & nav" icon="cube">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Navegación Lateral
-                        </h3>
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 w-64">
-                            <fudie-nav-item href="#" icon="utensils" label="Carta" active></fudie-nav-item>
-                            <fudie-nav-item href="#" icon="calendar-check" label="Reservas">
-                                <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">3</span>
-                            </fudie-nav-item>
-                            <fudie-nav-item href="#" icon="users" label="Clientes"></fudie-nav-item>
-                            <fudie-nav-item href="#" icon="cog" label="Configuración"></fudie-nav-item>
-                        </div>
-                    </div>
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Contenedores</h3>
-                        <fudie-card title="Información General" subtitle="Detalles del restaurante">
-                            <div class="text-sm text-gray-600">
-                                <p>Aquí puedes editar la información básica de tu restaurante, logo, y descripción
-                                    visual.</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <!-- Primary -->
+                    <div class="swatch-card bg-white p-4 rounded-xl shadow-card border border-gray-100">
+                        <div class="h-24 rounded-lg bg-primary mb-4 shadow-lg shadow-primary/30"></div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-gray-900">Primary</h3>
+                                <p class="text-xs text-gray-500">Brand Color</p>
                             </div>
-                            <div slot="footer">
-                                <fudie-button variant="secondary" size="sm">Cancelar</fudie-button>
-                                <fudie-button size="sm">Guardar</fudie-button>
+                            <span class="font-mono text-xs text-gray-400">#FF4F5A</span>
+                        </div>
+                    </div>
+                    <!-- Secondary -->
+                    <div class="swatch-card bg-white p-4 rounded-xl shadow-card border border-gray-100">
+                        <div class="h-24 rounded-lg bg-secondary mb-4 shadow-lg shadow-gray-900/10"></div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-gray-900">Secondary</h3>
+                                <p class="text-xs text-gray-500">Dark Text / UI</p>
                             </div>
-                        </fudie-card>
-                        <fudie-card>
-                            <div class="flex items-center gap-4">
-                                <div class="bg-green-100 p-3 rounded-full text-green-600">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div>
-                                    <strong class="block text-gray-900">Operación Exitosa</strong>
-                                    <span class="text-sm text-gray-500">Los cambios se han guardado
-                                        correctamente.</span>
-                                </div>
+                            <span class="font-mono text-xs text-gray-400">#1F2937</span>
+                        </div>
+                    </div>
+                    <!-- Light -->
+                    <div class="swatch-card bg-white p-4 rounded-xl shadow-card border border-gray-100">
+                        <div class="h-24 rounded-lg bg-light mb-4 border border-gray-200"></div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-gray-900">Light</h3>
+                                <p class="text-xs text-gray-500">Backgrounds</p>
                             </div>
-                        </fudie-card>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-radio-grid -->
-            <fudie-accordion-item title="fudie-radio-grid" icon="th-large">
-                <div class="grid grid-cols-1 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Selección Visual</h3>
-                        <fudie-radio-grid label="Método de Pago" name="payment" value="card"
-                            options='[{"label": "Efectivo", "value": "cash", "icon": "money-bill-wave"},{"label": "Tarjeta", "value": "card", "icon": "credit-card"},{"label": "Online", "value": "online", "icon": "globe"}]'></fudie-radio-grid>
-                        <fudie-radio-grid label="Ubicación de Mesa" name="location" value="terrace"
-                            options='[{"label": "Interior", "value": "indoor", "icon": "chair"},{"label": "Terraza", "value": "terrace", "icon": "sun"},{"label": "Barra", "value": "bar", "icon": "glass-martini-alt"}]'></fudie-radio-grid>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-progress -->
-            <fudie-accordion-item title="fudie-progress" icon="spinner">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Básico</h3>
-                        <fudie-progress value="50" label="Paso 1 de 2"></fudie-progress>
-                        <fudie-progress value="75" label="Progreso del Perfil" show-value
-                            variant="success"></fudie-progress>
-                        <fudie-progress value="30" show-value variant="danger" size="sm"></fudie-progress>
-                    </div>
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Avanzado</h3>
-                        <fudie-progress value="60" label="Cargando datos..." striped></fudie-progress>
-                        <fudie-progress value="90" label="Procesando pago" show-value striped animated
-                            variant="info"></fudie-progress>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-calendar -->
-            <fudie-accordion-item title="fudie-calendar" icon="calendar-alt">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Calendario Interactivo
-                        </h3>
-                        <div class="flex flex-col gap-4">
-                            <span id="calendar-output" class="text-sm font-semibold text-primary block h-6">Selecciona
-                                una fecha:</span>
-                            <fudie-calendar id="demo-calendar"></fudie-calendar>
+                            <span class="font-mono text-xs text-gray-400">#F9FAFB</span>
                         </div>
-                        <script>
-                            const calendar = document.getElementById('demo-calendar');
-                            const calOutput = document.getElementById('calendar-output');
-                            if (calendar) {
-                                calendar.addEventListener('change', (e) => {
-                                    const date = new Date(e.detail.value);
-                                    calOutput.textContent = `Fecha seleccionada: ${date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
-                                });
-                            }
-                        </script>
                     </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-grid-picker -->
-            <fudie-accordion-item title="fudie-grid-picker" icon="th">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Alérgenos (Multiple)
-                        </h3>
-                        <fudie-grid-picker label="Alérgenos del Plato" name="allergens" multiple
-                            value='["gluten", "dairy"]'
-                            options='[{"label": "Gluten", "value": "gluten", "icon": "bread-slice"},{"label": "Lácteos", "value": "dairy", "icon": "cheese"},{"label": "Huevo", "value": "egg", "icon": "egg"},{"label": "Pescado", "value": "fish", "icon": "fish"}]'></fudie-grid-picker>
-                    </div>
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Personas (Single)</h3>
-                        <fudie-grid-picker label="Número de Personas" name="people" variant="fill" value="2"
-                            options='[{"label": "1", "value": "1"}, {"label": "2", "value": "2"},{"label": "3", "value": "3"}, {"label": "4", "value": "4"},{"label": "5", "value": "5"}, {"label": "6", "value": "6"},{"label": "7", "value": "7"}, {"label": "8", "value": "8"}]'></fudie-grid-picker>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- fudie-modal -->
-            <fudie-accordion-item title="fudie-modal" icon="window-restore">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Modales</h3>
-                        <div class="flex gap-4">
-                            <fudie-button onclick="document.getElementById('demo-modal').open()">Abrir
-                                Modal</fudie-button>
-                        </div>
-                        <fudie-modal id="demo-modal" title="Confirmación de Pedido">
-                            <p>¿Estás seguro de que deseas enviar este pedido a cocina?</p>
-                            <div class="mt-4 p-4 bg-yellow-50 rounded-xl text-yellow-700 text-sm">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                Esta acción no se puede deshacer.
+                    <!-- Surface -->
+                    <div class="swatch-card bg-gray-50 p-4 rounded-xl shadow-card border border-gray-100">
+                        <div class="h-24 rounded-lg bg-surface mb-4 border border-gray-200"></div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-gray-900">Surface</h3>
+                                <p class="text-xs text-gray-500">Cards / Sheets</p>
                             </div>
-                            <div slot="footer">
-                                <fudie-button variant="ghost"
-                                    onclick="document.getElementById('demo-modal').close()">Cancelar</fudie-button>
-                                <fudie-button
-                                    onclick="document.getElementById('demo-modal').close()">Confirmar</fudie-button>
-                            </div>
-                        </fudie-modal>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- UI Elements (Level 1) -->
-            <fudie-accordion-item title="UI Elements (Level 1)" icon="gem">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Badges</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <fudie-badge label="Default"></fudie-badge>
-                            <fudie-badge label="Primary" variant="primary"></fudie-badge>
-                            <fudie-badge label="Success" variant="success" icon="check"></fudie-badge>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <fudie-badge label="Warning" variant="warning"></fudie-badge>
-                            <fudie-badge label="Error" variant="danger"></fudie-badge>
-                            <fudie-badge label="Info" variant="info"></fudie-badge>
-                        </div>
-                        <div class="flex flex-wrap gap-2 items-center">
-                            <fudie-badge label="Small" size="sm" variant="secondary"></fudie-badge>
-                            <fudie-badge label="Large" size="lg" variant="secondary"></fudie-badge>
-                            <fudie-badge label="Square" shape="square"></fudie-badge>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Avatars</h3>
-                        <div class="flex items-center gap-4">
-                            <fudie-avatar src="https://i.pravatar.cc/150?img=32" status="online"></fudie-avatar>
-                            <fudie-avatar initials="JD" status="busy"></fudie-avatar>
-                            <fudie-avatar status="offline"></fudie-avatar>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <fudie-avatar src="https://i.pravatar.cc/150?img=12" size="sm"></fudie-avatar>
-                            <fudie-avatar src="https://i.pravatar.cc/150?img=5" size="lg" shape="square"></fudie-avatar>
-                            <fudie-avatar initials="ADMIN" size="xl" status="away"></fudie-avatar>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Spinners</h3>
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                            <fudie-spinner></fudie-spinner>
-                            <fudie-spinner variant="primary" size="lg"></fudie-spinner>
-                            <fudie-spinner variant="secondary" size="sm"></fudie-spinner>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <fudie-button>
-                                <fudie-spinner variant="white" size="sm"></fudie-spinner>
-                                <span class="ml-2">Cargando</span>
-                            </fudie-button>
+                            <span class="font-mono text-xs text-gray-400">#FFFFFF</span>
                         </div>
                     </div>
                 </div>
-            </fudie-accordion-item>
 
-            <!-- Forms & Feedback (Level 2) -->
-            <fudie-accordion-item title="Forms & Feedback (Level 2)" icon="layer-group">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Alertas</h3>
-                        <fudie-alert title="Información" dismissible>El restaurante cerrará hoy a las 22:00 por
-                            mantenimiento.</fudie-alert>
-                        <fudie-alert variant="warning" title="Stock Bajo">Quedan menos de 5 unidades de este
-                            producto.</fudie-alert>
-                        <fudie-alert variant="danger" title="Error de Conexión">No se ha podido procesar el pago.
-                            Inténtalo de nuevo.</fudie-alert>
+                <!-- Grays Overlay (Optional) -->
+                <div class="mt-8">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Escala de Grises</h3>
+                    <div class="grid grid-cols-10 h-16 rounded-xl overflow-hidden shadow-sm">
+                        <div class="bg-gray-50"></div>
+                        <div class="bg-gray-100"></div>
+                        <div class="bg-gray-200"></div>
+                        <div class="bg-gray-300"></div>
+                        <div class="bg-gray-400"></div>
+                        <div class="bg-gray-500"></div>
+                        <div class="bg-gray-600"></div>
+                        <div class="bg-gray-700"></div>
+                        <div class="bg-gray-800"></div>
+                        <div class="bg-gray-900"></div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Typography Section -->
+            <section id="typography" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Tipografía</h2>
+                    <p class="text-gray-500">Plus Jakarta Sans se utiliza para toda la interfaz de usuario.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                     <div class="space-y-8">
                         <div>
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Steppers</h3>
-                            <div class="flex items-center gap-8">
-                                <fudie-stepper value="1" min="1" max="10"></fudie-stepper>
-                                <fudie-stepper value="0" min="0" size="sm"></fudie-stepper>
-                                <fudie-stepper value="5" disabled></fudie-stepper>
+                            <span class="text-xs font-mono text-gray-400 mb-2 block">Display / H1</span>
+                            <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight">The quick brown fox</h1>
+                        </div>
+                        <div>
+                            <span class="text-xs font-mono text-gray-400 mb-2 block">H2</span>
+                            <h2 class="text-4xl font-bold text-gray-900 tracking-tight">Jumps over the lazy dog</h2>
+                        </div>
+                        <div>
+                            <span class="text-xs font-mono text-gray-400 mb-2 block">H3</span>
+                            <h3 class="text-2xl font-bold text-gray-900">Responsive web design</h3>
+                        </div>
+                        <div>
+                            <span class="text-xs font-mono text-gray-400 mb-2 block">H4</span>
+                            <h4 class="text-xl font-semibold text-gray-900">Component based architecture</h4>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <p class="text-base text-gray-600 leading-relaxed mb-4">
+                                <span class="text-xs font-mono text-gray-400 block mb-1">Body / Regular</span>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                exercitation ullamco laboris nisi ut aliquip.
+                            </p>
+                            <p class="text-sm text-gray-500 leading-relaxed mb-4">
+                                <span class="text-xs font-mono text-gray-400 block mb-1">Small / Description</span>
+                                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+                                mollit anim id est laborum.
+                            </p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">
+                                Caption text
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Buttons -->
+            <section id="buttons" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Botones</h2>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl border border-gray-200 component-preview space-y-8">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Variantes</h3>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <fudie-button>Primary Action</fudie-button>
+                            <fudie-button variant="secondary">Secondary</fudie-button>
+                            <fudie-button variant="danger" icon="trash">Delete</fudie-button>
+                            <fudie-button variant="ghost">Cancel</fudie-button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Tamaños</h3>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <fudie-button size="sm">Small</fudie-button>
+                            <fudie-button size="md">Medium</fudie-button>
+                            <fudie-button size="lg">Large Button</fudie-button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Estados</h3>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <fudie-button disabled>Disabled</fudie-button>
+                            <fudie-button loading>Loading</fudie-button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Forms -->
+            <section id="forms" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Formularios</h2>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <fudie-text-field label="Nombre Completo" placeholder="John Doe"></fudie-text-field>
+                            <fudie-text-field label="Email" type="email" value="error@example.com"
+                                error="Email inválido"></fudie-text-field>
+                            <fudie-select-field label="Categoría"
+                                options='["Opción 1", "Opción 2", "Opción 3"]'></fudie-select-field>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="flex gap-4">
+                                <fudie-number-field label="Cantidad" value="1" class="flex-1"></fudie-number-field>
+                                <fudie-input-time label="Hora" value="14:00" class="flex-1"></fudie-input-time>
+                            </div>
+                            <fudie-textarea-field label="Comentarios" placeholder="Añade notas extra..."
+                                rows="3"></fudie-textarea-field>
+                            <div class="flex items-center gap-8 pt-4">
+                                <fudie-toggle label="Activo" checked></fudie-toggle>
+                                <fudie-checkbox label="Acepto términos"></fudie-checkbox>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Pickers Especializados</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <fudie-radio-grid label="Selección Simple" name="pago"
+                                options='[{"label": "Cash", "value": "cash", "icon": "money-bill"}, {"label": "Card", "value": "card", "icon": "credit-card"}, {"label": "App", "value": "app", "icon": "mobile-alt"}]'></fudie-radio-grid>
+
+                            <fudie-grid-picker label="Selección Múltiple" multiple
+                                options='[{"label": "Gluten", "value": "1", "icon": "bread-slice"}, {"label": "Nauts", "value": "2", "icon": "leaf"}, {"label": "Milk", "value": "3", "icon": "cheese"}]'></fudie-grid-picker>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feedback -->
+            <section id="feedback" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Feedback & Status</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-gray-500 mb-2">Alertas</h3>
+                        <fudie-alert variant="info" title="Info">Nueva versión disponible.</fudie-alert>
+                        <fudie-alert variant="success" title="Success">Cambios guardados correctamente.</fudie-alert>
+                        <fudie-alert variant="warning" title="Warning">Tu suscripción caduca pronto.</fudie-alert>
+                        <fudie-alert variant="danger" title="Error">No se pudo conectar al servidor.</fudie-alert>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-4">Badges</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <fudie-badge label="Default"></fudie-badge>
+                                <fudie-badge label="Primary" variant="primary"></fudie-badge>
+                                <fudie-badge label="Success" variant="success"></fudie-badge>
+                                <fudie-badge label="Warning" variant="warning"></fudie-badge>
+                                <fudie-badge label="Danger" variant="danger"></fudie-badge>
                             </div>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Rating</h3>
-                            <div class="flex flex-col gap-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium w-20">Editable:</span>
-                                    <fudie-rating value="3"></fudie-rating>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium w-20">Readonly:</span>
-                                    <fudie-rating value="4" readonly size="sm"></fudie-rating>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium w-20">Big:</span>
-                                    <fudie-rating value="5" size="lg"></fudie-rating>
-                                </div>
+                            <h3 class="text-sm font-semibold text-gray-500 mb-4">Spinners & Progress</h3>
+                            <div class="flex items-center gap-6">
+                                <fudie-spinner size="lg"></fudie-spinner>
+                                <fudie-progress value="75" class="w-full" show-value
+                                    label="Cargando..."></fudie-progress>
                             </div>
                         </div>
                     </div>
                 </div>
-            </fudie-accordion-item>
+            </section>
 
-            <!-- Layout & Navigation (Level 3) -->
-            <fudie-accordion-item title="Layout & Navigation (Level 3)" icon="columns">
-                <div class="flex flex-col gap-12 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Tabs</h3>
+            <!-- Data Display -->
+            <section id="data" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Visualización de Datos</h2>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <fudie-stat-card label="Ingresos" value="24.4k €" trend="+12%" variant="success"
+                            icon="chart-line"></fudie-stat-card>
+                        <fudie-stat-card label="Pedidos" value="1,240" trend="+5%" variant="primary"
+                            icon="shopping-bag"></fudie-stat-card>
+                        <fudie-stat-card label="Usuarios" value="840" trend="-2%" variant="warning"
+                            icon="users"></fudie-stat-card>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <fudie-product-card title="Hamburguesa Deluxe"
+                            description="200g de carne madurada con queso cheddar y bacon." price="15.50"
+                            image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+                            tag="Popular">
+                            <fudie-button size="sm" slot="action" icon="plus"></fudie-button>
+                        </fudie-product-card>
+
+                        <fudie-card title="Tabla de Datos">
+                            <fudie-table
+                                columns='[{"label":"User","key":"name"},{"label":"Role","key":"role"},{"label":"Status","key":"status","type":"badge"}]'
+                                data='[{"name":"Ana M.","role":"Admin","status":"Active"},{"name":"Luis P.","role":"Editor","status":"Pending"},{"name":"Carlos","role":"User","status":"Inactive"}]'></fudie-table>
+                        </fudie-card>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation -->
+            <section id="navigation" class="scroll-mt-24">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Navegación</h2>
+                </div>
+
+                <div class="space-y-12">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Tabs</h3>
                         <fudie-tabs>
-                            <div data-tab="Usuarios" class="p-4 bg-gray-50 rounded-xl">
-                                <p class="text-gray-600">Contenido de la pestaña de Usuarios. Aquí iría una tabla o
-                                    lista.</p>
+                            <div data-tab="General" class="p-4 bg-white border border-gray-200 rounded-b-xl border-t-0">
+                                <p class="text-gray-500">Contenido general...</p>
                             </div>
-                            <div data-tab="Configuración" class="p-4 bg-gray-50 rounded-xl">
-                                <fudie-toggle label="Notificaciones" checked></fudie-toggle>
-                                <div class="h-4"></div>
-                                <fudie-toggle label="Modo Oscuro"></fudie-toggle>
-                            </div>
-                            <div data-tab="Historial" class="p-4 bg-gray-50 rounded-xl">
-                                <p class="text-gray-600">Registro de actividad reciente.</p>
+                            <div data-tab="Seguridad"
+                                class="p-4 bg-white border border-gray-200 rounded-b-xl border-t-0">
+                                <p class="text-gray-500">Configuración de seguridad...</p>
                             </div>
                         </fudie-tabs>
                     </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Data Table</h3>
-                        <div class="overflow-hidden border border-gray-200 rounded-2xl">
-                            <fudie-table
-                                columns='[{"label": "", "key": "avatar", "type": "image"},{"label": "Nombre", "key": "name"},{"label": "Rol", "key": "role"},{"label": "Estado", "key": "status", "type": "badge"},{"label": "", "key": "actions", "type": "actions"}]'
-                                data='[{"id": 1, "avatar": "https://i.pravatar.cc/150?img=12", "name": "Alex Morgan", "role": "Admin", "status": "Active"},{"id": 2, "avatar": "https://i.pravatar.cc/150?img=5", "name": "Sarah Connor", "role": "Manager", "status": "Pending"},{"id": 3, "avatar": "https://i.pravatar.cc/150?img=32", "name": "John Doe", "role": "User", "status": "Inactive"}]'></fudie-table>
-                        </div>
-                    </div>
-                </div>
-            </fudie-accordion-item>
 
-            <!-- Business Components (Level 4) -->
-            <fudie-accordion-item title="Business Components (Level 4)" icon="briefcase">
-                <div class="grid grid-cols-1 gap-12 pt-4">
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Dashboard Stats</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <fudie-stat-card label="Ventas Totales" value="24.500€" trend="12" icon="wallet"
-                                variant="primary"></fudie-stat-card>
-                            <fudie-stat-card label="Nuevos Clientes" value="1,230" trend="5" icon="users"
-                                variant="info"></fudie-stat-card>
-                            <fudie-stat-card label="Pedidos" value="845" trend="-2" icon="shopping-bag"
-                                variant="warning"></fudie-stat-card>
-                            <fudie-stat-card label="Satisfacción" value="4.9" trend="0" icon="star"
-                                variant="success"></fudie-stat-card>
-                        </div>
-                    </div>
-                    <div class="space-y-4">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Menu Items</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <fudie-product-card title="Hamburguesa Clásica"
-                                description="Carne 100% vacuno, lechuga, tomate y salsa especial." price="12.50"
-                                image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                                tag="Top Ventas">
-                                <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
-                                        class="fas fa-plus"></i></button>
-                            </fudie-product-card>
-                            <fudie-product-card title="Pizza Margarita"
-                                description="Tomate San Marzano, mozzarella di bufala y albahaca fresca." price="14.00"
-                                image="https://images.unsplash.com/photo-1574071318500-d0d593129f3c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60">
-                                <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
-                                        class="fas fa-plus"></i></button>
-                            </fudie-product-card>
-                            <fudie-product-card title="Ensalada César"
-                                description="Lechuga romana, crutones, parmesano y aderezo césar casero." price="10.50"
-                                image="https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                                tag="Veggie">
-                                <button slot="action"
-                                    class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors"><i
-                                        class="fas fa-plus"></i></button>
-                            </fudie-product-card>
-                        </div>
-                    </div>
-                </div>
-            </fudie-accordion-item>
-
-            <!-- Navigation & Utilities -->
-            <fudie-accordion-item title="Navigation & Utilities" icon="compass">
-                <div class="flex flex-col gap-12 pt-4">
-                    <div class="space-y-6">
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Breadcrumbs &
-                            Pagination</h3>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Breadcrumbs</h3>
                         <fudie-breadcrumb>
-                            <fudie-breadcrumb-item href="#">Inicio</fudie-breadcrumb-item>
-                            <fudie-breadcrumb-item href="#">Admin</fudie-breadcrumb-item>
-                            <fudie-breadcrumb-item href="#">Productos</fudie-breadcrumb-item>
-                            <fudie-breadcrumb-item active>Nuevo Producto</fudie-breadcrumb-item>
+                            <fudie-breadcrumb-item href="#">Home</fudie-breadcrumb-item>
+                            <fudie-breadcrumb-item href="#">Settings</fudie-breadcrumb-item>
+                            <fudie-breadcrumb-item active>Profile</fudie-breadcrumb-item>
                         </fudie-breadcrumb>
-                        <div class="h-4"></div>
-                        <fudie-pagination current="1" total="5"></fudie-pagination>
-                        <fudie-pagination current="4" total="10" class="mt-4"></fudie-pagination>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-4">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Accordion</h3>
-                            <fudie-accordion>
-                                <fudie-accordion-item title="¿Cómo gestiono los alérgenos?" open>
-                                    <p class="text-sm">Puedes gestionar los alérgenos desde la pestaña de
-                                        "Configuración" en cada plato o menú.</p>
-                                </fudie-accordion-item>
-                                <fudie-accordion-item title="¿Puedo exportar los datos?">
-                                    <p class="text-sm">Sí, ve a la sección de "Exportar" en el panel de administrador
-                                        para descargar un CSV.</p>
-                                </fudie-accordion-item>
-                                <fudie-accordion-item title="Soporte Técnico">
-                                    <p class="text-sm">Contacta con soporte@fudie.app para cualquier incidencia grave.
-                                    </p>
-                                </fudie-accordion-item>
-                            </fudie-accordion>
-                        </div>
-                        <div class="space-y-6">
-                            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Search & Files
-                            </h3>
-                            <fudie-search placeholder="Buscar platos, ingredientes..."></fudie-search>
-                            <fudie-file-upload label="Subir Imagen del Plato" accept="image/*"></fudie-file-upload>
-                            <fudie-file-upload label="Documentos adjuntos" multiple
-                                accept=".pdf,.doc"></fudie-file-upload>
-                        </div>
+
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 mb-4">Stepper</h3>
+                        <fudie-stepper value="2" min="1" max="5"></fudie-stepper>
                     </div>
                 </div>
-            </fudie-accordion-item>
-        </fudie-accordion>
-    </div>
-    <script>
-        const demoInput = document.getElementById('demo-input');
-        const demoOutput = document.getElementById('demo-output');
+            </section>
 
-        if (demoInput) {
-            demoInput.addEventListener('input', (e) => {
-                demoOutput.textContent = `Input: ${e.detail.value}`;
-            });
+            <!-- Modal Demo -->
+            <section id="layout" class="scroll-mt-24 pb-20">
+                <div class="mb-8 border-b border-gray-200 pb-4">
+                    <h2 class="text-3xl font-bold mb-2">Modales</h2>
+                </div>
 
-            demoInput.addEventListener('change', (e) => {
-                console.log('Change event:', e.detail.value);
-                demoOutput.textContent = `Change committed: ${e.detail.value}`;
-            });
-        }
-    </script>
+                <div class="bg-gray-100 p-12 rounded-2xl flex justify-center">
+                    <fudie-button onclick="document.getElementById('demo-modal').open()">Lanzar Modal de
+                        Ejemplo</fudie-button>
+                </div>
+
+                <fudie-modal id="demo-modal" title="Confirmar Acción">
+                    <p class="text-gray-600">¿Estás seguro de que deseas continuar con esta acción? Este proceso no es
+                        reversible.</p>
+                    <div slot="footer">
+                        <fudie-button variant="ghost"
+                            onclick="document.getElementById('demo-modal').close()">Cancelar</fudie-button>
+                        <fudie-button onclick="document.getElementById('demo-modal').close()">Confirmar</fudie-button>
+                    </div>
+                </fudie-modal>
+            </section>
+
+        </div>
+    </main>
+
 </body>
 
 </html>
