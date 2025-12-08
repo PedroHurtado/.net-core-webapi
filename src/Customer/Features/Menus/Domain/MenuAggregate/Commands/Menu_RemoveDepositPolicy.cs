@@ -18,7 +18,6 @@ public class RemoveDepositPolicy : IModifyCommand<RemoveDepositPolicyCommand, Me
     {
         menu.DepositPolicy = null;
         menu.UpdatedAt = DateTime.UtcNow;
-
-        return Result<Menu>.Success(menu);
+        return Entity.ValidateEntity(menu, new MenuValidator());        
     }
 }
