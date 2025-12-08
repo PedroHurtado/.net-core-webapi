@@ -41,11 +41,11 @@ public abstract class Entity(Guid id)
         return !(left == right);
     }
 
-    protected static Result ValidateEntity<T>(T entity, AbstractValidator<T> validator) where T : Entity
+    public static Result<T> ValidateEntity<T>(T entity, AbstractValidator<T> validator) where T : Entity
     {
         if (entity.Id == Guid.Empty)
         {
-            return Result.Failure("El id no puede estar vacío", nameof(Id));
+            return Result<T>.Failure("El id no puede estar vacío", nameof(Id));
         }
 
         var result = validator.Validate(entity);
@@ -55,9 +55,9 @@ public abstract class Entity(Guid id)
             var validationErrors = result.Errors.Select(e =>
                 new ValidationError(e.ErrorMessage, e.PropertyName));
 
-            return Result.Failure(validationErrors);
+            return Result<T>.Failure(validationErrors);
         }
 
-        return Result.Success();
+        return Result<T>.Success(entity);
     }
 }
