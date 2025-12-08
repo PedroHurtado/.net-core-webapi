@@ -2,3 +2,4 @@
 
 global using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 global using Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+global using Customer.Features.Menus.Domain.MenuAggregate.Entities;
