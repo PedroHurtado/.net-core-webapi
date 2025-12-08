@@ -1,17 +1,60 @@
-// src/Customer/Features/Menus/Domain/MenuAggregate/ValueObjects/DepositPolicy.cs
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+
+using FluentValidation;
+using Fudie.Domain;
 
 /// <summary>
 /// Política de fianza para reservas a nivel de menú.
 /// </summary>
-public record DepositPolicy(
-    DepositType DepositType,
-    decimal Amount,
-    decimal? Percentage = null,
-    decimal? MinimumBillForDeposit = null,
-    int? MinimumGuestsForDeposit = null
-)
+public record DepositPolicy
 {
+    public DepositType DepositType { get; }
+    public decimal Amount { get; }
+    public decimal? Percentage { get; }
+    public decimal? MinimumBillForDeposit { get; }
+    public int? MinimumGuestsForDeposit { get; }
+
+    private DepositPolicy(
+        DepositType depositType,
+        decimal amount,
+        decimal? percentage,
+        decimal? minimumBillForDeposit,
+        int? minimumGuestsForDeposit)
+    {
+        DepositType = depositType;
+        Amount = amount;
+        Percentage = percentage;
+        MinimumBillForDeposit = minimumBillForDeposit;
+        MinimumGuestsForDeposit = minimumGuestsForDeposit;
+    }
+
+    public static Result<DepositPolicy> Create(
+        DepositType depositType,
+        decimal amount,
+        decimal? percentage = null,
+        decimal? minimumBillForDeposit = null,
+        int? minimumGuestsForDeposit = null)
+    {
+        var policy = new DepositPolicy(
+            depositType,
+            amount,
+            percentage,
+            minimumBillForDeposit,
+            minimumGuestsForDeposit);
+
+        var validation = new DepositPolicyValidator().Validate(policy);
+        
+        if (!validation.IsValid)
+        {
+            var errors = validation.Errors
+                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
+                .ToList();
+            return Result<DepositPolicy>.Failure(errors);
+        }
+
+        return Result<DepositPolicy>.Success(policy);
+    }
+
     /// <summary>
     /// Determina si la política aplica según los umbrales configurados.
     /// </summary>
@@ -38,5 +81,43 @@ public record DepositPolicy(
             DepositType.FixedAmount => Amount,
             _ => 0m
         };
+    }
+}
+
+/// <summary>
+/// Validador de invariantes para DepositPolicy.
+/// </summary>
+public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
+{
+    public DepositPolicyValidator()
+    {
+        RuleFor(x => x.Amount)
+            .GreaterThan(0)
+            .WithMessage("El importe debe ser mayor que cero");
+
+        RuleFor(x => x.Percentage)
+            .NotNull()
+            .When(x => x.DepositType == DepositType.PercentageOfBill)
+            .WithMessage("Debe especificar el porcentaje para tipo PercentageOfBill");
+
+        RuleFor(x => x.Percentage)
+            .Null()
+            .When(x => x.DepositType != DepositType.PercentageOfBill)
+            .WithMessage("El porcentaje solo aplica para tipo PercentageOfBill");
+
+        RuleFor(x => x.Percentage)
+            .InclusiveBetween(1, 100)
+            .When(x => x.Percentage.HasValue)
+            .WithMessage("El porcentaje debe estar entre 1 y 100");
+
+        RuleFor(x => x.MinimumGuestsForDeposit)
+            .GreaterThanOrEqualTo(1)
+            .When(x => x.MinimumGuestsForDeposit.HasValue)
+            .WithMessage("El mínimo de comensales debe ser al menos 1");
+
+        RuleFor(x => x.MinimumBillForDeposit)
+            .GreaterThanOrEqualTo(0)
+            .When(x => x.MinimumBillForDeposit.HasValue)
+            .WithMessage("El importe mínimo de cuenta no puede ser negativo");
     }
 }
