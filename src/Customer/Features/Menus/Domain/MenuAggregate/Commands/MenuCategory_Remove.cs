@@ -22,7 +22,7 @@ public class RemoveCategory : IModifyCommand<RemoveCategoryCommand, Menu>
             return Result<Menu>.Failure("Categoría no encontrada", "CategoryId");
         }
 
-        if (category.Items.Any())
+        if (category.Items.Count != 0)
         {
             return Result<Menu>.Failure("No se puede eliminar una categoría con items", "CategoryId");
         }
