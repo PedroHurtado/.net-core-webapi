@@ -1,8 +1,5 @@
 using Fudie.Domain;
 using Fudie.DependencyInjection;
-using Customer.Features.Menus.Domain.MenuAggregate;
-using Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
-using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
