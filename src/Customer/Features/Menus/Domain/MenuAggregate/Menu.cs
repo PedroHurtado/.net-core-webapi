@@ -1,7 +1,5 @@
 using FluentValidation;
 using Fudie.Domain;
-using Customer.Features.Menus.Domain.MenuAggregate.Entities;
-using Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 namespace Customer.Features.Menus.Domain.MenuAggregate;
 
