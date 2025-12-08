@@ -2,7 +2,22 @@
 namespace Fudie.Domain;
 
 /// <summary>
-/// Comando de dominio para modificar una entidad existente.
+/// Comando de dominio para modificar una entidad existente sin datos adicionales.
+/// </summary>
+/// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
+public interface IModifyCommand<TEntity>
+    where TEntity : Entity
+{
+    /// <summary>
+    /// Ejecuta la modificación de la entidad.
+    /// </summary>
+    /// <param name="entity">Entidad existente a modificar.</param>
+    /// <returns>Result con la entidad modificada o errores de validación.</returns>
+    Result<TEntity> Execute(TEntity entity);
+}
+
+/// <summary>
+/// Comando de dominio para modificar una entidad existente con datos.
 /// </summary>
 /// <typeparam name="TCommand">Tipo del comando con los datos de modificación.</typeparam>
 /// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
