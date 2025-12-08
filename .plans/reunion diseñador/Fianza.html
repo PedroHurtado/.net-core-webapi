@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Fianza | Fudie Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para iconos coincidentes -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Tipografía del Dashboard -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',       // Rojo Coral de Fudie
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF',
+                        success: '#10B981',
+                        warning: '#F59E0B'
+                    },
+                    boxShadow: { 
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos base para inputs numéricos */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        
+        /* Transiciones personalizadas */
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Checkbox slider personalizado estilo iOS/Admin */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #FF4F5A;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #FF4F5A;
+        }
+    </style>
+</head>
+
+<body class="bg-light font-sans text-gray-900 min-h-screen flex justify-center p-4 md:p-8 pb-32 md:pb-8"> 
+    <!-- pb-32 en body solo afecta a móvil para dar espacio al simulador fijo -->
+
+    <main class="w-full max-w-5xl space-y-6">
+        
+        <!-- Header minimalista estilo Admin -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                    <span class="hover:text-primary transition-colors cursor-pointer">Políticas</span>
+                    <i class="fas fa-chevron-right text-[10px]"></i>
+                    <span>Configuración</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">Política de Fianza</h1>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" class="px-5 py-2.5 rounded-full font-bold text-gray-500 hover:bg-white hover:shadow-sm transition-all text-sm">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-save" onclick="handleSave()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all text-sm flex items-center gap-2">
+                    <span id="btn-text">Guardar Cambios</span>
+                    <i id="btn-icon" class="fas fa-check"></i>
+                    <span id="btn-spinner" class="hidden animate-spin"><i class="fas fa-circle-notch"></i></span>
+                </button>
+            </div>
+        </div>
+
+        <form id="policyForm" class="grid grid-cols-1 lg:grid-cols-3 gap-8" novalidate onsubmit="return false;">
+            
+            <!-- Columna Izquierda: Configuración Principal (Ocupa 2/3) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Tarjeta: Regla de Cobro -->
+                <div class="bg-surface rounded-3xl border border-gray-100 shadow-card overflow-hidden">
+                    <div class="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-900">Regla de Cobro</h3>
+                                <p class="text-xs text-gray-500">Define cómo se calculará el depósito</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Opción 1: Por Persona -->
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="depositType" value="1" class="peer sr-only" checked>
+                                <div class="p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-gray-200 peer-checked:border-primary peer-checked:bg-primary/5 transition-all h-full flex flex-col items-center text-center gap-2">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 peer-checked:bg-primary peer-checked:text-white transition-colors mt-1">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="font-bold text-sm text-gray-700 peer-checked:text-primary">Por Persona</span>
+                                    <span class="text-[10px] text-gray-400 leading-tight">Monto fijo × nº de comensales</span>
+                                </div>
+                            </label>
+
+                            <!-- Opción 2: Porcentaje -->
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="depositType" value="2" class="peer sr-only">
+                                <div class="p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-gray-200 peer-checked:border-primary peer-checked:bg-primary/5 transition-all h-full flex flex-col items-center text-center gap-2">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 peer-checked:bg-primary peer-checked:text-white transition-colors mt-1">
+                                        <i class="fas fa-percentage"></i>
+                                    </div>
+                                    <span class="font-bold text-sm text-gray-700 peer-checked:text-primary">% del Total</span>
+                                    <span class="text-[10px] text-gray-400 leading-tight">Porcentaje sobre cuenta estimada</span>
+                                </div>
+                            </label>
+
+                            <!-- Opción 3: Fijo -->
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="depositType" value="3" class="peer sr-only">
+                                <div class="p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-gray-200 peer-checked:border-primary peer-checked:bg-primary/5 transition-all h-full flex flex-col items-center text-center gap-2">
+                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 peer-checked:bg-primary peer-checked:text-white transition-colors mt-1">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <span class="font-bold text-sm text-gray-700 peer-checked:text-primary">Importe Fijo</span>
+                                    <span class="text-[10px] text-gray-400 leading-tight">Monto fijo total por reserva</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Campos dinámicos -->
+                        <div class="mt-8 space-y-6">
+                            
+                            <!-- Input: Amount -->
+                            <div id="amount-group" class="smooth-transition">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Importe del Depósito <span class="text-primary">*</span></label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                        <i class="fas fa-euro-sign"></i>
+                                    </div>
+                                    <input type="number" id="amount" value="10.00" min="0" step="0.01"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 font-bold focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder-gray-300">
+                                </div>
+                                <p class="text-[11px] text-gray-400 mt-2 ml-1"><i class="fas fa-info-circle mr-1"></i> Se cobrará este monto en el momento de la reserva.</p>
+                            </div>
+
+                            <!-- Input: Percentage (Hidden by default) -->
+                            <div id="percentage-group" class="hidden smooth-transition">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Porcentaje del Depósito <span class="text-primary">*</span></label>
+                                <div class="relative group">
+                                    <input type="number" id="percentage" placeholder="20" min="1" max="100"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-10 py-3 text-gray-900 font-bold focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder-gray-300">
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                        <i class="fas fa-percent"></i>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-gray-400 mt-2 ml-1">Calculado sobre el gasto estimado total.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta: Restricciones -->
+                <div class="bg-surface rounded-3xl border border-gray-100 shadow-card p-6">
+                    <h3 class="font-bold text-lg text-gray-900 mb-6">Condiciones de Aplicación</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Mínimo Comensales</label>
+                            <div class="relative">
+                                <input type="number" id="minGuests" value="1" min="1"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                <span class="absolute right-4 top-3.5 text-xs text-gray-400 font-bold uppercase">Pax</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Gasto Mínimo (€)</label>
+                            <input type="number" id="minBill" value="0" min="0" step="10"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Resumen, Estado y SIMULADOR -->
+            <div class="space-y-6">
+                <!-- Estado de Validación -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-card">
+                    <h3 class="font-bold text-lg text-gray-900 mb-4">Estado de la Política</h3>
+                    
+                    <!-- Feedback visual -->
+                    <div id="validation-box" class="rounded-xl p-4 bg-green-50 border border-green-100 flex items-start gap-3 mb-4 transition-colors">
+                        <div id="validation-icon" class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fas fa-check text-xs"></i>
+                        </div>
+                        <div>
+                            <h4 id="validation-title" class="text-sm font-bold text-green-800">Política Activa</h4>
+                            <ul id="validation-list" class="text-xs text-green-700 mt-1 space-y-1">
+                                <li>Configuración válida para reservas.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-2 border-t border-gray-50 mt-4 pt-4">
+                        <span class="text-sm font-bold text-gray-700">Activar Fianza</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer toggle-checkbox">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary toggle-label"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-lightbulb text-blue-500 mt-1"></i>
+                        <p class="text-xs text-blue-800 leading-relaxed font-medium">
+                            Los depósitos por persona suelen reducir las cancelaciones ("No-Shows") en un <strong>40%</strong>. Asegúrate de configurar una política de reembolso clara.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SIMULADOR RESPONSIVO (Fix: Static en desktop, Fixed en móvil) -->
+                <!-- He movido este bloque AQUÍ, dentro de la columna derecha -->
+                <div id="simulator-card" class="
+                    /* Estilos Móvil: Pegado abajo, fijo */
+                    fixed bottom-0 left-0 right-0 z-50 p-4 bg-white border-t border-gray-200 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]
+                    /* Estilos Desktop: Tarjeta estática integrada */
+                    lg:static lg:border lg:border-gray-100 lg:shadow-card lg:rounded-3xl lg:p-6 lg:z-auto lg:bg-white
+                ">
+                    <h3 class="hidden lg:block font-bold text-lg text-gray-900 mb-4">Simulador</h3>
+                    
+                    <div class="max-w-4xl mx-auto flex flex-col lg:flex-col lg:items-stretch sm:flex-row items-center justify-between gap-4">
+                        
+                        <!-- Controles del Simulador (Dinámicos) -->
+                        <div class="flex items-center gap-4 w-full sm:w-auto lg:w-full justify-center sm:justify-start lg:justify-between lg:bg-gray-50 lg:p-2 lg:rounded-2xl">
+                            
+                            <!-- Input Pax (Se oculta si no es relevante) -->
+                            <div id="sim-pax-wrapper" class="flex items-center gap-2 bg-gray-50 lg:bg-white rounded-xl px-3 py-2 border border-gray-200 lg:flex-1 smooth-transition">
+                                <i class="fas fa-users text-gray-400 text-xs"></i>
+                                <div class="flex flex-col w-full">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-0.5">Pax</label>
+                                    <input type="number" id="simGuests" value="4" class="w-full bg-transparent text-sm font-bold text-gray-900 outline-none p-0 border-none h-auto">
+                                </div>
+                            </div>
+                            
+                            <!-- Separador (Oculto en layout móvil/desktop flex) -->
+                            <div id="sim-divider" class="text-gray-300 hidden sm:block lg:hidden">|</div>
+
+                            <!-- Input Cuenta (Se oculta si no es relevante) -->
+                            <div id="sim-bill-wrapper" class="flex items-center gap-2 bg-gray-50 lg:bg-white rounded-xl px-3 py-2 border border-gray-200 lg:flex-1 smooth-transition">
+                                <i class="fas fa-receipt text-gray-400 text-xs"></i>
+                                <div class="flex flex-col w-full">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-0.5">Cuenta</label>
+                                    <input type="number" id="simBill" value="150" class="w-full bg-transparent text-sm font-bold text-gray-900 outline-none p-0 border-none h-auto">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resultado -->
+                        <div class="flex items-center gap-4 w-full sm:w-auto lg:w-full justify-between sm:justify-end lg:justify-between border-t sm:border-t-0 lg:border-t lg:border-gray-100 pt-3 sm:pt-0 lg:pt-4">
+                            <div class="text-right lg:text-left">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fianza Total</p>
+                                <p id="sim-explanation" class="text-xs text-gray-500 font-medium">4 pax × 10.00€</p>
+                            </div>
+                            <div class="bg-gray-900 text-white px-5 py-2 rounded-xl shadow-lg shadow-gray-900/20">
+                                <span id="sim-result" class="text-xl font-bold font-mono tracking-tight">40.00€</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </main>
+
+    <script>
+        // --- Lógica del Componente ---
+
+        const DepositType = { PerPerson: 1, PercentageOfBill: 2, FixedAmount: 3 };
+        
+        const state = {
+            type: DepositType.PerPerson,
+            amount: 10.00,
+            percentage: null,
+            minGuests: 1,
+            minBill: 0,
+            isValid: true
+        };
+
+        const ui = {
+            form: document.getElementById('policyForm'),
+            radios: document.getElementsByName('depositType'),
+            amountGroup: document.getElementById('amount-group'),
+            percentageGroup: document.getElementById('percentage-group'),
+            inputAmount: document.getElementById('amount'),
+            inputPercentage: document.getElementById('percentage'),
+            inputMinGuests: document.getElementById('minGuests'),
+            inputMinBill: document.getElementById('minBill'),
+            
+            // Validación
+            validationBox: document.getElementById('validation-box'),
+            validationIcon: document.getElementById('validation-icon'),
+            validationTitle: document.getElementById('validation-title'),
+            validationList: document.getElementById('validation-list'),
+            
+            // Botón
+            btnSave: document.getElementById('btn-save'),
+            btnText: document.getElementById('btn-text'),
+            btnIcon: document.getElementById('btn-icon'),
+            btnSpinner: document.getElementById('btn-spinner'),
+            
+            // Simulador
+            simPaxWrapper: document.getElementById('sim-pax-wrapper'),
+            simBillWrapper: document.getElementById('sim-bill-wrapper'),
+            simDivider: document.getElementById('sim-divider'),
+            simGuests: document.getElementById('simGuests'),
+            simBill: document.getElementById('simBill'),
+            simResult: document.getElementById('sim-result'),
+            simExplanation: document.getElementById('sim-explanation')
+        };
+
+        function validate() {
+            const errors = [];
+            
+            if (state.type !== DepositType.PercentageOfBill) {
+                if (!state.amount || state.amount <= 0) errors.push('El importe debe ser mayor a 0€.');
+            } else {
+                if (!state.percentage) errors.push('El porcentaje es requerido.');
+                else if (state.percentage < 1 || state.percentage > 100) errors.push('El porcentaje debe estar entre 1% y 100%.');
+            }
+
+            state.isValid = errors.length === 0;
+            renderValidation(errors);
+            return state.isValid;
+        }
+
+        function renderFields() {
+            const isPercentage = state.type === DepositType.PercentageOfBill;
+
+            // 1. Mostrar campos principales del formulario
+            if (isPercentage) {
+                ui.amountGroup.classList.add('hidden');
+                ui.percentageGroup.classList.remove('hidden');
+                ui.percentageGroup.classList.add('animate-fade-in');
+            } else {
+                ui.amountGroup.classList.remove('hidden');
+                ui.amountGroup.classList.add('animate-fade-in');
+                ui.percentageGroup.classList.add('hidden');
+            }
+
+            // 2. Lógica inteligente del SIMULADOR: 
+            // Mostrar solo inputs relevantes para el cálculo o restricción
+            
+            // Regla para Pax: Visible si es Tipo Persona O si hay restricción de Min Guests
+            const showPax = (state.type === DepositType.PerPerson) || (state.minGuests > 1);
+            
+            // Regla para Cuenta: Visible si es Tipo Porcentaje O si hay restricción de Min Bill
+            const showBill = (state.type === DepositType.PercentageOfBill) || (state.minBill > 0);
+
+            // Aplicar visibilidad
+            if (showPax) {
+                ui.simPaxWrapper.classList.remove('hidden');
+                ui.simPaxWrapper.classList.add('flex');
+            } else {
+                ui.simPaxWrapper.classList.add('hidden');
+                ui.simPaxWrapper.classList.remove('flex');
+            }
+
+            if (showBill) {
+                ui.simBillWrapper.classList.remove('hidden');
+                ui.simBillWrapper.classList.add('flex');
+            } else {
+                ui.simBillWrapper.classList.add('hidden');
+                ui.simBillWrapper.classList.remove('flex');
+            }
+
+            // Separador solo si ambos visibles (y en layout móvil horizontal)
+            if (showPax && showBill) {
+                ui.simDivider.classList.remove('hidden');
+                ui.simDivider.classList.add('sm:block');
+            } else {
+                ui.simDivider.classList.add('hidden');
+                ui.simDivider.classList.remove('sm:block');
+            }
+        }
+
+        function renderValidation(errors) {
+            ui.validationList.innerHTML = '';
+            
+            if (errors.length === 0) {
+                // Estado Válido
+                ui.validationBox.className = "rounded-xl p-4 bg-green-50 border border-green-100 flex items-start gap-3 mb-4 transition-colors";
+                ui.validationIcon.className = "w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-0.5";
+                ui.validationIcon.innerHTML = '<i class="fas fa-check text-xs"></i>';
+                ui.validationTitle.className = "text-sm font-bold text-green-800";
+                ui.validationTitle.innerText = "Política Activa";
+                ui.validationList.innerHTML = '<li>Configuración válida para reservas.</li>';
+                
+                ui.inputAmount.classList.remove('border-red-300', 'bg-red-50');
+                ui.inputPercentage.classList.remove('border-red-300', 'bg-red-50');
+                
+                ui.btnSave.disabled = false;
+                ui.btnSave.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                // Estado Error
+                ui.validationBox.className = "rounded-xl p-4 bg-red-50 border border-red-100 flex items-start gap-3 mb-4 transition-colors";
+                ui.validationIcon.className = "w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5";
+                ui.validationIcon.innerHTML = '<i class="fas fa-exclamation text-xs"></i>';
+                ui.validationTitle.className = "text-sm font-bold text-red-800";
+                ui.validationTitle.innerText = "Revisa la configuración";
+                
+                errors.forEach(err => {
+                    const li = document.createElement('li');
+                    li.textContent = err;
+                    ui.validationList.appendChild(li);
+                });
+
+                if(errors.some(e => e.includes('importe'))) {
+                    ui.inputAmount.classList.add('border-red-300', 'bg-red-50');
+                }
+                if(errors.some(e => e.includes('porcentaje'))) {
+                    ui.inputPercentage.classList.add('border-red-300', 'bg-red-50');
+                }
+
+                ui.btnSave.disabled = true;
+                ui.btnSave.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            updateSimulation();
+        }
+
+        function updateSimulation() {
+            if (!state.isValid) {
+                ui.simResult.innerText = "---";
+                ui.simExplanation.innerText = "Corrige errores";
+                return;
+            }
+
+            const guests = parseInt(ui.simGuests.value) || 0;
+            const bill = parseFloat(ui.simBill.value) || 0;
+
+            if (guests < state.minGuests || bill < state.minBill) {
+                ui.simResult.innerText = "0.00€";
+                ui.simResult.classList.add('text-gray-400');
+                ui.simExplanation.innerText = "No aplica (Umbrales)";
+                return;
+            }
+            
+            ui.simResult.classList.remove('text-gray-400');
+
+            let total = 0;
+            let expl = "";
+
+            if (state.type === DepositType.PerPerson) {
+                total = state.amount * guests;
+                expl = `${guests} pax × ${state.amount.toFixed(2)}€`;
+            } else if (state.type === DepositType.PercentageOfBill) {
+                total = bill * (state.percentage / 100);
+                expl = `${state.percentage}% de ${bill.toFixed(2)}€`;
+            } else {
+                total = state.amount;
+                expl = `Importe fijo`;
+            }
+
+            ui.simResult.innerText = total.toFixed(2) + "€";
+            ui.simExplanation.innerText = expl;
+        }
+
+        function updateStateFromDOM() {
+            ui.radios.forEach(r => { if(r.checked) state.type = parseInt(r.value); });
+            state.amount = parseFloat(ui.inputAmount.value);
+            state.percentage = parseFloat(ui.inputPercentage.value);
+            state.minGuests = parseInt(ui.inputMinGuests.value) || 1;
+            state.minBill = parseFloat(ui.inputMinBill.value) || 0;
+            renderFields();
+            validate();
+        }
+
+        function handleSave() {
+            if (!state.isValid) return;
+            ui.btnSave.disabled = true;
+            ui.btnText.innerText = "Guardando...";
+            ui.btnIcon.classList.add('hidden');
+            ui.btnSpinner.classList.remove('hidden');
+
+            setTimeout(() => {
+                ui.btnText.innerText = "Guardado";
+                ui.btnSpinner.classList.add('hidden');
+                ui.btnIcon.classList.remove('hidden');
+                ui.btnSave.classList.remove('bg-primary', 'hover:bg-primaryDark');
+                ui.btnSave.classList.add('bg-success', 'hover:bg-success');
+                
+                setTimeout(() => {
+                    ui.btnSave.disabled = false;
+                    ui.btnText.innerText = "Guardar Cambios";
+                    ui.btnSave.classList.add('bg-primary', 'hover:bg-primaryDark');
+                    ui.btnSave.classList.remove('bg-success', 'hover:bg-success');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Init
+        ui.form.addEventListener('input', updateStateFromDOM);
+        ui.simGuests.addEventListener('input', updateSimulation);
+        ui.simBill.addEventListener('input', updateSimulation);
+        
+        // Inicializar
+        updateStateFromDOM();
+
+    </script>
+</body>
+</html>

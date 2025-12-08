@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Menús | Fudie Admin - Prototipo UX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        info: '#3B82F6'
+                    },
+                    boxShadow: { 
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .menu-card:hover { transform: translateY(-2px); }
+        .item-row:hover { background-color: #f9fafb; }
+        .category-header:hover .category-actions { opacity: 1; }
+        .category-actions { opacity: 0; transition: opacity 0.2s; }
+        .view { display: none; }
+        .view.active { display: block; }
+    </style>
+</head>
+
+<body class="bg-light font-sans text-gray-900 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.admin</span></span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-calendar-alt w-5"></i> Reservas
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-clock w-5"></i> Horarios
+            </a>
+            <a href="#" onclick="showView('list')" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-bold">
+                <i class="fas fa-book-open w-5"></i> Menús
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-shield-alt w-5"></i> Políticas
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-cog w-5"></i> Configuración
+            </a>
+        </nav>
+
+        <!-- Navegación Prototipo -->
+        <div class="p-4 border-t border-gray-50 bg-amber-50">
+            <p class="text-[10px] font-bold text-amber-600 uppercase mb-2">🎨 Navegación Prototipo</p>
+            <div class="space-y-1">
+                <button onclick="showView('list')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Lista Menús
+                </button>
+                <button onclick="showView('create')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Crear/Editar Menú
+                </button>
+                <button onclick="showView('detail')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Detalle Menú
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Mobile Header -->
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-xl">fudie<span class="text-primary">.admin</span></span>
+            <button class="text-gray-500"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto">
+
+            <!-- ==================== VIEW 1: LISTA DE MENÚS ==================== -->
+            <div id="view-list" class="view active p-4 md:p-8">
+                <div class="max-w-6xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Menús</h1>
+                            <p class="text-gray-500 text-sm mt-1">Gestiona las cartas y menús de tu restaurante</p>
+                        </div>
+                        <button onclick="showView('create')"
+                            class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Menú
+                        </button>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white rounded-2xl p-4 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">2</p>
+                                    <p class="text-xs text-gray-500">Activos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">1</p>
+                                    <p class="text-xs text-gray-500">Programados</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-pause-circle"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">1</p>
+                                    <p class="text-xs text-gray-500">Inactivos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">47</p>
+                                    <p class="text-xs text-gray-500">Items totales</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                        <button onclick="filterMenus('all')" id="filter-all"
+                            class="filter-btn px-4 py-2 rounded-full text-sm font-bold bg-gray-900 text-white transition-all whitespace-nowrap">
+                            Todos (4)
+                        </button>
+                        <button onclick="filterMenus('active')" id="filter-active"
+                            class="filter-btn px-4 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all whitespace-nowrap">
+                            <i class="fas fa-circle text-success text-[8px] mr-1"></i> Activos (2)
+                        </button>
+                        <button onclick="filterMenus('scheduled')" id="filter-scheduled"
+                            class="filter-btn px-4 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all whitespace-nowrap">
+                            <i class="fas fa-circle text-warning text-[8px] mr-1"></i> Programados (1)
+                        </button>
+                        <button onclick="filterMenus('inactive')" id="filter-inactive"
+                            class="filter-btn px-4 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all whitespace-nowrap">
+                            <i class="fas fa-circle text-gray-300 text-[8px] mr-1"></i> Inactivos (1)
+                        </button>
+                    </div>
+
+                    <!-- Cards Grid -->
+                    <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <!-- Card 1: Activo con Fianza -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg"
+                            data-status="active" onclick="showView('detail')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 text-xl">
+                                            <i class="fas fa-book-open"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Carta Principal</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Activo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-sm text-gray-500 line-clamp-2 mb-4">Nuestra selección completa de platos, disponible todo el año.</p>
+                                <div class="flex items-center gap-4 text-sm mb-4">
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-layer-group text-gray-400"></i>
+                                        <span class="font-medium">5 categorías</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-utensils text-gray-400"></i>
+                                        <span class="font-medium">24 items</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                                    <i class="fas fa-infinity"></i>
+                                    <span>Vigencia indefinida</span>
+                                </div>
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-600" title="Tiene política de fianza">
+                                        <i class="fas fa-shield-alt text-xs"></i>
+                                        <span class="text-[10px] font-bold">FIANZA</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600" title="Contiene items de alto riesgo">
+                                        <i class="fas fa-exclamation-triangle text-xs"></i>
+                                        <span class="text-[10px] font-bold">ALTO RIESGO</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Activo Veggie -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg"
+                            data-status="active" onclick="showView('detail')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 text-xl">
+                                            <i class="fas fa-seedling"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Menú Vegetariano</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Activo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-sm text-gray-500 line-clamp-2 mb-4">Opciones 100% vegetarianas para los amantes de la cocina verde.</p>
+                                <div class="flex items-center gap-4 text-sm mb-4">
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-layer-group text-gray-400"></i>
+                                        <span class="font-medium">3 categorías</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-utensils text-gray-400"></i>
+                                        <span class="font-medium">12 items</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                                    <i class="fas fa-infinity"></i>
+                                    <span>Vigencia indefinida</span>
+                                </div>
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 text-green-600">
+                                        <i class="fas fa-leaf text-xs"></i>
+                                        <span class="text-[10px] font-bold">VEGGIE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Programado -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg"
+                            data-status="scheduled" onclick="showView('detail')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 text-xl">
+                                            <i class="fas fa-heart"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">San Valentín 2025</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/10 text-warning text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-clock text-[8px]"></i> Programado
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-sm text-gray-500 line-clamp-2 mb-4">Menú especial para parejas con platos románticos.</p>
+                                <div class="flex items-center gap-4 text-sm mb-4">
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-layer-group text-gray-400"></i>
+                                        <span class="font-medium">4 categorías</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-utensils text-gray-400"></i>
+                                        <span class="font-medium">8 items</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-warning mb-4">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span class="font-medium">14 Feb - 16 Feb 2025</span>
+                                </div>
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-600">
+                                        <i class="fas fa-shield-alt text-xs"></i>
+                                        <span class="text-[10px] font-bold">FIANZA</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 text-purple-600">
+                                        <i class="fas fa-calendar-check text-xs"></i>
+                                        <span class="text-[10px] font-bold">RESERVA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Inactivo -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg opacity-60"
+                            data-status="inactive" onclick="showView('detail')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 text-xl">
+                                            <i class="fas fa-sun"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Menú Verano 2024</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Inactivo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-sm text-gray-500 line-clamp-2 mb-4">Platos frescos y ligeros para los días de calor.</p>
+                                <div class="flex items-center gap-4 text-sm mb-4">
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-layer-group text-gray-400"></i>
+                                        <span class="font-medium">3 categorías</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-gray-500">
+                                        <i class="fas fa-utensils text-gray-400"></i>
+                                        <span class="font-medium">15 items</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <span>Finalizó: 15 Sep 2024</span>
+                                </div>
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <span class="text-xs text-gray-400 italic">Sin características especiales</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== VIEW 2: CREAR/EDITAR MENÚ ==================== -->
+            <div id="view-create" class="view p-4 md:p-8">
+                <div class="max-w-3xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                                <a href="#" onclick="showView('list')" class="hover:text-primary transition-colors">Menús</a>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                                <span>Nuevo Menú</span>
+                            </div>
+                            <h1 class="text-2xl font-bold text-gray-900">Crear Nuevo Menú</h1>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="showView('list')"
+                                class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100 transition-all">
+                                Cancelar
+                            </button>
+                            <button onclick="saveMenu()"
+                                class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all flex items-center gap-2">
+                                <span>Crear Menú</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="space-y-6">
+                        
+                        <!-- Información Básica -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-50 bg-gray-50/50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900">Información Básica</h3>
+                                        <p class="text-xs text-gray-500">Datos principales del menú</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                        Nombre del Menú <span class="text-primary">*</span>
+                                    </label>
+                                    <input type="text" id="menuName" maxlength="100" placeholder="Ej: Carta Principal, Menú del Día..."
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder-gray-300"
+                                        oninput="updatePreview()">
+                                    <div class="flex justify-end mt-2">
+                                        <p class="text-xs text-gray-400"><span id="nameCount">0</span>/100</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label>
+                                    <textarea id="menuDescription" rows="3" maxlength="500" placeholder="Describe brevemente este menú..."
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none placeholder-gray-300"
+                                        oninput="updatePreview()"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vigencia -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-50 bg-gray-50/50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900">Vigencia</h3>
+                                        <p class="text-xs text-gray-500">Define cuándo estará disponible</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-6">
+                                <div class="flex items-center justify-between py-2">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-700">Vigencia Indefinida</p>
+                                        <p class="text-xs text-gray-400">El menú estará siempre disponible</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="indefiniteValidity" checked class="sr-only peer" onchange="toggleValidityDates()">
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div id="validityDates" class="hidden grid grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido Desde</label>
+                                        <input type="date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido Hasta</label>
+                                        <input type="date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
+                                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                    <p class="text-xs text-blue-800">Puedes cambiar la vigencia en cualquier momento desde la configuración del menú.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl border border-gray-200 p-6">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Vista Previa</h4>
+                            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 text-xl flex-shrink-0">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h3 id="previewName" class="font-bold text-gray-900 truncate">Sin nombre</h3>
+                                            <span class="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-bold uppercase">Borrador</span>
+                                        </div>
+                                        <p id="previewDesc" class="text-sm text-gray-500 line-clamp-2">Sin descripción</p>
+                                        <div id="previewValidity" class="mt-3 flex items-center gap-2 text-xs text-gray-400">
+                                            <i class="fas fa-infinity"></i>
+                                            <span>Vigencia indefinida</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== VIEW 3: DETALLE MENÚ ==================== -->
+            <div id="view-detail" class="view p-4 md:p-8">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                                <a href="#" onclick="showView('list')" class="hover:text-primary transition-colors">Menús</a>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                                <span>Carta Principal</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <h1 class="text-2xl font-bold text-gray-900">Carta Principal</h1>
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase">
+                                    <i class="fas fa-circle text-[6px]"></i> Activo
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all flex items-center gap-2">
+                                <i class="fas fa-eye"></i>
+                                <span class="hidden md:inline">Vista Previa</span>
+                            </button>
+                            <button class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Two Columns -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- Left: Categories & Items -->
+                        <div class="lg:col-span-2 space-y-4">
+                            
+                            <!-- Actions -->
+                            <div class="bg-white rounded-2xl border border-gray-100 p-4 flex flex-wrap items-center justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openCategoryModal()"
+                                        class="bg-primary text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-primaryDark transition-all flex items-center gap-2">
+                                        <i class="fas fa-plus"></i>
+                                        Nueva Categoría
+                                    </button>
+                                    <button onclick="openReorderModal()"
+                                        class="px-4 py-2 rounded-full font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all flex items-center gap-2">
+                                        <i class="fas fa-sort"></i>
+                                        Reordenar
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <input type="text" placeholder="Buscar items..." 
+                                        class="bg-gray-50 border border-gray-200 rounded-full px-4 py-2 pl-10 text-sm focus:border-primary outline-none transition-all w-48">
+                                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Category 1 -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="category-header p-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between cursor-pointer"
+                                    onclick="toggleCategory('cat-1')">
+                                    <div class="flex items-center gap-3">
+                                        <button class="w-6 h-6 flex items-center justify-center text-gray-400">
+                                            <i id="cat-1-icon" class="fas fa-chevron-down text-xs"></i>
+                                        </button>
+                                        <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500">
+                                            <i class="fas fa-bread-slice text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Entrantes</h3>
+                                            <p class="text-xs text-gray-400">6 items</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-primary" title="Añadir item">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation(); openCategoryModal(true)" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-red-500" title="Eliminar">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="cat-1-items" class="divide-y divide-gray-50">
+                                    <!-- Item 1 -->
+                                    <div class="item-row p-4 flex items-center gap-4 cursor-pointer smooth-transition">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&h=100&fit=crop" alt="Pizza" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900">Pizza Margarita</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">DISPONIBLE</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">Tomate, mozzarella fresca, albahaca</p>
+                                            <div class="flex items-center gap-3 mt-1">
+                                                <span class="text-sm font-bold text-primary">12,50 €</span>
+                                                <div class="flex items-center gap-1">
+                                                    <span class="w-5 h-5 rounded bg-amber-50 flex items-center justify-center text-amber-600" title="Gluten">
+                                                        <i class="fas fa-bread-slice text-[10px]"></i>
+                                                    </span>
+                                                    <span class="w-5 h-5 rounded bg-yellow-50 flex items-center justify-center text-yellow-600" title="Lácteos">
+                                                        <i class="fas fa-cheese text-[10px]"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300"></i>
+                                    </div>
+
+                                    <!-- Item 2 -->
+                                    <div class="item-row p-4 flex items-center gap-4 cursor-pointer smooth-transition">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=100&h=100&fit=crop" alt="Burrata" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900">Burrata con Tomate</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">DISPONIBLE</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">Burrata cremosa, tomate kumato, AOVE</p>
+                                            <div class="flex items-center gap-3 mt-1">
+                                                <span class="text-sm font-bold text-primary">14,00 €</span>
+                                                <div class="flex items-center gap-1">
+                                                    <span class="w-5 h-5 rounded bg-yellow-50 flex items-center justify-center text-yellow-600" title="Lácteos">
+                                                        <i class="fas fa-cheese text-[10px]"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300"></i>
+                                    </div>
+
+                                    <!-- Item 3: Agotado -->
+                                    <div class="item-row p-4 flex items-center gap-4 cursor-pointer smooth-transition opacity-50">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative">
+                                            <img src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=100&h=100&fit=crop" alt="Croquetas" class="w-full h-full object-cover grayscale">
+                                            <div class="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
+                                                <span class="text-white text-[10px] font-bold">AGOTADO</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900">Croquetas de Jamón</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 text-[10px] font-bold">AGOTADO</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">Croquetas caseras de jamón ibérico</p>
+                                            <span class="text-sm font-bold text-gray-400">8,50 €</span>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Category 2 -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="category-header p-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between cursor-pointer"
+                                    onclick="toggleCategory('cat-2')">
+                                    <div class="flex items-center gap-3">
+                                        <button class="w-6 h-6 flex items-center justify-center text-gray-400">
+                                            <i id="cat-2-icon" class="fas fa-chevron-down text-xs"></i>
+                                        </button>
+                                        <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500">
+                                            <i class="fas fa-drumstick-bite text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Principales</h3>
+                                            <p class="text-xs text-gray-400">8 items</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-primary">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-red-500">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="cat-2-items" class="divide-y divide-gray-50">
+                                    <!-- Item: Alto Riesgo -->
+                                    <div class="item-row p-4 flex items-center gap-4 cursor-pointer smooth-transition">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 relative">
+                                            <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=100&h=100&fit=crop" alt="Chuletón" class="w-full h-full object-cover">
+                                            <div class="absolute top-1 right-1 w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
+                                                <i class="fas fa-exclamation text-white text-[8px]"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900">Chuletón de Buey</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 text-[10px] font-bold">ALTO RIESGO</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">1kg de carne madurada, guarnición incluida</p>
+                                            <div class="flex items-center gap-3 mt-1">
+                                                <span class="text-sm font-bold text-primary">65,00 €</span>
+                                                <span class="w-5 h-5 rounded bg-amber-50 flex items-center justify-center text-amber-600" title="Requiere fianza">
+                                                    <i class="fas fa-shield-alt text-[10px]"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300"></i>
+                                    </div>
+
+                                    <!-- Item normal -->
+                                    <div class="item-row p-4 flex items-center gap-4 cursor-pointer smooth-transition">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                                            <img src="https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=100&h=100&fit=crop" alt="Lubina" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-gray-900">Lubina a la Sal</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">DISPONIBLE</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate">Lubina salvaje cocinada en costra de sal</p>
+                                            <div class="flex items-center gap-3 mt-1">
+                                                <span class="text-sm font-bold text-primary">28,00 €</span>
+                                                <span class="w-5 h-5 rounded bg-blue-50 flex items-center justify-center text-blue-600" title="Pescado">
+                                                    <i class="fas fa-fish text-[10px]"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Category 3: Collapsed -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="category-header p-4 bg-gray-50/50 flex items-center justify-between cursor-pointer"
+                                    onclick="toggleCategory('cat-3')">
+                                    <div class="flex items-center gap-3">
+                                        <button class="w-6 h-6 flex items-center justify-center text-gray-400">
+                                            <i id="cat-3-icon" class="fas fa-chevron-right text-xs"></i>
+                                        </button>
+                                        <div class="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500">
+                                            <i class="fas fa-ice-cream text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Postres</h3>
+                                            <p class="text-xs text-gray-400">5 items</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-primary">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-white flex items-center justify-center text-gray-400 hover:text-red-500">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="cat-3-items" class="hidden"></div>
+                            </div>
+
+                        </div>
+
+                        <!-- Right: Config Panel -->
+                        <div class="space-y-4">
+
+                            <!-- Información -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+                                    <h3 class="font-bold text-gray-900">Información</h3>
+                                    <button onclick="showView('create')" class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </button>
+                                </div>
+                                <div class="p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs text-gray-400 uppercase font-bold mb-1">Nombre</p>
+                                        <p class="text-sm text-gray-900 font-medium">Carta Principal</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400 uppercase font-bold mb-1">Descripción</p>
+                                        <p class="text-sm text-gray-600">Nuestra selección completa de platos, disponible todo el año.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vigencia -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+                                    <h3 class="font-bold text-gray-900">Vigencia</h3>
+                                    <button onclick="showView('create')" class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </button>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                            <i class="fas fa-infinity"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-900">Indefinida</p>
+                                            <p class="text-xs text-gray-400">Siempre disponible</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Política de Fianza -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+                                    <h3 class="font-bold text-gray-900">Política de Fianza</h3>
+                                    <div class="flex items-center gap-1">
+                                        <button class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full bg-gray-50 hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500" title="Eliminar">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 flex-shrink-0">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-900 mb-2">Por Persona</p>
+                                            <div class="space-y-1 text-sm">
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-500">Importe:</span>
+                                                    <span class="font-bold text-gray-900">10,00 €</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-500">Mín. comensales:</span>
+                                                    <span class="font-bold text-gray-900">6</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-500">Mín. antelación:</span>
+                                                    <span class="font-bold text-gray-900">48h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resumen -->
+                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 p-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Resumen</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">5</p>
+                                        <p class="text-xs text-gray-500">Categorías</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-900">24</p>
+                                        <p class="text-xs text-gray-500">Items</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-success">21</p>
+                                        <p class="text-xs text-gray-500">Disponibles</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-2xl font-bold text-gray-400">3</p>
+                                        <p class="text-xs text-gray-500">Agotados</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Modal: Categoría -->
+    <div id="categoryModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 id="categoryModalTitle" class="text-lg font-bold text-gray-900">Nueva Categoría</h3>
+                <button onclick="closeCategoryModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+                    <input type="text" placeholder="Ej: Entrantes, Principales..."
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label>
+                    <textarea rows="2" placeholder="Descripción opcional..."
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Icono</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-primary/10 border-2 border-primary flex items-center justify-center text-primary">
+                            <i class="fas fa-bread-slice"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-drumstick-bite"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-fish"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-ice-cream"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-wine-glass-alt"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-coffee"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-pizza-slice"></i>
+                        </button>
+                        <button type="button" onclick="selectIcon(this)" class="icon-btn w-10 h-10 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-leaf"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeCategoryModal()" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+                <button onclick="closeCategoryModal()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Reordenar -->
+    <div id="reorderModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900">Ordenar Categorías</h3>
+                <button onclick="closeReorderModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-500 mb-4">Arrastra para reordenar</p>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-move">
+                        <i class="fas fa-grip-vertical text-gray-300"></i>
+                        <span class="flex-1 font-medium">1. Entrantes</span>
+                        <i class="fas fa-arrows-alt-v text-gray-300"></i>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-move">
+                        <i class="fas fa-grip-vertical text-gray-300"></i>
+                        <span class="flex-1 font-medium">2. Principales</span>
+                        <i class="fas fa-arrows-alt-v text-gray-300"></i>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-move">
+                        <i class="fas fa-grip-vertical text-gray-300"></i>
+                        <span class="flex-1 font-medium">3. Postres</span>
+                        <i class="fas fa-arrows-alt-v text-gray-300"></i>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-move">
+                        <i class="fas fa-grip-vertical text-gray-300"></i>
+                        <span class="flex-1 font-medium">4. Bebidas</span>
+                        <i class="fas fa-arrows-alt-v text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeReorderModal()" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+                <button onclick="closeReorderModal()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // View Navigation
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Category Toggle
+        function toggleCategory(catId) {
+            const items = document.getElementById(`${catId}-items`);
+            const icon = document.getElementById(`${catId}-icon`);
+            if (items.classList.contains('hidden')) {
+                items.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                items.classList.add('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
+        }
+
+        // Filter
+        function filterMenus(status) {
+            const cards = document.querySelectorAll('.menu-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-gray-900', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            document.getElementById(`filter-${status}`).classList.remove('bg-gray-100', 'text-gray-600');
+            document.getElementById(`filter-${status}`).classList.add('bg-gray-900', 'text-white');
+            cards.forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Create Form
+        function toggleValidityDates() {
+            const indefinite = document.getElementById('indefiniteValidity').checked;
+            document.getElementById('validityDates').classList.toggle('hidden', indefinite);
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const name = document.getElementById('menuName')?.value.trim() || 'Sin nombre';
+            const desc = document.getElementById('menuDescription')?.value.trim() || 'Sin descripción';
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewDesc').textContent = desc;
+            document.getElementById('nameCount').textContent = document.getElementById('menuName')?.value.length || 0;
+        }
+
+        function saveMenu() {
+            alert('Menú guardado correctamente');
+            showView('list');
+        }
+
+        // Category Modal
+        function openCategoryModal(isEdit = false) {
+            document.getElementById('categoryModalTitle').textContent = isEdit ? 'Editar Categoría' : 'Nueva Categoría';
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function selectIcon(btn) {
+            document.querySelectorAll('.icon-btn').forEach(b => {
+                b.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
+                b.classList.add('border-transparent', 'text-gray-400', 'bg-gray-50');
+            });
+            btn.classList.remove('border-transparent', 'text-gray-400', 'bg-gray-50');
+            btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+        }
+
+        // Reorder Modal
+        function openReorderModal() {
+            document.getElementById('reorderModal').classList.remove('hidden');
+        }
+
+        function closeReorderModal() {
+            document.getElementById('reorderModal').classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>
