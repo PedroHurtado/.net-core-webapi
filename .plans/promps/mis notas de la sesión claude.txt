@@ -50,7 +50,8 @@ El Activate y Deactivate los tengo claros no hace falta crearlos se ven a distan
 
 
 
-Son igual que este pero Emitiendo un Conflicto cuando Activate está no se puede Activar, por tanto de aquí sale algo como que hacemos con Result.
+Son igual que este pero Emitiendo un Conflicto cuando Activate está no se puede Activar,
+por tanto de aquí sale algo como que hacemos con Result.
 
 
 
