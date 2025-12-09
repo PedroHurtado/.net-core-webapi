@@ -1,8 +1,7 @@
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 using FluentValidation;
-using Fudie.Domain;
+using Fudie.Validation;
 
 /// <summary>
 /// Opción de precio para un tipo de porción de un item.
@@ -26,7 +25,7 @@ public record PriceOption
         IsActive = isActive;
     }
 
-    public static Result<PriceOption> Create(
+    public static PriceOption Create(
         Guid id,
         PortionType portionType,
         decimal? price,
@@ -34,17 +33,7 @@ public record PriceOption
     {
         var option = new PriceOption(id, portionType, price, isActive);
 
-        var validation = new PriceOptionValidator().Validate(option);
-        
-        if (!validation.IsValid)
-        {
-            var errors = validation.Errors
-                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
-                .ToList();
-            return Result<PriceOption>.Failure(errors);
-        }
-
-        return Result<PriceOption>.Success(option);
+        return new PriceOptionValidator().ValidateOrThrow(option);
     }
 
     /// <summary>

@@ -1,8 +1,7 @@
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 using FluentValidation;
-using Fudie.Domain;
+using Fudie.Validation;
 
 /// <summary>
 /// Información nutricional de un item (valores por ración completa).
@@ -38,7 +37,7 @@ public record NutritionalInfo
         Salt = salt;
     }
 
-    public static Result<NutritionalInfo> Create(
+    public static NutritionalInfo Create(
         int calories,
         decimal protein,
         decimal carbohydrates,
@@ -58,17 +57,7 @@ public record NutritionalInfo
             sugar,
             salt);
 
-        var validation = new NutritionalInfoValidator().Validate(info);
-        
-        if (!validation.IsValid)
-        {
-            var errors = validation.Errors
-                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
-                .ToList();
-            return Result<NutritionalInfo>.Failure(errors);
-        }
-
-        return Result<NutritionalInfo>.Success(info);
+        return new NutritionalInfoValidator().ValidateOrThrow(info);
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 using FluentValidation;
-using Fudie.Domain;
+using Fudie.Validation;
 
 /// <summary>
 /// Fianza específica para un item que sobrescribe la política del menú.
@@ -19,23 +19,13 @@ public record ItemDepositOverride
         MinimumQuantityForDeposit = minimumQuantityForDeposit;
     }
 
-    public static Result<ItemDepositOverride> Create(
+    public static ItemDepositOverride Create(
         decimal depositAmount,
         int? minimumQuantityForDeposit = null)
     {
         var itemOverride = new ItemDepositOverride(depositAmount, minimumQuantityForDeposit);
 
-        var validation = new ItemDepositOverrideValidator().Validate(itemOverride);
-        
-        if (!validation.IsValid)
-        {
-            var errors = validation.Errors
-                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
-                .ToList();
-            return Result<ItemDepositOverride>.Failure(errors);
-        }
-
-        return Result<ItemDepositOverride>.Success(itemOverride);
+        return new ItemDepositOverrideValidator().ValidateOrThrow(itemOverride);
     }
 
     /// <summary>
