@@ -1,7 +1,7 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 using FluentValidation;
-using Fudie.Domain;
+using Fudie.Validation;
 
 /// <summary>
 /// Política de fianza para reservas a nivel de menú.
@@ -28,7 +28,7 @@ public record DepositPolicy
         MinimumGuestsForDeposit = minimumGuestsForDeposit;
     }
 
-    public static Result<DepositPolicy> Create(
+    public static DepositPolicy Create(
         DepositType depositType,
         decimal amount,
         decimal? percentage = null,
@@ -42,17 +42,7 @@ public record DepositPolicy
             minimumBillForDeposit,
             minimumGuestsForDeposit);
 
-        var validation = new DepositPolicyValidator().Validate(policy);
-        
-        if (!validation.IsValid)
-        {
-            var errors = validation.Errors
-                .Select(e => new ValidationError(e.PropertyName, e.ErrorMessage))
-                .ToList();
-            return Result<DepositPolicy>.Failure(errors);
-        }
-
-        return Result<DepositPolicy>.Success(policy);
+        return new DepositPolicyValidator().ValidateOrThrow(policy);
     }
 
     /// <summary>

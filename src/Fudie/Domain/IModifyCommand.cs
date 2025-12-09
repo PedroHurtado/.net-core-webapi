@@ -31,5 +31,5 @@ public interface IModifyCommand<TCommand, TEntity>
     /// <param name="entity">Entidad existente a modificar.</param>
     /// <param name="command">Datos para modificar la entidad.</param>
     /// <returns>Result con la entidad modificada o errores de validación.</returns>
-    Result<TEntity> Execute(TEntity entity, TCommand command);
+    TEntity Execute(TEntity entity, TCommand command);
 }

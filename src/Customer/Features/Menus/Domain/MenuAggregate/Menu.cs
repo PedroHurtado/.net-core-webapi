@@ -7,7 +7,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate;
 /// Menu Aggregate Root - DTO simple para MicroDomain.
 /// La lógica de negocio está en Commands separados.
 /// </summary>
-public class Menu : Entity
+public class Menu : AggregateRoot
 {
     // === Propiedades básicas ===
     public Guid RestaurantId { get; set; }

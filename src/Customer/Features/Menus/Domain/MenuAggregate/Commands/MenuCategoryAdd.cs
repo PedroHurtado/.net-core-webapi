@@ -1,24 +1,23 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
-/// <summary>
-/// Comando para añadir una categoría a un menú.
-/// </summary>
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
+
 public record AddCategoryCommand(
     string Name,
     string? Description = null,
     int DisplayOrder = 0
 );
 
-/// <summary>
-/// Añade una nueva categoría a un menú existente.
-/// </summary>
 [Injectable]
-public class AddCategory : IModifyCommand<AddCategoryCommand, Menu>
+public class AddCategory(
+    IValidator<MenuCategory> categoryValidator,
+    IValidator<Menu> menuValidator
+) : IModifyCommand<AddCategoryCommand, Menu>
 {
-    public Result<Menu> Execute(Menu menu, AddCategoryCommand command)
+    public Menu Execute(Menu menu, AddCategoryCommand command)
     {
         var category = new MenuCategory(Guid.NewGuid())
         {
@@ -28,20 +27,20 @@ public class AddCategory : IModifyCommand<AddCategoryCommand, Menu>
             IsActive = true
         };
 
-        var categoryValidation = Entity.ValidateEntity(category, new MenuCategoryValidator());
-        if (categoryValidation.IsFailure)
-        {
-            return Result<Menu>.Failure(categoryValidation.Errors);
-        }
-       
-        if (menu.Categories.Any(c => c.Name.Equals(command.Name, StringComparison.OrdinalIgnoreCase)))
-        {
-            return Result<Menu>.Failure("Ya existe una categoría con ese nombre", "Name");
-        }
+        categoryValidator.ValidateOrThrow(category);
+
+        var duplicateName = menu.Categories.Any(c => c.Name.Equals(command.Name, StringComparison.OrdinalIgnoreCase));
+
+        ValidationGuard.ThrowIf(
+            duplicateName,
+            "Ya existe una categoría con ese nombre",
+            "Name"
+        );
 
         menu.Categories.Add(category);
         menu.UpdatedAt = DateTime.UtcNow;
+        
 
-        return Entity.ValidateEntity(menu, new MenuValidator());
+        return menuValidator.ValidateOrThrow(menu);
     }
 }
