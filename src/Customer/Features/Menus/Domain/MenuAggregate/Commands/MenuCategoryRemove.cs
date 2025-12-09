@@ -16,10 +16,9 @@ public class RemoveCategory(
     {
         var category = menu.Categories.FirstOrDefault(c => c.Id == command.CategoryId);
 
-        ValidationGuard.ThrowIf(
-            category is null,
-            "Categoría no encontrada",
-            "CategoryId"
+        NotFoundGuard.ThrowIfNull(
+            category,
+            command.CategoryId           
         );
 
         ValidationGuard.ThrowIf(

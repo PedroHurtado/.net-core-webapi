@@ -31,10 +31,9 @@ public class AddCategory(
 
         var duplicateName = menu.Categories.Any(c => c.Name.Equals(command.Name, StringComparison.OrdinalIgnoreCase));
 
-        ValidationGuard.ThrowIf(
+        ConflictGuard.ThrowIf(
             duplicateName,
-            "Ya existe una categoría con ese nombre",
-            "Name"
+            "Ya existe una categoría con ese nombre"            
         );
 
         menu.Categories.Add(category);
