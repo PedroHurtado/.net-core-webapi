@@ -13,7 +13,7 @@ public interface IModifyCommand<TEntity>
     /// </summary>
     /// <param name="entity">Entidad existente a modificar.</param>
     /// <returns>Result con la entidad modificada o errores de validación.</returns>
-    Result<TEntity> Execute(TEntity entity);
+    Entity Execute(TEntity entity);
 }
 
 /// <summary>
