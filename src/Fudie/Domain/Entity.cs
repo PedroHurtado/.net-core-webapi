@@ -1,6 +1,5 @@
 namespace Fudie.Domain;
 
-using Fudie;
 using FluentValidation;
 
 public abstract class Entity(Guid id)
