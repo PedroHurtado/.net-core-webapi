@@ -1,35 +1,36 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
-/// <summary>
-/// Comando para eliminar una categoría de un menú.
-/// </summary>
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
+
 public record RemoveCategoryCommand(Guid CategoryId);
 
-/// <summary>
-/// Elimina una categoría de un menú existente.
-/// </summary>
 [Injectable]
-public class RemoveCategory : IModifyCommand<RemoveCategoryCommand, Menu>
+public class RemoveCategory(
+    IValidator<Menu> menuValidator
+) : IModifyCommand<RemoveCategoryCommand, Menu>
 {
-    public Result<Menu> Execute(Menu menu, RemoveCategoryCommand command)
+    public Menu Execute(Menu menu, RemoveCategoryCommand command)
     {
         var category = menu.Categories.FirstOrDefault(c => c.Id == command.CategoryId);
-        if (category is null)
-        {
-            return Result<Menu>.Failure("Categoría no encontrada", "CategoryId");
-        }
 
-        if (category.Items.Count != 0)
-        {
-            return Result<Menu>.Failure("No se puede eliminar una categoría con items", "CategoryId");
-        }
+        ValidationGuard.ThrowIf(
+            category is null,
+            "Categoría no encontrada",
+            "CategoryId"
+        );
+
+        ValidationGuard.ThrowIf(
+            category!.Items.Count != 0,
+            "No se puede eliminar una categoría con items",
+            "CategoryId"
+        );
 
         menu.Categories.Remove(category);
         menu.UpdatedAt = DateTime.UtcNow;
 
-        return Entity.ValidateEntity(menu, new MenuValidator());
+        return menuValidator.ValidateOrThrow(menu);
     }
 }

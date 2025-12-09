@@ -1,11 +1,10 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
-/// <summary>
-/// Comando para actualizar un menú existente.
-/// </summary>
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
+
 public record UpdateMenuCommand(
     string Name,
     string? Description,
@@ -14,13 +13,12 @@ public record UpdateMenuCommand(
     int DisplayOrder
 );
 
-/// <summary>
-/// Actualiza un menú existente.
-/// </summary>
 [Injectable]
-public class UpdateMenu : IModifyCommand<UpdateMenuCommand, Menu>
+public class UpdateMenu(
+    IValidator<Menu> menuValidator
+) : IModifyCommand<UpdateMenuCommand, Menu>
 {
-    public Result<Menu> Execute(Menu menu, UpdateMenuCommand command)
+    public Menu Execute(Menu menu, UpdateMenuCommand command)
     {
         menu.Name = command.Name;
         menu.Description = command.Description;
@@ -29,6 +27,6 @@ public class UpdateMenu : IModifyCommand<UpdateMenuCommand, Menu>
         menu.DisplayOrder = command.DisplayOrder;
         menu.UpdatedAt = DateTime.UtcNow;
 
-        return Entity.ValidateEntity(menu, new MenuValidator());
+        return menuValidator.ValidateOrThrow(menu);
     }
 }

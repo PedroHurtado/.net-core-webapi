@@ -1,11 +1,10 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
-/// <summary>
-/// Comando para crear un nuevo menú.
-/// </summary>
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
+
 public record CreateMenuCommand(
     Guid RestaurantId,
     string Name,
@@ -14,13 +13,12 @@ public record CreateMenuCommand(
     DateTime? EffectiveUntil = null
 );
 
-/// <summary>
-/// Crea un nuevo menú para un restaurante.
-/// </summary>
 [Injectable]
-public class CreateMenu : ICreateCommand<CreateMenuCommand, Menu>
+public class CreateMenu(
+    IValidator<Menu> menuValidator
+) : ICreateCommand<CreateMenuCommand, Menu>
 {
-    public Result<Menu> Execute(CreateMenuCommand command)
+    public Menu Execute(CreateMenuCommand command)
     {
         var menu = new Menu(Guid.NewGuid())
         {
@@ -35,6 +33,6 @@ public class CreateMenu : ICreateCommand<CreateMenuCommand, Menu>
             UpdatedAt = DateTime.UtcNow
         };
 
-        return Entity.ValidateEntity(menu, new MenuValidator());
+        return menuValidator.ValidateOrThrow(menu);
     }
 }

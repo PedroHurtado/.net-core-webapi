@@ -1,20 +1,22 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
 
-
-/// <summary>
-/// Elimina la política de fianzas de un menú existente.
-/// </summary>
 [Injectable]
-public class RemoveDepositPolicy : IModifyCommand<Menu>
+public class RemoveDepositPolicy(
+    IValidator<Menu> menuValidator
+) : IModifyCommand<Menu>
 {
-    public Result<Menu> Execute(Menu menu)
+    
+
+    Menu IModifyCommand<Menu>.Execute(Menu entity)
     {
-        menu.DepositPolicy = null;
-        menu.UpdatedAt = DateTime.UtcNow;
-        return Entity.ValidateEntity(menu, new MenuValidator());        
+        entity.DepositPolicy = null;
+        entity.UpdatedAt = DateTime.UtcNow;
+
+        return menuValidator.ValidateOrThrow(entity);
     }
 }

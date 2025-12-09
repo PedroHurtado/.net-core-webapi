@@ -1,11 +1,11 @@
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
 
-/// <summary>
-/// Comando para configurar la política de fianzas de un menú.
-/// </summary>
+using Fudie.Domain;
+using Fudie.DependencyInjection;
+using Fudie.Validation;
+using FluentValidation;
+using Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+
 public record SetDepositPolicyCommand(
     DepositType DepositType,
     decimal Amount,
@@ -14,15 +14,14 @@ public record SetDepositPolicyCommand(
     int? MinimumGuestsForDeposit = null
 );
 
-/// <summary>
-/// Configura la política de fianzas de un menú existente.
-/// </summary>
 [Injectable]
-public class SetDepositPolicy : IModifyCommand<SetDepositPolicyCommand, Menu>
+public class SetDepositPolicy(
+    IValidator<Menu> menuValidator
+) : IModifyCommand<SetDepositPolicyCommand, Menu>
 {
-    public Result<Menu> Execute(Menu menu, SetDepositPolicyCommand command)
+    public Menu Execute(Menu menu, SetDepositPolicyCommand command)
     {
-        var depositPolicyResult = DepositPolicy.Create(
+        var depositPolicy = DepositPolicy.Create(
             command.DepositType,
             command.Amount,
             command.Percentage,
@@ -30,14 +29,9 @@ public class SetDepositPolicy : IModifyCommand<SetDepositPolicyCommand, Menu>
             command.MinimumGuestsForDeposit
         );
 
-        if (depositPolicyResult.IsFailure)
-        {
-            return Result<Menu>.Failure(depositPolicyResult.Errors);
-        }
-
-        menu.DepositPolicy = depositPolicyResult.Value;
+        menu.DepositPolicy = depositPolicy;
         menu.UpdatedAt = DateTime.UtcNow;
 
-        return Result<Menu>.Success(menu);
+        return menuValidator.ValidateOrThrow(menu);
     }
 }
