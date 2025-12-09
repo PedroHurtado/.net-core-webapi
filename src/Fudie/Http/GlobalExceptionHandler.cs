@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using FluentValidation;
 using Fudie.OpenApi;
+using Fudie.Domain;
 
 namespace Fudie.Http;
 
@@ -31,13 +32,19 @@ public class GlobalExceptionHandler : IExceptionHandler
                 problemDetails.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
                 break;
 
+            case ConflictException:
+                problemDetails.Status = StatusCodes.Status409Conflict;
+                problemDetails.Title = "Conflict";
+                problemDetails.Detail = exception.Message;
+                problemDetails.Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8";
+                break;
+
             case ValidationException validationException:
                 problemDetails.Status = StatusCodes.Status422UnprocessableEntity;
                 problemDetails.Title = "Validation Error";
                 problemDetails.Detail = "One or more validation errors occurred.";
                 problemDetails.Type = "https://datatracker.ietf.org/doc/html/rfc4918#section-11.2";
 
-                // Agregar los errores de validación al diccionario de extensiones
                 var errors = validationException.Errors
                     .GroupBy(e => e.PropertyName)
                     .ToDictionary(
