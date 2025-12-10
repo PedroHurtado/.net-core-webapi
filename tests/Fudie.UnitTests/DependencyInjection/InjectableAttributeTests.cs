@@ -133,7 +133,7 @@ public class InjectableAttributeTests
         // Assert
         attributeUsage.Should().NotBeNull();
         attributeUsage!.ValidOn.Should().Be(AttributeTargets.Class);
-        attributeUsage.AllowMultiple.Should().BeFalse();
+        attributeUsage.AllowMultiple.Should().BeTrue();
         attributeUsage.Inherited.Should().BeFalse();
     }
 

@@ -421,6 +421,113 @@ public class InjectionExtensionTests
 
     #endregion
 
+    #region AddInjectables Tests - Multiple Attributes and ServiceType
+
+    [Fact]
+    public void AddInjectables_WithMultipleAttributes_ShouldRegisterAllServiceTypes()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MultiAttributeService).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().Contain(sd => sd.ServiceType == typeof(MultiAttributeService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(IFirstService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(ISecondService));
+    }
+
+    [Fact]
+    public void AddInjectables_WithExplicitServiceType_ShouldRespectServiceType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ServiceWithExplicitType).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().Contain(sd => sd.ServiceType == typeof(IExplicitService));
+        services.Should().Contain(sd => sd.ServiceType == typeof(ServiceWithExplicitType));
+    }
+
+    [Fact]
+    public void AddInjectables_WithExplicitServiceType_ShouldNotRegisterOtherInterfaces()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ServiceWithExplicitType).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        // INotExplicitService is implemented but not specified in ServiceType, so should NOT be registered
+        services.Should().NotContain(sd => sd.ServiceType == typeof(INotExplicitService));
+    }
+
+    [Fact]
+    public void AddInjectables_WithMultipleAttributes_ShouldUseForwarding()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MultiAttributeService).Assembly;
+        services.AddInjectables(assembly);
+
+        // Act
+        var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var service1 = scope.ServiceProvider.GetService<IFirstService>();
+        var service2 = scope.ServiceProvider.GetService<ISecondService>();
+        var service3 = scope.ServiceProvider.GetService<MultiAttributeService>();
+
+        // Assert - all should be the same instance (forwarding)
+        service1.Should().NotBeNull();
+        service2.Should().NotBeNull();
+        service3.Should().NotBeNull();
+        service1.Should().BeSameAs(service2);
+        service1.Should().BeSameAs(service3);
+    }
+
+    [Fact]
+    public void AddInjectables_WithoutExplicitServiceType_ShouldUseForwardingForTopLevelInterfaces()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(MultiInterfaceService).Assembly;
+        services.AddInjectables(assembly);
+
+        // Act
+        var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var fromInterface = scope.ServiceProvider.GetService<IMultiService>();
+        var fromClass = scope.ServiceProvider.GetService<MultiInterfaceService>();
+
+        // Assert - should be same instance (forwarding)
+        fromInterface.Should().NotBeNull();
+        fromClass.Should().NotBeNull();
+        fromInterface.Should().BeSameAs(fromClass);
+    }
+
+    [Fact]
+    public void AddInjectables_AlwaysRegistersConcreteClass()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(TestServiceScoped).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().Contain(sd => sd.ServiceType == typeof(TestServiceScoped));
+    }
+
+    #endregion
+
     #region Integration Tests
 
     [Fact]
@@ -528,6 +635,10 @@ public class InjectionExtensionTests
     private interface ITestService { }
     private interface ITransientService { }
     private interface ISingletonService { }
+    private interface IFirstService { }
+    private interface ISecondService { }
+    private interface IExplicitService { }
+    private interface INotExplicitService { }
 
     [Injectable]
     private class TestServiceScoped : ITestService { }
@@ -546,6 +657,13 @@ public class InjectionExtensionTests
 
     [Injectable]
     private abstract class AbstractService { }
+
+    [Injectable(ServiceType = typeof(IFirstService))]
+    [Injectable(ServiceType = typeof(ISecondService))]
+    private class MultiAttributeService : IFirstService, ISecondService { }
+
+    [Injectable(ServiceType = typeof(IExplicitService))]
+    private class ServiceWithExplicitType : IExplicitService, INotExplicitService { }
 
     #endregion
 }

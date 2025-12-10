@@ -9,7 +9,7 @@ public enum ServiceLifetime
 
 
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class InjectableAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) : Attribute
 {
     public ServiceLifetime Lifetime { get; init; } = lifetime;

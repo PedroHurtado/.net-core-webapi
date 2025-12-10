@@ -19,26 +19,57 @@ public static class InjectionExtension
 
         var injectableTypes = assemblies
             .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.GetCustomAttribute<InjectableAttribute>() is not null
+            .Where(type => type.GetCustomAttributes<InjectableAttribute>().Any()
                         && type is { IsClass: true, IsAbstract: false });
 
         foreach (var implementationType in injectableTypes)
         {
-            var attribute = implementationType.GetCustomAttribute<InjectableAttribute>()!;
-            var topLevelInterfaces = GetTopLevelInterfaces(implementationType);
+            var attributes = implementationType.GetCustomAttributes<InjectableAttribute>().ToList();
+            var lifetime = attributes.First().Lifetime;
 
-            foreach (var interfaceType in topLevelInterfaces)
+            // Registrar la clase concreta primero
+            if (!IsServiceRegistered(services, implementationType))
             {
-                if (!IsServiceRegistered(services, interfaceType))
-                {
-                    RegisterService(services, interfaceType, implementationType, attribute.Lifetime);
-                }
+                RegisterService(services, implementationType, implementationType, lifetime);
             }
 
-            // Si no tiene interfaces, registrar la clase misma
-            if (topLevelInterfaces.Count == 0 && !IsServiceRegistered(services, implementationType))
+            // Recopilar los ServiceType explícitos
+            var explicitServiceTypes = attributes
+                .Where(a => a.ServiceType is not null)
+                .Select(a => a.ServiceType!)
+                .ToHashSet();
+
+            if (explicitServiceTypes.Count > 0)
             {
-                RegisterService(services, implementationType, implementationType, attribute.Lifetime);
+                // Usar forwarding para cada ServiceType explícito
+                foreach (var serviceType in explicitServiceTypes)
+                {
+                    if (!IsServiceRegistered(services, serviceType))
+                    {
+                        RegisterServiceFromFactory(
+                            services,
+                            serviceType,
+                            sp => sp.GetRequiredService(implementationType),
+                            lifetime);
+                    }
+                }
+            }
+            else
+            {
+                // Sin ServiceType explícito: usar top-level interfaces con forwarding
+                var topLevelInterfaces = GetTopLevelInterfaces(implementationType);
+
+                foreach (var interfaceType in topLevelInterfaces)
+                {
+                    if (!IsServiceRegistered(services, interfaceType))
+                    {
+                        RegisterServiceFromFactory(
+                            services,
+                            interfaceType,
+                            sp => sp.GetRequiredService(implementationType),
+                            lifetime);
+                    }
+                }
             }
         }
 
