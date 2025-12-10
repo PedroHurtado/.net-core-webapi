@@ -6,32 +6,33 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Fudie</RootNamespace>
     <AssemblyName>Fudie</AssemblyName>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
-   <ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Fudie.UnitTests" />
   </ItemGroup>
-  
+
+  <!-- Excluir archivos del Source Generator (compilados en Fudie.Generator) -->
+  <ItemGroup>
+    <Compile Remove="Infrastructure\Generator\**\*.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Core Dependencies -->
     <PackageReference Include="FluentValidation" Version="12.1.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
-    
+
     <!-- ASP.NET Core -->
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
-    
+
     <!-- OpenAPI/Swagger -->
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.0" />
-    
+
     <!-- Entity Framework Core -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-    
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
