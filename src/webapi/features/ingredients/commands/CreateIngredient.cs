@@ -4,7 +4,6 @@ using webapi.features.ingredients.models;
 using Fudie.Domain;
 using Fudie.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 using Fudie.Features;
 
 namespace webapi.features.ingredients.commands;
@@ -70,7 +69,9 @@ public class CreateIngredient : IFeatureModule
         }
     }
 
-    [Injectable]
+    public interface IRepository:IAdd<Ingredient>{}
+
+    /*[Injectable]
     public class Repository(IChangeTracker repository) : IAdd<Ingredient>
     {
         private readonly IChangeTracker _repository = repository;
@@ -79,7 +80,7 @@ public class CreateIngredient : IFeatureModule
         {
             _repository.Entry(entity).State = EntityState.Added;
         }
-    }
+    }*/
 
 
 }

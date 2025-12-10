@@ -289,6 +289,13 @@ internal static class CodeBuilder
         sb.AppendLine("using Microsoft.EntityFrameworkCore;");
         sb.AppendLine("using Fudie.Infrastructure;");
         sb.AppendLine("using Fudie.DependencyInjection;");
+
+        // Additional usings (e.g., entity type namespaces)
+        foreach (var additionalUsing in config.AdditionalUsings)
+        {
+            sb.AppendLine($"using {additionalUsing};");
+        }
+
         sb.AppendLine();
 
         // Namespace
@@ -296,7 +303,7 @@ internal static class CodeBuilder
         sb.AppendLine();
 
         // Class declaration
-        sb.AppendLine("[Injectable(ServiceLifetime.Scoped)]");
+        sb.AppendLine("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
         sb.Append($"public class {className}");
 
         // Interfaces
@@ -554,5 +561,7 @@ internal static class CodeBuilder
         public bool IgnoreQueryFilters { get; set; }
 
         public List<QueryMethodInfo> QueryMethods { get; set; } = new();
+
+        public IEnumerable<string> AdditionalUsings { get; set; } = Array.Empty<string>();
     }
 }

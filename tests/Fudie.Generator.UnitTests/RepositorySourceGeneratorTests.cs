@@ -627,7 +627,62 @@ namespace Fudie.DependencyInjection
         // Assert
         result.GeneratedTrees.Should().ContainSingle();
         var generatedCode = result.GeneratedTrees[0].ToString();
-        generatedCode.Should().Contain("[Injectable(ServiceLifetime.Scoped)]");
+        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+    }
+
+    #endregion
+
+    #region Nested Interface Tests
+
+    [Fact]
+    public void Generator_WithNestedInterface_ShouldPrefixClassNameWithContainingType()
+    {
+        // Arrange - Interface anidada dentro de una clase (vertical slice pattern)
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Ingredient : Entity { }
+
+    public class CreateIngredient
+    {
+        public interface IRepository : IAdd<Ingredient> { }
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.GeneratedTrees.Should().ContainSingle();
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        generatedCode.Should().Contain("public class CreateIngredient_Repository : IAdd<Ingredient>");
+    }
+
+    [Fact]
+    public void Generator_WithMultipleNestedInterfaces_ShouldGenerateUniqueClassNames()
+    {
+        // Arrange - Múltiples interfaces anidadas con el mismo nombre en diferentes clases
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Ingredient : Entity { }
+
+    public class CreateIngredient
+    {
+        public interface IRepository : IAdd<Ingredient> { }
+    }
+
+    public class DeleteIngredient
+    {
+        public interface IRepository : IRemove<Ingredient, Guid> { }
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert - Debe generar dos archivos con nombres únicos
+        result.GeneratedTrees.Should().HaveCount(2);
+
+        var generatedCodes = result.GeneratedTrees.Select(t => t.ToString()).ToList();
+        generatedCodes.Should().Contain(code => code.Contains("public class CreateIngredient_Repository"));
+        generatedCodes.Should().Contain(code => code.Contains("public class DeleteIngredient_Repository"));
     }
 
     #endregion

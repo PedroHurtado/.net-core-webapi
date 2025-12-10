@@ -41,7 +41,7 @@ public class CodeBuilderClassTests
 
         // Assert
         result.Should().Contain("namespace MyApp.Repositories;");
-        result.Should().Contain("[Injectable(ServiceLifetime.Scoped)]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
         result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>");
         result.Should().Contain("private readonly IEntityLookup _entityLookup;");
         result.Should().NotContain("IChangeTracker");
@@ -141,6 +141,52 @@ public class CodeBuilderClassTests
         result.Should().Contain("using Fudie.DependencyInjection;");
     }
 
+    [Fact]
+    public void GenerateRepositoryClass_WithAdditionalUsings_ShouldIncludeEntityNamespace()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true,
+            AdditionalUsings = new[] { "MyApp.Domain.Models" }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "Repository",
+            "MyApp.Features.Products.Commands",
+            "Product",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("using MyApp.Domain.Models;");
+        result.Should().Contain("public class Repository : IAdd<Product>");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithMultipleAdditionalUsings_ShouldIncludeAll()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true,
+            AdditionalUsings = new[] { "MyApp.Domain.Models", "MyApp.Shared.Entities" }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "Repository",
+            "MyApp.Features.Products.Commands",
+            "Product",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("using MyApp.Domain.Models;");
+        result.Should().Contain("using MyApp.Shared.Entities;");
+    }
+
     #endregion
 
     #region Complete Scenario
@@ -174,7 +220,7 @@ public class CodeBuilderClassTests
 
         // Assert - Estructura básica
         result.Should().Contain("namespace MyApp.Repositories;");
-        result.Should().Contain("[Injectable(ServiceLifetime.Scoped)]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
         result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>, IAdd<Customer>");
 
         // Assert - Fields y constructor

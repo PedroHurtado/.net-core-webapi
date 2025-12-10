@@ -132,9 +132,16 @@ public class RepositorySourceGenerator : IIncrementalGenerator
 
         // Nombre de la clase de implementación: ICustomerRepository -> CustomerRepository
         var interfaceName = interfaceSymbol.Name;
-        var className = interfaceName.StartsWith("I") && interfaceName.Length > 1
+        var baseClassName = interfaceName.StartsWith("I") && interfaceName.Length > 1
             ? interfaceName.Substring(1)
             : interfaceName + "Impl";
+
+        // Si la interfaz está anidada, prefijar con el nombre del tipo contenedor
+        // Ejemplo: CreateIngredient.IRepository -> CreateIngredient_Repository
+        var containingType = interfaceSymbol.ContainingType;
+        var className = containingType != null
+            ? $"{containingType.Name}_{baseClassName}"
+            : baseClassName;
 
         // Detectar qué interfaces implementa
         var baseInterfaces = interfaceSymbol.AllInterfaces;
@@ -144,6 +151,7 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         bool implementsIRemove = false;
 
         string? entityTypeName = null;
+        string? entityTypeNamespace = null;
         string? idTypeName = null;
 
         foreach (var baseInterface in baseInterfaces)
@@ -153,24 +161,41 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             if (interfaceFullName == "Fudie.Infrastructure.IGet<T, ID>")
             {
                 implementsIGet = true;
-                entityTypeName = baseInterface.TypeArguments[0].Name;
+                var entityTypeSymbol = baseInterface.TypeArguments[0];
+                entityTypeName = entityTypeSymbol.Name;
+                entityTypeNamespace = entityTypeSymbol.ContainingNamespace?.ToDisplayString();
                 idTypeName = baseInterface.TypeArguments[1].ToDisplayString();
             }
             else if (interfaceFullName == "Fudie.Infrastructure.IAdd<T>")
             {
                 implementsIAdd = true;
-                entityTypeName ??= baseInterface.TypeArguments[0].Name;
+                if (entityTypeName == null)
+                {
+                    var entityTypeSymbol = baseInterface.TypeArguments[0];
+                    entityTypeName = entityTypeSymbol.Name;
+                    entityTypeNamespace = entityTypeSymbol.ContainingNamespace?.ToDisplayString();
+                }
             }
             else if (interfaceFullName == "Fudie.Infrastructure.IUpdate<T, ID>")
             {
                 implementsIUpdate = true;
-                entityTypeName ??= baseInterface.TypeArguments[0].Name;
+                if (entityTypeName == null)
+                {
+                    var entityTypeSymbol = baseInterface.TypeArguments[0];
+                    entityTypeName = entityTypeSymbol.Name;
+                    entityTypeNamespace = entityTypeSymbol.ContainingNamespace?.ToDisplayString();
+                }
                 idTypeName ??= baseInterface.TypeArguments[1].ToDisplayString();
             }
             else if (interfaceFullName == "Fudie.Infrastructure.IRemove<T, ID>")
             {
                 implementsIRemove = true;
-                entityTypeName ??= baseInterface.TypeArguments[0].Name;
+                if (entityTypeName == null)
+                {
+                    var entityTypeSymbol = baseInterface.TypeArguments[0];
+                    entityTypeName = entityTypeSymbol.Name;
+                    entityTypeNamespace = entityTypeSymbol.ContainingNamespace?.ToDisplayString();
+                }
                 idTypeName ??= baseInterface.TypeArguments[1].ToDisplayString();
             }
         }
@@ -228,6 +253,16 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         // Extraer query methods
         var queryMethods = ExtractQueryMethods(interfaceSymbol, entitySymbol, context);
 
+        // Determinar usings adicionales (para tipos de entidad en otros namespaces)
+        var additionalUsings = new List<string>();
+        if (entityTypeNamespace is not null &&
+            entityTypeNamespace.Length > 0 &&
+            entityTypeNamespace != namespaceName &&
+            entityTypeNamespace != "global")
+        {
+            additionalUsings.Add(entityTypeNamespace);
+        }
+
         // Crear configuración del builder
         var builderConfig = new CodeBuilder.RepositoryConfig
         {
@@ -239,7 +274,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             AsNoTracking = asNoTracking,
             AsSplitQuery = asSplitQuery,
             IgnoreQueryFilters = ignoreQueryFilters,
-            QueryMethods = queryMethods
+            QueryMethods = queryMethods,
+            AdditionalUsings = additionalUsings
         };
 
         return new RepositoryConfiguration(
