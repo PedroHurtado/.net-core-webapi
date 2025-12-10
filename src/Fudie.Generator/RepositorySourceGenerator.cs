@@ -263,6 +263,45 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             additionalUsings.Add(entityTypeNamespace);
         }
 
+        // Build container interface info
+        var containerInterfaceName = interfaceSymbol.Name;
+        string containerInterfaceFullName;
+
+        if (containingType != null)
+        {
+            // Nested interface: ContainingType.InterfaceName
+            containerInterfaceFullName = $"{containingType.Name}.{containerInterfaceName}";
+        }
+        else
+        {
+            // Top-level interface
+            containerInterfaceFullName = containerInterfaceName;
+        }
+
+        // Build list of base interface names for [Injectable] attributes
+        var baseInterfaceNames = new List<string>();
+        foreach (var baseInterface in baseInterfaces)
+        {
+            var interfaceFullName = baseInterface.ConstructedFrom.ToDisplayString();
+
+            if (interfaceFullName == "Fudie.Infrastructure.IGet<T, ID>")
+            {
+                baseInterfaceNames.Add($"IGet<{entityTypeName}, {idTypeName}>");
+            }
+            else if (interfaceFullName == "Fudie.Infrastructure.IAdd<T>")
+            {
+                baseInterfaceNames.Add($"IAdd<{entityTypeName}>");
+            }
+            else if (interfaceFullName == "Fudie.Infrastructure.IUpdate<T, ID>")
+            {
+                baseInterfaceNames.Add($"IUpdate<{entityTypeName}, {idTypeName}>");
+            }
+            else if (interfaceFullName == "Fudie.Infrastructure.IRemove<T, ID>")
+            {
+                baseInterfaceNames.Add($"IRemove<{entityTypeName}, {idTypeName}>");
+            }
+        }
+
         // Crear configuración del builder
         var builderConfig = new CodeBuilder.RepositoryConfig
         {
@@ -275,7 +314,10 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             AsSplitQuery = asSplitQuery,
             IgnoreQueryFilters = ignoreQueryFilters,
             QueryMethods = queryMethods,
-            AdditionalUsings = additionalUsings
+            AdditionalUsings = additionalUsings,
+            ContainerInterfaceName = containerInterfaceName,
+            ContainerInterfaceFullName = containerInterfaceFullName,
+            BaseInterfaceNames = baseInterfaceNames
         };
 
         return new RepositoryConfiguration(

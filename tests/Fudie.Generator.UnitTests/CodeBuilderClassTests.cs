@@ -245,4 +245,117 @@ public class CodeBuilderClassTests
     }
 
     #endregion
+
+    #region Container Interface Tests
+
+    [Fact]
+    public void GenerateRepositoryClass_WithContainerInterface_ShouldImplementContainerInterface()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true,
+            ContainerInterfaceName = "IRepository",
+            ContainerInterfaceFullName = "CreateIngredient.IRepository",
+            BaseInterfaceNames = new List<string> { "IAdd<Ingredient>" }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CreateIngredient_Repository",
+            "MyApp.Features.Ingredients.Commands",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - uses ContainerInterfaceFullName for implementation
+        result.Should().Contain("public class CreateIngredient_Repository : CreateIngredient.IRepository");
+        result.Should().NotContain("public class CreateIngredient_Repository : IAdd<Ingredient>");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithContainerInterface_ShouldGenerateMultipleInjectableAttributes()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true,
+            ContainerInterfaceName = "IRepository",
+            ContainerInterfaceFullName = "CreateIngredient.IRepository",
+            BaseInterfaceNames = new List<string> { "IAdd<Ingredient>" }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CreateIngredient_Repository",
+            "MyApp.Features.Ingredients.Commands",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithMultipleBaseInterfaces_ShouldGenerateInjectableForEach()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIGet = true,
+            ImplementIAdd = true,
+            ImplementIRemove = true,
+            ContainerInterfaceName = "ICustomerRepository",
+            ContainerInterfaceFullName = "ICustomerRepository",
+            BaseInterfaceNames = new List<string>
+            {
+                "IGet<Customer, Guid>",
+                "IAdd<Customer>",
+                "IRemove<Customer, Guid>"
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert - should have 4 Injectable attributes (1 container + 3 base)
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithoutContainerInterface_ShouldUseLegacyBehavior()
+    {
+        // Arrange - without ContainerInterfaceName (legacy behavior)
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true,
+            ImplementIGet = true,
+            // No ContainerInterfaceName set
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert - should use legacy behavior (single Injectable without ServiceType)
+        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        result.Should().NotContain("ServiceType = typeof");
+        result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>, IAdd<Customer>");
+    }
+
+    #endregion
 }

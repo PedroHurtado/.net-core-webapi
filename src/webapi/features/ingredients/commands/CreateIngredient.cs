@@ -46,24 +46,27 @@ public class CreateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IAdd<Ingredient> repository, IUnitOfWork unitOfWork) : IService
+    public class Service(IRepository repository,
+    IUnitOfWork unitOfWork) : IService
     {
 
+        /*private readonly IRepository _repo2=repo2;
         private readonly IAdd<Ingredient> _repository = repository;
-        private readonly IUnitOfWork _unifOfWork = unitOfWork;
+        private readonly IUnitOfWork _unifOfWork = unitOfWork;*/
 
         public async Task<Response> HandlerAsync(Request request)
-        {
+        {            
+            
             var ingredient = Ingredient.Create(
                 Guid.NewGuid(),
                 request.Name,
                 request.Cost
             ).ValueOrThrow();
 
-            _repository.Add(ingredient);
+            repository.Add(ingredient);
 
 
-            await _unifOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             return new Response(ingredient.Id, ingredient.Name, ingredient.Cost);
         }

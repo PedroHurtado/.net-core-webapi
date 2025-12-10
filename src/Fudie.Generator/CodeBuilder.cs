@@ -302,24 +302,47 @@ internal static class CodeBuilder
         sb.AppendLine($"namespace {namespaceName};");
         sb.AppendLine();
 
-        // Class declaration
-        sb.AppendLine("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        // Build list of interfaces for both inheritance and Injectable attributes
+        var baseInterfaces = new List<string>();
+        if (config.ImplementIGet)
+            baseInterfaces.Add($"IGet<{entityTypeName}, {idTypeName}>");
+        if (config.ImplementIAdd)
+            baseInterfaces.Add($"IAdd<{entityTypeName}>");
+        if (config.ImplementIUpdate)
+            baseInterfaces.Add($"IUpdate<{entityTypeName}, {idTypeName}>");
+        if (config.ImplementIRemove)
+            baseInterfaces.Add($"IRemove<{entityTypeName}, {idTypeName}>");
+
+        // Class declaration with [Injectable] attributes
+        if (!string.IsNullOrEmpty(config.ContainerInterfaceFullName))
+        {
+            // Generate multiple [Injectable] with ServiceType
+            // First for the container interface
+            sb.AppendLine($"[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({config.ContainerInterfaceFullName}))]");
+
+            // Then for each base interface
+            foreach (var baseInterface in config.BaseInterfaceNames)
+            {
+                sb.AppendLine($"[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({baseInterface}))]");
+            }
+        }
+        else
+        {
+            // Legacy behavior: single [Injectable] without ServiceType
+            sb.AppendLine("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        }
+
         sb.Append($"public class {className}");
 
-        // Interfaces
-        var interfaces = new List<string>();
-        if (config.ImplementIGet)
-            interfaces.Add($"IGet<{entityTypeName}, {idTypeName}>");
-        if (config.ImplementIAdd)
-            interfaces.Add($"IAdd<{entityTypeName}>");
-        if (config.ImplementIUpdate)
-            interfaces.Add($"IUpdate<{entityTypeName}, {idTypeName}>");
-        if (config.ImplementIRemove)
-            interfaces.Add($"IRemove<{entityTypeName}, {idTypeName}>");
-
-        if (interfaces.Any())
+        // Implement container interface if available, otherwise base interfaces
+        // Use full name for nested interfaces to resolve correctly
+        if (!string.IsNullOrEmpty(config.ContainerInterfaceFullName))
         {
-            sb.Append($" : {string.Join(", ", interfaces)}");
+            sb.Append($" : {config.ContainerInterfaceFullName}");
+        }
+        else if (baseInterfaces.Any())
+        {
+            sb.Append($" : {string.Join(", ", baseInterfaces)}");
         }
 
         sb.AppendLine();
@@ -563,5 +586,21 @@ internal static class CodeBuilder
         public List<QueryMethodInfo> QueryMethods { get; set; } = new();
 
         public IEnumerable<string> AdditionalUsings { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Nombre de la interfaz contenedora para implementar (ej: "IRepository", "ICustomerRepository")
+        /// </summary>
+        public string? ContainerInterfaceName { get; set; }
+
+        /// <summary>
+        /// Nombre completo de la interfaz contenedora para typeof() (ej: "CreateIngredient.IRepository")
+        /// </summary>
+        public string? ContainerInterfaceFullName { get; set; }
+
+        /// <summary>
+        /// Lista de interfaces base con sus nombres completos para los [Injectable] adicionales
+        /// (ej: "IAdd&lt;Ingredient&gt;", "IGet&lt;Ingredient, Guid&gt;")
+        /// </summary>
+        public List<string> BaseInterfaceNames { get; set; } = new();
     }
 }
