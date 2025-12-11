@@ -6,7 +6,7 @@
 
 ## 🎯 Objetivo
 
-Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge. **Encapsulación real** con `private set`.
+Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge. **Encapsulación real** con `protected set`.
 
 ---
 
@@ -21,6 +21,14 @@ Domain/[Aggregate]/
 │   └── [ValueObject].cs        ← Objetos de valor
 └── Enums/
     └── [Enum].cs               ← Enumeraciones
+
+Tests/
+├── Helpers/
+│   └── Testables/
+│       └── Testable[Entity].cs ← Helper para tests de validadores
+└── Domain/
+    ├── [Entity]ValidatorTests.cs
+    └── [Entity]_[Action]Tests.cs
 ```
 
 **Naming de archivos**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`, `Menu_Activate.cs`
@@ -36,8 +44,8 @@ public partial class Foo : Entity
     protected Foo() { }                    // ← EF Core
     public Foo(Guid id) : base(id) { }     // ← Creación
     
-    public string Name { get; private set; }       // ← Encapsulado
-    public HashSet<Bar> Bars { get; private set; } = [];
+    public string Name { get; protected set; }       // ← Encapsulado
+    public HashSet<Bar> Bars { get; protected set; } = [];
 }
 
 public class FooValidator : AbstractValidator<Foo>
@@ -52,7 +60,7 @@ public class FooValidator : AbstractValidator<Foo>
 **Reglas**:
 - ✅ `partial class` para permitir comandos en archivos separados
 - ✅ Dos constructores (protected + public con Guid)
-- ✅ Propiedades `{ get; private set; }` encapsuladas
+- ✅ Propiedades `{ get; protected set; }` encapsuladas
 - ✅ Colecciones: `HashSet<T>` con inicializador `= []`
 - ✅ Validator en mismo archivo, clase separada
 - ❌ NO lógica de negocio en la entidad
@@ -122,7 +130,7 @@ public partial class Menu
     {
         protected override Menu Handle(Menu entity, UpdateMenuCommand command)
         {
-            entity.Name = command.Name;           // ✅ Accede a private set
+            entity.Name = command.Name;           // ✅ Accede a protected set
             entity.Description = command.Description;
             entity.UpdatedAt = DateTime.UtcNow;
 
@@ -138,7 +146,7 @@ public partial class Menu
 - ✅ `[Injectable(ServiceLifetime.Singleton)]` - comandos son stateless
 - ✅ Hereda de `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>` o `AbstractModifyCommand<>`
 - ✅ Implementa `Handle()` con la lógica de negocio
-- ✅ Acceso a `private set` por ser clase anidada
+- ✅ Acceso a `protected set` por ser clase anidada
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
@@ -208,12 +216,12 @@ var entity = menuCreate
 
 ## 🔒 Encapsulación Real
 
-Las clases anidadas en C# tienen acceso a miembros `private` de la clase contenedora:
+Las clases anidadas en C# tienen acceso a miembros `protected` de la clase contenedora:
 ```csharp
 // Menu.cs
 public partial class Menu : Entity
 {
-    public string Name { get; private set; }  // ← private set
+    public string Name { get; protected set; }  // ← protected set
 }
 
 // Menu_Update.cs
@@ -230,8 +238,117 @@ public partial class Menu
 }
 
 // En Handler (fuera de Menu)
-menu.Name = "Hack";  // ❌ No compila - private set
+menu.Name = "Hack";  // ❌ No compila - protected set
 ```
+
+---
+
+## 🧪 Testing
+
+### Estructura de Tests
+```
+Tests/
+├── Helpers/
+│   └── Testables/
+│       ├── TestableMenu.cs
+│       └── TestableMenuCategory.cs
+└── Domain/
+    ├── MenuValidatorTests.cs
+    ├── Menu_CreateTests.cs
+    └── Menu_UpdateTests.cs
+```
+
+### Testable Helpers
+
+Para testear validadores de forma aislada, crear clases que heredan de la Entity con FluentInterface. Solo implementar métodos `With*` para propiedades que están en el validador.
+```csharp
+// Tests/Helpers/Testables/TestableMenu.cs
+public class TestableMenu : Menu
+{
+    public TestableMenu() : base(Guid.NewGuid()) { }
+    
+    // Solo propiedades validadas en MenuValidator
+    public TestableMenu WithName(string name)
+    {
+        Name = name;
+        return this;
+    }
+    
+    public TestableMenu WithDisplayOrder(int order)
+    {
+        DisplayOrder = order;
+        return this;
+    }
+}
+```
+
+### Tests de Validador
+```csharp
+public class MenuValidatorTests
+{
+    private readonly MenuValidator _validator = new();
+
+    [Fact]
+    public void Name_Empty_ShouldFail()
+    {
+        var menu = new TestableMenu()
+            .WithName("");
+        
+        var result = _validator.Validate(menu);
+        
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "Name");
+    }
+
+    [Fact]
+    public void Name_Valid_ShouldPass()
+    {
+        var menu = new TestableMenu()
+            .WithName("Menú del día");
+        
+        var result = _validator.Validate(menu);
+        
+        result.IsValid.Should().BeTrue();
+    }
+}
+```
+
+### Tests de Commands
+```csharp
+public class Menu_CreateTests
+{
+    [Fact]
+    public void Create_ValidCommand_ShouldReturnMenu()
+    {
+        var command = new CreateMenuCommand("Menú del día", "Descripción", 1);
+        var createMenu = new Menu.Create(new MenuValidator());
+        
+        var menu = createMenu
+            .Create(command)
+            .GetEntity();
+        
+        menu.Name.Should().Be("Menú del día");
+    }
+
+    [Fact]
+    public void Create_EmptyName_ShouldThrow()
+    {
+        var command = new CreateMenuCommand("", null, 0);
+        var createMenu = new Menu.Create(new MenuValidator());
+        
+        var act = () => createMenu.Create(command).GetEntity();
+        
+        act.Should().Throw<ValidationException>();
+    }
+}
+```
+
+### Orden de Tests
+
+1. **Fase 1**: Tests de Validadores (con Testable helpers)
+2. **Fase 2**: Tests de Commands (en paralelo, cada dev sus commands)
+
+Esto garantiza independencia de equipos: el validador funciona antes de que existan los commands.
 
 ---
 
@@ -301,20 +418,24 @@ app.MapPut("/menus/{id}", async (
 3. Entity hoja     (sin hijos)
 4. Entity padre    (con colecciones)
 5. Aggregate Root  (partial class)
+6. Testable helpers
+7. Tests de Validators
 ```
 
 **Objetivo**: 
 - Validar Domain Specification contra código real
 - Todo el equipo conoce el dominio antes de desarrollar
 - Detectar errores de diseño temprano
+- Validadores testeados y funcionando
 
-**Entregable**: PR con modelo completo + tests → Code Review conjunto
+**Entregable**: PR con modelo completo + tests de validadores → Code Review conjunto
 
 ---
 
 ### Fase 2: Commands (EN PARALELO)
 ```
-6. Commands        (cada dev toma uno o más)
+8. Commands        (cada dev toma uno o más)
+9. Tests de Commands
 ```
 
 Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
@@ -340,17 +461,23 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 | `List<T>` en colecciones | Usar `HashSet<T>` |
 | `[Injectable]` sin Singleton | Usar `[Injectable(ServiceLifetime.Singleton)]` |
 | Command fuera de la Entity | Usar `partial class` + clase anidada |
-| `{ get; set; }` público | Usar `{ get; private set; }` |
+| `{ get; set; }` público | Usar `{ get; protected set; }` |
+| `new` en Testable helper | Usar métodos `With*` que asignan a la propiedad base |
 
 ---
 
 ## 📝 Checklist antes de PR
 
+### Fase 1: Modelo
 - [ ] Entity es `partial class`
 - [ ] Entity tiene dos constructores
-- [ ] Entity usa `{ get; private set; }`
+- [ ] Entity usa `{ get; protected set; }`
 - [ ] Validator en mismo archivo que Entity
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
+- [ ] Testable helper creado con métodos `With*`
+- [ ] Tests de Validator pasan
+
+### Fase 2: Commands
 - [ ] Command es clase anidada en `partial class`
 - [ ] Command tiene `[Injectable(ServiceLifetime.Singleton)]`
 - [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<>`
@@ -359,7 +486,7 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 - [ ] Command usa Guards apropiados (404/409/422)
 - [ ] Command retorna entidad validada
 - [ ] Handler usa API fluent completa
-- [ ] Tests cubren casos éxito y fallo
+- [ ] Tests de Command cubren éxito y fallo
 - [ ] Archivo nombrado `[Entity]_[Action].cs`
 
 ---

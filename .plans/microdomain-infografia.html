@@ -72,7 +72,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-emerald-400">→</span>
-                        <span>Encapsulación real con private set</span>
+                        <span>Encapsulación real con protected set</span>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@
                         <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
                             <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-cyan-300">Menu</span> : Entity
 {
-    <span class="text-purple-400">public</span> <span class="text-blue-300">string</span> Name { <span class="text-purple-400">get</span>; <span class="text-red-400">private set</span>; }
+    <span class="text-purple-400">public</span> <span class="text-blue-300">string</span> Name { <span class="text-purple-400">get</span>; <span class="text-amber-400">protected set</span>; }
 }</code></pre>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <div class="mt-6 text-center">
-                    <p class="text-slate-400">Las clases anidadas acceden a <code class="text-red-400">private set</code> de su contenedora</p>
+                    <p class="text-slate-400">Las clases anidadas acceden a <code class="text-amber-400">protected set</code> de su contenedora</p>
                 </div>
             </div>
         </section>
@@ -119,8 +119,8 @@
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-cyan-500/50 transition-colors">
                     <div class="text-3xl mb-3">📋</div>
                     <h3 class="font-bold text-lg mb-2">Entity</h3>
-                    <p class="text-slate-400 text-sm mb-3">partial + private set</p>
-                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">{ get; private set; }</code>
+                    <p class="text-slate-400 text-sm mb-3">partial + protected set</p>
+                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">{ get; protected set; }</code>
                 </div>
                 
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-purple-500/50 transition-colors">
@@ -208,6 +208,44 @@
             </div>
         </section>
 
+        <!-- Testing -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🧪 Testing con Testable Helpers</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-pink-500/30">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-pink-400">TestableMenu.cs</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public class</span> <span class="text-pink-300">TestableMenu</span> : Menu
+{
+    <span class="text-purple-400">public</span> TestableMenu() : <span class="text-cyan-400">base</span>(Guid.NewGuid()) { }
+    
+    <span class="text-purple-400">public</span> TestableMenu <span class="text-amber-300">WithName</span>(<span class="text-blue-300">string</span> name)
+    {
+        Name = name; <span class="text-green-400">// ✅ Herencia</span>
+        <span class="text-purple-400">return this</span>;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-emerald-400">MenuValidatorTests.cs</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">var</span> menu = <span class="text-purple-400">new</span> <span class="text-pink-300">TestableMenu</span>()
+    .<span class="text-amber-300">WithName</span>(<span class="text-green-300">""</span>);
+
+<span class="text-purple-400">var</span> result = validator.Validate(menu);
+
+result.IsValid.Should().BeFalse();</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <p class="text-slate-400">Herencia + FluentInterface = Tests de Validators sin Commands</p>
+                </div>
+            </div>
+        </section>
+
         <!-- Guards -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🛡️ Guards de Validación</h2>
@@ -268,6 +306,12 @@
                             <div class="flex items-center gap-2 text-slate-300">
                                 <span class="text-emerald-400">⑤</span> Aggregate Root (partial)
                             </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-pink-400">⑥</span> Testable Helpers
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-pink-400">⑦</span> Tests de Validators
+                            </div>
                         </div>
                         <div class="mt-4 ml-10 text-amber-400 text-sm">
                             ⏱️ ~5 minutos de cuello de botella
@@ -282,16 +326,16 @@
                         </h3>
                         <div class="space-y-2 ml-10">
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-cyan-400">Dev A</span> → Menu_Create.cs
+                                <span class="text-cyan-400">Dev A</span> → Menu_Create.cs + Tests
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-purple-400">Dev B</span> → Menu_Update.cs
+                                <span class="text-purple-400">Dev B</span> → Menu_Update.cs + Tests
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-amber-400">Dev C</span> → Menu_AddCategory.cs
+                                <span class="text-amber-400">Dev C</span> → Menu_AddCategory.cs + Tests
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-emerald-400">Dev D</span> → Menu_Activate.cs
+                                <span class="text-emerald-400">Dev D</span> → Menu_Activate.cs + Tests
                             </div>
                         </div>
                         <div class="mt-4 ml-10 text-emerald-400 text-sm">
@@ -306,30 +350,36 @@
         <!-- Beneficios -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🎯 Beneficios</h2>
-            <div class="grid md:grid-cols-4 gap-6">
+            <div class="grid md:grid-cols-5 gap-4">
                 
                 <div class="text-center">
-                    <div class="text-5xl mb-4">🧩</div>
-                    <h3 class="font-bold text-lg mb-2">Un Archivo</h3>
-                    <p class="text-slate-400 text-sm">Un comando por archivo</p>
+                    <div class="text-4xl mb-3">🧩</div>
+                    <h3 class="font-bold text-sm mb-1">Un Archivo</h3>
+                    <p class="text-slate-400 text-xs">Por comando</p>
                 </div>
                 
                 <div class="text-center">
-                    <div class="text-5xl mb-4">🔒</div>
-                    <h3 class="font-bold text-lg mb-2">Type-Safe</h3>
-                    <p class="text-slate-400 text-sm">Compilador fuerza flujo</p>
+                    <div class="text-4xl mb-3">🔒</div>
+                    <h3 class="font-bold text-sm mb-1">Type-Safe</h3>
+                    <p class="text-slate-400 text-xs">Compilador fuerza</p>
                 </div>
                 
                 <div class="text-center">
-                    <div class="text-5xl mb-4">🛡️</div>
-                    <h3 class="font-bold text-lg mb-2">Encapsulado</h3>
-                    <p class="text-slate-400 text-sm">private set real</p>
+                    <div class="text-4xl mb-3">🛡️</div>
+                    <h3 class="font-bold text-sm mb-1">Encapsulado</h3>
+                    <p class="text-slate-400 text-xs">protected set</p>
                 </div>
                 
                 <div class="text-center">
-                    <div class="text-5xl mb-4">⚡</div>
-                    <h3 class="font-bold text-lg mb-2">Singleton</h3>
-                    <p class="text-slate-400 text-sm">Builders efímeros</p>
+                    <div class="text-4xl mb-3">⚡</div>
+                    <h3 class="font-bold text-sm mb-1">Singleton</h3>
+                    <p class="text-slate-400 text-xs">Builders efímeros</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl mb-3">🧪</div>
+                    <h3 class="font-bold text-sm mb-1">Testable</h3>
+                    <p class="text-slate-400 text-xs">Sin Commands</p>
                 </div>
                 
             </div>
