@@ -117,13 +117,13 @@ public class UpdateFoo(
     IValidator<Foo> fooValidator
 ) : IModifyCommand<UpdateFooCommand, Foo>
 {
-    public Foo Execute(Foo entity, UpdateFooCommand command)
+    public void Execute(Foo entity, UpdateFooCommand command)
     {
         entity.Name = command.Name;
         entity.Description = command.Description;
         entity.UpdatedAt = DateTime.UtcNow;
 
-        return fooValidator.ValidateOrThrow(entity);
+        fooValidator.ValidateOrThrow(entity);
     }
 }
 ```
@@ -133,7 +133,8 @@ public class UpdateFoo(
 - ✅ `[Injectable]` en la clase
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
 - ✅ Implementa `ICreateCommand<,>`, `IModifyCommand<,>` o `IModifyCommand<>`
-- ✅ Retorna `TEntity` directamente (no Result)
+- ✅ `IModifyCommand` retorna `void` (CQS puro, modifica por referencia)
+- ✅ `ICreateCommand` retorna `TEntity` (crea algo nuevo)
 - ✅ Lanza excepciones si falla
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
@@ -155,8 +156,20 @@ public class UpdateFoo(
 | Interfaz | Firma | Uso |
 |----------|-------|-----|
 | `ICreateCommand<TCmd, TEntity>` | `TEntity Execute(TCmd command)` | Crear entidad nueva |
-| `IModifyCommand<TCmd, TEntity>` | `TEntity Execute(TEntity entity, TCmd command)` | Modificar existente |
-| `IModifyCommand<TEntity>` | `TEntity Execute(TEntity entity)` | Modificar sin comando |
+| `IModifyCommand<TCmd, TEntity>` | `void Execute(TEntity entity, TCmd command)` | Modificar existente |
+| `IModifyCommand<TEntity>` | `void Execute(TEntity entity)` | Modificar sin datos |
+
+### Default Methods Async
+
+Las interfaces `IModifyCommand` incluyen métodos default para uso fluent con repositorios:
+```csharp
+// En lugar de:
+var entity = await repo.Get(id);
+updateFoo.Execute(entity, cmd);
+
+// Puedes usar:
+await updateFoo.ExecuteAsync(repo.Get(id), cmd);
+```
 
 ---
 
@@ -186,23 +199,40 @@ public class UpdateFoo(
 3. **Validar estructuralmente** con `validator.ValidateOrThrow()`
 4. **Validar conflictos** con `ConflictGuard.ThrowIf()`
 5. **Modificar** estado del agregado
-6. **Retornar** agregado validado con `aggregateValidator.ValidateOrThrow()`
+6. **Validar** agregado con `aggregateValidator.ValidateOrThrow()`
 
 ---
 
 ## 🔄 Flujo en Handler
+
+### Opción A: Tradicional
 ```csharp
 app.MapPut("/foos/{id}", async (
     Guid id,
     UpdateFooCommand cmd,
     UpdateFoo updateFoo,
-    IGetOrThrowAsync repo,
+    IGet<Foo, Guid> repo,
     IUnitOfWork uow) =>
 {
-    var entity = await repo.GetOrThrowAsync<Foo, Guid>(id); // 1. Obtener (404 si no existe)
-    var updated = updateFoo.Execute(entity, cmd);           // 2. Ejecutar (422/409 si falla)
-    await uow.SaveChangesAsync();                           // 3. Persistir
-    return Results.Ok(MapToResponse(updated));              // 4. Responder
+    var entity = await repo.Get(id);          // 1. Obtener
+    updateFoo.Execute(entity, cmd);           // 2. Ejecutar (modifica por referencia)
+    await uow.SaveChangesAsync();             // 3. Persistir
+    return Results.Ok(MapToResponse(entity)); // 4. Responder
+});
+```
+
+### Opción B: Fluent con ExecuteAsync
+```csharp
+app.MapPut("/foos/{id}", async (
+    Guid id,
+    UpdateFooCommand cmd,
+    UpdateFoo updateFoo,
+    IGet<Foo, Guid> repo,
+    IUnitOfWork uow) =>
+{
+    await updateFoo.ExecuteAsync(repo.Get(id), cmd); // 1+2. Obtener y ejecutar
+    await uow.SaveChangesAsync();                    // 3. Persistir
+    return Results.NoContent();                      // 4. Responder
 });
 ```
 
@@ -254,6 +284,7 @@ app.MapPut("/foos/{id}", async (
 | Usar `try-catch` para validaciones | Usar Guards apropiados |
 | Duplicado → ValidationGuard (422) | Usar ConflictGuard (409) |
 | `List<T>` en colecciones | Usar `HashSet<T>` |
+| Retornar entidad en IModifyCommand | Es `void`, modifica por referencia |
 
 ---
 
@@ -265,7 +296,8 @@ app.MapPut("/foos/{id}", async (
 - [ ] Command tiene `[Injectable]`
 - [ ] Command inyecta validators (no usa `new`)
 - [ ] Command usa Guards apropiados (404/409/422)
-- [ ] Command retorna entidad validada
+- [ ] IModifyCommand retorna `void`
+- [ ] ICreateCommand retorna la entidad creada
 - [ ] Tests cubren casos éxito y fallo
 - [ ] Archivo nombrado `[Aggregate]_[Action].cs`
 
