@@ -528,6 +528,120 @@ public class InjectionExtensionTests
 
     #endregion
 
+    #region AddInjectables Tests - Classes Inheriting from Abstract Generic Classes
+
+    [Fact]
+    public void AddInjectables_WithGenericAbstractClass_ShouldNotRegister()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(AbstractCommand<>).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().NotContain(sd => sd.ImplementationType == typeof(AbstractCommand<>));
+        services.Should().NotContain(sd => sd.ImplementationType == typeof(AbstractCommand<,>));
+    }
+
+    [Fact]
+    public void AddInjectables_WithConcreteClassInheritingFromAbstract_ShouldRegisterConcreteClass()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithoutData).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().Contain(sd => sd.ServiceType == typeof(ConcreteCommandWithoutData));
+    }
+
+    [Fact]
+    public void AddInjectables_WithConcreteClassInheritingFromGenericAbstract_ShouldRegisterAsSingleton()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithData).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        var descriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(ConcreteCommandWithData));
+        descriptor.Should().NotBeNull();
+        descriptor!.Lifetime.Should().Be(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public void AddInjectables_WithMultipleConcreteClassesInheritingFromSameAbstract_ShouldRegisterAll()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithoutData).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        services.Should().Contain(sd => sd.ServiceType == typeof(ConcreteCommandWithoutData));
+        services.Should().Contain(sd => sd.ServiceType == typeof(AnotherConcreteCommand));
+    }
+
+    [Fact]
+    public void AddInjectables_WithConcreteClassInheritingFromAbstract_ShouldNotRegisterAbstractBaseType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithoutData).Assembly;
+
+        // Act
+        services.AddInjectables(assembly);
+
+        // Assert
+        // Should not register the closed generic abstract type
+        var abstractType = typeof(AbstractCommand<TestEntityClass>);
+        services.Should().NotContain(sd => sd.ServiceType == abstractType);
+    }
+
+    [Fact]
+    public void Integration_ConcreteCommandInheritingFromAbstract_ShouldResolve()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithoutData).Assembly;
+        services.AddInjectables(assembly);
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var command = provider.GetService<ConcreteCommandWithoutData>();
+
+        // Assert
+        command.Should().NotBeNull();
+        command.Should().BeOfType<ConcreteCommandWithoutData>();
+    }
+
+    [Fact]
+    public void Integration_ConcreteCommandWithDataInheritingFromAbstract_ShouldResolve()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var assembly = typeof(ConcreteCommandWithData).Assembly;
+        services.AddInjectables(assembly);
+        var provider = services.BuildServiceProvider();
+
+        // Act
+        var command = provider.GetService<ConcreteCommandWithData>();
+
+        // Assert
+        command.Should().NotBeNull();
+        command.Should().BeOfType<ConcreteCommandWithData>();
+    }
+
+    #endregion
+
     #region Integration Tests
 
     [Fact]
@@ -664,6 +778,41 @@ public class InjectionExtensionTests
 
     [Injectable(ServiceType = typeof(IExplicitService))]
     private class ServiceWithExplicitType : IExplicitService, INotExplicitService { }
+
+    // Abstract base classes for testing inheritance scenarios
+    private abstract class AbstractCommand<TEntity> where TEntity : class
+    {
+        public abstract TEntity Execute(TEntity entity);
+    }
+
+    private abstract class AbstractCommand<TCommand, TEntity>
+        where TCommand : class
+        where TEntity : class
+    {
+        public abstract TEntity Execute(TEntity entity, TCommand command);
+    }
+
+    // Concrete implementations inheriting from abstract classes
+    private record TestCommandData(string Value);
+    private class TestEntityClass { public string Name { get; set; } = ""; }
+
+    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    private class ConcreteCommandWithoutData : AbstractCommand<TestEntityClass>
+    {
+        public override TestEntityClass Execute(TestEntityClass entity) => entity;
+    }
+
+    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    private class ConcreteCommandWithData : AbstractCommand<TestCommandData, TestEntityClass>
+    {
+        public override TestEntityClass Execute(TestEntityClass entity, TestCommandData command) => entity;
+    }
+
+    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    private class AnotherConcreteCommand : AbstractCommand<TestEntityClass>
+    {
+        public override TestEntityClass Execute(TestEntityClass entity) => entity;
+    }
 
     #endregion
 }
