@@ -243,12 +243,12 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         var includePaths = ExtractIncludePaths(interfaceSymbol, entitySymbol, compilation, context);
 
         // Extraer atributos de tracking
-        var asNoTracking = HasAttribute(interfaceSymbol, "Fudie.Attributes.AsNoTrackingAttribute") ||
-                          HasAttribute(interfaceSymbol, "Fudie.Attributes.TrackingAttribute") &&
+        var asNoTracking = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.AsNoTrackingAttribute") ||
+                          HasAttribute(interfaceSymbol, "Fudie.Infrastructure.TrackingAttribute") &&
                            GetTrackingAttributeValue(interfaceSymbol) == false;
 
-        var asSplitQuery = HasAttribute(interfaceSymbol, "Fudie.Attributes.AsSplitQueryAttribute");
-        var ignoreQueryFilters = HasAttribute(interfaceSymbol, "Fudie.Attributes.IgnoreQueryFiltersAttribute");
+        var asSplitQuery = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.AsSplitQueryAttribute");
+        var ignoreQueryFilters = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.IgnoreQueryFiltersAttribute");
 
         // Extraer query methods
         var queryMethods = ExtractQueryMethods(interfaceSymbol, entitySymbol, context);

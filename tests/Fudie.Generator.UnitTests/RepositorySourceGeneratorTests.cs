@@ -78,10 +78,7 @@ namespace Fudie.Infrastructure
     public interface IRemove<T, ID> : IGet<T, ID> { }
     public interface IEntityLookup { }
     public interface IChangeTracker { }
-}
 
-namespace Fudie.Attributes
-{
     [System.AttributeUsage(System.AttributeTargets.Interface, AllowMultiple = true)]
     public class IncludeAttribute : System.Attribute
     {

@@ -35,8 +35,9 @@ public class GetIngredient : IFeatureModule
        .Produces<Response>(StatusCodes.Status200OK)
        .Produces<CustomProblemDetails>(StatusCodes.Status404NotFound);
     }
+    [AsNoTracking]
     public interface IRepository:IGet<Ingredient,Guid>{}
-    
+
     /*[Injectable]
     public class Repository(IEntityLookup repository) : IGet<Ingredient, Guid>
     {

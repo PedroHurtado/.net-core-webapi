@@ -136,7 +136,7 @@ internal static class CodeBuilder
 
         sb.AppendLine($"public async Task<{entityTypeName}> Get({idTypeName} id)");
         sb.AppendLine("{");
-        sb.AppendLine($"    var query = _entityLookup.Set<{entityTypeName}>();");
+        sb.AppendLine($"    IQueryable<{entityTypeName}> query = _entityLookup.Set<{entityTypeName}>();");
         sb.AppendLine();
 
         // Includes
@@ -231,7 +231,7 @@ internal static class CodeBuilder
 
         sb.AppendLine($"public async Task<{entityTypeName}> Get({idTypeName} id)");
         sb.AppendLine("{");
-        sb.AppendLine($"    var query = _entityLookup.Set<{entityTypeName}>();  // Tracking habilitado para updates");
+        sb.AppendLine($"    IQueryable<{entityTypeName}> query = _entityLookup.Set<{entityTypeName}>();  // Tracking habilitado para updates");
         sb.AppendLine();
 
         // Includes
