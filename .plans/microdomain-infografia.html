@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicroDomain - Infografía</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+        .card-gradient { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); }
+        .accent-gradient { background: linear-gradient(90deg, #06b6d4 0%, #3b82f6 100%); }
+        .flow-line { border-left: 3px dashed #06b6d4; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white p-8">
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="inline-block accent-gradient text-transparent bg-clip-text">
+                <h1 class="text-5xl font-extrabold mb-2">MicroDomain</h1>
+            </div>
+            <p class="text-xl text-cyan-300 font-medium">Patrón de Dominio para Equipos Paralelos</p>
+            <p class="text-slate-400 mt-2">Máximo paralelismo • Cero conflictos • Type-safe</p>
+        </header>
+
+        <!-- Problema vs Solución -->
+        <section class="grid md:grid-cols-2 gap-6 mb-12">
+            <div class="card-gradient rounded-2xl p-6 border border-red-500/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">❌</span>
+                    <h2 class="text-xl font-bold text-red-400">DDD Tradicional</h2>
+                </div>
+                <div class="space-y-3 text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <span class="text-red-400">→</span>
+                        <span>Entity con 500+ líneas</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-red-400">→</span>
+                        <span>Conflictos de merge constantes</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-red-400">→</span>
+                        <span>Cuello de botella en desarrollo</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-red-400">→</span>
+                        <span>Lógica mezclada con estado</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-gradient rounded-2xl p-6 border border-emerald-500/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-3xl">✅</span>
+                    <h2 class="text-xl font-bold text-emerald-400">MicroDomain</h2>
+                </div>
+                <div class="space-y-3 text-slate-300">
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">→</span>
+                        <span>Entity = DTO simple (~50 líneas)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">→</span>
+                        <span>Un comando = Un archivo</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">→</span>
+                        <span>Paralelismo total en equipo</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">→</span>
+                        <span>Lógica aislada en Commands</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Componentes -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">📦 Componentes</h2>
+            <div class="grid md:grid-cols-4 gap-4">
+                
+                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-cyan-500/50 transition-colors">
+                    <div class="text-3xl mb-3">📋</div>
+                    <h3 class="font-bold text-lg mb-2">Entity</h3>
+                    <p class="text-slate-400 text-sm mb-3">DTO con identidad</p>
+                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">{ get; set; }</code>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-purple-500/50 transition-colors">
+                    <div class="text-3xl mb-3">💎</div>
+                    <h3 class="font-bold text-lg mb-2">ValueObject</h3>
+                    <p class="text-slate-400 text-sm mb-3">Record inmutable</p>
+                    <code class="text-xs text-purple-300 bg-slate-800 px-2 py-1 rounded">Create() factory</code>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-amber-500/50 transition-colors">
+                    <div class="text-3xl mb-3">✅</div>
+                    <h3 class="font-bold text-lg mb-2">Validator</h3>
+                    <p class="text-slate-400 text-sm mb-3">FluentValidation</p>
+                    <code class="text-xs text-amber-300 bg-slate-800 px-2 py-1 rounded">Mismo archivo</code>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-emerald-500/50 transition-colors">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <h3 class="font-bold text-lg mb-2">Command</h3>
+                    <p class="text-slate-400 text-sm mb-3">Lógica de negocio</p>
+                    <code class="text-xs text-emerald-300 bg-slate-800 px-2 py-1 rounded">Handle()</code>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- API Fluent -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔗 API Fluent Type-Safe</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-slate-700">
+                <div class="flex flex-wrap justify-center items-center gap-4 text-lg">
+                    <div class="bg-blue-600 px-4 py-2 rounded-lg font-mono font-bold">Find()</div>
+                    <span class="text-cyan-400 text-2xl">→</span>
+                    <div class="bg-purple-600 px-4 py-2 rounded-lg font-mono font-bold">Execute()</div>
+                    <span class="text-cyan-400 text-2xl">→</span>
+                    <div class="bg-emerald-600 px-4 py-2 rounded-lg font-mono font-bold">Save()</div>
+                    <span class="text-cyan-400 text-2xl">→</span>
+                    <div class="bg-amber-600 px-4 py-2 rounded-lg font-mono font-bold">GetEntity()</div>
+                </div>
+                <p class="text-center text-slate-400 mt-6">El compilador fuerza el orden correcto</p>
+                
+                <div class="mt-8 bg-slate-900 rounded-xl p-6 overflow-x-auto">
+                    <pre class="text-sm"><code class="text-slate-300"><span class="text-slate-500">// El compilador garantiza el flujo</span>
+<span class="text-purple-400">var</span> menu = <span class="text-cyan-400">await</span> updateMenu
+    .<span class="text-blue-400">Find</span>(repository.Get(id))
+    .<span class="text-purple-400">Execute</span>(command)
+    .<span class="text-emerald-400">Save</span>(uow.SaveChangesAsync)
+    .<span class="text-amber-400">GetEntity</span>();</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clases Base -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🏗️ Clases Base</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                
+                <div class="card-gradient rounded-xl p-6 border border-emerald-500/30">
+                    <h3 class="font-bold text-emerald-400 mb-4">AbstractCreateCommand</h3>
+                    <code class="text-xs text-slate-300 block bg-slate-900 p-3 rounded-lg">
+                        Handle(TCommand command)<br>
+                        <span class="text-slate-500">→ TEntity</span>
+                    </code>
+                    <p class="text-slate-400 text-sm mt-3">Para crear entidades nuevas</p>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-6 border border-blue-500/30">
+                    <h3 class="font-bold text-blue-400 mb-4">AbstractModifyCommand&lt;T&gt;</h3>
+                    <code class="text-xs text-slate-300 block bg-slate-900 p-3 rounded-lg">
+                        Handle(TEntity entity)<br>
+                        <span class="text-slate-500">→ TEntity</span>
+                    </code>
+                    <p class="text-slate-400 text-sm mt-3">Modificar sin datos (activate/deactivate)</p>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-6 border border-purple-500/30">
+                    <h3 class="font-bold text-purple-400 mb-4">AbstractModifyCommand&lt;C,T&gt;</h3>
+                    <code class="text-xs text-slate-300 block bg-slate-900 p-3 rounded-lg">
+                        Handle(TEntity, TCommand)<br>
+                        <span class="text-slate-500">→ TEntity</span>
+                    </code>
+                    <p class="text-slate-400 text-sm mt-3">Modificar con datos</p>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- Guards -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🛡️ Guards de Validación</h2>
+            <div class="grid md:grid-cols-4 gap-4">
+                
+                <div class="card-gradient rounded-xl p-5 text-center border border-slate-700">
+                    <div class="text-4xl font-bold text-red-400 mb-2">404</div>
+                    <code class="text-xs text-slate-300">NotFoundGuard</code>
+                    <p class="text-slate-500 text-xs mt-2">No existe</p>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 text-center border border-slate-700">
+                    <div class="text-4xl font-bold text-amber-400 mb-2">409</div>
+                    <code class="text-xs text-slate-300">ConflictGuard</code>
+                    <p class="text-slate-500 text-xs mt-2">Duplicado</p>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 text-center border border-slate-700">
+                    <div class="text-4xl font-bold text-orange-400 mb-2">422</div>
+                    <code class="text-xs text-slate-300">ValidationGuard</code>
+                    <p class="text-slate-500 text-xs mt-2">Regla negocio</p>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 text-center border border-slate-700">
+                    <div class="text-4xl font-bold text-blue-400 mb-2">422</div>
+                    <code class="text-xs text-slate-300">ValidateOrThrow</code>
+                    <p class="text-slate-500 text-xs mt-2">Estructural</p>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- Flujo de Desarrollo -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">⚡ Flujo de Desarrollo</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-slate-700">
+                <div class="grid md:grid-cols-2 gap-8">
+                    
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                            <span class="bg-cyan-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                            <span>Fase 1: Modelo</span>
+                            <span class="text-slate-500 text-sm">(Todo el equipo)</span>
+                        </h3>
+                        <div class="space-y-2 ml-10">
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">①</span> Enums
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">②</span> ValueObjects
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">③</span> Entity hoja
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">④</span> Entity padre
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">⑤</span> Aggregate Root
+                            </div>
+                        </div>
+                        <div class="mt-4 ml-10 text-amber-400 text-sm">
+                            ⏱️ ~5 minutos de cuello de botella
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                            <span class="bg-emerald-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                            <span>Fase 2: Commands</span>
+                            <span class="text-slate-500 text-sm">(En paralelo)</span>
+                        </h3>
+                        <div class="space-y-2 ml-10">
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-cyan-400">Dev A</span> → CreateMenu
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-purple-400">Dev B</span> → UpdateMenu
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-amber-400">Dev C</span> → AddCategory
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-300">
+                                <span class="text-emerald-400">Dev D</span> → ActivateMenu
+                            </div>
+                        </div>
+                        <div class="mt-4 ml-10 text-emerald-400 text-sm">
+                            🚀 Cero conflictos de merge
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+
+        <!-- Beneficios -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🎯 Beneficios</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                
+                <div class="text-center">
+                    <div class="text-5xl mb-4">🧩</div>
+                    <h3 class="font-bold text-lg mb-2">Un Comando = Un Archivo</h3>
+                    <p class="text-slate-400">Sin dependencias cruzadas entre desarrolladores</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-5xl mb-4">🔒</div>
+                    <h3 class="font-bold text-lg mb-2">Type-Safe</h3>
+                    <p class="text-slate-400">El compilador fuerza el flujo correcto</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-5xl mb-4">⚡</div>
+                    <h3 class="font-bold text-lg mb-2">Singleton Seguro</h3>
+                    <p class="text-slate-400">Builders efímeros, comandos stateless</p>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-500 border-t border-slate-800 pt-8">
+            <p class="text-lg font-medium text-slate-400 mb-2">Un comando = Un archivo = Un desarrollador = Cero conflictos</p>
+            <p>MicroDomain Pattern • Fudie Framework</p>
+        </footer>
+        
+    </div>
+</body>
+</html>
