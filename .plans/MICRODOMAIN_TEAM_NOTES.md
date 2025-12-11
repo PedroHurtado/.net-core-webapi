@@ -117,7 +117,7 @@ public class UpdateFoo(
     IValidator<Foo> fooValidator
 ) : AbstractModifyCommand<UpdateFooCommand, Foo>
 {
-    public override Foo Execute(Foo entity, UpdateFooCommand command)
+    protected override Foo Handle(Foo entity, UpdateFooCommand command)
     {
         entity.Name = command.Name;
         entity.Description = command.Description;
@@ -132,8 +132,9 @@ public class UpdateFoo(
 - ✅ Record para datos de entrada
 - ✅ `[Injectable(ServiceLifetime.Singleton)]` - comandos son stateless
 - ✅ Hereda de `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>` o `AbstractModifyCommand<>`
+- ✅ Implementa `Handle()` con la lógica de negocio
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
-- ✅ Retorna `TEntity` (permite logging y mapeo a response)
+- ✅ Retorna entidad validada
 - ✅ Lanza excepciones si falla
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
@@ -152,23 +153,52 @@ public class UpdateFoo(
 
 ## 🔌 Clases Base de Comandos
 
-| Clase | Firma | Uso |
-|-------|-------|-----|
-| `AbstractCreateCommand<TCmd, TEntity>` | `abstract TEntity Execute(TCmd command)` | Crear entidad nueva |
-| `AbstractModifyCommand<TCmd, TEntity>` | `abstract TEntity Execute(TEntity entity, TCmd command)` | Modificar con datos |
-| `AbstractModifyCommand<TEntity>` | `abstract TEntity Execute(TEntity entity)` | Modificar sin datos |
+| Clase | Método a implementar | Uso |
+|-------|---------------------|-----|
+| `AbstractCreateCommand<TCmd, TEntity>` | `protected override TEntity Handle(TCmd command)` | Crear entidad nueva |
+| `AbstractModifyCommand<TCmd, TEntity>` | `protected override TEntity Handle(TEntity entity, TCmd command)` | Modificar con datos |
+| `AbstractModifyCommand<TEntity>` | `protected override TEntity Handle(TEntity entity)` | Modificar sin datos |
 
-### Método ExecuteAsync
+---
 
-Las clases base incluyen `ExecuteAsync` para uso fluent con repositorios:
+## 🔗 API Fluent
+
+Los comandos exponen una API fluent type-safe. El compilador fuerza el orden correcto.
+
+### Crear entidad
 ```csharp
-// En lugar de:
-var entity = await repo.Get(id);
-var updated = updateFoo.Execute(entity, cmd);
-
-// Puedes usar:
-var updated = await updateFoo.ExecuteAsync(repo.Get(id), cmd);
+var entity = await createFoo
+    .Create(command)
+    .Save(uow.SaveChangesAsync)
+    .GetEntity();
 ```
+
+### Modificar con datos
+```csharp
+var entity = await updateFoo
+    .Find(repository.Get(id))
+    .Execute(command)
+    .Save(uow.SaveChangesAsync)
+    .GetEntity();
+```
+
+### Modificar sin datos
+```csharp
+var entity = await activateFoo
+    .Find(repository.Get(id))
+    .Execute()
+    .Save(uow.SaveChangesAsync)
+    .GetEntity();
+```
+
+### Sin persistir (para tests)
+```csharp
+var entity = createFoo
+    .Create(command)
+    .GetEntity();
+```
+
+**El compilador garantiza el orden**: No puedes llamar `Execute()` sin `Find()`, ni `Save()` sin `Execute()`.
 
 ---
 
@@ -203,8 +233,6 @@ var updated = await updateFoo.ExecuteAsync(repo.Get(id), cmd);
 ---
 
 ## 🔄 Flujo en Handler
-
-### Opción A: Tradicional
 ```csharp
 app.MapPut("/foos/{id}", async (
     Guid id,
@@ -215,28 +243,14 @@ app.MapPut("/foos/{id}", async (
     ILogger<Program> logger) =>
 {
     var cmd = new UpdateFooCommand(request.Name, request.Description, request.DisplayOrder);
-    var entity = await repo.Get(id);
-    var updated = updateFoo.Execute(entity, cmd);
+    
+    var updated = await updateFoo
+        .Find(repo.Get(id))
+        .Execute(cmd)
+        .Save(uow.SaveChangesAsync)
+        .GetEntity();
+    
     logger.LogInformation("Updated Foo {Id}", updated.Id);
-    await uow.SaveChangesAsync();
-    return Results.Ok(MapToResponse(updated));
-});
-```
-
-### Opción B: Fluent con ExecuteAsync
-```csharp
-app.MapPut("/foos/{id}", async (
-    Guid id,
-    FooUpdateRequest request,
-    UpdateFoo updateFoo,
-    IGet<Foo, Guid> repo,
-    IUnitOfWork uow,
-    ILogger<Program> logger) =>
-{
-    var cmd = new UpdateFooCommand(request.Name, request.Description, request.DisplayOrder);
-    var updated = await updateFoo.ExecuteAsync(repo.Get(id), cmd);
-    logger.LogInformation("Updated Foo {Id}", updated.Id);
-    await uow.SaveChangesAsync();
     return Results.Ok(MapToResponse(updated));
 });
 ```
@@ -289,8 +303,8 @@ app.MapPut("/foos/{id}", async (
 | Usar `try-catch` para validaciones | Usar Guards apropiados |
 | Duplicado → ValidationGuard (422) | Usar ConflictGuard (409) |
 | `List<T>` en colecciones | Usar `HashSet<T>` |
-| Implementar interfaz de comando | Heredar de clase abstracta |
 | `[Injectable]` sin Singleton | Usar `[Injectable(ServiceLifetime.Singleton)]` |
+| Llamar `Handle()` directamente | Usar API fluent (Find/Create → Execute → Save → GetEntity) |
 
 ---
 
@@ -301,9 +315,11 @@ app.MapPut("/foos/{id}", async (
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
 - [ ] Command tiene `[Injectable(ServiceLifetime.Singleton)]`
 - [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<>`
+- [ ] Command implementa `Handle()` con lógica de negocio
 - [ ] Command inyecta validators (no usa `new`)
 - [ ] Command usa Guards apropiados (404/409/422)
 - [ ] Command retorna entidad validada
+- [ ] Handler usa API fluent completa
 - [ ] Tests cubren casos éxito y fallo
 - [ ] Archivo nombrado `[Aggregate]_[Action].cs`
 
