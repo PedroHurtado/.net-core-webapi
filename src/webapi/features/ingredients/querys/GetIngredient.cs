@@ -35,7 +35,9 @@ public class GetIngredient : IFeatureModule
        .Produces<Response>(StatusCodes.Status200OK)
        .Produces<CustomProblemDetails>(StatusCodes.Status404NotFound);
     }
-    [Injectable]
+    public interface IRepository:IGet<Ingredient,Guid>{}
+    
+    /*[Injectable]
     public class Repository(IEntityLookup repository) : IGet<Ingredient, Guid>
     {
         private readonly IEntityLookup _repository = repository;
@@ -44,5 +46,5 @@ public class GetIngredient : IFeatureModule
         {
             return _repository.GetRequiredAsync<Ingredient, Guid>(id, false);
         }
-    }
+    }*/
 }

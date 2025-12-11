@@ -37,10 +37,10 @@ public class RemoveIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IRemove<Ingredient, Guid> repository, IUnitOfWork unitOfWork) : IService
+    public class Service(IRepository repository, IUnitOfWork unitOfWork) : IService
     {
 
-        private readonly IRemove<Ingredient, Guid> _repository = repository;
+        private readonly IRepository _repository = repository;
         private readonly IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task HandlerAsync(Guid id)
@@ -54,7 +54,7 @@ public class RemoveIngredient : IFeatureModule
     }
 
     public interface IRepository:IRemove<Ingredient,Guid>{}
-    
+
     /*[Injectable]
     public class Repository(IChangeTracker repository, IEntityLookup getOrThrowAsync) : IRemove<Ingredient, Guid>
     {

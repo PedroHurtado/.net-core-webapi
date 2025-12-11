@@ -136,7 +136,7 @@ internal static class CodeBuilder
 
         sb.AppendLine($"public async Task<{entityTypeName}> Get({idTypeName} id)");
         sb.AppendLine("{");
-        sb.AppendLine($"    var query = _entityLookup.Query<{entityTypeName}>();");
+        sb.AppendLine($"    var query = _entityLookup.Set<{entityTypeName}>();");
         sb.AppendLine();
 
         // Includes

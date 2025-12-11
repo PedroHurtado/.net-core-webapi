@@ -32,7 +32,7 @@ public class CodeBuilderMethodTests
 
         // Assert
         result.Should().Contain("public async Task<Customer> Get(Guid id)");
-        result.Should().Contain("var query = _entityLookup.Query<Customer>();");
+        result.Should().Contain("var query = _entityLookup.Set<Customer>();");
         result.Should().Contain("var entity = await query.FirstOrDefaultAsync(c => c.Id == id);");
         result.Should().Contain("if (entity == null)");
         result.Should().Contain("throw new KeyNotFoundException");
@@ -191,7 +191,7 @@ public class CodeBuilderMethodTests
 
         // Assert
         result.Should().Contain("public async Task<Customer> Get(Guid id)");
-        result.Should().Contain("var query = _entityLookup.Query<Customer>();");
+        result.Should().Contain("var query = _entityLookup.Set<Customer>();");
         result.Should().Contain("// Apply includes");
         result.Should().Contain("query = query.Include(c => c.Orders)");
         result.Should().Contain(".ThenInclude(o => o.OrderItems)");

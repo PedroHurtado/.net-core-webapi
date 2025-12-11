@@ -49,14 +49,14 @@ public class UpdateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IUpdate<Ingredient, Guid> repository, IUnitOfWork unitOfWork) : IService
+    public class Service(IRepositoy repository, IUnitOfWork unitOfWork) : IService
     {
 
-        private readonly IUpdate<Ingredient, Guid> _repository = repository;
+        private readonly IRepositoy _repository = repository;
         private readonly IUnitOfWork _unifOfWork = unitOfWork;
 
         public async Task HandlerAsync(Guid id, Request request)
-        {
+        {            
             var ingredient = await _repository.Get(id);
             ingredient.Update(request.Name, request.Cost).SuccessOrThrow();
             await _unifOfWork.SaveChangesAsync();
