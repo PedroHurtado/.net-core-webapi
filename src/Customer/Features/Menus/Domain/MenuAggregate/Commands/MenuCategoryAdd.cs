@@ -11,13 +11,13 @@ public record AddCategoryCommand(
     int DisplayOrder = 0
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class AddCategory(
     IValidator<MenuCategory> categoryValidator,
     IValidator<Menu> menuValidator
-) : IModifyCommand<AddCategoryCommand, Menu>
+) : AbstractModifyCommand<AddCategoryCommand, Menu>
 {
-    public Menu Execute(Menu menu, AddCategoryCommand command)
+    public override Menu Execute(Menu menu, AddCategoryCommand command)
     {
         var category = new MenuCategory(Guid.NewGuid())
         {
@@ -33,12 +33,12 @@ public class AddCategory(
 
         ConflictGuard.ThrowIf(
             duplicateName,
-            "Ya existe una categoría con ese nombre"            
+            "Ya existe una categoría con ese nombre"
         );
 
         menu.Categories.Add(category);
         menu.UpdatedAt = DateTime.UtcNow;
-        
+
 
         return menuValidator.ValidateOrThrow(menu);
     }

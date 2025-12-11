@@ -14,12 +14,12 @@ public record SetDepositPolicyCommand(
     int? MinimumGuestsForDeposit = null
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class SetDepositPolicy(
     IValidator<Menu> menuValidator
-) : IModifyCommand<SetDepositPolicyCommand, Menu>
+) : AbstractModifyCommand<SetDepositPolicyCommand, Menu>
 {
-    public Menu Execute(Menu menu, SetDepositPolicyCommand command)
+    public override Menu Execute(Menu menu, SetDepositPolicyCommand command)
     {
         var depositPolicy = DepositPolicy.Create(
             command.DepositType,

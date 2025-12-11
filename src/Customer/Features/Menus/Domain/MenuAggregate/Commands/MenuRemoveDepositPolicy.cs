@@ -5,14 +5,12 @@ using Fudie.DependencyInjection;
 using Fudie.Validation;
 using FluentValidation;
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class RemoveDepositPolicy(
     IValidator<Menu> menuValidator
-) : IModifyCommand<Menu>
+) : AbstractModifyCommand<Menu>
 {
-    
-
-    Menu IModifyCommand<Menu>.Execute(Menu entity)
+    public override Menu Execute(Menu entity)
     {
         entity.DepositPolicy = null;
         entity.UpdatedAt = DateTime.UtcNow;

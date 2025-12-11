@@ -13,12 +13,12 @@ public record CreateMenuCommand(
     DateTime? EffectiveUntil = null
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class CreateMenu(
     IValidator<Menu> menuValidator
-) : ICreateCommand<CreateMenuCommand, Menu>
+) : AbstractCreateCommand<CreateMenuCommand, Menu>
 {
-    public Menu Execute(CreateMenuCommand command)
+    public override Menu Execute(CreateMenuCommand command)
     {
         var menu = new Menu(Guid.NewGuid())
         {

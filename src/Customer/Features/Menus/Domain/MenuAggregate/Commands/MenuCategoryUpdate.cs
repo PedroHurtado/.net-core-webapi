@@ -12,13 +12,13 @@ public record UpdateCategoryCommand(
     int DisplayOrder
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class UpdateCategory(
     IValidator<MenuCategory> categoryValidator,
     IValidator<Menu> menuValidator
-) : IModifyCommand<UpdateCategoryCommand, Menu>
+) : AbstractModifyCommand<UpdateCategoryCommand, Menu>
 {
-    public Menu Execute(Menu menu, UpdateCategoryCommand command)
+    public override Menu Execute(Menu menu, UpdateCategoryCommand command)
     {
         var category = menu.Categories.FirstOrDefault(c => c.Id == command.CategoryId);
 

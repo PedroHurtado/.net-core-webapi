@@ -7,18 +7,18 @@ using FluentValidation;
 
 public record RemoveCategoryCommand(Guid CategoryId);
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class RemoveCategory(
     IValidator<Menu> menuValidator
-) : IModifyCommand<RemoveCategoryCommand, Menu>
+) : AbstractModifyCommand<RemoveCategoryCommand, Menu>
 {
-    public Menu Execute(Menu menu, RemoveCategoryCommand command)
+    public override Menu Execute(Menu menu, RemoveCategoryCommand command)
     {
         var category = menu.Categories.FirstOrDefault(c => c.Id == command.CategoryId);
 
         NotFoundGuard.ThrowIfNull(
             category,
-            command.CategoryId           
+            command.CategoryId
         );
 
         ValidationGuard.ThrowIf(

@@ -13,12 +13,12 @@ public record UpdateMenuCommand(
     int DisplayOrder
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class UpdateMenu(
     IValidator<Menu> menuValidator
-) : IModifyCommand<UpdateMenuCommand, Menu>
+) : AbstractModifyCommand<UpdateMenuCommand, Menu>
 {
-    public Menu Execute(Menu menu, UpdateMenuCommand command)
+    public override Menu Execute(Menu menu, UpdateMenuCommand command)
     {
         menu.Name = command.Name;
         menu.Description = command.Description;
