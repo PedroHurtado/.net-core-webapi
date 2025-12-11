@@ -6,25 +6,24 @@
 
 ## 🎯 Objetivo
 
-Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge.
+Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge. **Encapsulación real** con `private set`.
 
 ---
 
 ## 📁 Estructura
 ```
 Domain/[Aggregate]/
-├── [Aggregate].cs              ← Aggregate Root
+├── [Aggregate].cs              ← Aggregate Root (partial)
+├── [Aggregate]_[Action].cs     ← Command anidado (partial)
 ├── Entities/
 │   └── [Entity].cs             ← Entidades hijas
 ├── ValueObjects/
 │   └── [ValueObject].cs        ← Objetos de valor
-├── Enums/
-│   └── [Enum].cs               ← Enumeraciones
-└── Commands/
-    └── [Aggregate]_[Action].cs ← Lógica de negocio
+└── Enums/
+    └── [Enum].cs               ← Enumeraciones
 ```
 
-**Naming de archivos**: `Foo_Create.cs`, `FooBar_Add.cs` (ordenación alfabética por agregado)
+**Naming de archivos**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`, `Menu_Activate.cs`
 
 ---
 
@@ -32,13 +31,13 @@ Domain/[Aggregate]/
 
 ### Entity (incluye Aggregate Root)
 ```csharp
-public class Foo : Entity
+public partial class Foo : Entity
 {
     protected Foo() { }                    // ← EF Core
     public Foo(Guid id) : base(id) { }     // ← Creación
     
-    public string Name { get; set; }       // ← Público, mutable
-    public HashSet<Bar> Bars { get; set; } = [];
+    public string Name { get; private set; }       // ← Encapsulado
+    public HashSet<Bar> Bars { get; private set; } = [];
 }
 
 public class FooValidator : AbstractValidator<Foo>
@@ -51,8 +50,9 @@ public class FooValidator : AbstractValidator<Foo>
 ```
 
 **Reglas**:
+- ✅ `partial class` para permitir comandos en archivos separados
 - ✅ Dos constructores (protected + public con Guid)
-- ✅ Propiedades `{ get; set; }` públicas
+- ✅ Propiedades `{ get; private set; }` encapsuladas
 - ✅ Colecciones: `HashSet<T>` con inicializador `= []`
 - ✅ Validator en mismo archivo, clase separada
 - ❌ NO lógica de negocio en la entidad
@@ -97,45 +97,49 @@ public class BazValidator : AbstractValidator<Baz>
 
 ---
 
-### Command
+### Command (Clase Anidada)
 ```csharp
-namespace Customer.Features.Menus.Domain.MenuAggregate.Commands;
+// Archivo: Menu_Update.cs
+namespace Customer.Features.Menus.Domain.MenuAggregate;
 
 using Fudie.Domain;
 using Fudie.DependencyInjection;
 using Fudie.Validation;
 using FluentValidation;
 
-public record UpdateFooCommand(
+public record UpdateMenuCommand(
     string Name,
     string? Description,
     int DisplayOrder
 );
 
-[Injectable(ServiceLifetime.Singleton)]
-public class UpdateFoo(
-    IValidator<Foo> fooValidator
-) : AbstractModifyCommand<UpdateFooCommand, Foo>
+public partial class Menu
 {
-    protected override Foo Handle(Foo entity, UpdateFooCommand command)
+    [Injectable(ServiceLifetime.Singleton)]
+    public class Update(
+        IValidator<Menu> menuValidator
+    ) : AbstractModifyCommand<UpdateMenuCommand, Menu>
     {
-        entity.Name = command.Name;
-        entity.Description = command.Description;
-        entity.UpdatedAt = DateTime.UtcNow;
+        protected override Menu Handle(Menu entity, UpdateMenuCommand command)
+        {
+            entity.Name = command.Name;           // ✅ Accede a private set
+            entity.Description = command.Description;
+            entity.UpdatedAt = DateTime.UtcNow;
 
-        return fooValidator.ValidateOrThrow(entity);
+            return menuValidator.ValidateOrThrow(entity);
+        }
     }
 }
 ```
 
 **Reglas**:
-- ✅ Record para datos de entrada
+- ✅ Archivo separado con `partial class`
+- ✅ Clase anidada dentro de la Entity
 - ✅ `[Injectable(ServiceLifetime.Singleton)]` - comandos son stateless
 - ✅ Hereda de `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>` o `AbstractModifyCommand<>`
 - ✅ Implementa `Handle()` con la lógica de negocio
+- ✅ Acceso a `private set` por ser clase anidada
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
-- ✅ Retorna entidad validada
-- ✅ Lanza excepciones si falla
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
 ---
@@ -167,7 +171,7 @@ Los comandos exponen una API fluent type-safe. El compilador fuerza el orden cor
 
 ### Crear entidad
 ```csharp
-var entity = await createFoo
+var entity = await menuCreate
     .Create(command)
     .Save(uow.SaveChangesAsync)
     .GetEntity();
@@ -175,7 +179,7 @@ var entity = await createFoo
 
 ### Modificar con datos
 ```csharp
-var entity = await updateFoo
+var entity = await menuUpdate
     .Find(repository.Get(id))
     .Execute(command)
     .Save(uow.SaveChangesAsync)
@@ -184,7 +188,7 @@ var entity = await updateFoo
 
 ### Modificar sin datos
 ```csharp
-var entity = await activateFoo
+var entity = await menuActivate
     .Find(repository.Get(id))
     .Execute()
     .Save(uow.SaveChangesAsync)
@@ -193,12 +197,41 @@ var entity = await activateFoo
 
 ### Sin persistir (para tests)
 ```csharp
-var entity = createFoo
+var entity = menuCreate
     .Create(command)
     .GetEntity();
 ```
 
 **El compilador garantiza el orden**: No puedes llamar `Execute()` sin `Find()`, ni `Save()` sin `Execute()`.
+
+---
+
+## 🔒 Encapsulación Real
+
+Las clases anidadas en C# tienen acceso a miembros `private` de la clase contenedora:
+```csharp
+// Menu.cs
+public partial class Menu : Entity
+{
+    public string Name { get; private set; }  // ← private set
+}
+
+// Menu_Update.cs
+public partial class Menu
+{
+    public class Update : AbstractModifyCommand<UpdateMenuCommand, Menu>
+    {
+        protected override Menu Handle(Menu entity, UpdateMenuCommand command)
+        {
+            entity.Name = command.Name;  // ✅ Compila - clase anidada
+            return entity;
+        }
+    }
+}
+
+// En Handler (fuera de Menu)
+menu.Name = "Hack";  // ❌ No compila - private set
+```
 
 ---
 
@@ -234,23 +267,23 @@ var entity = createFoo
 
 ## 🔄 Flujo en Handler
 ```csharp
-app.MapPut("/foos/{id}", async (
+app.MapPut("/menus/{id}", async (
     Guid id,
-    FooUpdateRequest request,
-    UpdateFoo updateFoo,
-    IGet<Foo, Guid> repo,
+    MenuUpdateRequest request,
+    Menu.Update menuUpdate,
+    IGet<Menu, Guid> repo,
     IUnitOfWork uow,
     ILogger<Program> logger) =>
 {
-    var cmd = new UpdateFooCommand(request.Name, request.Description, request.DisplayOrder);
+    var cmd = new UpdateMenuCommand(request.Name, request.Description, request.DisplayOrder);
     
-    var updated = await updateFoo
+    var updated = await menuUpdate
         .Find(repo.Get(id))
         .Execute(cmd)
         .Save(uow.SaveChangesAsync)
         .GetEntity();
     
-    logger.LogInformation("Updated Foo {Id}", updated.Id);
+    logger.LogInformation("Updated Menu {Id}", updated.Id);
     return Results.Ok(MapToResponse(updated));
 });
 ```
@@ -267,7 +300,7 @@ app.MapPut("/foos/{id}", async (
 2. ValueObjects    (solo enums)
 3. Entity hoja     (sin hijos)
 4. Entity padre    (con colecciones)
-5. Aggregate Root  
+5. Aggregate Root  (partial class)
 ```
 
 **Objetivo**: 
@@ -283,6 +316,8 @@ app.MapPut("/foos/{id}", async (
 ```
 6. Commands        (cada dev toma uno o más)
 ```
+
+Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 
 **Requisito**: Fase 1 completada y aprobada
 
@@ -304,15 +339,19 @@ app.MapPut("/foos/{id}", async (
 | Duplicado → ValidationGuard (422) | Usar ConflictGuard (409) |
 | `List<T>` en colecciones | Usar `HashSet<T>` |
 | `[Injectable]` sin Singleton | Usar `[Injectable(ServiceLifetime.Singleton)]` |
-| Llamar `Handle()` directamente | Usar API fluent (Find/Create → Execute → Save → GetEntity) |
+| Command fuera de la Entity | Usar `partial class` + clase anidada |
+| `{ get; set; }` público | Usar `{ get; private set; }` |
 
 ---
 
 ## 📝 Checklist antes de PR
 
+- [ ] Entity es `partial class`
 - [ ] Entity tiene dos constructores
+- [ ] Entity usa `{ get; private set; }`
 - [ ] Validator en mismo archivo que Entity
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
+- [ ] Command es clase anidada en `partial class`
 - [ ] Command tiene `[Injectable(ServiceLifetime.Singleton)]`
 - [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<>`
 - [ ] Command implementa `Handle()` con lógica de negocio
@@ -321,13 +360,13 @@ app.MapPut("/foos/{id}", async (
 - [ ] Command retorna entidad validada
 - [ ] Handler usa API fluent completa
 - [ ] Tests cubren casos éxito y fallo
-- [ ] Archivo nombrado `[Aggregate]_[Action].cs`
+- [ ] Archivo nombrado `[Entity]_[Action].cs`
 
 ---
 
 ## 🎯 Beneficio Final
 
-**Un comando = Un archivo = Un desarrollador = Cero conflictos**
+**Un comando = Un archivo = Un desarrollador = Cero conflictos = Encapsulación real**
 
 ---
 
