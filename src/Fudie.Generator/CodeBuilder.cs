@@ -386,11 +386,11 @@ internal static class CodeBuilder
         sb.AppendLine();
 
         // Methods
-        // IMPORTANTE: IUpdate hereda de IGet, así que si implementa IUpdate,
-        // debe generar Get() con tracking habilitado
-        if (config.ImplementIUpdate)
+        // IMPORTANTE: IUpdate e IRemove heredan de IGet, así que si implementa IUpdate o IRemove,
+        // debe generar Get() con tracking habilitado (usa Set<T>() en lugar de Query<T>())
+        if (config.ImplementIUpdate || config.ImplementIRemove)
         {
-            // IUpdate necesita Get() con tracking habilitado
+            // IUpdate e IRemove necesitan Get() con tracking habilitado
             var updateGetMethod = GenerateUpdateGetMethod(
                 entityTypeName,
                 idTypeName,
@@ -410,7 +410,7 @@ internal static class CodeBuilder
         }
         else if (config.ImplementIGet)
         {
-            // Solo IGet (sin IUpdate): genera Get() con AsNoTracking
+            // Solo IGet (sin IUpdate ni IRemove): genera Get() con AsNoTracking
             var getMethod = GenerateGetMethod(
                 entityTypeName,
                 idTypeName,

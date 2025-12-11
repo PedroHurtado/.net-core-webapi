@@ -179,6 +179,8 @@ namespace Fudie.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IUpdate<Customer, System.Guid>))]");
+        // IUpdate hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
         generatedCode.Should().NotContain("AsNoTracking()");
     }
@@ -237,6 +239,10 @@ namespace Fudie.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
+        // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        // IRemove necesita tracking para eliminar, debe usar Set<T>() en lugar de Query<T>()
+        generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
         generatedCode.Should().Contain("public void Remove(Customer entity)");
         generatedCode.Should().Contain("_changeTracker.Entry(entity).State = EntityState.Deleted");
     }
@@ -271,7 +277,8 @@ namespace Fudie.DependencyInjection
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
         // Should have multiple [Injectable] with ServiceType
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
         // Should have all methods

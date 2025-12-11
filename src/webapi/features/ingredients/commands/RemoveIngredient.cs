@@ -52,7 +52,10 @@ public class RemoveIngredient : IFeatureModule
             await _unifOfWork.SaveChangesAsync();
         }
     }
-    [Injectable]
+
+    public interface IRepository:IRemove<Ingredient,Guid>{}
+    
+    /*[Injectable]
     public class Repository(IChangeTracker repository, IEntityLookup getOrThrowAsync) : IRemove<Ingredient, Guid>
     {
         private readonly IChangeTracker _repository = repository;
@@ -71,7 +74,7 @@ public class RemoveIngredient : IFeatureModule
         }
 
 
-    }
+    }*/
 
 
 }

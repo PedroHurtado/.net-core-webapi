@@ -279,14 +279,22 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         }
 
         // Build list of base interface names for [Injectable] attributes
+        // Nota: IUpdate e IRemove heredan de IGet, así que NO debemos registrar IGet
+        // por separado cuando ya tenemos IUpdate o IRemove (evita duplicados en DI)
         var baseInterfaceNames = new List<string>();
+        var hasUpdateOrRemove = implementsIUpdate || implementsIRemove;
+
         foreach (var baseInterface in baseInterfaces)
         {
             var interfaceFullName = baseInterface.ConstructedFrom.ToDisplayString();
 
             if (interfaceFullName == "Fudie.Infrastructure.IGet<T, ID>")
             {
-                baseInterfaceNames.Add($"IGet<{entityTypeName}, {idTypeName}>");
+                // Solo agregar IGet si NO hay IUpdate ni IRemove (que ya heredan de IGet)
+                if (!hasUpdateOrRemove)
+                {
+                    baseInterfaceNames.Add($"IGet<{entityTypeName}, {idTypeName}>");
+                }
             }
             else if (interfaceFullName == "Fudie.Infrastructure.IAdd<T>")
             {

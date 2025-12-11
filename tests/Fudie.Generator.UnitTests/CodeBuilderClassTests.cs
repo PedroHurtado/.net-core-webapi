@@ -302,6 +302,8 @@ public class CodeBuilderClassTests
     public void GenerateRepositoryClass_WithMultipleBaseInterfaces_ShouldGenerateInjectableForEach()
     {
         // Arrange
+        // Nota: IRemove hereda de IGet, así que en el uso real NO se incluye IGet en BaseInterfaceNames
+        // cuando hay IRemove (eso lo filtra RepositorySourceGenerator). Este test refleja ese comportamiento.
         var config = new CodeBuilder.RepositoryConfig
         {
             ImplementIGet = true,
@@ -311,7 +313,7 @@ public class CodeBuilderClassTests
             ContainerInterfaceFullName = "ICustomerRepository",
             BaseInterfaceNames = new List<string>
             {
-                "IGet<Customer, Guid>",
+                // IGet NO se incluye porque IRemove ya hereda de IGet
                 "IAdd<Customer>",
                 "IRemove<Customer, Guid>"
             }
@@ -325,9 +327,9 @@ public class CodeBuilderClassTests
             "Guid",
             config);
 
-        // Assert - should have 4 Injectable attributes (1 container + 3 base)
+        // Assert - should have 3 Injectable attributes (1 container + 2 base, sin IGet duplicado)
         result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
+        result.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
         result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
         result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
     }

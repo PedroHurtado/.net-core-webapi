@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Fudie.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fudie.Infrastructure;
 
@@ -92,6 +93,9 @@ public interface IEntityLookup
         bool tracking = true,
         CancellationToken cancellationToken = default,
         params string[] includeProperties) where T : Entity;
+
+    //TODO:revisar los los metodos
+    DbSet<TEntity> Set<TEntity>() where TEntity : class;
 }
 
 /// <summary>

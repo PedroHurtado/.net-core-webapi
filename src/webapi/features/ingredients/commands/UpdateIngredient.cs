@@ -63,8 +63,8 @@ public class UpdateIngredient : IFeatureModule
         }
     }
 
-    //public interface IRespository:IAdd<Ingredient>{}
-    [Injectable]
+    public interface IRepositoy:IUpdate<Ingredient,Guid>{}
+    /*[Injectable]
     public class Repository(IChangeTracker repository, IEntityLookup getOrThrowAsync) : IUpdate<Ingredient, Guid>
     {
         private readonly IChangeTracker _repository = repository;
@@ -78,7 +78,7 @@ public class UpdateIngredient : IFeatureModule
         }
 
 
-    }
+    }*/
 
 
 }
