@@ -112,12 +112,12 @@ public record UpdateFooCommand(
     int DisplayOrder
 );
 
-[Injectable]
+[Injectable(ServiceLifetime.Singleton)]
 public class UpdateFoo(
     IValidator<Foo> fooValidator
-) : IModifyCommand<UpdateFooCommand, Foo>
+) : AbstractModifyCommand<UpdateFooCommand, Foo>
 {
-    public Foo Execute(Foo entity, UpdateFooCommand command)
+    public override Foo Execute(Foo entity, UpdateFooCommand command)
     {
         entity.Name = command.Name;
         entity.Description = command.Description;
@@ -130,9 +130,9 @@ public class UpdateFoo(
 
 **Reglas**:
 - ✅ Record para datos de entrada
-- ✅ `[Injectable]` en la clase
+- ✅ `[Injectable(ServiceLifetime.Singleton)]` - comandos son stateless
+- ✅ Hereda de `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>` o `AbstractModifyCommand<>`
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
-- ✅ Implementa `ICreateCommand<,>`, `IModifyCommand<,>` o `IModifyCommand<>`
 - ✅ Retorna `TEntity` (permite logging y mapeo a response)
 - ✅ Lanza excepciones si falla
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
@@ -143,24 +143,24 @@ public class UpdateFoo(
 
 | Namespace | Proporciona |
 |-----------|-------------|
-| `Fudie.Domain` | `Entity`, `AggregateRoot`, `ICreateCommand<,>`, `IModifyCommand<,>`, `IModifyCommand<>`, `ConflictException` |
-| `Fudie.DependencyInjection` | `[Injectable]` para registro automático en DI |
+| `Fudie.Domain` | `Entity`, `AggregateRoot`, `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>`, `AbstractModifyCommand<>`, `ConflictException` |
+| `Fudie.DependencyInjection` | `[Injectable]`, `ServiceLifetime` para registro automático en DI |
 | `Fudie.Validation` | `ValidationGuard`, `ConflictGuard`, `NotFoundGuard`, `ValidateOrThrow()` |
 | `FluentValidation` | `IValidator<T>` para inyectar validators |
 
 ---
 
-## 🔌 Interfaces
+## 🔌 Clases Base de Comandos
 
-| Interfaz | Firma | Uso |
-|----------|-------|-----|
-| `ICreateCommand<TCmd, TEntity>` | `TEntity Execute(TCmd command)` | Crear entidad nueva |
-| `IModifyCommand<TCmd, TEntity>` | `TEntity Execute(TEntity entity, TCmd command)` | Modificar existente |
-| `IModifyCommand<TEntity>` | `TEntity Execute(TEntity entity)` | Modificar sin datos |
+| Clase | Firma | Uso |
+|-------|-------|-----|
+| `AbstractCreateCommand<TCmd, TEntity>` | `abstract TEntity Execute(TCmd command)` | Crear entidad nueva |
+| `AbstractModifyCommand<TCmd, TEntity>` | `abstract TEntity Execute(TEntity entity, TCmd command)` | Modificar con datos |
+| `AbstractModifyCommand<TEntity>` | `abstract TEntity Execute(TEntity entity)` | Modificar sin datos |
 
-### Default Methods Async
+### Método ExecuteAsync
 
-Las interfaces `IModifyCommand` incluyen métodos default para uso fluent con repositorios:
+Las clases base incluyen `ExecuteAsync` para uso fluent con repositorios:
 ```csharp
 // En lugar de:
 var entity = await repo.Get(id);
@@ -289,6 +289,8 @@ app.MapPut("/foos/{id}", async (
 | Usar `try-catch` para validaciones | Usar Guards apropiados |
 | Duplicado → ValidationGuard (422) | Usar ConflictGuard (409) |
 | `List<T>` en colecciones | Usar `HashSet<T>` |
+| Implementar interfaz de comando | Heredar de clase abstracta |
+| `[Injectable]` sin Singleton | Usar `[Injectable(ServiceLifetime.Singleton)]` |
 
 ---
 
@@ -297,7 +299,8 @@ app.MapPut("/foos/{id}", async (
 - [ ] Entity tiene dos constructores
 - [ ] Validator en mismo archivo que Entity
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
-- [ ] Command tiene `[Injectable]`
+- [ ] Command tiene `[Injectable(ServiceLifetime.Singleton)]`
+- [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<>`
 - [ ] Command inyecta validators (no usa `new`)
 - [ ] Command usa Guards apropiados (404/409/422)
 - [ ] Command retorna entidad validada
