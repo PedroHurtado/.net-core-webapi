@@ -1,0 +1,79 @@
+// AbstractCreateCommand.cs
+namespace Fudie.Domain;
+
+/// <summary>
+/// Comando de dominio para crear una nueva entidad.
+/// </summary>
+/// <typeparam name="TCommand">Tipo del comando con los datos de creación.</typeparam>
+/// <typeparam name="TEntity">Tipo de la entidad a crear.</typeparam>
+public abstract class AbstractCreateCommand<TCommand, TEntity>
+    where TCommand : class
+    where TEntity : Entity
+{
+    /// <summary>
+    /// Implementa la lógica de creación.
+    /// </summary>
+    /// <param name="command">Datos para crear la entidad.</param>
+    /// <returns>La entidad creada.</returns>
+    protected abstract TEntity Handle(TCommand command);
+
+    /// <summary>
+    /// Crea la entidad.
+    /// </summary>
+    /// <param name="command">Datos para crear la entidad.</param>
+    /// <returns>Builder para continuar el flujo.</returns>
+    public SaveBuilder Create(TCommand command)
+    {
+        var entity = Handle(command);
+        return new SaveBuilder(entity);
+    }
+
+    /// <summary>
+    /// Builder para persistir y obtener la entidad.
+    /// </summary>
+    public class SaveBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal SaveBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Persiste los cambios.
+        /// </summary>
+        /// <param name="saveFunc">Función de guardado (típicamente uow.SaveChangesAsync).</param>
+        /// <returns>Builder para obtener la entidad.</returns>
+        public async Task<GetBuilder> Save(Func<CancellationToken, Task<int>> saveFunc)
+        {
+            await saveFunc(CancellationToken.None);
+            return new GetBuilder(_entity);
+        }
+
+        /// <summary>
+        /// Obtiene la entidad sin persistir.
+        /// </summary>
+        /// <returns>La entidad creada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+
+    /// <summary>
+    /// Builder para obtener la entidad después de persistir.
+    /// </summary>
+    public class GetBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal GetBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Obtiene la entidad creada.
+        /// </summary>
+        /// <returns>La entidad creada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+}

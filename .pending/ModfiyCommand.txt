@@ -1,0 +1,206 @@
+// AbstractModifyCommand.cs
+namespace Fudie.Domain;
+
+/// <summary>
+/// Comando de dominio para modificar una entidad existente sin datos adicionales.
+/// </summary>
+/// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
+public abstract class AbstractModifyCommand<TEntity>
+    where TEntity : Entity
+{
+    /// <summary>
+    /// Implementa la lógica de modificación.
+    /// </summary>
+    /// <param name="entity">Entidad existente a modificar.</param>
+    /// <returns>La entidad modificada.</returns>
+    protected abstract TEntity Handle(TEntity entity);
+
+    /// <summary>
+    /// Busca y carga la entidad.
+    /// </summary>
+    /// <param name="entityTask">Task que resuelve la entidad.</param>
+    /// <returns>Builder para continuar el flujo.</returns>
+    public async Task<ExecuteBuilder> Find(Task<TEntity> entityTask)
+    {
+        var entity = await entityTask;
+        return new ExecuteBuilder(this, entity);
+    }
+
+    /// <summary>
+    /// Builder para ejecutar la modificación.
+    /// </summary>
+    public class ExecuteBuilder
+    {
+        private readonly AbstractModifyCommand<TEntity> _command;
+        private readonly TEntity _entity;
+
+        internal ExecuteBuilder(AbstractModifyCommand<TEntity> command, TEntity entity)
+        {
+            _command = command;
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Ejecuta la modificación sobre la entidad cargada.
+        /// </summary>
+        /// <returns>Builder para continuar el flujo.</returns>
+        public SaveBuilder Execute()
+        {
+            var modified = _command.Handle(_entity);
+            return new SaveBuilder(modified);
+        }
+    }
+
+    /// <summary>
+    /// Builder para persistir y obtener la entidad.
+    /// </summary>
+    public class SaveBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal SaveBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Persiste los cambios.
+        /// </summary>
+        /// <param name="saveFunc">Función de guardado (típicamente uow.SaveChangesAsync).</param>
+        /// <returns>Builder para obtener la entidad.</returns>
+        public async Task<GetBuilder> Save(Func<CancellationToken, Task<int>> saveFunc)
+        {
+            await saveFunc(CancellationToken.None);
+            return new GetBuilder(_entity);
+        }
+
+        /// <summary>
+        /// Obtiene la entidad sin persistir.
+        /// </summary>
+        /// <returns>La entidad modificada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+
+    /// <summary>
+    /// Builder para obtener la entidad después de persistir.
+    /// </summary>
+    public class GetBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal GetBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Obtiene la entidad modificada.
+        /// </summary>
+        /// <returns>La entidad modificada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+}
+
+/// <summary>
+/// Comando de dominio para modificar una entidad existente con datos.
+/// </summary>
+/// <typeparam name="TCommand">Tipo del comando con los datos de modificación.</typeparam>
+/// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
+public abstract class AbstractModifyCommand<TCommand, TEntity>
+    where TCommand : class
+    where TEntity : Entity
+{
+    /// <summary>
+    /// Implementa la lógica de modificación.
+    /// </summary>
+    /// <param name="entity">Entidad existente a modificar.</param>
+    /// <param name="command">Datos para modificar la entidad.</param>
+    /// <returns>La entidad modificada.</returns>
+    protected abstract TEntity Handle(TEntity entity, TCommand command);
+
+    /// <summary>
+    /// Busca y carga la entidad.
+    /// </summary>
+    /// <param name="entityTask">Task que resuelve la entidad.</param>
+    /// <returns>Builder para continuar el flujo.</returns>
+    public async Task<ExecuteBuilder> Find(Task<TEntity> entityTask)
+    {
+        var entity = await entityTask;
+        return new ExecuteBuilder(this, entity);
+    }
+
+    /// <summary>
+    /// Builder para ejecutar la modificación.
+    /// </summary>
+    public class ExecuteBuilder
+    {
+        private readonly AbstractModifyCommand<TCommand, TEntity> _command;
+        private readonly TEntity _entity;
+
+        internal ExecuteBuilder(AbstractModifyCommand<TCommand, TEntity> command, TEntity entity)
+        {
+            _command = command;
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Ejecuta la modificación sobre la entidad cargada.
+        /// </summary>
+        /// <param name="command">Datos para modificar la entidad.</param>
+        /// <returns>Builder para continuar el flujo.</returns>
+        public SaveBuilder Execute(TCommand command)
+        {
+            var modified = _command.Handle(_entity, command);
+            return new SaveBuilder(modified);
+        }
+    }
+
+    /// <summary>
+    /// Builder para persistir y obtener la entidad.
+    /// </summary>
+    public class SaveBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal SaveBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Persiste los cambios.
+        /// </summary>
+        /// <param name="saveFunc">Función de guardado (típicamente uow.SaveChangesAsync).</param>
+        /// <returns>Builder para obtener la entidad.</returns>
+        public async Task<GetBuilder> Save(Func<CancellationToken, Task<int>> saveFunc)
+        {
+            await saveFunc(CancellationToken.None);
+            return new GetBuilder(_entity);
+        }
+
+        /// <summary>
+        /// Obtiene la entidad sin persistir.
+        /// </summary>
+        /// <returns>La entidad modificada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+
+    /// <summary>
+    /// Builder para obtener la entidad después de persistir.
+    /// </summary>
+    public class GetBuilder
+    {
+        private readonly TEntity _entity;
+
+        internal GetBuilder(TEntity entity)
+        {
+            _entity = entity;
+        }
+
+        /// <summary>
+        /// Obtiene la entidad modificada.
+        /// </summary>
+        /// <returns>La entidad modificada.</returns>
+        public TEntity GetEntity() => _entity;
+    }
+}
