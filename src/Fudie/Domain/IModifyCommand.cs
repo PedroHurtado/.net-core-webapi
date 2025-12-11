@@ -12,16 +12,18 @@ public interface IModifyCommand<TEntity>
     /// Ejecuta la modificación de la entidad.
     /// </summary>
     /// <param name="entity">Entidad existente a modificar.</param>
-    void Execute(TEntity entity);
+    /// <returns>La entidad modificada.</returns>
+    TEntity Execute(TEntity entity);
 
     /// <summary>
     /// Ejecuta la modificación de forma asíncrona obteniendo la entidad del Task.
     /// </summary>
     /// <param name="entityTask">Task que resuelve la entidad a modificar.</param>
-    async Task ExecuteAsync(Task<TEntity> entityTask)
+    /// <returns>La entidad modificada.</returns>
+    async Task<TEntity> ExecuteAsync(Task<TEntity> entityTask)
     {
         var entity = await entityTask;
-        Execute(entity);
+        return Execute(entity);
     }
 }
 
@@ -39,16 +41,18 @@ public interface IModifyCommand<TCommand, TEntity>
     /// </summary>
     /// <param name="entity">Entidad existente a modificar.</param>
     /// <param name="command">Datos para modificar la entidad.</param>
-    void Execute(TEntity entity, TCommand command);
+    /// <returns>La entidad modificada.</returns>
+    TEntity Execute(TEntity entity, TCommand command);
 
     /// <summary>
     /// Ejecuta la modificación de forma asíncrona obteniendo la entidad del Task.
     /// </summary>
     /// <param name="entityTask">Task que resuelve la entidad a modificar.</param>
     /// <param name="command">Datos para modificar la entidad.</param>
-    async Task ExecuteAsync(Task<TEntity> entityTask, TCommand command)
+    /// <returns>La entidad modificada.</returns>
+    async Task<TEntity> ExecuteAsync(Task<TEntity> entityTask, TCommand command)
     {
         var entity = await entityTask;
-        Execute(entity, command);
+        return Execute(entity, command);
     }
 }

@@ -20,10 +20,11 @@ public class IModifyCommandTests
         public TestEntity? ExecutedEntity { get; private set; }
         public int ExecuteCallCount { get; private set; }
 
-        public void Execute(TestEntity entity)
+        public TestEntity Execute(TestEntity entity)
         {
             ExecutedEntity = entity;
             ExecuteCallCount++;
+            return entity;
         }
     }
 
@@ -33,11 +34,12 @@ public class IModifyCommandTests
         public TestCommand? ExecutedCommand { get; private set; }
         public int ExecuteCallCount { get; private set; }
 
-        public void Execute(TestEntity entity, TestCommand command)
+        public TestEntity Execute(TestEntity entity, TestCommand command)
         {
             ExecutedEntity = entity;
             ExecutedCommand = command;
             ExecuteCallCount++;
+            return entity;
         }
     }
 
@@ -55,11 +57,12 @@ public class IModifyCommandTests
         IModifyCommand<TestEntity> commandInterface = command;
 
         // Act
-        await commandInterface.ExecuteAsync(entityTask);
+        var result = await commandInterface.ExecuteAsync(entityTask);
 
         // Assert
         command.ExecuteCallCount.Should().Be(1);
         command.ExecutedEntity.Should().BeSameAs(entity);
+        result.Should().BeSameAs(entity);
     }
 
     [Fact]
@@ -95,12 +98,13 @@ public class IModifyCommandTests
         IModifyCommand<TestCommand, TestEntity> commandInterface = modifyCommand;
 
         // Act
-        await commandInterface.ExecuteAsync(entityTask, testCommand);
+        var result = await commandInterface.ExecuteAsync(entityTask, testCommand);
 
         // Assert
         modifyCommand.ExecuteCallCount.Should().Be(1);
         modifyCommand.ExecutedEntity.Should().BeSameAs(entity);
         modifyCommand.ExecutedCommand.Should().BeSameAs(testCommand);
+        result.Should().BeSameAs(entity);
     }
 
     [Fact]
