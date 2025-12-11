@@ -36,7 +36,10 @@ public class GetIngredient : IFeatureModule
        .Produces<CustomProblemDetails>(StatusCodes.Status404NotFound);
     }
     [AsNoTracking]
-    public interface IRepository:IGet<Ingredient,Guid>{}
+    public interface IRepository : IGet<Ingredient, Guid>
+    {
+        //public Task<List<Ingredient>> FindByName(string name);
+    }
 
     /*[Injectable]
     public class Repository(IEntityLookup repository) : IGet<Ingredient, Guid>

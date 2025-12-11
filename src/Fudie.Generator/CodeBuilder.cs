@@ -358,6 +358,10 @@ internal static class CodeBuilder
         {
             fields.Add("private readonly IChangeTracker _changeTracker;");
         }
+        if (config.QueryMethods.Any())
+        {
+            fields.Add("private readonly IQuery _query;");
+        }
 
         foreach (var field in fields)
         {
@@ -375,6 +379,8 @@ internal static class CodeBuilder
             constructorParams.Add("IEntityLookup entityLookup");
         if (fields.Contains("private readonly IChangeTracker _changeTracker;"))
             constructorParams.Add("IChangeTracker changeTracker");
+        if (fields.Contains("private readonly IQuery _query;"))
+            constructorParams.Add("IQuery query");
 
         sb.AppendLine($"    public {className}({string.Join(", ", constructorParams)})");
         sb.AppendLine("    {");
@@ -382,6 +388,8 @@ internal static class CodeBuilder
             sb.AppendLine("        _entityLookup = entityLookup;");
         if (constructorParams.Contains("IChangeTracker changeTracker"))
             sb.AppendLine("        _changeTracker = changeTracker;");
+        if (constructorParams.Contains("IQuery query"))
+            sb.AppendLine("        _query = query;");
         sb.AppendLine("    }");
         sb.AppendLine();
 

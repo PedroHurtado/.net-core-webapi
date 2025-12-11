@@ -53,6 +53,11 @@ namespace TestNamespace
         // Assert - Debe contener la clase generada
         Assert.Contains("public class UserRepository", generatedCode);
 
+        // Assert - Debe inyectar IQuery cuando hay query methods
+        Assert.Contains("private readonly IQuery _query;", generatedCode);
+        Assert.Contains("IQuery query", generatedCode);
+        Assert.Contains("_query = query;", generatedCode);
+
         // Assert - Debe contener los métodos de query generados
         Assert.Contains("public async Task<List<User>> FindByEmail(string email)", generatedCode);
         Assert.Contains("public async Task<User?> FindFirstByAge(int age)", generatedCode);
@@ -243,6 +248,10 @@ namespace TestNamespace
 
         // Assert - Debe haber generado código
         Assert.NotEmpty(generatedCode);
+
+        // Assert - NO debe inyectar IQuery cuando no hay query methods
+        Assert.DoesNotContain("private readonly IQuery _query;", generatedCode);
+        Assert.DoesNotContain("IQuery query", generatedCode);
     }
 
     /// <summary>

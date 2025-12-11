@@ -57,7 +57,8 @@ public class UpdateIngredient : IFeatureModule
 
         public async Task HandlerAsync(Guid id, Request request)
         {            
-            var ingredient = await _repository.Get(id);
+            var ingredient = await _repository                
+                .Get(id);
             ingredient.Update(request.Name, request.Cost).SuccessOrThrow();
             await _unifOfWork.SaveChangesAsync();
         }
