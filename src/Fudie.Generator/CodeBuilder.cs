@@ -284,6 +284,9 @@ internal static class CodeBuilder
         // Usings
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.ComponentModel;");
+        sb.AppendLine("using System.Diagnostics;");
+        sb.AppendLine("using System.Diagnostics.CodeAnalysis;");
         sb.AppendLine("using System.Linq;");
         sb.AppendLine("using System.Threading.Tasks;");
         sb.AppendLine("using Microsoft.EntityFrameworkCore;");
@@ -312,6 +315,11 @@ internal static class CodeBuilder
             baseInterfaces.Add($"IUpdate<{entityTypeName}, {idTypeName}>");
         if (config.ImplementIRemove)
             baseInterfaces.Add($"IRemove<{entityTypeName}, {idTypeName}>");
+
+        // Class attributes for code coverage exclusion and debugger behavior
+        sb.AppendLine("[ExcludeFromCodeCoverage]");
+        sb.AppendLine("[DebuggerNonUserCode]");
+        sb.AppendLine("[EditorBrowsable(EditorBrowsableState.Never)]");
 
         // Class declaration with [Injectable] attributes
         if (!string.IsNullOrEmpty(config.ContainerInterfaceFullName))

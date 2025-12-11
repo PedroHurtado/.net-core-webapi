@@ -360,4 +360,131 @@ public class CodeBuilderClassTests
     }
 
     #endregion
+
+    #region Code Coverage and Debugger Attributes
+
+    [Fact]
+    public void GenerateRepositoryClass_ShouldIncludeExcludeFromCodeCoverageAttribute()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIGet = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("[ExcludeFromCodeCoverage]");
+        result.Should().Contain("using System.Diagnostics.CodeAnalysis;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_ShouldIncludeDebuggerNonUserCodeAttribute()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIAdd = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "ProductRepository",
+            "MyApp.Repositories",
+            "Product",
+            "int",
+            config);
+
+        // Assert
+        result.Should().Contain("[DebuggerNonUserCode]");
+        result.Should().Contain("using System.Diagnostics;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_ShouldIncludeEditorBrowsableAttribute()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIRemove = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "OrderRepository",
+            "MyApp.Repositories",
+            "Order",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("[EditorBrowsable(EditorBrowsableState.Never)]");
+        result.Should().Contain("using System.ComponentModel;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_ShouldIncludeAllCodeGenerationAttributes()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIGet = true,
+            ImplementIAdd = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert - All three attributes should be present
+        result.Should().Contain("[ExcludeFromCodeCoverage]");
+        result.Should().Contain("[DebuggerNonUserCode]");
+        result.Should().Contain("[EditorBrowsable(EditorBrowsableState.Never)]");
+
+        // Assert - Required usings for the attributes
+        result.Should().Contain("using System.Diagnostics.CodeAnalysis;");
+        result.Should().Contain("using System.Diagnostics;");
+        result.Should().Contain("using System.ComponentModel;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_AttributesShouldAppearBeforeInjectableAttribute()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIGet = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert - Attributes should appear before [Injectable]
+        var excludeFromCodeCoverageIndex = result.IndexOf("[ExcludeFromCodeCoverage]");
+        var debuggerNonUserCodeIndex = result.IndexOf("[DebuggerNonUserCode]");
+        var editorBrowsableIndex = result.IndexOf("[EditorBrowsable(EditorBrowsableState.Never)]");
+        var injectableIndex = result.IndexOf("[Injectable(");
+
+        excludeFromCodeCoverageIndex.Should().BeLessThan(injectableIndex);
+        debuggerNonUserCodeIndex.Should().BeLessThan(injectableIndex);
+        editorBrowsableIndex.Should().BeLessThan(injectableIndex);
+    }
+
+    #endregion
 }
