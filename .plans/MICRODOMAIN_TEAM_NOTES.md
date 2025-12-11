@@ -117,13 +117,13 @@ public class UpdateFoo(
     IValidator<Foo> fooValidator
 ) : IModifyCommand<UpdateFooCommand, Foo>
 {
-    public void Execute(Foo entity, UpdateFooCommand command)
+    public Foo Execute(Foo entity, UpdateFooCommand command)
     {
         entity.Name = command.Name;
         entity.Description = command.Description;
         entity.UpdatedAt = DateTime.UtcNow;
 
-        fooValidator.ValidateOrThrow(entity);
+        return fooValidator.ValidateOrThrow(entity);
     }
 }
 ```
@@ -133,8 +133,7 @@ public class UpdateFoo(
 - ✅ `[Injectable]` en la clase
 - ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
 - ✅ Implementa `ICreateCommand<,>`, `IModifyCommand<,>` o `IModifyCommand<>`
-- ✅ `IModifyCommand` retorna `void` (CQS puro, modifica por referencia)
-- ✅ `ICreateCommand` retorna `TEntity` (crea algo nuevo)
+- ✅ Retorna `TEntity` (permite logging y mapeo a response)
 - ✅ Lanza excepciones si falla
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
@@ -156,8 +155,8 @@ public class UpdateFoo(
 | Interfaz | Firma | Uso |
 |----------|-------|-----|
 | `ICreateCommand<TCmd, TEntity>` | `TEntity Execute(TCmd command)` | Crear entidad nueva |
-| `IModifyCommand<TCmd, TEntity>` | `void Execute(TEntity entity, TCmd command)` | Modificar existente |
-| `IModifyCommand<TEntity>` | `void Execute(TEntity entity)` | Modificar sin datos |
+| `IModifyCommand<TCmd, TEntity>` | `TEntity Execute(TEntity entity, TCmd command)` | Modificar existente |
+| `IModifyCommand<TEntity>` | `TEntity Execute(TEntity entity)` | Modificar sin datos |
 
 ### Default Methods Async
 
@@ -165,10 +164,10 @@ Las interfaces `IModifyCommand` incluyen métodos default para uso fluent con re
 ```csharp
 // En lugar de:
 var entity = await repo.Get(id);
-updateFoo.Execute(entity, cmd);
+var updated = updateFoo.Execute(entity, cmd);
 
 // Puedes usar:
-await updateFoo.ExecuteAsync(repo.Get(id), cmd);
+var updated = await updateFoo.ExecuteAsync(repo.Get(id), cmd);
 ```
 
 ---
@@ -199,7 +198,7 @@ await updateFoo.ExecuteAsync(repo.Get(id), cmd);
 3. **Validar estructuralmente** con `validator.ValidateOrThrow()`
 4. **Validar conflictos** con `ConflictGuard.ThrowIf()`
 5. **Modificar** estado del agregado
-6. **Validar** agregado con `aggregateValidator.ValidateOrThrow()`
+6. **Retornar** agregado validado con `aggregateValidator.ValidateOrThrow()`
 
 ---
 
@@ -209,15 +208,18 @@ await updateFoo.ExecuteAsync(repo.Get(id), cmd);
 ```csharp
 app.MapPut("/foos/{id}", async (
     Guid id,
-    UpdateFooCommand cmd,
+    FooUpdateRequest request,
     UpdateFoo updateFoo,
     IGet<Foo, Guid> repo,
-    IUnitOfWork uow) =>
+    IUnitOfWork uow,
+    ILogger<Program> logger) =>
 {
-    var entity = await repo.Get(id);          // 1. Obtener
-    updateFoo.Execute(entity, cmd);           // 2. Ejecutar (modifica por referencia)
-    await uow.SaveChangesAsync();             // 3. Persistir
-    return Results.Ok(MapToResponse(entity)); // 4. Responder
+    var cmd = new UpdateFooCommand(request.Name, request.Description, request.DisplayOrder);
+    var entity = await repo.Get(id);
+    var updated = updateFoo.Execute(entity, cmd);
+    logger.LogInformation("Updated Foo {Id}", updated.Id);
+    await uow.SaveChangesAsync();
+    return Results.Ok(MapToResponse(updated));
 });
 ```
 
@@ -225,14 +227,17 @@ app.MapPut("/foos/{id}", async (
 ```csharp
 app.MapPut("/foos/{id}", async (
     Guid id,
-    UpdateFooCommand cmd,
+    FooUpdateRequest request,
     UpdateFoo updateFoo,
     IGet<Foo, Guid> repo,
-    IUnitOfWork uow) =>
+    IUnitOfWork uow,
+    ILogger<Program> logger) =>
 {
-    await updateFoo.ExecuteAsync(repo.Get(id), cmd); // 1+2. Obtener y ejecutar
-    await uow.SaveChangesAsync();                    // 3. Persistir
-    return Results.NoContent();                      // 4. Responder
+    var cmd = new UpdateFooCommand(request.Name, request.Description, request.DisplayOrder);
+    var updated = await updateFoo.ExecuteAsync(repo.Get(id), cmd);
+    logger.LogInformation("Updated Foo {Id}", updated.Id);
+    await uow.SaveChangesAsync();
+    return Results.Ok(MapToResponse(updated));
 });
 ```
 
@@ -284,7 +289,6 @@ app.MapPut("/foos/{id}", async (
 | Usar `try-catch` para validaciones | Usar Guards apropiados |
 | Duplicado → ValidationGuard (422) | Usar ConflictGuard (409) |
 | `List<T>` en colecciones | Usar `HashSet<T>` |
-| Retornar entidad en IModifyCommand | Es `void`, modifica por referencia |
 
 ---
 
@@ -296,8 +300,7 @@ app.MapPut("/foos/{id}", async (
 - [ ] Command tiene `[Injectable]`
 - [ ] Command inyecta validators (no usa `new`)
 - [ ] Command usa Guards apropiados (404/409/422)
-- [ ] IModifyCommand retorna `void`
-- [ ] ICreateCommand retorna la entidad creada
+- [ ] Command retorna entidad validada
 - [ ] Tests cubren casos éxito y fallo
 - [ ] Archivo nombrado `[Aggregate]_[Action].cs`
 
