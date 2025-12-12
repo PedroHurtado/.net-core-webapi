@@ -86,7 +86,7 @@
                     <div>
                         <h3 class="font-bold text-lg mb-4 text-cyan-400">Menu.cs</h3>
                         <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
-                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-cyan-300">Menu</span> : Entity
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-cyan-300">Menu</span> : <span class="text-amber-300">AggregateRoot</span>
 {
     <span class="text-purple-400">public</span> <span class="text-blue-300">string</span> Name { <span class="text-purple-400">get</span>; <span class="text-amber-400">protected set</span>; }
 }</code></pre>
@@ -111,9 +111,9 @@
             </div>
         </section>
 
-        <!-- Id Inmutable -->
+        <!-- Jerarquía de Clases Base -->
         <section class="mb-12">
-            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔐 Id Inmutable con init</h2>
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔐 Jerarquía: Entity → AggregateRoot</h2>
             <div class="card-gradient rounded-2xl p-8 border border-purple-500/30">
                 <div class="grid md:grid-cols-2 gap-8">
                     <div>
@@ -126,25 +126,27 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg mb-4 text-slate-400">¿Por qué init?</h3>
-                        <div class="space-y-3 text-slate-300">
-                            <div class="flex items-center gap-2">
-                                <span class="text-emerald-400">✓</span>
-                                <span>Solo asignable en construcción</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-emerald-400">✓</span>
-                                <span>Inmutable después de crear</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-emerald-400">✓</span>
-                                <span>Compilador lo garantiza</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-red-400">✗</span>
-                                <span class="text-slate-500">protected set permite cambios</span>
-                            </div>
+                        <h3 class="font-bold text-lg mb-4 text-amber-400">AggregateRoot Base</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public abstract class</span> <span class="text-amber-300">AggregateRoot</span>(Guid id) 
+    : Entity(id)
+{
+    <span class="text-purple-400">private readonly</span> List&lt;IDomainEvent&gt; _domainEvents = [];
+    
+    <span class="text-purple-400">public void</span> <span class="text-blue-300">AddDomainEvent</span>(IDomainEvent e)
+        => _domainEvents.Add(e);
+}</code></pre>
                         </div>
+                    </div>
+                </div>
+                <div class="mt-6 grid md:grid-cols-2 gap-4 text-center">
+                    <div class="bg-slate-800/50 rounded-lg p-3">
+                        <code class="text-pink-400">init</code>
+                        <span class="text-slate-300 text-sm ml-2">= Solo asignable en construcción</span>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-3">
+                        <code class="text-amber-400">AggregateRoot</code>
+                        <span class="text-slate-300 text-sm ml-2">= Puede emitir Domain Events</span>
                     </div>
                 </div>
             </div>
@@ -158,14 +160,14 @@
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-cyan-500/50 transition-colors">
                     <div class="text-3xl mb-3">📋</div>
                     <h3 class="font-bold text-lg mb-2">Aggregate Root</h3>
-                    <p class="text-slate-400 text-sm mb-3">partial + protected set</p>
-                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">Id { get; init; }</code>
+                    <p class="text-slate-400 text-sm mb-3">partial + AggregateRoot</p>
+                    <code class="text-xs text-amber-300 bg-slate-800 px-2 py-1 rounded">+ DomainEvents</code>
                 </div>
                 
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-pink-500/50 transition-colors">
                     <div class="text-3xl mb-3">📎</div>
                     <h3 class="font-bold text-lg mb-2">Entidad Hija</h3>
-                    <p class="text-slate-400 text-sm mb-3">También partial</p>
+                    <p class="text-slate-400 text-sm mb-3">partial + Entity</p>
                     <code class="text-xs text-pink-300 bg-slate-800 px-2 py-1 rounded">MenuCategory</code>
                 </div>
                 
@@ -196,6 +198,10 @@
                         <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
                             <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-pink-300">MenuCategory</span> : Entity
 {
+    <span class="text-purple-400">protected</span> MenuCategory() { }           <span class="text-green-400">// ← EF Core</span>
+    <span class="text-purple-400">public</span> MenuCategory(Guid id) 
+        : <span class="text-cyan-400">base</span>(id) { }                     <span class="text-green-400">// ← Creación</span>
+    
     <span class="text-purple-400">public</span> Guid MenuId { <span class="text-purple-400">get</span>; <span class="text-pink-400">init</span>; }
     <span class="text-purple-400">public</span> <span class="text-blue-300">string</span> Name { <span class="text-purple-400">get</span>; <span class="text-amber-400">protected set</span>; }
 }</code></pre>
@@ -468,7 +474,7 @@ result.IsValid.Should().BeFalse();</code></pre>
         <!-- Beneficios -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🎯 Beneficios</h2>
-            <div class="grid md:grid-cols-5 gap-4">
+            <div class="grid md:grid-cols-6 gap-4">
                 
                 <div class="text-center">
                     <div class="text-4xl mb-3">🧩</div>
@@ -486,6 +492,12 @@ result.IsValid.Should().BeFalse();</code></pre>
                     <div class="text-4xl mb-3">🛡️</div>
                     <h3 class="font-bold text-sm mb-1">Encapsulado</h3>
                     <p class="text-slate-400 text-xs">protected set</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl mb-3">📡</div>
+                    <h3 class="font-bold text-sm mb-1">Domain Events</h3>
+                    <p class="text-slate-400 text-xs">AggregateRoot</p>
                 </div>
                 
                 <div class="text-center">

@@ -46,13 +46,27 @@ public abstract class Entity(Guid id)
 }
 ```
 
-**Regla clave**: El `Id` usa `init`, no `protected set`. Una vez creada la entidad, su identidad **nunca cambia**.
+### AggregateRoot Base
+```csharp
+public abstract class AggregateRoot(Guid id) : Entity(id)
+{
+    private readonly List<IDomainEvent> _domainEvents = [];
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
+    public void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    public void ClearDomainEvents() => _domainEvents.Clear();
+}
+```
+
+**Reglas clave**: 
+- El `Id` usa `init`, no `protected set`. Una vez creada la entidad, su identidad **nunca cambia**.
+- Solo los Aggregate Roots pueden emitir Domain Events.
 
 ---
 
 ### Aggregate Root
 ```csharp
-public partial class Menu : Entity
+public partial class Menu : AggregateRoot
 {
     protected Menu() { }                    // ← EF Core
     public Menu(Guid id) : base(id) { }     // ← Creación
@@ -72,11 +86,13 @@ public class MenuValidator : AbstractValidator<Menu>
 
 **Reglas**:
 - ✅ `partial class` para permitir comandos en archivos separados
+- ✅ Hereda de `AggregateRoot` (no de Entity directamente)
 - ✅ Dos constructores (protected + public con Guid)
 - ✅ `Id` heredado con `init` (inmutable)
 - ✅ Propiedades `{ get; protected set; }` encapsuladas
 - ✅ Colecciones: `HashSet<T>` con inicializador `= []`
 - ✅ Validator en mismo archivo, clase separada
+- ✅ Acceso a `AddDomainEvent()` para publicar eventos
 - ❌ NO lógica de negocio en la entidad
 
 ---
@@ -86,10 +102,10 @@ public class MenuValidator : AbstractValidator<Menu>
 // MenuCategory.cs
 public partial class MenuCategory : Entity
 {
-    protected MenuCategory() { }
-    public MenuCategory(Guid id) : base(id) { }
+    protected MenuCategory() { }                    // ← EF Core
+    public MenuCategory(Guid id) : base(id) { }     // ← Creación
     
-    public Guid MenuId { get; init; }           // ← init = inmutable
+    public Guid MenuId { get; init; }               // ← init = relación inmutable
     public string Name { get; protected set; }
     public int DisplayOrder { get; protected set; }
 }
