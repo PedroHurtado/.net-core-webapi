@@ -99,6 +99,12 @@ namespace Fudie.Infrastructure
 
     [System.AttributeUsage(System.AttributeTargets.Interface)]
     public class IgnoreQueryFiltersAttribute : System.Attribute { }
+
+    [System.AttributeUsage(System.AttributeTargets.Interface)]
+    public class GenerateRepositoryAttribute<TEntity> : System.Attribute where TEntity : class { }
+
+    [System.AttributeUsage(System.AttributeTargets.Interface)]
+    public class GenerateRepositoryAttribute<TEntity, TId> : System.Attribute where TEntity : class { }
 }
 
 namespace Fudie.DependencyInjection
@@ -730,6 +736,237 @@ namespace Fudie.DependencyInjection
         // Base interfaces use simple names
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
         generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Ingredient, System.Guid>))]");
+    }
+
+    #endregion
+
+    #region GenerateRepository Attribute Tests
+
+    [Fact]
+    public void Generator_WithGenerateRepositoryAttribute_ShouldGenerateRepositoryWithoutBaseInterfaces()
+    {
+        // Arrange - Solo [GenerateRepository], sin herencia de IGet/IAdd/IUpdate/IRemove
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Tenant : Entity
+    {
+        public new Guid Id { get; set; }
+        public string Name { get; set; }
+        public Guid RestaurantId { get; set; }
+    }
+
+    [GenerateRepository<Tenant>]
+    public interface ITenantRepository
+    {
+        Task<Tenant?> FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        // Should generate class implementing the interface
+        generatedCode.Should().Contain("public class TenantRepository : ITenantRepository");
+        // Should have Injectable for container interface
+        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ITenantRepository))]");
+        // Should NOT have Get method (no IGet inheritance)
+        generatedCode.Should().NotContain("public async Task<Tenant> Get(");
+        // Should have the query method
+        generatedCode.Should().Contain("FindFirstByIdAndRestaurantId");
+    }
+
+    [Fact]
+    public void Generator_WithGenerateRepositoryAttributeAndCustomIdType_ShouldUseCustomIdType()
+    {
+        // Arrange - [GenerateRepository<T, int>] con tipo de ID personalizado
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Product : Entity
+    {
+        public string Name { get; set; }
+        public int ProductCode { get; set; }
+    }
+
+    [GenerateRepository<Product, int>]
+    public interface IProductRepository
+    {
+        Task<Product?> FindFirstByProductCode(int code);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        generatedCode.Should().Contain("public class ProductRepository : IProductRepository");
+    }
+
+    [Fact]
+    public void Generator_WithGenerateRepositoryAndTracking_ShouldApplyTracking()
+    {
+        // Arrange - [GenerateRepository] con [Tracking]
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Tenant : Entity
+    {
+        public new Guid Id { get; set; }
+        public string Name { get; set; }
+        public Guid RestaurantId { get; set; }
+    }
+
+    [GenerateRepository<Tenant>]
+    [Tracking(true)]
+    public interface ITenantRepository
+    {
+        Task<Tenant?> FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        generatedCode.Should().Contain("public class TenantRepository : ITenantRepository");
+        // With tracking enabled, should NOT have AsNoTracking
+        generatedCode.Should().NotContain("AsNoTracking()");
+    }
+
+    [Fact]
+    public void Generator_WithGenerateRepositoryAndAsNoTracking_ShouldGenerateRepository()
+    {
+        // Arrange - [GenerateRepository] con [AsNoTracking]
+        // Nota: Los modificadores como AsNoTracking se aplican al método Get() de IGet,
+        // no a los query methods custom que tienen control total sobre su query.
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Tenant : Entity
+    {
+        public new Guid Id { get; set; }
+        public string Name { get; set; }
+        public Guid RestaurantId { get; set; }
+    }
+
+    [GenerateRepository<Tenant>]
+    [AsNoTracking]
+    public interface ITenantRepository
+    {
+        Task<Tenant?> FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        // El repositorio se genera correctamente
+        generatedCode.Should().Contain("public class TenantRepository : ITenantRepository");
+        generatedCode.Should().Contain("FindFirstByIdAndRestaurantId");
+    }
+
+    [Fact]
+    public void Generator_WithGenerateRepositoryMultipleQueryMethods_ShouldGenerateAllMethods()
+    {
+        // Arrange - Múltiples query methods
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Tenant : Entity
+    {
+        public new Guid Id { get; set; }
+        public string Name { get; set; }
+        public Guid RestaurantId { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    [GenerateRepository<Tenant>]
+    public interface ITenantRepository
+    {
+        Task<Tenant?> FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+        Task<List<Tenant>> FindByRestaurantId(Guid restaurantId);
+        Task<int> CountByRestaurantIdAndIsActiveTrue(Guid restaurantId);
+        Task<bool> ExistsByRestaurantId(Guid restaurantId);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        generatedCode.Should().Contain("FindFirstByIdAndRestaurantId");
+        generatedCode.Should().Contain("FindByRestaurantId");
+        generatedCode.Should().Contain("CountByRestaurantIdAndIsActiveTrue");
+        generatedCode.Should().Contain("ExistsByRestaurantId");
+    }
+
+    [Fact]
+    public void Generator_WithoutGenerateRepositoryOrBaseInterfaces_ShouldNotGenerate()
+    {
+        // Arrange - Interfaz sin [GenerateRepository] ni herencia de interfaces base
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Customer : Entity
+    {
+        public string Name { get; set; }
+    }
+
+    public interface ICustomerService
+    {
+        void Handle();
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert - No debe generar nada para ICustomerService
+        result.GeneratedTrees.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Generator_WithBothGenerateRepositoryAndIGet_ShouldGenerateBoth()
+    {
+        // Arrange - Tiene ambos: [GenerateRepository] Y herencia de IGet
+        // En este caso, IGet toma precedencia para la entidad
+        var source = CreateTestCode(
+            interfaceCode: @"
+    public class Customer : Entity
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+    }
+
+    [GenerateRepository<Customer>]
+    public interface ICustomerRepository : IGet<Customer, Guid>
+    {
+        Task<Customer?> FindFirstByEmail(string email);
+    }");
+
+        // Act
+        var result = RunGenerator(source);
+
+        // Assert
+        result.Diagnostics.Should().BeEmpty();
+        result.GeneratedTrees.Should().ContainSingle();
+
+        var generatedCode = result.GeneratedTrees[0].ToString();
+        // Should have Get from IGet
+        generatedCode.Should().Contain("public async Task<Customer> Get(System.Guid id)");
+        // Should also have the query method
+        generatedCode.Should().Contain("FindFirstByEmail");
     }
 
     #endregion

@@ -53,6 +53,14 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         if (interfaceSymbol.ContainingNamespace?.ToDisplayString() == "Fudie.Infrastructure")
             return null;
 
+        // Detectar si tiene [GenerateRepository<T>] o [GenerateRepository<T, TId>]
+        var hasGenerateRepositoryAttribute = interfaceSymbol.GetAttributes()
+            .Any(attr =>
+            {
+                var attrName = attr.AttributeClass?.Name;
+                return attrName == "GenerateRepositoryAttribute";
+            });
+
         // Detectar si hereda de interfaces de repositorio Fudie
         var isRepositoryInterface = interfaceSymbol.AllInterfaces.Any(i =>
         {
@@ -63,7 +71,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
                    fullName == "Fudie.Infrastructure.IRemove<T, ID>";
         });
 
-        if (!isRepositoryInterface)
+        // Procesar si tiene [GenerateRepository] O hereda de interfaces base
+        if (!isRepositoryInterface && !hasGenerateRepositoryAttribute)
             return null;
 
         return new RepositoryInterfaceInfo(interfaceDecl, interfaceSymbol);
@@ -200,13 +209,33 @@ public class RepositorySourceGenerator : IIncrementalGenerator
             }
         }
 
+        // Si no se encontró entidad de las interfaces base, buscar en [GenerateRepository]
+        if (entityTypeName == null)
+        {
+            var generateRepoAttr = interfaceSymbol.GetAttributes()
+                .FirstOrDefault(attr => attr.AttributeClass?.Name == "GenerateRepositoryAttribute");
+
+            if (generateRepoAttr?.AttributeClass?.TypeArguments.Length > 0)
+            {
+                var entityTypeSymbol = generateRepoAttr.AttributeClass.TypeArguments[0];
+                entityTypeName = entityTypeSymbol.Name;
+                entityTypeNamespace = entityTypeSymbol.ContainingNamespace?.ToDisplayString();
+
+                // Si tiene segundo argumento genérico, es el tipo de ID
+                if (generateRepoAttr.AttributeClass.TypeArguments.Length > 1)
+                {
+                    idTypeName = generateRepoAttr.AttributeClass.TypeArguments[1].ToDisplayString();
+                }
+            }
+        }
+
         // Validar que se encontró el tipo de entidad
         if (entityTypeName == null)
         {
             var descriptor = new DiagnosticDescriptor(
                 "FUDIE002",
                 "No Entity Type Found",
-                $"Interface {interfaceSymbol.Name} does not implement any Fudie repository interfaces (IGet, IAdd, IUpdate, IRemove)",
+                $"Interface {interfaceSymbol.Name} does not implement any Fudie repository interfaces (IGet, IAdd, IUpdate, IRemove) and does not have [GenerateRepository<TEntity>] attribute",
                 "Fudie.Generator",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
@@ -441,6 +470,23 @@ public class RepositorySourceGenerator : IIncrementalGenerator
     }
 
     /// <summary>
+    /// Obtiene todas las propiedades de un tipo, incluyendo las heredadas de clases base
+    /// </summary>
+    private static IEnumerable<IPropertySymbol> GetAllProperties(INamedTypeSymbol? typeSymbol)
+    {
+        var properties = new List<IPropertySymbol>();
+        var currentType = typeSymbol;
+
+        while (currentType != null)
+        {
+            properties.AddRange(currentType.GetMembers().OfType<IPropertySymbol>());
+            currentType = currentType.BaseType;
+        }
+
+        return properties;
+    }
+
+    /// <summary>
     /// Extrae y valida query methods de la interfaz del repositorio
     /// </summary>
     private static List<CodeBuilder.QueryMethodInfo> ExtractQueryMethods(
@@ -452,9 +498,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         var parser = new QueryMethod.QueryParser();
         var validator = new QueryMethod.QueryValidator();
 
-        // Extraer nombres de propiedades de la entidad
-        var entityProperties = entitySymbol.GetMembers()
-            .OfType<IPropertySymbol>()
+        // Extraer nombres de propiedades de la entidad (incluyendo propiedades heredadas)
+        var entityProperties = GetAllProperties(entitySymbol)
             .Select(p => p.Name)
             .ToList();
 
