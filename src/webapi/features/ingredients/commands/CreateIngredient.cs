@@ -87,10 +87,11 @@ public class CreateIngredient : IFeatureModule
         }
     }*/
 
-    [GenerateRepository<Ingredient>]
-    [Tracking]
-    public interface IRepositoyTenant
-    {
+    [GenerateRepository<Ingredient>]        
+    public interface IRepositoyTenant   {     
+        
+        public Task<List<Ingredient>> FindByName(string name);
+        //[Tracking]
         public Task<Ingredient?> FindFirstByIdAndName(Guid id,string name);
     }
 

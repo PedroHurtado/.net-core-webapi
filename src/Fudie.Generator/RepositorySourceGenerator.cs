@@ -272,15 +272,22 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         var includePaths = ExtractIncludePaths(interfaceSymbol, entitySymbol, compilation, context);
 
         // Extraer atributos de tracking
-        var asNoTracking = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.AsNoTrackingAttribute") ||
-                          HasAttribute(interfaceSymbol, "Fudie.Infrastructure.TrackingAttribute") &&
-                           GetTrackingAttributeValue(interfaceSymbol) == false;
+        var hasTrackingAttribute = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.TrackingAttribute");
+        var hasAsNoTrackingAttribute = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.AsNoTrackingAttribute");
+        var trackingValue = hasTrackingAttribute ? GetTrackingAttributeValue(interfaceSymbol) : (bool?)null;
+
+        var asNoTracking = hasAsNoTrackingAttribute || (hasTrackingAttribute && trackingValue == false);
+
+        // Para QueryMethods: determinar el default de la interfaz
+        // Si [Tracking] o [Tracking(true)] está presente en la interfaz, el default es true
+        // Si [AsNoTracking] está presente o no hay atributo, el default es false
+        var interfaceDefaultTracking = hasTrackingAttribute && trackingValue != false && !hasAsNoTrackingAttribute;
 
         var asSplitQuery = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.AsSplitQueryAttribute");
         var ignoreQueryFilters = HasAttribute(interfaceSymbol, "Fudie.Infrastructure.IgnoreQueryFiltersAttribute");
 
-        // Extraer query methods
-        var queryMethods = ExtractQueryMethods(interfaceSymbol, entitySymbol, context);
+        // Extraer query methods (cada método puede tener su propio atributo de tracking)
+        var queryMethods = ExtractQueryMethods(interfaceSymbol, entitySymbol, context, interfaceDefaultTracking);
 
         // Determinar usings adicionales (para tipos de entidad en otros namespaces)
         var additionalUsings = new List<string>();
@@ -340,6 +347,8 @@ public class RepositorySourceGenerator : IIncrementalGenerator
         }
 
         // Crear configuración del builder
+        // Nota: QueryMethodsUseTracking ya no se usa a nivel global,
+        // cada QueryMethodInfo tiene su propio UseTracking
         var builderConfig = new CodeBuilder.RepositoryConfig
         {
             ImplementIGet = implementsIGet,
@@ -489,10 +498,15 @@ public class RepositorySourceGenerator : IIncrementalGenerator
     /// <summary>
     /// Extrae y valida query methods de la interfaz del repositorio
     /// </summary>
+    /// <param name="interfaceSymbol">Símbolo de la interfaz</param>
+    /// <param name="entitySymbol">Símbolo de la entidad</param>
+    /// <param name="context">Contexto de producción</param>
+    /// <param name="interfaceUseTracking">Valor de tracking a nivel de interfaz (default para métodos sin atributo)</param>
     private static List<CodeBuilder.QueryMethodInfo> ExtractQueryMethods(
         INamedTypeSymbol interfaceSymbol,
         INamedTypeSymbol entitySymbol,
-        SourceProductionContext context)
+        SourceProductionContext context,
+        bool interfaceUseTracking)
     {
         var queryMethods = new List<CodeBuilder.QueryMethodInfo>();
         var parser = new QueryMethod.QueryParser();
@@ -549,16 +563,56 @@ public class RepositorySourceGenerator : IIncrementalGenerator
                 .Select(p => (p.Name, p.Type.ToDisplayString()))
                 .ToList();
 
+            // Determinar UseTracking para este método específico
+            // Prioridad: atributo del método > atributo de la interfaz > default (false)
+            var methodUseTracking = GetMethodUseTracking(method, interfaceUseTracking);
+
             // Agregar query method válido
             queryMethods.Add(new CodeBuilder.QueryMethodInfo
             {
                 MethodName = method.Name,
                 ParseResult = parseResult,
-                Parameters = parameters
+                Parameters = parameters,
+                UseTracking = methodUseTracking
             });
         }
 
         return queryMethods;
+    }
+
+    /// <summary>
+    /// Determina el valor de UseTracking para un método específico
+    /// </summary>
+    /// <param name="method">Símbolo del método</param>
+    /// <param name="interfaceDefault">Valor por defecto de la interfaz</param>
+    /// <returns>True si el método debe usar tracking</returns>
+    private static bool GetMethodUseTracking(IMethodSymbol method, bool interfaceDefault)
+    {
+        // Buscar [AsNoTracking] en el método
+        var hasAsNoTracking = method.GetAttributes()
+            .Any(attr => attr.AttributeClass?.Name == "AsNoTrackingAttribute");
+
+        if (hasAsNoTracking)
+            return false;
+
+        // Buscar [Tracking] o [Tracking(bool)] en el método
+        var trackingAttr = method.GetAttributes()
+            .FirstOrDefault(attr => attr.AttributeClass?.Name == "TrackingAttribute");
+
+        if (trackingAttr != null)
+        {
+            // Si tiene argumento, usar ese valor
+            if (trackingAttr.ConstructorArguments.Length > 0 &&
+                trackingAttr.ConstructorArguments[0].Value is bool trackingValue)
+            {
+                return trackingValue;
+            }
+            // Si no tiene argumento, [Tracking] = true
+            return true;
+        }
+
+        // Si no hay atributo en el método, usar el valor de la interfaz
+        return interfaceDefault;
     }
 
     /// <summary>

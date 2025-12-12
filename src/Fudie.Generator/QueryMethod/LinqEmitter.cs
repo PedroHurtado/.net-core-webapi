@@ -14,13 +14,17 @@ public class LinqEmitter
     /// <param name="methodName">Nombre del método</param>
     /// <param name="entityName">Nombre de la entidad</param>
     /// <param name="parameters">Nombres de los parámetros</param>
+    /// <param name="useTracking">Si es true, usa _entityLookup.Set (con tracking). Si es false, usa _query.Query (sin tracking)</param>
     /// <returns>Código C# generado</returns>
-    public string Emit(ParsedQuery query, string methodName, string entityName, string[] parameters)
+    public string Emit(ParsedQuery query, string methodName, string entityName, string[] parameters, bool useTracking = false)
     {
         var sb = new StringBuilder();
 
-        // Generar query base
-        sb.Append($"_query.Query<{entityName}>()");
+        // Generar query base - usa IEntityLookup.Set cuando tracking está habilitado
+        var querySource = useTracking
+            ? $"_entityLookup.Set<{entityName}>()"
+            : $"_query.Query<{entityName}>()";
+        sb.Append(querySource);
 
         // Generar Where si hay condiciones
         if (query.Conditions.Count > 0)

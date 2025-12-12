@@ -510,4 +510,209 @@ public class CodeBuilderClassTests
     }
 
     #endregion
+
+    #region QueryMethods Tracking Tests
+
+    [Fact]
+    public void GenerateRepositoryClass_WithQueryMethodsAndNoTracking_ShouldInjectIQuery()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            QueryMethods = new List<CodeBuilder.QueryMethodInfo>
+            {
+                new()
+                {
+                    MethodName = "FindById",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition> { new("Id", Fudie.Generator.QueryMethod.Operator.Equal) }
+                    }),
+                    Parameters = new() { ("id", "Guid") },
+                    UseTracking = false
+                }
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "IngredientRepository",
+            "MyApp.Repositories",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - should use IQuery for no tracking
+        result.Should().Contain("private readonly IQuery _query;");
+        result.Should().Contain("IQuery query");
+        result.Should().Contain("_query = query;");
+        result.Should().NotContain("private readonly IEntityLookup _entityLookup;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithQueryMethodsAndTracking_ShouldInjectIEntityLookup()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            QueryMethods = new List<CodeBuilder.QueryMethodInfo>
+            {
+                new()
+                {
+                    MethodName = "FindById",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition> { new("Id", Fudie.Generator.QueryMethod.Operator.Equal) }
+                    }),
+                    Parameters = new() { ("id", "Guid") },
+                    UseTracking = true
+                }
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "IngredientRepository",
+            "MyApp.Repositories",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - should use IEntityLookup for tracking
+        result.Should().Contain("private readonly IEntityLookup _entityLookup;");
+        result.Should().Contain("IEntityLookup entityLookup");
+        result.Should().Contain("_entityLookup = entityLookup;");
+        result.Should().NotContain("private readonly IQuery _query;");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithQueryMethodsAndTracking_ShouldUseEntityLookupSetInMethods()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            QueryMethods = new List<CodeBuilder.QueryMethodInfo>
+            {
+                new()
+                {
+                    MethodName = "FindByRestaurantId",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition> { new("RestaurantId", Fudie.Generator.QueryMethod.Operator.Equal) }
+                    }),
+                    Parameters = new() { ("restaurantId", "Guid") },
+                    UseTracking = true
+                }
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "IngredientRepository",
+            "MyApp.Repositories",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - method should use _entityLookup.Set
+        result.Should().Contain("_entityLookup.Set<Ingredient>()");
+        result.Should().NotContain("_query.Query");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithQueryMethodsAndNoTracking_ShouldUseQueryQueryInMethods()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            QueryMethods = new List<CodeBuilder.QueryMethodInfo>
+            {
+                new()
+                {
+                    MethodName = "FindByRestaurantId",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition> { new("RestaurantId", Fudie.Generator.QueryMethod.Operator.Equal) }
+                    }),
+                    Parameters = new() { ("restaurantId", "Guid") },
+                    UseTracking = false
+                }
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "IngredientRepository",
+            "MyApp.Repositories",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - method should use _query.Query
+        result.Should().Contain("_query.Query<Ingredient>()");
+        result.Should().NotContain("_entityLookup.Set");
+    }
+
+    [Fact]
+    public void GenerateRepositoryClass_WithMixedTrackingMethods_ShouldInjectBothDependencies()
+    {
+        // Arrange - Simula las combinaciones problemáticas del usuario
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            QueryMethods = new List<CodeBuilder.QueryMethodInfo>
+            {
+                new()
+                {
+                    MethodName = "FindByName",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition> { new("Name", Fudie.Generator.QueryMethod.Operator.Equal) }
+                    }),
+                    Parameters = new() { ("name", "string") },
+                    UseTracking = false  // [AsNoTracking]
+                },
+                new()
+                {
+                    MethodName = "FindFirstByIdAndName",
+                    ParseResult = Fudie.Generator.QueryMethod.ParseResult.Ok(new Fudie.Generator.QueryMethod.ParsedQuery
+                    {
+                        Type = Fudie.Generator.QueryMethod.QueryType.Find,
+                        First = true,
+                        Conditions = new List<Fudie.Generator.QueryMethod.Condition>
+                        {
+                            new("Id", Fudie.Generator.QueryMethod.Operator.Equal),
+                            new("Name", Fudie.Generator.QueryMethod.Operator.Equal)
+                        }
+                    }),
+                    Parameters = new() { ("id", "Guid"), ("name", "string") },
+                    UseTracking = true  // [Tracking]
+                }
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "IngredientRepository",
+            "MyApp.Repositories",
+            "Ingredient",
+            "Guid",
+            config);
+
+        // Assert - debe inyectar AMBAS dependencias
+        result.Should().Contain("private readonly IQuery _query;");
+        result.Should().Contain("private readonly IEntityLookup _entityLookup;");
+        result.Should().Contain("IQuery query");
+        result.Should().Contain("IEntityLookup entityLookup");
+
+        // Assert - cada método usa su fuente correcta
+        result.Should().Contain("_query.Query<Ingredient>()");  // FindByName
+        result.Should().Contain("_entityLookup.Set<Ingredient>()");  // FindFirstByIdAndName
+    }
+
+    #endregion
 }

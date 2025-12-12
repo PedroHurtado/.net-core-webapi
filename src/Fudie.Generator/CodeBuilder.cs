@@ -360,9 +360,20 @@ internal static class CodeBuilder
         sb.AppendLine();
         sb.AppendLine("{");
 
-        // Fields
+        // Fields - determinar qué dependencias se necesitan basándose en cada método
         var fields = new List<string>();
-        if (config.ImplementIGet || config.ImplementIUpdate || config.ImplementIRemove)
+
+        // IEntityLookup se necesita si:
+        // - Implementa IGet, IUpdate o IRemove (para el método Get())
+        // - Algún QueryMethod tiene UseTracking = true
+        var anyMethodUsesTracking = config.QueryMethods.Any(m => m.UseTracking);
+        var needsEntityLookup = config.ImplementIGet || config.ImplementIUpdate || config.ImplementIRemove || anyMethodUsesTracking;
+
+        // IQuery se necesita si algún QueryMethod tiene UseTracking = false
+        var anyMethodNoTracking = config.QueryMethods.Any(m => !m.UseTracking);
+        var needsQuery = anyMethodNoTracking;
+
+        if (needsEntityLookup)
         {
             fields.Add("private readonly IEntityLookup _entityLookup;");
         }
@@ -370,7 +381,7 @@ internal static class CodeBuilder
         {
             fields.Add("private readonly IChangeTracker _changeTracker;");
         }
-        if (config.QueryMethods.Any())
+        if (needsQuery)
         {
             fields.Add("private readonly IQuery _query;");
         }
@@ -537,6 +548,8 @@ internal static class CodeBuilder
     /// <summary>
     /// Genera métodos de query basados en nombres de métodos
     /// </summary>
+    /// <param name="queryMethods">Lista de métodos de query a generar</param>
+    /// <param name="entityTypeName">Nombre del tipo de entidad</param>
     public static string GenerateQueryMethods(
         IEnumerable<QueryMethodInfo> queryMethods,
         string entityTypeName)
@@ -566,9 +579,9 @@ internal static class CodeBuilder
             sb.AppendLine($"    {signature}");
             sb.AppendLine("    {");
 
-            // Generar cuerpo del método
+            // Generar cuerpo del método - usa el UseTracking específico del método
             var paramNames = parameters.Select(p => p.name).ToArray();
-            var queryCode = emitter.Emit(query, methodName, entityTypeName, paramNames);
+            var queryCode = emitter.Emit(query, methodName, entityTypeName, paramNames, queryMethod.UseTracking);
 
             sb.AppendLine($"        return await {queryCode};");
             sb.AppendLine("    }");
@@ -586,6 +599,12 @@ internal static class CodeBuilder
         public string MethodName { get; set; } = string.Empty;
         public QueryMethod.ParseResult ParseResult { get; set; } = QueryMethod.ParseResult.Error("Not parsed");
         public List<(string name, string type)> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// Indica si este método específico usa tracking.
+        /// Se determina por: atributo del método > atributo de la interfaz > default (false)
+        /// </summary>
+        public bool UseTracking { get; set; }
     }
 
     /// <summary>
@@ -602,6 +621,11 @@ internal static class CodeBuilder
         public bool AsNoTracking { get; set; }
         public bool AsSplitQuery { get; set; }
         public bool IgnoreQueryFilters { get; set; }
+
+        /// <summary>
+        /// Indica si los QueryMethods deben usar tracking (IEntityLookup.Set) en lugar de IQuery.Query
+        /// </summary>
+        public bool QueryMethodsUseTracking { get; set; }
 
         public List<QueryMethodInfo> QueryMethods { get; set; } = new();
 

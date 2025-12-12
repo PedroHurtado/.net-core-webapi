@@ -347,4 +347,136 @@ public class CodeBuilderQueryMethodsTests
         Assert.Contains("string name, int age", result);
         Assert.Contains("x.Name == name && x.Age == age", result);
     }
+
+    #region Tracking Tests
+
+    [Fact]
+    public void GenerateQueryMethods_WithUseTrackingFalse_ShouldUseQueryQuery()
+    {
+        // Arrange
+        var query = new ParsedQuery
+        {
+            Type = QueryType.Find,
+            Conditions = new List<Condition> { new("Id", Operator.Equal) }
+        };
+
+        var queryMethods = new List<CodeBuilder.QueryMethodInfo>
+        {
+            new()
+            {
+                MethodName = "FindById",
+                ParseResult = ParseResult.Ok(query),
+                Parameters = new() { ("id", "Guid") },
+                UseTracking = false
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateQueryMethods(queryMethods, "User");
+
+        // Assert
+        Assert.Contains("_query.Query<User>()", result);
+        Assert.DoesNotContain("_entityLookup", result);
+    }
+
+    [Fact]
+    public void GenerateQueryMethods_WithUseTrackingTrue_ShouldUseEntityLookupSet()
+    {
+        // Arrange
+        var query = new ParsedQuery
+        {
+            Type = QueryType.Find,
+            Conditions = new List<Condition> { new("Id", Operator.Equal) }
+        };
+
+        var queryMethods = new List<CodeBuilder.QueryMethodInfo>
+        {
+            new()
+            {
+                MethodName = "FindById",
+                ParseResult = ParseResult.Ok(query),
+                Parameters = new() { ("id", "Guid") },
+                UseTracking = true
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateQueryMethods(queryMethods, "User");
+
+        // Assert
+        Assert.Contains("_entityLookup.Set<User>()", result);
+        Assert.DoesNotContain("_query.Query", result);
+    }
+
+    [Fact]
+    public void GenerateQueryMethods_DefaultTracking_ShouldUseQueryQuery()
+    {
+        // Arrange
+        var query = new ParsedQuery
+        {
+            Type = QueryType.Find,
+            Conditions = new List<Condition> { new("Name", Operator.Equal) }
+        };
+
+        var queryMethods = new List<CodeBuilder.QueryMethodInfo>
+        {
+            new()
+            {
+                MethodName = "FindByName",
+                ParseResult = ParseResult.Ok(query),
+                Parameters = new() { ("name", "string") }
+                // UseTracking no especificado = false por defecto
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateQueryMethods(queryMethods, "User");
+
+        // Assert - default should use _query.Query (no tracking)
+        Assert.Contains("_query.Query<User>()", result);
+    }
+
+    [Fact]
+    public void GenerateQueryMethods_MixedTracking_ShouldGenerateBothSources()
+    {
+        // Arrange - Simula la combinación problemática del usuario
+        var queryNoTracking = new ParsedQuery
+        {
+            Type = QueryType.Find,
+            Conditions = new List<Condition> { new("Name", Operator.Equal) }
+        };
+        var queryWithTracking = new ParsedQuery
+        {
+            Type = QueryType.Find,
+            First = true,
+            Conditions = new List<Condition> { new("Id", Operator.Equal), new("Name", Operator.Equal) }
+        };
+
+        var queryMethods = new List<CodeBuilder.QueryMethodInfo>
+        {
+            new()
+            {
+                MethodName = "FindByName",
+                ParseResult = ParseResult.Ok(queryNoTracking),
+                Parameters = new() { ("name", "string") },
+                UseTracking = false  // [AsNoTracking]
+            },
+            new()
+            {
+                MethodName = "FindFirstByIdAndName",
+                ParseResult = ParseResult.Ok(queryWithTracking),
+                Parameters = new() { ("id", "Guid"), ("name", "string") },
+                UseTracking = true  // [Tracking]
+            }
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateQueryMethods(queryMethods, "Ingredient");
+
+        // Assert - debe generar ambos tipos de query
+        Assert.Contains("_query.Query<Ingredient>()", result);  // FindByName usa IQuery
+        Assert.Contains("_entityLookup.Set<Ingredient>()", result);  // FindFirstByIdAndName usa IEntityLookup
+    }
+
+    #endregion
 }
