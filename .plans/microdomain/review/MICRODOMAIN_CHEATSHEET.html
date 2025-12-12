@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicroDomain - Cheat Sheet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            font-size: 1rem;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #f8fafc;
+            padding: 1rem;
+        }
+        
+        .container {
+            /*max-width: 700px;*/
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #0ea5e9;
+        }
+        
+        h1 {
+            font-size: 1.75rem;
+            color: #0369a1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            font-size: 1.125rem;
+            color: #0369a1;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0f2fe;
+        }
+        
+        h3 {
+            font-size: 0.9rem;
+            color: #475569;
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+        }
+        
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            display: block;
+            white-space: pre;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+        }
+        
+        .inline-code {
+            display: inline;
+            padding: 0.15rem 0.4rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.75rem 0;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+        }
+        
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        
+        .keyword { color: #c084fc; }
+        .string { color: #4ade80; }
+        .comment { color: #64748b; }
+        .type { color: #38bdf8; }
+        .highlight { color: #fbbf24; }
+        
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+        }
+        
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .error-item {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 0.6rem 0.9rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 1.75rem;
+            position: relative;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+        
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 1.1rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .badge-red { background: #fee2e2; color: #dc2626; }
+        .badge-green { background: #dcfce7; color: #16a34a; }
+        .badge-yellow { background: #fef3c7; color: #ca8a04; }
+        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        
+        .flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            margin: 1rem 0;
+        }
+        
+        .flow-item {
+            background: #f1f5f9;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .flow-arrow {
+            color: #94a3b8;
+        }
+        
+        .structure {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .structure .folder { color: #0ea5e9; font-weight: 600; }
+        
+        footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #e2e8f0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        /* Tablet y superiores */
+        @media (min-width: 640px) {
+            html {
+                font-size: 16px;
+            }
+        }
+        
+        /* Desktop */
+        @media (min-width: 1024px) {
+            html {
+                font-size: 18px;
+            }
+        }
+        
+        /* Print */
+        @media print {
+            html {
+                font-size: 12px;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            section {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <h1>🎯 MicroDomain</h1>
+            <div class="subtitle">Un comando = Un archivo = Un desarrollador = Cero conflictos</div>
+        </header>
+
+        <!-- Fase 1 -->
+        <section>
+            <h2>📋 Fase 1: Modelo (Juntos - TDD)</h2>
+            
+            <div class="flow">
+                <span class="flow-item">① Enum</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">② ValueObject</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">③ Entity</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">④ Aggregate</span>
+            </div>
+            
+            <table>
+                <tr>
+                    <th>Componente</th>
+                    <th>Clave</th>
+                </tr>
+                <tr>
+                    <td>Entity</td>
+                    <td><code class="inline-code">partial</code> + 2 ctors + <code class="inline-code">protected set</code></td>
+                </tr>
+                <tr>
+                    <td>Aggregate</td>
+                    <td>Hereda <code class="inline-code">AggregateRoot</code></td>
+                </tr>
+                <tr>
+                    <td>ValueObject</td>
+                    <td><code class="inline-code">record</code> + <code class="inline-code">Create()</code> factory</td>
+                </tr>
+                <tr>
+                    <td>Id / FK</td>
+                    <td><code class="inline-code">{ get; init; }</code> inmutable</td>
+                </tr>
+            </table>
+            
+            <div class="warning">⏸️ PR + Code Review antes de Fase 2</div>
+        </section>
+
+        <!-- Fase 2 -->
+        <section>
+            <h2>⚡ Fase 2: Commands (Paralelo - TDD)</h2>
+            
+            <div class="flow">
+                <span class="flow-item">① Test <span class="badge badge-red">red</span></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">② Command <span class="badge badge-green">green</span></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">③ PR</span>
+            </div>
+            
+            <code><span class="comment">// Domain/[Aggregate]/Commands/[Aggregate]_Update.cs</span>
+<span class="keyword">public partial class</span> <span class="type">Menu</span>
+{
+    [<span class="type">Injectable</span>(ServiceLifetime.Singleton)]
+    <span class="keyword">public class</span> <span class="type">Update</span>(IValidator&lt;Menu&gt; validator) 
+        : <span class="type">AbstractModifyCommand</span>&lt;UpdateMenuCommand, Menu&gt;
+    {
+        <span class="keyword">public override</span> Menu <span class="highlight">Handle</span>(
+            Menu entity, UpdateMenuCommand cmd)
+        {
+            entity.Name = cmd.Name;
+            <span class="keyword">return</span> validator.ValidateOrThrow(entity);
+        }
+    }
+}</code>
+
+            <h3>Clases Base</h3>
+            <table>
+                <tr>
+                    <th>Base Class</th>
+                    <th>Handle</th>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">AbstractCreateCommand&lt;TCmd, T&gt;</code></td>
+                    <td><code class="inline-code">(TCmd) → T</code></td>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">AbstractModifyCommand&lt;TCmd, T&gt;</code></td>
+                    <td><code class="inline-code">(T, TCmd) → T</code></td>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">AbstractModifyCommand&lt;T&gt;</code></td>
+                    <td><code class="inline-code">(T) → T</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Fase 3 -->
+        <section>
+            <h2>🔌 Fase 3: Api</h2>
+            
+            <code><span class="comment">// Api/Commands/CreateMenu.cs</span>
+<span class="keyword">public static class</span> <span class="type">CreateMenu</span>
+{
+    <span class="keyword">public record</span> <span class="type">Request</span>(<span class="keyword">string</span> Name, <span class="keyword">string</span>? Description);
+    <span class="keyword">public record</span> <span class="type">Response</span>(Guid Id, <span class="keyword">string</span> Name);
+    
+    <span class="keyword">public class</span> <span class="type">Handler</span>(
+        Menu.Create menuCreate, 
+        IRepository&lt;Menu&gt; repo, 
+        IUnitOfWork uow)
+    {
+        <span class="keyword">public async</span> Task&lt;Response&gt; <span class="highlight">Handle</span>(Request r)
+        {
+            <span class="keyword">var</span> cmd = <span class="keyword">new</span> CreateMenuCommand(r.Name, r.Description);
+            <span class="keyword">var</span> menu = menuCreate.Handle(cmd);
+            <span class="keyword">await</span> repo.AddAsync(menu);
+            <span class="keyword">await</span> uow.SaveChangesAsync();
+            <span class="keyword">return new</span> Response(menu.Id, menu.Name);
+        }
+    }
+    
+    <span class="keyword">public static void</span> <span class="highlight">MapEndpoint</span>(IEndpointRouteBuilder app)
+    {
+        app.MapPost(<span class="string">"/menus"</span>, <span class="keyword">async</span> (Request r, Handler h) =&gt;
+            Results.Created(...));
+    }
+}</code>
+
+            <table>
+                <tr>
+                    <th>Carpeta</th>
+                    <th>Contiene</th>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">Api/Commands/</code></td>
+                    <td>POST, PUT, DELETE</td>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">Api/Queries/</code></td>
+                    <td>GET</td>
+                </tr>
+                <tr>
+                    <td><code class="inline-code">Contracts/</code></td>
+                    <td>Response compartido (3+ usos)</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Estructura -->
+        <section>
+            <h2>📁 Estructura</h2>
+            <div class="structure">Features/[Feature]/
+├── <span class="folder">Domain/[Aggregate]/</span>
+│   ├── [Aggregate].cs
+│   ├── <span class="folder">Commands/</span>
+│   │   └── [Aggregate]_[Action].cs
+│   ├── <span class="folder">Entities/</span>
+│   ├── <span class="folder">ValueObjects/</span>
+│   └── <span class="folder">Enums/</span>
+│
+├── <span class="folder">Api/</span>
+│   ├── <span class="folder">Commands/</span>  ← POST, PUT, DELETE
+│   └── <span class="folder">Queries/</span>   ← GET
+│
+└── <span class="folder">Contracts/</span>     ← Solo si se comparte</div>
+        </section>
+
+        <!-- Guards -->
+        <section>
+            <h2>🛡️ Guards</h2>
+            <table>
+                <tr>
+                    <th>HTTP</th>
+                    <th>Guard</th>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-red">404</span></td>
+                    <td><code class="inline-code">NotFoundGuard.ThrowIfNull(e, id)</code></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-yellow">409</span></td>
+                    <td><code class="inline-code">ConflictGuard.ThrowIf(cond, msg)</code></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-blue">422</span></td>
+                    <td><code class="inline-code">ValidationGuard.ThrowIf(cond, msg, prop)</code></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-blue">422</span></td>
+                    <td><code class="inline-code">validator.ValidateOrThrow(entity)</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Propiedades Calculadas -->
+        <section>
+            <h2>🧮 Propiedades Calculadas (TDD)</h2>
+            <code><span class="comment">// Test PRIMERO</span>
+[Fact]
+<span class="keyword">public void</span> Total_ShouldIncludeTax()
+{
+    <span class="keyword">var</span> invoice = <span class="keyword">new</span> TestableInvoice()
+        .WithTaxRate(<span class="string">0.21m</span>)
+        .WithLine(qty: <span class="string">1</span>, price: <span class="string">100m</span>);
+    
+    invoice.Total.Should().Be(<span class="string">121m</span>);
+}
+
+<span class="comment">// Implementación DESPUÉS</span>
+<span class="keyword">public decimal</span> Subtotal =&gt; Lines.Sum(l =&gt; l.LineTotal);
+<span class="keyword">public decimal</span> TaxAmount =&gt; Subtotal * TaxRate;
+<span class="keyword">public decimal</span> Total =&gt; Subtotal + TaxAmount;</code>
+        </section>
+
+        <!-- No hacer -->
+        <section>
+            <h2>❌ No hacer</h2>
+            <div class="error-list">
+                <div class="error-item">Lógica en Entity → <strong>Mover a Command</strong></div>
+                <div class="error-item"><code class="inline-code">new Validator()</code> en Command → <strong>Inyectar</strong></div>
+                <div class="error-item"><code class="inline-code">Result&lt;T&gt;</code> → <strong>Exceptions + Guards</strong></div>
+                <div class="error-item"><code class="inline-code">List&lt;T&gt;</code> → <strong>HashSet&lt;T&gt;</strong></div>
+                <div class="error-item"><code class="inline-code">{ get; set; }</code> → <strong>{ get; protected set; }</strong></div>
+                <div class="error-item">Command fuera de Entity → <strong>Nested class</strong></div>
+            </div>
+        </section>
+
+        <!-- Checklist -->
+        <section>
+            <h2>✅ Checklist (TDD)</h2>
+            <ul class="checklist">
+                <li>Test éxito escrito <span class="badge badge-red">red</span></li>
+                <li>Test fallo escrito <span class="badge badge-red">red</span></li>
+                <li><code class="inline-code">partial class</code></li>
+                <li><code class="inline-code">[Injectable(ServiceLifetime.Singleton)]</code></li>
+                <li>Hereda <code class="inline-code">AbstractCommand</code> correcto</li>
+                <li>Inyecta validator</li>
+                <li>Retorna <code class="inline-code">validator.ValidateOrThrow(entity)</code></li>
+                <li>Tests pasan <span class="badge badge-green">green</span></li>
+            </ul>
+        </section>
+
+        <footer>
+            <strong>MicroDomain Pattern</strong> • Fudie Framework<br>
+            TDD: Test → Implement → Refactor
+        </footer>
+        
+    </div>
+</body>
+</html>
