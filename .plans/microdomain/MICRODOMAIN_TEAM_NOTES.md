@@ -6,7 +6,7 @@
 
 ## 🎯 Objetivo
 
-Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge. **Encapsulación real** con `protected set`.
+Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando completo** sin conflictos de merge. **Encapsulación real** con `protected set` e **inmutabilidad del Id** con `init`.
 
 ---
 
@@ -16,7 +16,8 @@ Domain/[Aggregate]/
 ├── [Aggregate].cs              ← Aggregate Root (partial)
 ├── [Aggregate]_[Action].cs     ← Command anidado (partial)
 ├── Entities/
-│   └── [Entity].cs             ← Entidades hijas
+│   ├── [Entity].cs             ← Entidad hija (partial)
+│   └── [Entity]_[Action].cs    ← Command de entidad hija (partial)
 ├── ValueObjects/
 │   └── [ValueObject].cs        ← Objetos de valor
 └── Enums/
@@ -31,26 +32,38 @@ Tests/
     └── [Entity]_[Action]Tests.cs
 ```
 
-**Naming de archivos**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`, `Menu_Activate.cs`
+**Naming de archivos**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`, `MenuCategory.cs`, `MenuCategory_Create.cs`
 
 ---
 
 ## 📋 Reglas por Componente
 
-### Entity (incluye Aggregate Root)
+### Entity Base
 ```csharp
-public partial class Foo : Entity
+public abstract class Entity(Guid id)
 {
-    protected Foo() { }                    // ← EF Core
-    public Foo(Guid id) : base(id) { }     // ← Creación
+    public Guid Id { get; init; } = id;  // ← init = inmutable después de creación
+}
+```
+
+**Regla clave**: El `Id` usa `init`, no `protected set`. Una vez creada la entidad, su identidad **nunca cambia**.
+
+---
+
+### Aggregate Root
+```csharp
+public partial class Menu : Entity
+{
+    protected Menu() { }                    // ← EF Core
+    public Menu(Guid id) : base(id) { }     // ← Creación
     
     public string Name { get; protected set; }       // ← Encapsulado
-    public HashSet<Bar> Bars { get; protected set; } = [];
+    public HashSet<MenuCategory> Categories { get; protected set; } = [];
 }
 
-public class FooValidator : AbstractValidator<Foo>
+public class MenuValidator : AbstractValidator<Menu>
 {
-    public FooValidator()
+    public MenuValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
     }
@@ -60,6 +73,7 @@ public class FooValidator : AbstractValidator<Foo>
 **Reglas**:
 - ✅ `partial class` para permitir comandos en archivos separados
 - ✅ Dos constructores (protected + public con Guid)
+- ✅ `Id` heredado con `init` (inmutable)
 - ✅ Propiedades `{ get; protected set; }` encapsuladas
 - ✅ Colecciones: `HashSet<T>` con inicializador `= []`
 - ✅ Validator en mismo archivo, clase separada
@@ -67,31 +81,87 @@ public class FooValidator : AbstractValidator<Foo>
 
 ---
 
+### Entidad Hija (también partial)
+```csharp
+// MenuCategory.cs
+public partial class MenuCategory : Entity
+{
+    protected MenuCategory() { }
+    public MenuCategory(Guid id) : base(id) { }
+    
+    public Guid MenuId { get; init; }           // ← init = inmutable
+    public string Name { get; protected set; }
+    public int DisplayOrder { get; protected set; }
+}
+
+public class MenuCategoryValidator : AbstractValidator<MenuCategory>
+{
+    public MenuCategoryValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.DisplayOrder).GreaterThanOrEqualTo(0);
+    }
+}
+```
+
+```csharp
+// MenuCategory_Create.cs
+public record CreateCategoryCommand(Guid MenuId, string Name, int DisplayOrder);
+
+public partial class MenuCategory
+{
+    [Injectable(ServiceLifetime.Singleton)]
+    public class Create(IValidator<MenuCategory> validator) 
+        : AbstractCreateCommand<CreateCategoryCommand, MenuCategory>
+    {
+        public override MenuCategory Handle(CreateCategoryCommand command)
+        {
+            var category = new MenuCategory(Guid.NewGuid())
+            {
+                MenuId = command.MenuId,
+                Name = command.Name,
+                DisplayOrder = command.DisplayOrder
+            };
+            return validator.ValidateOrThrow(category);
+        }
+    }
+}
+```
+
+**Reglas**:
+- ✅ Entidades hijas también usan `partial class`
+- ✅ `MenuId` con `init` (relación inmutable)
+- ✅ Command de creación en archivo separado
+- ✅ Se inyecta en commands del agregado padre
+
+---
+
 ### ValueObject
 ```csharp
-public record Baz
+public record Price
 {
-    public BazType Type { get; }
     public decimal Amount { get; }
+    public string Currency { get; }
     
-    private Baz(BazType type, decimal amount)
+    private Price(decimal amount, string currency)
     {
-        Type = type;
         Amount = amount;
+        Currency = currency;
     }
     
-    public static Baz Create(BazType type, decimal amount)
+    public static Price Create(decimal amount, string currency)
     {
-        var instance = new Baz(type, amount);
-        return new BazValidator().ValidateOrThrow(instance);
+        var instance = new Price(amount, currency);
+        return new PriceValidator().ValidateOrThrow(instance);
     }
 }
 
-public class BazValidator : AbstractValidator<Baz>
+public class PriceValidator : AbstractValidator<Price>
 {
-    public BazValidator()
+    public PriceValidator()
     {
         RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Currency).NotEmpty().Length(3);
     }
 }
 ```
@@ -105,30 +175,18 @@ public class BazValidator : AbstractValidator<Baz>
 
 ---
 
-### Command (Clase Anidada)
+### Command del Agregado (Clase Anidada)
 ```csharp
 // Archivo: Menu_Update.cs
-namespace Customer.Features.Menus.Domain.MenuAggregate;
-
-using Fudie.Domain;
-using Fudie.DependencyInjection;
-using Fudie.Validation;
-using FluentValidation;
-
-public record UpdateMenuCommand(
-    string Name,
-    string? Description,
-    int DisplayOrder
-);
+public record UpdateMenuCommand(string Name, string? Description, int DisplayOrder);
 
 public partial class Menu
 {
     [Injectable(ServiceLifetime.Singleton)]
-    public class Update(
-        IValidator<Menu> menuValidator
-    ) : AbstractModifyCommand<UpdateMenuCommand, Menu>
+    public class Update(IValidator<Menu> menuValidator) 
+        : AbstractModifyCommand<UpdateMenuCommand, Menu>
     {
-        protected override Menu Handle(Menu entity, UpdateMenuCommand command)
+        public override Menu Handle(Menu entity, UpdateMenuCommand command)
         {
             entity.Name = command.Name;           // ✅ Accede a protected set
             entity.Description = command.Description;
@@ -140,14 +198,42 @@ public partial class Menu
 }
 ```
 
-**Reglas**:
+---
+
+### Command que Compone Entidades Hijas
+```csharp
+// Archivo: Menu_AddCategory.cs
+public record AddCategoryCommand(string Name, int DisplayOrder);
+
+public partial class Menu
+{
+    [Injectable(ServiceLifetime.Singleton)]
+    public class AddCategory(
+        MenuCategory.Create createCategory,  // ← Inyecta command de entidad hija
+        IValidator<Menu> menuValidator
+    ) : AbstractModifyCommand<AddCategoryCommand, Menu>
+    {
+        public override Menu Handle(Menu menu, AddCategoryCommand command)
+        {
+            var category = createCategory.Handle(
+                new CreateCategoryCommand(menu.Id, command.Name, command.DisplayOrder)
+            );
+            
+            menu.Categories.Add(category);
+            return menuValidator.ValidateOrThrow(menu);
+        }
+    }
+}
+```
+
+**Reglas Commands**:
 - ✅ Archivo separado con `partial class`
 - ✅ Clase anidada dentro de la Entity
 - ✅ `[Injectable(ServiceLifetime.Singleton)]` - comandos son stateless
-- ✅ Hereda de `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>` o `AbstractModifyCommand<>`
+- ✅ Hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<,>`
 - ✅ Implementa `Handle()` con la lógica de negocio
 - ✅ Acceso a `protected set` por ser clase anidada
-- ✅ Inyectar `IValidator<T>` (no instanciar con `new`)
+- ✅ Inyectar validators y commands hijos (no instanciar con `new`)
 - ❌ NO usar `Result<T>`, `try-catch`, ni `new Validator()`
 
 ---
@@ -156,7 +242,7 @@ public partial class Menu
 
 | Namespace | Proporciona |
 |-----------|-------------|
-| `Fudie.Domain` | `Entity`, `AggregateRoot`, `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>`, `AbstractModifyCommand<>`, `ConflictException` |
+| `Fudie.Domain` | `Entity`, `AggregateRoot`, `AbstractCreateCommand<,>`, `AbstractModifyCommand<,>`, `ConflictException` |
 | `Fudie.DependencyInjection` | `[Injectable]`, `ServiceLifetime` para registro automático en DI |
 | `Fudie.Validation` | `ValidationGuard`, `ConflictGuard`, `NotFoundGuard`, `ValidateOrThrow()` |
 | `FluentValidation` | `IValidator<T>` para inyectar validators |
@@ -167,50 +253,9 @@ public partial class Menu
 
 | Clase | Método a implementar | Uso |
 |-------|---------------------|-----|
-| `AbstractCreateCommand<TCmd, TEntity>` | `protected override TEntity Handle(TCmd command)` | Crear entidad nueva |
-| `AbstractModifyCommand<TCmd, TEntity>` | `protected override TEntity Handle(TEntity entity, TCmd command)` | Modificar con datos |
-| `AbstractModifyCommand<TEntity>` | `protected override TEntity Handle(TEntity entity)` | Modificar sin datos |
-
----
-
-## 🔗 API Fluent
-
-Los comandos exponen una API fluent type-safe. El compilador fuerza el orden correcto.
-
-### Crear entidad
-```csharp
-var entity = await menuCreate
-    .Create(command)
-    .Save(uow.SaveChangesAsync)
-    .GetEntity();
-```
-
-### Modificar con datos
-```csharp
-var entity = await menuUpdate
-    .Find(repository.Get(id))
-    .Execute(command)
-    .Save(uow.SaveChangesAsync)
-    .GetEntity();
-```
-
-### Modificar sin datos
-```csharp
-var entity = await menuActivate
-    .Find(repository.Get(id))
-    .Execute()
-    .Save(uow.SaveChangesAsync)
-    .GetEntity();
-```
-
-### Sin persistir (para tests)
-```csharp
-var entity = menuCreate
-    .Create(command)
-    .GetEntity();
-```
-
-**El compilador garantiza el orden**: No puedes llamar `Execute()` sin `Find()`, ni `Save()` sin `Execute()`.
+| `AbstractCreateCommand<TCmd, TEntity>` | `TEntity Handle(TCmd command)` | Crear entidad nueva |
+| `AbstractModifyCommand<TCmd, TEntity>` | `TEntity Handle(TEntity entity, TCmd command)` | Modificar con datos |
+| `AbstractModifyCommand<TEntity>` | `TEntity Handle(TEntity entity)` | Modificar sin datos |
 
 ---
 
@@ -229,7 +274,7 @@ public partial class Menu
 {
     public class Update : AbstractModifyCommand<UpdateMenuCommand, Menu>
     {
-        protected override Menu Handle(Menu entity, UpdateMenuCommand command)
+        public override Menu Handle(Menu entity, UpdateMenuCommand command)
         {
             entity.Name = command.Name;  // ✅ Compila - clase anidada
             return entity;
@@ -237,9 +282,70 @@ public partial class Menu
     }
 }
 
-// En Handler (fuera de Menu)
+// En cualquier otra clase
 menu.Name = "Hack";  // ❌ No compila - protected set
 ```
+
+---
+
+## 🔄 Flujo en Handler (Imperativo)
+```csharp
+app.MapPost("/menus", async (
+    CreateMenuRequest request,
+    Menu.Create menuCreate,
+    IRepository<Menu> repo,
+    IUnitOfWork uow) =>
+{
+    var command = new CreateMenuCommand(request.Name, request.Description, request.DisplayOrder);
+    
+    var menu = menuCreate.Handle(command);
+    
+    await repo.AddAsync(menu);
+    await uow.SaveChangesAsync();
+    
+    return Results.Created($"/menus/{menu.Id}", MapToResponse(menu));
+});
+
+app.MapPut("/menus/{id}", async (
+    Guid id,
+    UpdateMenuRequest request,
+    Menu.Update menuUpdate,
+    IRepository<Menu> repo,
+    IUnitOfWork uow) =>
+{
+    var menu = await repo.GetAsync(id);
+    NotFoundGuard.ThrowIfNull(menu, id);
+    
+    var command = new UpdateMenuCommand(request.Name, request.Description, request.DisplayOrder);
+    
+    var updated = menuUpdate.Handle(menu, command);
+    
+    await uow.SaveChangesAsync();
+    
+    return Results.Ok(MapToResponse(updated));
+});
+
+app.MapPost("/menus/{id}/categories", async (
+    Guid id,
+    AddCategoryRequest request,
+    Menu.AddCategory addCategory,
+    IRepository<Menu> repo,
+    IUnitOfWork uow) =>
+{
+    var menu = await repo.GetAsync(id);
+    NotFoundGuard.ThrowIfNull(menu, id);
+    
+    var command = new AddCategoryCommand(request.Name, request.DisplayOrder);
+    
+    var updated = addCategory.Handle(menu, command);
+    
+    await uow.SaveChangesAsync();
+    
+    return Results.Ok(MapToResponse(updated));
+});
+```
+
+**Nota**: `GlobalExceptionHandler` convierte las excepciones en respuestas HTTP apropiadas.
 
 ---
 
@@ -254,8 +360,10 @@ Tests/
 │       └── TestableMenuCategory.cs
 └── Domain/
     ├── MenuValidatorTests.cs
+    ├── MenuCategoryValidatorTests.cs
     ├── Menu_CreateTests.cs
-    └── Menu_UpdateTests.cs
+    ├── Menu_UpdateTests.cs
+    └── Menu_AddCategoryTests.cs
 ```
 
 ### Testable Helpers
@@ -267,7 +375,6 @@ public class TestableMenu : Menu
 {
     public TestableMenu() : base(Guid.NewGuid()) { }
     
-    // Solo propiedades validadas en MenuValidator
     public TestableMenu WithName(string name)
     {
         Name = name;
@@ -323,11 +430,10 @@ public class Menu_CreateTests
         var command = new CreateMenuCommand("Menú del día", "Descripción", 1);
         var createMenu = new Menu.Create(new MenuValidator());
         
-        var menu = createMenu
-            .Create(command)
-            .GetEntity();
+        var menu = createMenu.Handle(command);
         
         menu.Name.Should().Be("Menú del día");
+        menu.Id.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -336,9 +442,30 @@ public class Menu_CreateTests
         var command = new CreateMenuCommand("", null, 0);
         var createMenu = new Menu.Create(new MenuValidator());
         
-        var act = () => createMenu.Create(command).GetEntity();
+        var act = () => createMenu.Handle(command);
         
         act.Should().Throw<ValidationException>();
+    }
+}
+
+public class Menu_AddCategoryTests
+{
+    [Fact]
+    public void AddCategory_ValidCommand_ShouldAddToCollection()
+    {
+        var menu = new Menu.Create(new MenuValidator())
+            .Handle(new CreateMenuCommand("Menú", null, 1));
+        
+        var addCategory = new Menu.AddCategory(
+            new MenuCategory.Create(new MenuCategoryValidator()),
+            new MenuValidator()
+        );
+        
+        var updated = addCategory.Handle(menu, new AddCategoryCommand("Entrantes", 1));
+        
+        updated.Categories.Should().HaveCount(1);
+        updated.Categories.First().Name.Should().Be("Entrantes");
+        updated.Categories.First().MenuId.Should().Be(menu.Id);
     }
 }
 ```
@@ -382,41 +509,14 @@ Esto garantiza independencia de equipos: el validador funciona antes de que exis
 
 ---
 
-## 🔄 Flujo en Handler
-```csharp
-app.MapPut("/menus/{id}", async (
-    Guid id,
-    MenuUpdateRequest request,
-    Menu.Update menuUpdate,
-    IGet<Menu, Guid> repo,
-    IUnitOfWork uow,
-    ILogger<Program> logger) =>
-{
-    var cmd = new UpdateMenuCommand(request.Name, request.Description, request.DisplayOrder);
-    
-    var updated = await menuUpdate
-        .Find(repo.Get(id))
-        .Execute(cmd)
-        .Save(uow.SaveChangesAsync)
-        .GetEntity();
-    
-    logger.LogInformation("Updated Menu {Id}", updated.Id);
-    return Results.Ok(MapToResponse(updated));
-});
-```
-
-**Nota**: `GlobalExceptionHandler` convierte las excepciones en respuestas HTTP apropiadas.
-
----
-
 ## ⚡ Orden de Desarrollo
 
 ### Fase 1: Modelo de Dominio (TODO EL EQUIPO)
 ```
 1. Enums           (0 dependencias)
 2. ValueObjects    (solo enums)
-3. Entity hoja     (sin hijos)
-4. Entity padre    (con colecciones)
+3. Entity hoja     (sin hijos, partial class)
+4. Entity padre    (con colecciones, partial class)
 5. Aggregate Root  (partial class)
 6. Testable helpers
 7. Tests de Validators
@@ -434,8 +534,9 @@ app.MapPut("/menus/{id}", async (
 
 ### Fase 2: Commands (EN PARALELO)
 ```
-8. Commands        (cada dev toma uno o más)
-9. Tests de Commands
+8. Commands de entidades hijas  (ej: MenuCategory.Create)
+9. Commands del agregado        (cada dev toma uno o más)
+10. Tests de Commands
 ```
 
 Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
@@ -453,6 +554,7 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 | Error | Corrección |
 |-------|------------|
 | Lógica en Entity | Mover a Command |
+| `protected set` en Id | Usar `init` (inmutable) |
 | Constructor público en ValueObject | Usar factory `Create()` |
 | Usar `Result<T>` | Lanzar excepciones con Guards |
 | Instanciar validator con `new` en comando | Inyectar `IValidator<T>` |
@@ -463,6 +565,8 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 | Command fuera de la Entity | Usar `partial class` + clase anidada |
 | `{ get; set; }` público | Usar `{ get; protected set; }` |
 | `new` en Testable helper | Usar métodos `With*` que asignan a la propiedad base |
+| Entidad hija sin `partial` | También usar `partial class` |
+| Instanciar entidad hija directamente | Inyectar y usar su Command.Create |
 
 ---
 
@@ -471,7 +575,9 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 ### Fase 1: Modelo
 - [ ] Entity es `partial class`
 - [ ] Entity tiene dos constructores
-- [ ] Entity usa `{ get; protected set; }`
+- [ ] `Id` usa `init` (no `protected set`)
+- [ ] Propiedades usan `{ get; protected set; }`
+- [ ] Relaciones inmutables (MenuId) usan `init`
 - [ ] Validator en mismo archivo que Entity
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
 - [ ] Testable helper creado con métodos `With*`
@@ -480,12 +586,11 @@ Cada comando en su propio archivo `[Entity]_[Action].cs` como `partial class`.
 ### Fase 2: Commands
 - [ ] Command es clase anidada en `partial class`
 - [ ] Command tiene `[Injectable(ServiceLifetime.Singleton)]`
-- [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<>`
+- [ ] Command hereda de `AbstractCreateCommand<,>` o `AbstractModifyCommand<,>`
 - [ ] Command implementa `Handle()` con lógica de negocio
-- [ ] Command inyecta validators (no usa `new`)
+- [ ] Command inyecta validators y commands hijos (no usa `new`)
 - [ ] Command usa Guards apropiados (404/409/422)
 - [ ] Command retorna entidad validada
-- [ ] Handler usa API fluent completa
 - [ ] Tests de Command cubren éxito y fallo
 - [ ] Archivo nombrado `[Entity]_[Action].cs`
 

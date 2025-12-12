@@ -111,6 +111,45 @@
             </div>
         </section>
 
+        <!-- Id Inmutable -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔐 Id Inmutable con init</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-purple-500/30">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-purple-400">Entity Base</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public abstract class</span> <span class="text-cyan-300">Entity</span>(Guid id)
+{
+    <span class="text-purple-400">public</span> Guid Id { <span class="text-purple-400">get</span>; <span class="text-pink-400">init</span>; } = id;
+}</code></pre>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-slate-400">¿Por qué init?</h3>
+                        <div class="space-y-3 text-slate-300">
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400">✓</span>
+                                <span>Solo asignable en construcción</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400">✓</span>
+                                <span>Inmutable después de crear</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400">✓</span>
+                                <span>Compilador lo garantiza</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-red-400">✗</span>
+                                <span class="text-slate-500">protected set permite cambios</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Componentes -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">📦 Componentes</h2>
@@ -118,9 +157,16 @@
                 
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-cyan-500/50 transition-colors">
                     <div class="text-3xl mb-3">📋</div>
-                    <h3 class="font-bold text-lg mb-2">Entity</h3>
+                    <h3 class="font-bold text-lg mb-2">Aggregate Root</h3>
                     <p class="text-slate-400 text-sm mb-3">partial + protected set</p>
-                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">{ get; protected set; }</code>
+                    <code class="text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded">Id { get; init; }</code>
+                </div>
+                
+                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-pink-500/50 transition-colors">
+                    <div class="text-3xl mb-3">📎</div>
+                    <h3 class="font-bold text-lg mb-2">Entidad Hija</h3>
+                    <p class="text-slate-400 text-sm mb-3">También partial</p>
+                    <code class="text-xs text-pink-300 bg-slate-800 px-2 py-1 rounded">MenuCategory</code>
                 </div>
                 
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-purple-500/50 transition-colors">
@@ -128,13 +174,6 @@
                     <h3 class="font-bold text-lg mb-2">ValueObject</h3>
                     <p class="text-slate-400 text-sm mb-3">Record inmutable</p>
                     <code class="text-xs text-purple-300 bg-slate-800 px-2 py-1 rounded">Create() factory</code>
-                </div>
-                
-                <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-amber-500/50 transition-colors">
-                    <div class="text-3xl mb-3">✅</div>
-                    <h3 class="font-bold text-lg mb-2">Validator</h3>
-                    <p class="text-slate-400 text-sm mb-3">FluentValidation</p>
-                    <code class="text-xs text-amber-300 bg-slate-800 px-2 py-1 rounded">Mismo archivo</code>
                 </div>
                 
                 <div class="card-gradient rounded-xl p-5 border border-slate-700 hover:border-emerald-500/50 transition-colors">
@@ -147,28 +186,82 @@
             </div>
         </section>
 
-        <!-- API Fluent -->
+        <!-- Entidades Hijas -->
         <section class="mb-12">
-            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔗 API Fluent Type-Safe</h2>
-            <div class="card-gradient rounded-2xl p-8 border border-slate-700">
-                <div class="flex flex-wrap justify-center items-center gap-4 text-lg">
-                    <div class="bg-blue-600 px-4 py-2 rounded-lg font-mono font-bold">Find()</div>
-                    <span class="text-cyan-400 text-2xl">→</span>
-                    <div class="bg-purple-600 px-4 py-2 rounded-lg font-mono font-bold">Execute()</div>
-                    <span class="text-cyan-400 text-2xl">→</span>
-                    <div class="bg-emerald-600 px-4 py-2 rounded-lg font-mono font-bold">Save()</div>
-                    <span class="text-cyan-400 text-2xl">→</span>
-                    <div class="bg-amber-600 px-4 py-2 rounded-lg font-mono font-bold">GetEntity()</div>
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">📎 Entidades Hijas con Partial</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-pink-500/30">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-pink-400">MenuCategory.cs</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-pink-300">MenuCategory</span> : Entity
+{
+    <span class="text-purple-400">public</span> Guid MenuId { <span class="text-purple-400">get</span>; <span class="text-pink-400">init</span>; }
+    <span class="text-purple-400">public</span> <span class="text-blue-300">string</span> Name { <span class="text-purple-400">get</span>; <span class="text-amber-400">protected set</span>; }
+}</code></pre>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-pink-400">MenuCategory_Create.cs</h3>
+                        <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                            <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-pink-300">MenuCategory</span>
+{
+    <span class="text-purple-400">public class</span> <span class="text-emerald-300">Create</span> : AbstractCreateCommand
+    {
+        <span class="text-purple-400">return new</span> MenuCategory(Guid.NewGuid())
+        {
+            MenuId = cmd.MenuId,
+            Name = cmd.Name
+        };
+    }
+}</code></pre>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-center text-slate-400 mt-6">El compilador fuerza el orden correcto</p>
-                
-                <div class="mt-8 bg-slate-900 rounded-xl p-6 overflow-x-auto">
-                    <pre class="text-sm"><code class="text-slate-300"><span class="text-slate-500">// El compilador garantiza el flujo</span>
-<span class="text-purple-400">var</span> menu = <span class="text-cyan-400">await</span> menuUpdate
-    .<span class="text-blue-400">Find</span>(repository.Get(id))
-    .<span class="text-purple-400">Execute</span>(command)
-    .<span class="text-emerald-400">Save</span>(uow.SaveChangesAsync)
-    .<span class="text-amber-400">GetEntity</span>();</code></pre>
+                <div class="mt-6 text-center">
+                    <p class="text-slate-400"><code class="text-pink-400">MenuId</code> usa <code class="text-pink-400">init</code> → relación inmutable con el agregado padre</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Composición de Commands -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔗 Composición: Command Padre + Command Hijo</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-amber-500/30">
+                <h3 class="font-bold text-lg mb-4 text-amber-400">Menu_AddCategory.cs</h3>
+                <div class="bg-slate-900 rounded-xl p-4 overflow-x-auto">
+                    <pre class="text-sm"><code class="text-slate-300"><span class="text-purple-400">public partial class</span> <span class="text-cyan-300">Menu</span>
+{
+    <span class="text-purple-400">public class</span> <span class="text-amber-300">AddCategory</span>(
+        <span class="text-pink-300">MenuCategory.Create</span> createCategory,  <span class="text-green-400">// ← Inyecta command hijo</span>
+        IValidator&lt;Menu&gt; menuValidator
+    ) : AbstractModifyCommand
+    {
+        <span class="text-purple-400">public override</span> Menu <span class="text-blue-300">Handle</span>(Menu menu, AddCategoryCommand cmd)
+        {
+            <span class="text-purple-400">var</span> category = createCategory.Handle(
+                <span class="text-purple-400">new</span> CreateCategoryCommand(menu.Id, cmd.Name)
+            );
+            
+            menu.Categories.Add(category);
+            <span class="text-purple-400">return</span> menuValidator.ValidateOrThrow(menu);
+        }
+    }
+}</code></pre>
+                </div>
+                <div class="mt-6 grid md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-slate-800/50 rounded-lg p-3">
+                        <span class="text-emerald-400">✓</span>
+                        <span class="text-slate-300 text-sm ml-2">DI limpia y testeable</span>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-3">
+                        <span class="text-emerald-400">✓</span>
+                        <span class="text-slate-300 text-sm ml-2">Entidad hija inmutable desde fuera</span>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-3">
+                        <span class="text-emerald-400">✓</span>
+                        <span class="text-slate-300 text-sm ml-2">Archivos independientes</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -193,7 +286,7 @@
                         Handle(TEntity entity)<br>
                         <span class="text-slate-500">→ TEntity</span>
                     </code>
-                    <p class="text-slate-400 text-sm mt-3">Modificar sin datos (activate/deactivate)</p>
+                    <p class="text-slate-400 text-sm mt-3">Modificar sin datos (activate)</p>
                 </div>
                 
                 <div class="card-gradient rounded-xl p-6 border border-purple-500/30">
@@ -205,6 +298,34 @@
                     <p class="text-slate-400 text-sm mt-3">Modificar con datos</p>
                 </div>
                 
+            </div>
+        </section>
+
+        <!-- Handler Imperativo -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 text-cyan-300">🔄 Handler Imperativo</h2>
+            <div class="card-gradient rounded-2xl p-8 border border-slate-700">
+                <div class="bg-slate-900 rounded-xl p-6 overflow-x-auto">
+                    <pre class="text-sm"><code class="text-slate-300">app.MapPost(<span class="text-green-300">"/menus/{id}/categories"</span>, <span class="text-purple-400">async</span> (
+    Guid id,
+    AddCategoryRequest request,
+    <span class="text-amber-300">Menu.AddCategory</span> addCategory,  <span class="text-green-400">// ← Inyectado por DI</span>
+    IRepository&lt;Menu&gt; repo,
+    IUnitOfWork uow) =>
+{
+    <span class="text-purple-400">var</span> menu = <span class="text-cyan-400">await</span> repo.GetAsync(id);
+    NotFoundGuard.ThrowIfNull(menu, id);
+    
+    <span class="text-purple-400">var</span> command = <span class="text-purple-400">new</span> AddCategoryCommand(request.Name, request.DisplayOrder);
+    
+    <span class="text-purple-400">var</span> updated = addCategory.<span class="text-blue-300">Handle</span>(menu, command);
+    
+    <span class="text-cyan-400">await</span> uow.SaveChangesAsync();
+    
+    <span class="text-purple-400">return</span> Results.Ok(MapToResponse(updated));
+});</code></pre>
+                </div>
+                <p class="text-center text-slate-400 mt-6">Flujo claro: Buscar → Ejecutar → Persistir</p>
             </div>
         </section>
 
@@ -298,19 +419,16 @@ result.IsValid.Should().BeFalse();</code></pre>
                                 <span class="text-emerald-400">②</span> ValueObjects
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-emerald-400">③</span> Entity hoja
+                                <span class="text-emerald-400">③</span> Entity hija (partial)
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-emerald-400">④</span> Entity padre
+                                <span class="text-emerald-400">④</span> Aggregate Root (partial)
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-emerald-400">⑤</span> Aggregate Root (partial)
+                                <span class="text-pink-400">⑤</span> Testable Helpers
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-pink-400">⑥</span> Testable Helpers
-                            </div>
-                            <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-pink-400">⑦</span> Tests de Validators
+                                <span class="text-pink-400">⑥</span> Tests de Validators
                             </div>
                         </div>
                         <div class="mt-4 ml-10 text-amber-400 text-sm">
@@ -326,16 +444,16 @@ result.IsValid.Should().BeFalse();</code></pre>
                         </h3>
                         <div class="space-y-2 ml-10">
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-cyan-400">Dev A</span> → Menu_Create.cs + Tests
+                                <span class="text-pink-400">Dev A</span> → MenuCategory_Create.cs
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-purple-400">Dev B</span> → Menu_Update.cs + Tests
+                                <span class="text-cyan-400">Dev B</span> → Menu_Create.cs
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-amber-400">Dev C</span> → Menu_AddCategory.cs + Tests
+                                <span class="text-purple-400">Dev C</span> → Menu_Update.cs
                             </div>
                             <div class="flex items-center gap-2 text-slate-300">
-                                <span class="text-emerald-400">Dev D</span> → Menu_Activate.cs + Tests
+                                <span class="text-amber-400">Dev D</span> → Menu_AddCategory.cs
                             </div>
                         </div>
                         <div class="mt-4 ml-10 text-emerald-400 text-sm">
@@ -360,8 +478,8 @@ result.IsValid.Should().BeFalse();</code></pre>
                 
                 <div class="text-center">
                     <div class="text-4xl mb-3">🔒</div>
-                    <h3 class="font-bold text-sm mb-1">Type-Safe</h3>
-                    <p class="text-slate-400 text-xs">Compilador fuerza</p>
+                    <h3 class="font-bold text-sm mb-1">Id Inmutable</h3>
+                    <p class="text-slate-400 text-xs">init garantiza</p>
                 </div>
                 
                 <div class="text-center">
@@ -373,7 +491,7 @@ result.IsValid.Should().BeFalse();</code></pre>
                 <div class="text-center">
                     <div class="text-4xl mb-3">⚡</div>
                     <h3 class="font-bold text-sm mb-1">Singleton</h3>
-                    <p class="text-slate-400 text-xs">Builders efímeros</p>
+                    <p class="text-slate-400 text-xs">Commands stateless</p>
                 </div>
                 
                 <div class="text-center">
