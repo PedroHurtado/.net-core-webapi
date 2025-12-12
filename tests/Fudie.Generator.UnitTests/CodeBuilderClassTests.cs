@@ -115,6 +115,29 @@ public class CodeBuilderClassTests
     #region Usings
 
     [Fact]
+    public void GenerateRepositoryClass_ShouldIncludeNullableEnableDirective()
+    {
+        // Arrange
+        var config = new CodeBuilder.RepositoryConfig
+        {
+            ImplementIGet = true
+        };
+
+        // Act
+        var result = CodeBuilder.GenerateRepositoryClass(
+            "CustomerRepository",
+            "MyApp.Repositories",
+            "Customer",
+            "Guid",
+            config);
+
+        // Assert
+        result.Should().Contain("#nullable enable");
+        // Should appear at the beginning of the file
+        result.Should().StartWith("#nullable enable");
+    }
+
+    [Fact]
     public void GenerateRepositoryClass_ShouldIncludeAllRequiredUsings()
     {
         // Arrange

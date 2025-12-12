@@ -281,6 +281,10 @@ internal static class CodeBuilder
     {
         var sb = new StringBuilder();
 
+        // Enable nullable annotations
+        sb.AppendLine("#nullable enable");
+        sb.AppendLine();
+
         // Usings
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Collections.Generic;");
