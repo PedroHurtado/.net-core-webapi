@@ -183,7 +183,7 @@ public sealed class IncludeAttribute<TEntity> : Attribute where TEntity : class
 /// [Tracking(false)] // Deshabilitar tracking
 /// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public class TrackingAttribute(bool enabled = true) : Attribute
 {
     /// <summary>
@@ -238,7 +238,7 @@ public class TrackingAttribute(bool enabled = true) : Attribute
 /// public interface ICustomerWriteRepository : IUpdate&lt;Customer, Guid&gt; { }
 /// </code>
 /// </example>
-[AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class AsNoTrackingAttribute : TrackingAttribute
 {
     /// <summary>

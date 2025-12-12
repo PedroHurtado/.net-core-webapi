@@ -101,9 +101,25 @@ public class TrackingAttributeTests
 
         // Assert
         attributeUsage.Should().NotBeNull();
-        attributeUsage!.ValidOn.Should().Be(AttributeTargets.Interface);
+        attributeUsage!.ValidOn.Should().Be(AttributeTargets.Interface | AttributeTargets.Method);
         attributeUsage.AllowMultiple.Should().BeFalse();
         attributeUsage.Inherited.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TrackingAttribute_ShouldBeApplicableToMethods()
+    {
+        // Arrange
+        var attributeType = typeof(TrackingAttribute);
+
+        // Act
+        var attributeUsage = attributeType.GetCustomAttributes(typeof(AttributeUsageAttribute), false)
+            .Cast<AttributeUsageAttribute>()
+            .FirstOrDefault();
+
+        // Assert
+        attributeUsage.Should().NotBeNull();
+        attributeUsage!.ValidOn.HasFlag(AttributeTargets.Method).Should().BeTrue();
     }
 
     #endregion

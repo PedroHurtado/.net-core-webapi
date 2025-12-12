@@ -85,10 +85,10 @@ namespace Fudie.Infrastructure
         public IncludeAttribute(params string[] paths) { }
     }
 
-    [System.AttributeUsage(System.AttributeTargets.Interface)]
+    [System.AttributeUsage(System.AttributeTargets.Interface | System.AttributeTargets.Method)]
     public class AsNoTrackingAttribute : System.Attribute { }
 
-    [System.AttributeUsage(System.AttributeTargets.Interface)]
+    [System.AttributeUsage(System.AttributeTargets.Interface | System.AttributeTargets.Method)]
     public class TrackingAttribute : System.Attribute
     {
         public TrackingAttribute(bool enabled) { }

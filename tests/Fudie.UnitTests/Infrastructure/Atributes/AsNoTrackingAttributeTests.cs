@@ -112,9 +112,25 @@ public class AsNoTrackingAttributeTests
 
         // Assert
         attributeUsage.Should().NotBeNull();
-        attributeUsage!.ValidOn.Should().Be(AttributeTargets.Interface);
+        attributeUsage!.ValidOn.Should().Be(AttributeTargets.Interface | AttributeTargets.Method);
         attributeUsage.AllowMultiple.Should().BeFalse();
         attributeUsage.Inherited.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AsNoTrackingAttribute_ShouldBeApplicableToMethods()
+    {
+        // Arrange
+        var attributeType = typeof(AsNoTrackingAttribute);
+
+        // Act
+        var attributeUsage = attributeType.GetCustomAttributes(typeof(AttributeUsageAttribute), false)
+            .Cast<AttributeUsageAttribute>()
+            .FirstOrDefault();
+
+        // Assert
+        attributeUsage.Should().NotBeNull();
+        attributeUsage!.ValidOn.HasFlag(AttributeTargets.Method).Should().BeTrue();
     }
 
     #endregion
