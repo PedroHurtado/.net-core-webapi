@@ -382,3 +382,110 @@ public sealed class IgnoreQueryFiltersAttribute : Attribute
     {
     }
 }
+
+/// <summary>
+/// Marca una interfaz para que el Source Generator genere una implementación de repositorio,
+/// sin requerir herencia de IGet, IAdd, IUpdate o IRemove.
+/// </summary>
+/// <typeparam name="TEntity">Tipo de la entidad que maneja el repositorio</typeparam>
+/// <typeparam name="TId">Tipo del identificador de la entidad (default: Guid)</typeparam>
+/// <remarks>
+/// <para>
+/// Este atributo permite crear repositorios que solo exponen query methods personalizados,
+/// sin heredar los métodos CRUD base (Get, Add, Update, Remove).
+/// </para>
+/// <para>
+/// <strong>Caso de uso principal: Seguridad en arquitecturas multi-tenant</strong>
+/// </para>
+/// <para>
+/// En sistemas multi-tenant, exponer un método Get(id) sin filtro de tenant es un riesgo
+/// de seguridad. Con [GenerateRepository] puedes crear repositorios que SOLO exponen
+/// métodos con filtros obligatorios.
+/// </para>
+/// <para>
+/// <strong>Comparación:</strong>
+/// </para>
+/// <list type="bullet">
+/// <item>
+/// <description>Con IGet: Genera Get(id) + query methods → Riesgo si olvidan filtrar por tenant</description>
+/// </item>
+/// <item>
+/// <description>Con [GenerateRepository]: Solo genera query methods → Seguro por diseño</description>
+/// </item>
+/// </list>
+/// </remarks>
+/// <example>
+/// <code>
+/// // ✅ Repositorio multi-tenant seguro - NO expone Get(id)
+/// [GenerateRepository&lt;Tenant, Guid&gt;]
+/// [Tracking]
+/// public interface ITenantRepository
+/// {
+///     Task&lt;Tenant?&gt; FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+///     Task&lt;List&lt;Tenant&gt;&gt; FindByRestaurantId(Guid restaurantId);
+/// }
+///
+/// // ✅ También funciona con otros atributos
+/// [GenerateRepository&lt;Order, Guid&gt;]
+/// [AsNoTracking]
+/// [AsSplitQuery]
+/// public interface IOrderQueryRepository
+/// {
+///     Task&lt;List&lt;Order&gt;&gt; FindByCustomerIdAndStatus(Guid customerId, string status);
+///     Task&lt;int&gt; CountByStatus(string status);
+///     Task&lt;bool&gt; ExistsByCustomerIdAndProductId(Guid customerId, Guid productId);
+/// }
+///
+/// // ❌ INCORRECTO - No tiene query methods
+/// [GenerateRepository&lt;Product, Guid&gt;]
+/// public interface IProductRepository { }  // Error: debe tener al menos un query method
+/// </code>
+/// </example>
+[AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+public sealed class GenerateRepositoryAttribute<TEntity, TId> : Attribute
+    where TEntity : class
+{
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="GenerateRepositoryAttribute{TEntity, TId}"/>.
+    /// </summary>
+    /// <remarks>
+    /// Este atributo no requiere parámetros adicionales. Los tipos genéricos especifican
+    /// la entidad y el tipo de ID para el repositorio generado.
+    /// </remarks>
+    public GenerateRepositoryAttribute()
+    {
+    }
+}
+
+/// <summary>
+/// Marca una interfaz para que el Source Generator genere una implementación de repositorio,
+/// sin requerir herencia de IGet, IAdd, IUpdate o IRemove. Usa Guid como tipo de ID por defecto.
+/// </summary>
+/// <typeparam name="TEntity">Tipo de la entidad que maneja el repositorio</typeparam>
+/// <remarks>
+/// <para>
+/// Esta es una versión simplificada de <see cref="GenerateRepositoryAttribute{TEntity, TId}"/>
+/// que usa <see cref="Guid"/> como tipo de ID por defecto.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Equivalente a [GenerateRepository&lt;Tenant, Guid&gt;]
+/// [GenerateRepository&lt;Tenant&gt;]
+/// public interface ITenantRepository
+/// {
+///     Task&lt;Tenant?&gt; FindFirstByIdAndRestaurantId(Guid id, Guid restaurantId);
+/// }
+/// </code>
+/// </example>
+[AttributeUsage(AttributeTargets.Interface, AllowMultiple = false, Inherited = false)]
+public sealed class GenerateRepositoryAttribute<TEntity> : Attribute
+    where TEntity : class
+{
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="GenerateRepositoryAttribute{TEntity}"/>.
+    /// </summary>
+    public GenerateRepositoryAttribute()
+    {
+    }
+}
