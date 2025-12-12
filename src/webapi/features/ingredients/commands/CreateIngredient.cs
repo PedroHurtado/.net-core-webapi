@@ -5,6 +5,7 @@ using Fudie.Domain;
 using Fudie.DependencyInjection;
 using System.ComponentModel.DataAnnotations;
 using Fudie.Features;
+using webapi.domain.slice;
 
 namespace webapi.features.ingredients.commands;
 
@@ -47,7 +48,7 @@ public class CreateIngredient : IFeatureModule
 
     [Injectable]
     public class Service(IRepository repository,
-    IUnitOfWork unitOfWork) : IService
+    IUnitOfWork unitOfWork, ICreateFoo createFoo) : IService
     {
 
         /*private readonly IRepository _repo2=repo2;
@@ -55,7 +56,8 @@ public class CreateIngredient : IFeatureModule
         private readonly IUnitOfWork _unifOfWork = unitOfWork;*/
 
         public async Task<Response> HandlerAsync(Request request)
-        {            
+        {          
+            createFoo.Handle();  
             
             var ingredient = Ingredient.Create(
                 Guid.NewGuid(),

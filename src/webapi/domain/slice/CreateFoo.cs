@@ -1,6 +1,13 @@
+using Fudie.DependencyInjection;
+
 namespace webapi.domain.slice;
 
-public class CreateFoo(Foo.FooSave fooSave)
+public interface ICreateFoo
+{
+    public void Handle();
+}
+[Injectable]
+public class CreateFoo(Foo.FooSave fooSave):ICreateFoo
 {   
     public void Handle()
     {
