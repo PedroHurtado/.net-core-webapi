@@ -4,7 +4,7 @@ using FluentValidation;
 
 public abstract class Entity(Guid id)
 {
-    public Guid Id { get; protected set; } = id;
+    public Guid Id { get; init ; } = id;
 
     public override bool Equals(object? obj)
     {
