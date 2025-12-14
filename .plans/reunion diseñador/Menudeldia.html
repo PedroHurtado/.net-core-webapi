@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menús del Día | Fudie Admin - Prototipo UX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#FF4F5A',
+                        primaryDark: '#E63E49',
+                        secondary: '#1F2937',
+                        light: '#F9FAFB',
+                        surface: '#FFFFFF',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        info: '#3B82F6'
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.1)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .menu-card:hover { transform: translateY(-2px); }
+        .day-tab.active { background-color: #FF4F5A; color: white; }
+        .day-tab.configured::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #10B981;
+            border-radius: 50%;
+        }
+        .category-section:hover .category-actions { opacity: 1; }
+        .category-actions { opacity: 0; transition: opacity 0.2s; }
+        .item-row:hover { background-color: #f9fafb; }
+        .view { display: none; }
+        .view.active { display: block; }
+    </style>
+</head>
+
+<body class="bg-light font-sans text-gray-900 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
+        <div class="h-20 flex items-center px-8 border-b border-gray-50">
+            <span class="font-bold text-2xl tracking-tight">fudie<span class="text-primary">.admin</span></span>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-calendar-alt w-5"></i> Reservas
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-book-open w-5"></i> Cartas
+            </a>
+            <a href="#" onclick="showView('list')" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/5 text-primary font-bold">
+                <i class="fas fa-utensils w-5"></i> Menús del Día
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-shield-alt w-5"></i> Políticas
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-all">
+                <i class="fas fa-cog w-5"></i> Configuración
+            </a>
+        </nav>
+
+        <!-- Navegación Prototipo -->
+        <div class="p-4 border-t border-gray-50 bg-amber-50">
+            <p class="text-[10px] font-bold text-amber-600 uppercase mb-2">🎨 Navegación Prototipo</p>
+            <div class="space-y-1">
+                <button onclick="showView('list')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Lista Menús del Día
+                </button>
+                <button onclick="showView('create')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Crear Nuevo
+                </button>
+                <button onclick="showView('edit')" class="w-full text-left px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-all">
+                    → Editar (con datos)
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Mobile Header -->
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:hidden">
+            <span class="font-bold text-xl">fudie<span class="text-primary">.admin</span></span>
+            <button class="text-gray-500"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto">
+
+            <!-- ==================== VIEW 1: LISTA DE MENÚS DEL DÍA ==================== -->
+            <div id="view-list" class="view active p-4 md:p-8">
+                <div class="max-w-6xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Menús del Día</h1>
+                            <p class="text-gray-500 text-sm mt-1">Gestiona tus menús de precio fijo por día de la semana</p>
+                        </div>
+                        <button onclick="showView('create')"
+                            class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Menú del Día
+                        </button>
+                    </div>
+
+                    <!-- Info Box -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-8 flex items-start gap-3">
+                        <i class="fas fa-lightbulb text-blue-500 mt-0.5"></i>
+                        <div>
+                            <p class="text-sm text-blue-800 font-medium">¿Qué es un Menú del Día?</p>
+                            <p class="text-xs text-blue-700 mt-1">Un menú de precio fijo donde configuras los platos disponibles para cada día de la semana. Ideal para menús ejecutivos, menús del mediodía, etc.</p>
+                        </div>
+                    </div>
+
+                    <!-- Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <!-- Card 1: Menú del Día Activo -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg"
+                            onclick="showView('edit')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 text-xl">
+                                            <i class="fas fa-sun"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Menú del Día</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Activo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <!-- Precio destacado -->
+                                <div class="flex items-baseline gap-2 mb-4">
+                                    <span class="text-3xl font-bold text-primary">15,00€</span>
+                                    <span class="text-sm text-gray-400">precio fijo</span>
+                                </div>
+                                
+                                <!-- Días configurados -->
+                                <div class="mb-4">
+                                    <p class="text-xs text-gray-500 uppercase font-bold mb-2">Días configurados</p>
+                                    <div class="flex gap-1">
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center" title="Lunes configurado">L</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center" title="Martes configurado">M</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center" title="Miércoles configurado">X</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center" title="Jueves configurado">J</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center" title="Viernes configurado">V</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center" title="Sábado no configurado">S</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center" title="Domingo no configurado">D</span>
+                                    </div>
+                                </div>
+
+                                <!-- Horario -->
+                                <div class="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Solo mediodía</span>
+                                </div>
+
+                                <!-- Tags -->
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600">
+                                        <i class="fas fa-coffee text-xs"></i>
+                                        <span class="text-[10px] font-bold">CAFÉ INCL.</span>
+                                    </div>
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 text-purple-600">
+                                        <i class="fas fa-wine-glass-alt text-xs"></i>
+                                        <span class="text-[10px] font-bold">BEBIDA INCL.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Menú Ejecutivo -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg"
+                            onclick="showView('edit')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 text-xl">
+                                            <i class="fas fa-briefcase"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Menú Ejecutivo</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Activo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-baseline gap-2 mb-4">
+                                    <span class="text-3xl font-bold text-primary">22,00€</span>
+                                    <span class="text-sm text-gray-400">precio fijo</span>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <p class="text-xs text-gray-500 uppercase font-bold mb-2">Días configurados</p>
+                                    <div class="flex gap-1">
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center">L</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center">M</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center">X</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center">J</span>
+                                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success text-xs font-bold flex items-center justify-center">V</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center">S</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center">D</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Solo mediodía</span>
+                                </div>
+
+                                <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-600">
+                                        <i class="fas fa-star text-xs"></i>
+                                        <span class="text-[10px] font-bold">PREMIUM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Inactivo -->
+                        <div class="menu-card bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden cursor-pointer smooth-transition hover:shadow-lg opacity-60"
+                            onclick="showView('edit')">
+                            <div class="p-5 border-b border-gray-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 text-xl">
+                                            <i class="fas fa-snowflake"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Menú Invierno</h3>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-wide">
+                                                <i class="fas fa-circle text-[6px]"></i> Inactivo
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation();" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-baseline gap-2 mb-4">
+                                    <span class="text-3xl font-bold text-gray-400">18,00€</span>
+                                    <span class="text-sm text-gray-300">precio fijo</span>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <p class="text-xs text-gray-400 uppercase font-bold mb-2">Días configurados</p>
+                                    <div class="flex gap-1">
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">L</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">M</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">X</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">J</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-400 text-xs font-bold flex items-center justify-center">V</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center">S</span>
+                                        <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-300 text-xs font-bold flex items-center justify-center">D</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 text-xs text-gray-400">
+                                    <i class="fas fa-pause-circle"></i>
+                                    <span>Pausado temporalmente</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== VIEW 2: CREAR MENÚ DEL DÍA ==================== -->
+            <div id="view-create" class="view p-4 md:p-8">
+                <div class="max-w-3xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                                <a href="#" onclick="showView('list')" class="hover:text-primary transition-colors">Menús del Día</a>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                                <span>Nuevo</span>
+                            </div>
+                            <h1 class="text-2xl font-bold text-gray-900">Crear Menú del Día</h1>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="showView('list')"
+                                class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100 transition-all">
+                                Cancelar
+                            </button>
+                            <button onclick="showView('edit')"
+                                class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark transition-all flex items-center gap-2">
+                                <span>Continuar</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <div class="space-y-6">
+                        
+                        <!-- Información Básica -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-50 bg-gray-50/50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900">Información Básica</h3>
+                                        <p class="text-xs text-gray-500">Nombre y precio del menú</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                        Nombre del Menú <span class="text-primary">*</span>
+                                    </label>
+                                    <input type="text" value="Menú del Día" maxlength="100" placeholder="Ej: Menú del Día, Menú Ejecutivo..."
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder-gray-300">
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                            Precio Fijo <span class="text-primary">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="number" value="15.00" min="0" step="0.50"
+                                                class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 font-bold text-xl focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                                                <i class="fas fa-euro-sign"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                            Horario Disponible
+                                        </label>
+                                        <select class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                            <option value="lunch" selected>Solo Mediodía</option>
+                                            <option value="dinner">Solo Cena</option>
+                                            <option value="all">Todo el Día</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Días de la Semana -->
+                        <div class="bg-white rounded-3xl border border-gray-100 shadow-card overflow-hidden">
+                            <div class="p-6 border-b border-gray-50 bg-gray-50/50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                                        <i class="fas fa-calendar-week"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg text-gray-900">Días Disponibles</h3>
+                                        <p class="text-xs text-gray-500">Selecciona qué días ofrecerás este menú</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex flex-wrap gap-3 justify-center">
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">L</span>
+                                            <span class="text-[10px] text-gray-400">Lunes</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">M</span>
+                                            <span class="text-[10px] text-gray-400">Martes</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">X</span>
+                                            <span class="text-[10px] text-gray-400">Miércoles</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">J</span>
+                                            <span class="text-[10px] text-gray-400">Jueves</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">V</span>
+                                            <span class="text-[10px] text-gray-400">Viernes</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">S</span>
+                                            <span class="text-[10px] text-gray-400">Sábado</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-16 h-16 rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+                                            <span class="text-lg font-bold peer-checked:text-primary">D</span>
+                                            <span class="text-[10px] text-gray-400">Domingo</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
+                            <i class="fas fa-info-circle text-amber-500 mt-0.5"></i>
+                            <p class="text-xs text-amber-800">En el siguiente paso podrás configurar los platos de cada día. Podrás copiar la configuración de un día a otro para agilizar.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== VIEW 3: EDITAR POR DÍA ==================== -->
+            <div id="view-edit" class="view p-4 md:p-8">
+                <div class="max-w-6xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+                                <a href="#" onclick="showView('list')" class="hover:text-primary transition-colors">Menús del Día</a>
+                                <i class="fas fa-chevron-right text-xs"></i>
+                                <span>Menú del Día</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <h1 class="text-2xl font-bold text-gray-900">Menú del Día</h1>
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase">
+                                    <i class="fas fa-circle text-[6px]"></i> Activo
+                                </span>
+                                <span class="text-2xl font-bold text-primary">15,00€</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="showView('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                                <i class="fas fa-arrow-left mr-2"></i>Volver
+                            </button>
+                            <button class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabs de Días -->
+                    <div class="bg-white rounded-2xl border border-gray-100 p-2 mb-6 flex flex-wrap gap-2">
+                        <button onclick="selectDay('monday')" id="tab-monday" class="day-tab active relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm transition-all configured">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">L</span>
+                                <span class="text-[10px] opacity-70">Lunes</span>
+                            </div>
+                        </button>
+                        <button onclick="selectDay('tuesday')" id="tab-tuesday" class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition-all configured">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">M</span>
+                                <span class="text-[10px] opacity-70">Martes</span>
+                            </div>
+                        </button>
+                        <button onclick="selectDay('wednesday')" id="tab-wednesday" class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition-all configured">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">X</span>
+                                <span class="text-[10px] opacity-70">Miércoles</span>
+                            </div>
+                        </button>
+                        <button onclick="selectDay('thursday')" id="tab-thursday" class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition-all">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">J</span>
+                                <span class="text-[10px] opacity-70">Jueves</span>
+                            </div>
+                        </button>
+                        <button onclick="selectDay('friday')" id="tab-friday" class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50 transition-all">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">V</span>
+                                <span class="text-[10px] opacity-70">Viernes</span>
+                            </div>
+                        </button>
+                        <button disabled class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-300 cursor-not-allowed">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">S</span>
+                                <span class="text-[10px] opacity-70">Sábado</span>
+                            </div>
+                        </button>
+                        <button disabled class="day-tab relative flex-1 min-w-[80px] px-4 py-3 rounded-xl font-bold text-sm text-gray-300 cursor-not-allowed">
+                            <div class="flex flex-col items-center">
+                                <span class="text-lg">D</span>
+                                <span class="text-[10px] opacity-70">Domingo</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Contenido del Día -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- Columna Principal: Categorías e Items -->
+                        <div class="lg:col-span-2 space-y-4">
+
+                            <!-- Acción: Copiar día -->
+                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-4 flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                        <i class="fas fa-copy"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-gray-900">Copiar este día</p>
+                                        <p class="text-xs text-gray-500">Duplica todos los platos a otro día</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="copyToDay" class="bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-medium focus:border-primary outline-none">
+                                        <option value="">Seleccionar día...</option>
+                                        <option value="tuesday">Martes</option>
+                                        <option value="wednesday">Miércoles</option>
+                                        <option value="thursday">Jueves</option>
+                                        <option value="friday">Viernes</option>
+                                    </select>
+                                    <button onclick="copyDay()" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">
+                                        <i class="fas fa-paste mr-1"></i> Copiar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Categoría: Primeros -->
+                            <div class="category-section bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 bg-amber-50/50 border-b border-amber-100/50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                                            <i class="fas fa-soup"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Primeros</h3>
+                                            <p class="text-xs text-gray-500">3 platos</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="openAddItemModal('Primeros')" class="w-8 h-8 rounded-full bg-amber-100 hover:bg-amber-200 flex items-center justify-center text-amber-600" title="Añadir plato">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full hover:bg-amber-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar categoría">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-50">
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Sopa del día</h4>
+                                            <p class="text-sm text-gray-500">Sopa casera de verduras de temporada</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Ensalada mixta</h4>
+                                            <p class="text-sm text-gray-500">Lechuga, tomate, cebolla, atún y olivas</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Macarrones a la boloñesa</h4>
+                                            <p class="text-sm text-gray-500">Pasta fresca con salsa de carne casera</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categoría: Segundos -->
+                            <div class="category-section bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 bg-red-50/50 border-b border-red-100/50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+                                            <i class="fas fa-drumstick-bite"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Segundos</h3>
+                                            <p class="text-xs text-gray-500">3 platos</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="openAddItemModal('Segundos')" class="w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center text-red-600" title="Añadir plato">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full hover:bg-red-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar categoría">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-50">
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Pollo al horno</h4>
+                                            <p class="text-sm text-gray-500">Con patatas panaderas y ensalada</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Merluza a la plancha</h4>
+                                            <p class="text-sm text-gray-500">Con guarnición de verduras salteadas</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Lomo de cerdo</h4>
+                                            <p class="text-sm text-gray-500">Con pimientos del piquillo</p>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categoría: Postres -->
+                            <div class="category-section bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 bg-pink-50/50 border-b border-pink-100/50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600">
+                                            <i class="fas fa-ice-cream"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Postres</h3>
+                                            <p class="text-xs text-gray-500">3 opciones</p>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="openAddItemModal('Postres')" class="w-8 h-8 rounded-full bg-pink-100 hover:bg-pink-200 flex items-center justify-center text-pink-600" title="Añadir plato">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                        <button class="w-8 h-8 rounded-full hover:bg-pink-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar categoría">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-50">
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Flan casero</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Fruta del tiempo</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Helado (2 bolas)</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all" title="Quitar">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categoría: Bebidas (Incluida) -->
+                            <div class="category-section bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 bg-purple-50/50 border-b border-purple-100/50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
+                                            <i class="fas fa-wine-glass-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Bebida</h3>
+                                            <span class="inline-block px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">INCLUIDA</span>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button onclick="openAddItemModal('Bebida')" class="w-8 h-8 rounded-full bg-purple-100 hover:bg-purple-200 flex items-center justify-center text-purple-600" title="Añadir opción">
+                                            <i class="fas fa-plus text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-50">
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Agua (botella 50cl)</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Refresco</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="item-row p-4 flex items-center gap-4 group">
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-gray-900">Copa de vino de la casa</h4>
+                                        </div>
+                                        <button class="w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 transition-all">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Categoría: Café (Extra) -->
+                            <div class="category-section bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 bg-orange-50/50 border-b border-orange-100/50 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
+                                            <i class="fas fa-coffee"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-gray-900">Café</h3>
+                                            <span class="inline-block px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold">+1,50€</span>
+                                        </div>
+                                    </div>
+                                    <div class="category-actions flex items-center gap-1">
+                                        <button class="w-8 h-8 rounded-full hover:bg-orange-100 flex items-center justify-center text-gray-400 hover:text-gray-600" title="Editar suplemento">
+                                            <i class="fas fa-edit text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-4 text-sm text-gray-500">
+                                    <p>Café solo, cortado o con leche</p>
+                                </div>
+                            </div>
+
+                            <!-- Añadir Categoría -->
+                            <button onclick="openAddCategoryModal()" class="w-full p-4 rounded-2xl border-2 border-dashed border-gray-200 hover:border-primary hover:bg-primary/5 text-gray-400 hover:text-primary font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Añadir Categoría
+                            </button>
+
+                        </div>
+
+                        <!-- Columna Derecha: Resumen del Día -->
+                        <div class="space-y-4">
+
+                            <!-- Resumen del Día -->
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                                <div class="p-4 border-b border-gray-50 bg-gray-50/50">
+                                    <h3 class="font-bold text-gray-900">Resumen del Lunes</h3>
+                                </div>
+                                <div class="p-4 space-y-4">
+                                    
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                        <span class="text-sm text-gray-500">Precio</span>
+                                        <span class="text-xl font-bold text-primary">15,00€</span>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-500">Primeros</span>
+                                            <span class="font-bold text-gray-900">3 opciones</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-500">Segundos</span>
+                                            <span class="font-bold text-gray-900">3 opciones</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-500">Postres</span>
+                                            <span class="font-bold text-gray-900">3 opciones</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-500">Bebida</span>
+                                            <span class="font-bold text-success">Incluida</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-500">Café</span>
+                                            <span class="font-bold text-orange-500">+1,50€</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-gray-100">
+                                        <div class="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                                            <i class="fas fa-clock"></i>
+                                            <span>Solo mediodía</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-xs text-success">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Configuración completa</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Modal: Añadir Plato -->
+    <div id="addItemModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 id="addItemModalTitle" class="text-lg font-bold text-gray-900">Añadir Plato a Primeros</h3>
+                <button onclick="closeAddItemModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre del Plato <span class="text-primary">*</span></label>
+                    <input type="text" placeholder="Ej: Sopa del día, Ensalada mixta..."
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción (opcional)</label>
+                    <textarea rows="2" placeholder="Breve descripción del plato..."
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-between">
+                <button onclick="closeAddItemModal()" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+                <div class="flex gap-2">
+                    <button onclick="closeAddItemModal()" class="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-full font-bold hover:bg-gray-200 flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Añadir otro
+                    </button>
+                    <button onclick="closeAddItemModal()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Añadir Categoría -->
+    <div id="addCategoryModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900">Nueva Categoría</h3>
+                <button onclick="closeAddCategoryModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+                    <input type="text" placeholder="Ej: Entrantes, Sopas, Carnes..."
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="categoryType" value="included" checked class="sr-only peer">
+                            <div class="p-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+                                <i class="fas fa-check-circle text-xl mb-2 text-gray-400 peer-checked:text-primary"></i>
+                                <p class="font-bold text-sm">Incluida</p>
+                                <p class="text-[10px] text-gray-400">En el precio</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="categoryType" value="supplement" class="sr-only peer">
+                            <div class="p-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+                                <i class="fas fa-plus-circle text-xl mb-2 text-gray-400 peer-checked:text-primary"></i>
+                                <p class="font-bold text-sm">Suplemento</p>
+                                <p class="text-[10px] text-gray-400">Precio extra</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div id="supplementPrice" class="hidden">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Precio Suplemento</label>
+                    <div class="relative">
+                        <input type="number" value="1.50" min="0" step="0.10"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 font-bold focus:border-primary outline-none">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-euro-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeAddCategoryModal()" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+                <button onclick="closeAddCategoryModal()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Crear Categoría</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar Copia -->
+    <div id="copyConfirmModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden">
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl mx-auto mb-4">
+                    <i class="fas fa-copy"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">¿Copiar al Martes?</h3>
+                <p class="text-sm text-gray-500 mb-6">Se copiarán todas las categorías y platos del Lunes al Martes. Si el Martes ya tiene contenido, será reemplazado.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeCopyConfirmModal()" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+                    <button onclick="confirmCopy()" class="flex-1 bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-blue-700">Copiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Success -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+        <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center">
+            <i class="fas fa-check"></i>
+        </div>
+        <span id="toastMessage" class="font-medium">Copiado correctamente</span>
+    </div>
+
+    <script>
+        // View Navigation
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Day Tabs
+        function selectDay(day) {
+            document.querySelectorAll('.day-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${day}`).classList.add('active');
+        }
+
+        // Add Item Modal
+        function openAddItemModal(category) {
+            document.getElementById('addItemModalTitle').textContent = `Añadir Plato a ${category}`;
+            document.getElementById('addItemModal').classList.remove('hidden');
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('addItemModal').classList.add('hidden');
+        }
+
+        // Add Category Modal
+        function openAddCategoryModal() {
+            document.getElementById('addCategoryModal').classList.remove('hidden');
+        }
+
+        function closeAddCategoryModal() {
+            document.getElementById('addCategoryModal').classList.add('hidden');
+        }
+
+        // Copy Day
+        function copyDay() {
+            const targetDay = document.getElementById('copyToDay').value;
+            if (!targetDay) {
+                alert('Selecciona un día destino');
+                return;
+            }
+            document.getElementById('copyConfirmModal').classList.remove('hidden');
+        }
+
+        function closeCopyConfirmModal() {
+            document.getElementById('copyConfirmModal').classList.add('hidden');
+        }
+
+        function confirmCopy() {
+            closeCopyConfirmModal();
+            showToast('Copiado correctamente al Martes');
+            // Marcar el día como configurado
+            document.getElementById('tab-tuesday').classList.add('configured');
+        }
+
+        // Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Toggle supplement price field
+        document.querySelectorAll('input[name="categoryType"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const supplementDiv = document.getElementById('supplementPrice');
+                if (e.target.value === 'supplement') {
+                    supplementDiv.classList.remove('hidden');
+                } else {
+                    supplementDiv.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
