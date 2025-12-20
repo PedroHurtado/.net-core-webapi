@@ -49,20 +49,26 @@ public class UpdateIngredient : IFeatureModule
     }
 
     [Injectable]
-    public class Service(IRepositoy repository, IUnitOfWork unitOfWork) : IService
+    public class Service(IRepositoy repository, IUnitOfWork unitOfWork /*,IRepository1 rep*/) : IService
     {
 
         private readonly IRepositoy _repository = repository;
         private readonly IUnitOfWork _unifOfWork = unitOfWork;
-
+        //private readonly IRepository1 _rep = rep;
         public async Task HandlerAsync(Guid id, Request request)
         {            
             var ingredient = await _repository                
                 .Get(id);
+             //var other = await _rep.Get((id, id));
+
             ingredient.Update(request.Name, request.Cost).SuccessOrThrow();
             await _unifOfWork.SaveChangesAsync();
         }
     }
+
+    //[Include<Category>("Categories", FilterBy = "Id")]
+    //public interface IRepository1 : IGet<Menu, (Guid id, Guid categoryId)> {}
+
 
     public interface IRepositoy:IUpdate<Ingredient,Guid>{}
     /*[Injectable]
