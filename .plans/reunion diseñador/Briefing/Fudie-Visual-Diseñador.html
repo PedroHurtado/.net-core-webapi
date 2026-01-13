@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fudie – Visual para Diseñador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        header p { color: #666; }
+        
+        .intro-box {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+        .intro-box h2 { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+        .intro-box p { font-size: 1rem; line-height: 1.6; }
+        .intro-box strong { color: #FF4F5A; }
+        
+        .section { margin-bottom: 50px; }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .check { color: #10B981; }
+        .section-title .cross { color: #EF4444; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .card-preview {
+            padding: 40px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-height: 140px;
+            background: #fafafa;
+        }
+        
+        .card-label {
+            padding: 14px 18px;
+            font-size: 0.85rem;
+            border-top: 1px solid #f0f0f0;
+        }
+        .card-label strong { display: block; margin-bottom: 4px; color: #1a1a1a; }
+        .card-label p { color: #666; font-size: 0.8rem; margin: 0; }
+        
+        .wordmark {
+            font-weight: 800;
+            font-size: 2.2rem;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Colores */
+        .coral { color: #FF4F5A; }
+        .green { color: #1B4D3E; }
+        .orange { color: #D35400; }
+        .magenta { color: #BE185D; }
+        .dark { color: #1a1a1a; }
+        
+        .bg-coral { background: #FF4F5A; }
+        .bg-green { background: #1B4D3E; }
+        .bg-orange { background: #D35400; }
+        .bg-magenta { background: #BE185D; }
+        .bg-dark { background: #1a1a1a; }
+        
+        .stroke-coral { border-color: #FF4F5A; }
+        .stroke-green { border-color: #1B4D3E; }
+        .stroke-orange { border-color: #D35400; }
+        .stroke-magenta { border-color: #BE185D; }
+        
+        /* === WORDMARKS === */
+        .preview-coral { background: linear-gradient(135deg, #fff5f5 0%, #fff 100%); }
+        .preview-dark { background: linear-gradient(135deg, #f8f8f8 0%, #fff 100%); }
+        
+        /* === SÍMBOLOS === */
+        .symbol-embrace {
+            width: 40px;
+            height: 22px;
+            border: 4px solid;
+            border-top: none;
+            border-radius: 0 0 40px 40px;
+        }
+        
+        .symbol-u {
+            width: 36px;
+            height: 40px;
+            border: 4px solid;
+            border-top: none;
+            border-radius: 0 0 22px 22px;
+        }
+        
+        .symbol-dot-sm { width: 18px; height: 18px; border-radius: 50%; }
+        .symbol-dot-md { width: 28px; height: 28px; border-radius: 50%; }
+        .symbol-dot-lg { width: 40px; height: 40px; border-radius: 50%; }
+        
+        .symbol-arc {
+            width: 36px;
+            height: 18px;
+            border: 4px solid;
+            border-top: none;
+            border-radius: 0 0 36px 36px;
+        }
+        
+        .symbol-arc-bold {
+            width: 40px;
+            height: 20px;
+            border: 6px solid;
+            border-top: none;
+            border-radius: 0 0 40px 40px;
+        }
+        
+        .symbol-bowl {
+            width: 44px;
+            height: 26px;
+            border: 4px solid;
+            border-top: none;
+            border-radius: 0 0 26px 26px;
+        }
+        
+        /* === PALETAS === */
+        .palette-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .palette-colors {
+            display: flex;
+            height: 80px;
+        }
+        .palette-colors div { flex: 1; }
+        .palette-info {
+            padding: 16px;
+        }
+        .palette-info h4 { font-weight: 700; margin-bottom: 4px; font-size: 0.95rem; }
+        .palette-info p { color: #666; font-size: 0.8rem; margin-bottom: 8px; }
+        .palette-codes {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .color-code {
+            font-family: 'SF Mono', monospace;
+            font-size: 0.7rem;
+            background: #f0f0f0;
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: #555;
+        }
+        
+        /* === APP ICONS === */
+        .app-icons-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .app-icons-section h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .app-icons-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .app-icon-item { text-align: center; }
+        .app-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .app-icon-label { font-size: 0.65rem; color: #888; }
+        
+        .app-icon .icon-embrace {
+            width: 28px;
+            height: 15px;
+            border: 3px solid white;
+            border-top: none;
+            border-radius: 0 0 28px 28px;
+        }
+        .app-icon .icon-u {
+            width: 22px;
+            height: 26px;
+            border: 3px solid white;
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+        }
+        .app-icon .icon-dot {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+        }
+        .app-icon .icon-arc {
+            width: 26px;
+            height: 13px;
+            border: 3px solid white;
+            border-top: none;
+            border-radius: 0 0 26px 26px;
+        }
+        .app-icon .icon-bowl {
+            width: 30px;
+            height: 18px;
+            border: 3px solid white;
+            border-top: none;
+            border-radius: 0 0 18px 18px;
+        }
+        
+        /* === DESCARTADOS === */
+        .rejected-section {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .rejected-section h3 {
+            color: #dc2626;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+        .rejected-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .rejected-item {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.8rem;
+        }
+        .rejected-item strong {
+            color: #dc2626;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+        .rejected-item p { color: #666; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fudie – Visual para Diseñador</h1>
+            <p>Referencia visual de lo aprobado y descartado</p>
+        </header>
+
+        <div class="intro-box">
+            <h2>Concepto clave</h2>
+            <p>Buscamos <strong>tech profesional + calidez humana</strong>. Formas curvas simples para el símbolo. Wordmark en coral energético o negro con la "i" destacada. Sin azules, sin iniciales, sin clichés gastronómicos.</p>
+        </div>
+
+        <!-- WORDMARKS -->
+        <section class="section">
+            <h2 class="section-title"><span class="check">✓</span> Wordmarks que NOS GUSTAN</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-preview preview-coral">
+                        <span class="wordmark coral" style="font-size: 3rem;">fudie</span>
+                    </div>
+                    <div class="card-label">
+                        <strong>Coral Energético</strong>
+                        <p>El rojo-coral transmite pasión y cercanía. Similar a Airbnb, es cálido pero moderno. Plus Jakarta Sans mantiene la personalidad tech.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview preview-dark">
+                        <span class="wordmark dark" style="font-size: 3rem;">fud<span class="coral">i</span>e</span>
+                    </div>
+                    <div class="card-label">
+                        <strong>Negro con Acento</strong>
+                        <p>Elegancia atemporal del negro con un punto de color como firma. La "i" destacada crea reconocimiento.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SÍMBOLOS -->
+        <section class="section">
+            <h2 class="section-title"><span class="check">✓</span> Símbolos que NOS GUSTAN</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-embrace stroke-coral"></div>
+                        <span class="wordmark coral" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>Semicírculo abierto</strong><p>Abrazo, acogida</p></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-u stroke-green"></div>
+                        <span class="wordmark green" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>U redondeada</strong><p>Curvas suaves</p></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-dot-md bg-coral"></div>
+                        <span class="wordmark coral" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>Punto / Círculo</strong><p>Ultra minimalista</p></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-arc stroke-magenta"></div>
+                        <span class="wordmark magenta" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>Arco simple</strong><p>Sonrisa, cuenco</p></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-arc-bold stroke-orange"></div>
+                        <span class="wordmark orange" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>Arco bold</strong><p>Más presencia</p></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-preview">
+                        <div class="symbol-bowl stroke-green"></div>
+                        <span class="wordmark green" style="font-size: 1.8rem;">fudie</span>
+                    </div>
+                    <div class="card-label"><strong>Cuenco / Bowl</strong><p>Más profundidad</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- APP ICONS -->
+        <section class="section">
+            <div class="app-icons-section">
+                <h3>Previsualización como App Icon</h3>
+                <div class="app-icons-row">
+                    <div class="app-icon-item">
+                        <div class="app-icon bg-coral"><div class="icon-embrace"></div></div>
+                        <span class="app-icon-label">Abrazo</span>
+                    </div>
+                    <div class="app-icon-item">
+                        <div class="app-icon bg-green"><div class="icon-u"></div></div>
+                        <span class="app-icon-label">U</span>
+                    </div>
+                    <div class="app-icon-item">
+                        <div class="app-icon bg-orange"><div class="icon-dot"></div></div>
+                        <span class="app-icon-label">Punto</span>
+                    </div>
+                    <div class="app-icon-item">
+                        <div class="app-icon bg-magenta"><div class="icon-arc"></div></div>
+                        <span class="app-icon-label">Arco</span>
+                    </div>
+                    <div class="app-icon-item">
+                        <div class="app-icon bg-green"><div class="icon-bowl"></div></div>
+                        <span class="app-icon-label">Cuenco</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PALETAS -->
+        <section class="section">
+            <h2 class="section-title"><span class="check">✓</span> Paletas de Color</h2>
+            <div class="grid">
+                <div class="palette-card">
+                    <div class="palette-colors">
+                        <div style="background: #FF4F5A;"></div>
+                        <div style="background: #1F2937;"></div>
+                        <div style="background: #F9FAFB;"></div>
+                        <div style="background: #10B981;"></div>
+                    </div>
+                    <div class="palette-info">
+                        <h4>Coral + Neutros</h4>
+                        <p>Energético, moderno, estilo Airbnb</p>
+                        <div class="palette-codes">
+                            <span class="color-code">#FF4F5A</span>
+                            <span class="color-code">#1F2937</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="palette-card">
+                    <div class="palette-colors">
+                        <div style="background: #1B4D3E;"></div>
+                        <div style="background: #2E7D5E;"></div>
+                        <div style="background: #F0F7F4;"></div>
+                        <div style="background: #D4AF37;"></div>
+                    </div>
+                    <div class="palette-info">
+                        <h4>Verde Bosque</h4>
+                        <p>Confiable, premium, natural</p>
+                        <div class="palette-codes">
+                            <span class="color-code">#1B4D3E</span>
+                            <span class="color-code">#2E7D5E</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="palette-card">
+                    <div class="palette-colors">
+                        <div style="background: #D35400;"></div>
+                        <div style="background: #8B4513;"></div>
+                        <div style="background: #FEF7F0;"></div>
+                        <div style="background: #2C3E50;"></div>
+                    </div>
+                    <div class="palette-info">
+                        <h4>Terracota</h4>
+                        <p>Cálido, artesanal, gastronómico</p>
+                        <div class="palette-codes">
+                            <span class="color-code">#D35400</span>
+                            <span class="color-code">#8B4513</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="palette-card">
+                    <div class="palette-colors">
+                        <div style="background: #BE185D;"></div>
+                        <div style="background: #DB2777;"></div>
+                        <div style="background: #FDF2F8;"></div>
+                        <div style="background: #1a1a1a;"></div>
+                    </div>
+                    <div class="palette-info">
+                        <h4>Magenta Cálido</h4>
+                        <p>Diferenciador, moderno</p>
+                        <div class="palette-codes">
+                            <span class="color-code">#BE185D</span>
+                            <span class="color-code">#DB2777</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESCARTADOS -->
+        <section class="section">
+            <h2 class="section-title"><span class="cross">✗</span> Lo que NO queremos</h2>
+            <div class="rejected-section">
+                <h3>⛔ Completamente descartado</h3>
+                <div class="rejected-grid">
+                    <div class="rejected-item">
+                        <strong>AZUL</strong>
+                        <p>Cualquier tono. Nos parece corporativo y frío.</p>
+                    </div>
+                    <div class="rejected-item">
+                        <strong>Iniciales</strong>
+                        <p>"f" sola o "fu". La F en caja = Facebook.</p>
+                    </div>
+                    <div class="rejected-item">
+                        <strong>Gastro cliché</strong>
+                        <p>Tenedores, cucharas, platos literales, script fonts.</p>
+                    </div>
+                    <div class="rejected-item">
+                        <strong>Elementos múltiples</strong>
+                        <p>Puntos+arco, caras con ojos, formas complejas.</p>
+                    </div>
+                    <div class="rejected-item">
+                        <strong>Derivados de letras</strong>
+                        <p>Curva de F, arco de D, ligaduras abstractas.</p>
+                    </div>
+                    <div class="rejected-item">
+                        <strong>Corporativo genérico</strong>
+                        <p>Aspecto ERP, gradientes neón, software bancario.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>
