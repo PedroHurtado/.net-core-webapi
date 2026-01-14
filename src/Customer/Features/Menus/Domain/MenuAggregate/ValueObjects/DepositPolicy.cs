@@ -1,16 +1,65 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 /// <summary>
-/// Política de fianza para reservas a nivel de menú.
+/// Represents a deposit policy for menu reservations at the menu level.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This value object defines how deposits are calculated for reservations.
+/// The calculation method is determined by the <see cref="DepositType"/> property.
+/// </para>
+/// <para>
+/// Optional thresholds can be configured to only require deposits when
+/// the guest count or estimated bill exceeds certain minimums.
+/// </para>
+/// </remarks>
 public record DepositPolicy
 {
+    /// <summary>
+    /// Gets the type of deposit calculation to use.
+    /// </summary>
+    /// <value>The deposit calculation method.</value>
     public DepositType DepositType { get; }
+
+    /// <summary>
+    /// Gets the base amount used for deposit calculations.
+    /// </summary>
+    /// <value>
+    /// For <see cref="Enums.DepositType.PerPerson"/>: the amount per guest.
+    /// For <see cref="Enums.DepositType.FixedAmount"/>: the fixed deposit amount.
+    /// Must be greater than zero.
+    /// </value>
     public decimal Amount { get; }
+
+    /// <summary>
+    /// Gets the percentage used for percentage-based deposit calculations.
+    /// </summary>
+    /// <value>
+    /// A value between 1 and 100 when <see cref="DepositType"/> is
+    /// <see cref="Enums.DepositType.PercentageOfBill"/>; otherwise, <c>null</c>.
+    /// </value>
     public decimal? Percentage { get; }
+
+    /// <summary>
+    /// Gets the minimum estimated bill amount required to trigger the deposit.
+    /// </summary>
+    /// <value>The minimum bill threshold, or <c>null</c> if no threshold applies.</value>
     public decimal? MinimumBillForDeposit { get; }
+
+    /// <summary>
+    /// Gets the minimum number of guests required to trigger the deposit.
+    /// </summary>
+    /// <value>The minimum guest count threshold, or <c>null</c> if no threshold applies.</value>
     public int? MinimumGuestsForDeposit { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DepositPolicy"/> record.
+    /// </summary>
+    /// <param name="depositType">The type of deposit calculation.</param>
+    /// <param name="amount">The base amount for calculations.</param>
+    /// <param name="percentage">The percentage for percentage-based calculations.</param>
+    /// <param name="minimumBillForDeposit">The minimum bill threshold.</param>
+    /// <param name="minimumGuestsForDeposit">The minimum guest count threshold.</param>
     private DepositPolicy(
         DepositType depositType,
         decimal amount,
@@ -25,6 +74,16 @@ public record DepositPolicy
         MinimumGuestsForDeposit = minimumGuestsForDeposit;
     }
 
+    /// <summary>
+    /// Creates a new validated <see cref="DepositPolicy"/> instance.
+    /// </summary>
+    /// <param name="depositType">The type of deposit calculation.</param>
+    /// <param name="amount">The base amount for calculations. Must be greater than zero.</param>
+    /// <param name="percentage">The percentage (1-100) for <see cref="Enums.DepositType.PercentageOfBill"/>.</param>
+    /// <param name="minimumBillForDeposit">Optional minimum bill threshold.</param>
+    /// <param name="minimumGuestsForDeposit">Optional minimum guest count threshold.</param>
+    /// <returns>A validated <see cref="DepositPolicy"/> instance.</returns>
+    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
     public static DepositPolicy Create(
         DepositType depositType,
         decimal amount,
@@ -43,8 +102,13 @@ public record DepositPolicy
     }
 
     /// <summary>
-    /// Determina si la política aplica según los umbrales configurados.
+    /// Determines whether the deposit policy applies based on the configured thresholds.
     /// </summary>
+    /// <param name="guestCount">The number of guests in the reservation.</param>
+    /// <param name="estimatedBill">The estimated bill total.</param>
+    /// <returns>
+    /// <c>true</c> if the deposit should be applied; <c>false</c> if the thresholds are not met.
+    /// </returns>
     public bool IsApplicable(int guestCount, decimal estimatedBill)
     {
         if (MinimumGuestsForDeposit.HasValue && guestCount < MinimumGuestsForDeposit.Value)
@@ -57,8 +121,19 @@ public record DepositPolicy
     }
 
     /// <summary>
-    /// Calcula el importe de la fianza según el tipo configurado.
+    /// Calculates the deposit amount based on the configured deposit type.
     /// </summary>
+    /// <param name="guestCount">The number of guests in the reservation.</param>
+    /// <param name="estimatedBill">The estimated bill total.</param>
+    /// <returns>The calculated deposit amount.</returns>
+    /// <remarks>
+    /// The calculation varies by deposit type:
+    /// <list type="bullet">
+    /// <item><description><see cref="Enums.DepositType.PerPerson"/>: Amount × guestCount</description></item>
+    /// <item><description><see cref="Enums.DepositType.PercentageOfBill"/>: estimatedBill × (Percentage / 100)</description></item>
+    /// <item><description><see cref="Enums.DepositType.FixedAmount"/>: Amount (fixed)</description></item>
+    /// </list>
+    /// </remarks>
     public decimal CalculateDeposit(int guestCount, decimal estimatedBill)
     {
         return DepositType switch
@@ -72,39 +147,47 @@ public record DepositPolicy
 }
 
 /// <summary>
-/// Validador de invariantes para DepositPolicy.
+/// Provides validation rules for the <see cref="DepositPolicy"/> value object.
 /// </summary>
+/// <remarks>
+/// Validates deposit policy invariants including amount constraints,
+/// percentage requirements for percentage-based deposits, and threshold values.
+/// </remarks>
 public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DepositPolicyValidator"/> class
+    /// and configures all validation rules.
+    /// </summary>
     public DepositPolicyValidator()
     {
         RuleFor(x => x.Amount)
             .GreaterThan(0)
-            .WithMessage("El importe debe ser mayor que cero");
+            .WithMessage("Amount must be greater than zero");
 
         RuleFor(x => x.Percentage)
             .NotNull()
             .When(x => x.DepositType == DepositType.PercentageOfBill)
-            .WithMessage("Debe especificar el porcentaje para tipo PercentageOfBill");
+            .WithMessage("Percentage must be specified for PercentageOfBill type");
 
         RuleFor(x => x.Percentage)
             .Null()
             .When(x => x.DepositType != DepositType.PercentageOfBill)
-            .WithMessage("El porcentaje solo aplica para tipo PercentageOfBill");
+            .WithMessage("Percentage only applies to PercentageOfBill type");
 
         RuleFor(x => x.Percentage)
             .InclusiveBetween(1, 100)
             .When(x => x.Percentage.HasValue)
-            .WithMessage("El porcentaje debe estar entre 1 y 100");
+            .WithMessage("Percentage must be between 1 and 100");
 
         RuleFor(x => x.MinimumGuestsForDeposit)
             .GreaterThanOrEqualTo(1)
             .When(x => x.MinimumGuestsForDeposit.HasValue)
-            .WithMessage("El mínimo de comensales debe ser al menos 1");
+            .WithMessage("Minimum guests must be at least 1");
 
         RuleFor(x => x.MinimumBillForDeposit)
             .GreaterThanOrEqualTo(0)
             .When(x => x.MinimumBillForDeposit.HasValue)
-            .WithMessage("El importe mínimo de cuenta no puede ser negativo");
+            .WithMessage("Minimum bill amount cannot be negative");
     }
 }

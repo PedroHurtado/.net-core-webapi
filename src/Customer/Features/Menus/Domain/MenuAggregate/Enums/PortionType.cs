@@ -1,28 +1,45 @@
-// src/Customer/Features/Menus/Domain/MenuAggregate/Enums/PortionType.cs
 namespace Customer.Features.Menus.Domain.MenuAggregate.Enums;
 
 /// <summary>
-/// Tipo de porción para las opciones de precio de un item.
+/// Specifies the portion size type for menu item price options.
 /// </summary>
+/// <remarks>
+/// This enum is used in <see cref="ValueObjects.PriceOption"/> to define
+/// different portion sizes with corresponding prices for a menu item.
+/// </remarks>
 public enum PortionType
 {
     /// <summary>
-    /// Porción pequeña, típicamente 25% de una ración completa.
+    /// A small portion, typically 25% of a full serving.
     /// </summary>
+    /// <remarks>
+    /// Often referred to as "tapa" in Spanish cuisine.
+    /// </remarks>
     Small = 1,
-    
+
     /// <summary>
-    /// Media ración, típicamente 50% de una ración completa.
+    /// A half portion, typically 50% of a full serving.
     /// </summary>
+    /// <remarks>
+    /// Often referred to as "media ración" in Spanish cuisine.
+    /// </remarks>
     Half = 2,
-    
+
     /// <summary>
-    /// Ración completa.
+    /// A full serving portion.
     /// </summary>
+    /// <remarks>
+    /// The standard complete portion size.
+    /// </remarks>
     Full = 3,
-    
+
     /// <summary>
-    /// Precio según mercado, puede variar diariamente.
+    /// Price determined by current market conditions.
     /// </summary>
+    /// <remarks>
+    /// Used for items whose prices may vary daily based on market prices
+    /// (e.g., fresh seafood, seasonal produce). When using this type,
+    /// the price may be <c>null</c> and will be determined at order time.
+    /// </remarks>
     MarketPrice = 4
 }

@@ -1,118 +1,240 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.Entities;
 
 /// <summary>
-/// MenuItem Entity - MicroDomain.
-/// Pertenece a una MenuCategory dentro del agregado Menu.
+/// Represents a menu item within a category that can be ordered by customers.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This entity follows the MicroDomain pattern where business logic is organized
+/// in separate command classes (partial class). Menu items belong to a <see cref="MenuCategory"/>
+/// within the <see cref="Menu"/> aggregate.
+/// </para>
+/// <para>
+/// Items can have multiple price options for different portion sizes, nutritional information,
+/// allergen data, and special ordering requirements (such as advance orders for high-risk items).
+/// </para>
+/// </remarks>
 public partial class MenuItem : Entity
 {
-    // === Propiedades básicas ===
+    /// <summary>
+    /// Gets the name of the menu item.
+    /// </summary>
+    /// <value>The item name. Maximum length is 150 characters.</value>
     public string Name { get; protected set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the optional description of the menu item.
+    /// </summary>
+    /// <value>The item description, or <c>null</c> if not specified. Maximum length is 1000 characters.</value>
     public string? Description { get; protected set; }
+
+    /// <summary>
+    /// Gets the URL of the item's image.
+    /// </summary>
+    /// <value>The image URL, or <c>null</c> if no image is available. Maximum length is 500 characters.</value>
     public string? ImageUrl { get; protected set; }
+
+    /// <summary>
+    /// Gets the display order for sorting items within a category.
+    /// </summary>
+    /// <value>A non-negative integer representing the display order.</value>
     public int DisplayOrder { get; protected set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the item is currently active.
+    /// </summary>
+    /// <value><c>true</c> if the item is active; otherwise, <c>false</c>.</value>
     public bool IsActive { get; protected set; }
 
-    // === Alto riesgo / Pedido anticipado ===
+    /// <summary>
+    /// Gets a value indicating whether this is a high-risk item that may require special handling.
+    /// </summary>
+    /// <value><c>true</c> if the item is high-risk; otherwise, <c>false</c>.</value>
+    /// <remarks>
+    /// High-risk items typically include expensive ingredients or items that require special preparation.
+    /// If <see cref="RequiresAdvanceOrder"/> is <c>true</c>, this property must also be <c>true</c>.
+    /// </remarks>
     public bool IsHighRiskItem { get; protected set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the item requires an advance order.
+    /// </summary>
+    /// <value><c>true</c> if advance ordering is required; otherwise, <c>false</c>.</value>
+    /// <remarks>
+    /// When <c>true</c>, <see cref="IsHighRiskItem"/> must also be <c>true</c>.
+    /// </remarks>
     public bool RequiresAdvanceOrder { get; protected set; }
+
+    /// <summary>
+    /// Gets the minimum quantity that triggers the advance order requirement.
+    /// </summary>
+    /// <value>The minimum quantity (1-100), or <c>null</c> if not applicable.</value>
+    /// <remarks>
+    /// When this value is set, <see cref="RequiresAdvanceOrder"/> must be <c>true</c>.
+    /// </remarks>
     public int? MinimumAdvanceOrderQuantity { get; protected set; }
 
-    // === Stock/Disponibilidad ===
+    /// <summary>
+    /// Gets a value indicating whether the item is currently available for ordering.
+    /// </summary>
+    /// <value><c>true</c> if the item is available; otherwise, <c>false</c>.</value>
     public bool IsAvailable { get; protected set; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether the item is available every day.
+    /// </summary>
+    /// <value><c>true</c> if always available; otherwise, <c>false</c>.</value>
+    /// <remarks>
+    /// When <c>false</c>, <see cref="AvailableDays"/> must contain at least one day.
+    /// </remarks>
     public bool IsAlwaysAvailable { get; protected set; } = true;
 
-    // === Value Objects ===
+    /// <summary>
+    /// Gets the deposit override configuration for this specific item.
+    /// </summary>
+    /// <value>The deposit override, or <c>null</c> if the menu's default policy applies.</value>
     public ItemDepositOverride? DepositOverride { get; protected set; }
+
+    /// <summary>
+    /// Gets the nutritional information for this item.
+    /// </summary>
+    /// <value>The nutritional info, or <c>null</c> if not available.</value>
     public NutritionalInfo? NutritionalInfo { get; protected set; }
 
-    // === Colecciones ===
+    /// <summary>
+    /// The internal collection of days when this item is available.
+    /// </summary>
     protected HashSet<DayOfWeek> _availableDays = [];
+
+    /// <summary>
+    /// Gets the read-only collection of days when this item is available.
+    /// </summary>
+    /// <value>A read-only collection of <see cref="DayOfWeek"/> values.</value>
+    /// <remarks>
+    /// This is only relevant when <see cref="IsAlwaysAvailable"/> is <c>false</c>.
+    /// </remarks>
     public IReadOnlyCollection<DayOfWeek> AvailableDays => _availableDays.ToList().AsReadOnly();
 
+    /// <summary>
+    /// The internal collection of price options for this item.
+    /// </summary>
     protected HashSet<PriceOption> _priceOptions = [];
+
+    /// <summary>
+    /// Gets the read-only collection of price options for different portion sizes.
+    /// </summary>
+    /// <value>A read-only collection of <see cref="PriceOption"/> instances. Must contain at least one option.</value>
     public IReadOnlyCollection<PriceOption> PriceOptions => _priceOptions.ToList().AsReadOnly();
 
+    /// <summary>
+    /// The internal collection of allergen identifiers associated with this item.
+    /// </summary>
     protected HashSet<Guid> _allergenIds = [];
+
+    /// <summary>
+    /// Gets the read-only collection of allergen identifiers associated with this item.
+    /// </summary>
+    /// <value>A read-only collection of allergen GUIDs.</value>
     public IReadOnlyCollection<Guid> AllergenIds => _allergenIds.ToList().AsReadOnly();
 
+    /// <summary>
+    /// Gets additional notes about allergens for this item.
+    /// </summary>
+    /// <value>Free-text allergen notes, or <c>null</c> if not specified. Maximum length is 500 characters.</value>
     public string? AllergenNotes { get; protected set; }
 
-    // === Constructores ===
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MenuItem"/> class for ORM purposes.
+    /// </summary>
     protected MenuItem() : base(Guid.Empty) { }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MenuItem"/> class with the specified identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier for the menu item.</param>
     public MenuItem(Guid id) : base(id) { }
 }
 
 /// <summary>
-/// Validador para MenuItem.
+/// Provides validation rules for the <see cref="MenuItem"/> entity.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This validator ensures that menu item properties comply with business rules,
+/// including required fields, length constraints, and logical consistency.
+/// </para>
+/// <para>
+/// Note that value objects (<see cref="PriceOption"/>, <see cref="ItemDepositOverride"/>,
+/// <see cref="NutritionalInfo"/>) are validated in their own factory methods.
+/// </para>
+/// </remarks>
 public class MenuItemValidator : AbstractValidator<MenuItem>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MenuItemValidator"/> class
+    /// and configures all validation rules.
+    /// </summary>
     public MenuItemValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("El Id del item es requerido");
+            .WithMessage("Item Id is required");
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("El nombre del item es requerido")
+            .WithMessage("Item name is required")
             .MaximumLength(150)
-            .WithMessage("El nombre no puede exceder 150 caracteres");
+            .WithMessage("Name cannot exceed 150 characters");
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)
-            .WithMessage("La descripción no puede exceder 1000 caracteres");
+            .WithMessage("Description cannot exceed 1000 characters");
 
         RuleFor(x => x.ImageUrl)
             .MaximumLength(500)
-            .WithMessage("La URL de imagen no puede exceder 500 caracteres")
+            .WithMessage("Image URL cannot exceed 500 characters")
             .Must(BeAValidUrl)
             .When(x => !string.IsNullOrEmpty(x.ImageUrl))
-            .WithMessage("La URL de imagen no es válida");
+            .WithMessage("Image URL is not valid");
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("El orden de visualización debe ser mayor o igual a 0");
+            .WithMessage("Display order must be greater than or equal to 0");
 
-        // Si requiere pedido anticipado, debe ser item de alto riesgo
         RuleFor(x => x)
             .Must(x => !x.RequiresAdvanceOrder || x.IsHighRiskItem)
-            .WithMessage("Si RequiresAdvanceOrder es true, IsHighRiskItem también debe serlo")
+            .WithMessage("If RequiresAdvanceOrder is true, IsHighRiskItem must also be true")
             .WithName("RequiresAdvanceOrder");
 
-        // MinimumAdvanceOrderQuantity debe estar en rango válido
         RuleFor(x => x.MinimumAdvanceOrderQuantity)
             .InclusiveBetween(1, 100)
             .When(x => x.MinimumAdvanceOrderQuantity.HasValue)
-            .WithMessage("La cantidad mínima debe estar entre 1 y 100");
+            .WithMessage("Minimum quantity must be between 1 and 100");
 
-        // Si MinimumAdvanceOrderQuantity tiene valor, RequiresAdvanceOrder debe ser true
         RuleFor(x => x)
             .Must(x => !x.MinimumAdvanceOrderQuantity.HasValue || x.RequiresAdvanceOrder)
-            .WithMessage("Si MinimumAdvanceOrderQuantity tiene valor, RequiresAdvanceOrder debe ser true")
+            .WithMessage("If MinimumAdvanceOrderQuantity has a value, RequiresAdvanceOrder must be true")
             .WithName("MinimumAdvanceOrderQuantity");
 
-        // Si no está siempre disponible, debe tener días configurados
         RuleFor(x => x.AvailableDays)
             .NotEmpty()
             .When(x => !x.IsAlwaysAvailable)
-            .WithMessage("Debe especificar los días disponibles si el item no está siempre disponible");
+            .WithMessage("Available days must be specified if the item is not always available");
 
-        // Debe tener al menos una opción de precio
         RuleFor(x => x.PriceOptions)
             .NotEmpty()
-            .WithMessage("El item debe tener al menos una opción de precio");
-
-        // Nota: Los Value Objects (PriceOption, DepositOverride, NutritionalInfo)
-        // se validan en su factory method Create(), no aquí.
+            .WithMessage("Item must have at least one price option");
 
         RuleFor(x => x.AllergenNotes)
             .MaximumLength(500)
-            .WithMessage("Las notas de alérgenos no pueden exceder 500 caracteres");
+            .WithMessage("Allergen notes cannot exceed 500 characters");
     }
 
+    /// <summary>
+    /// Validates that a URL string is a valid absolute HTTP or HTTPS URL.
+    /// </summary>
+    /// <param name="url">The URL to validate.</param>
+    /// <returns><c>true</c> if the URL is valid or empty; otherwise, <c>false</c>.</returns>
     private static bool BeAValidUrl(string? url)
     {
         if (string.IsNullOrEmpty(url)) return true;
