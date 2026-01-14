@@ -11,6 +11,8 @@ global using Customer.Features.Menus.Domain.MenuAggregate.Entities;
 global using Customer.Features.Menus.Domain.MenuItemAggregate;
 global using Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 
+global using Customer.Features.Menus.Domain.AllergenAggregate;
+
 global using FluentValidation;
 global using Fudie.Domain;
 global using Fudie.DependencyInjection;

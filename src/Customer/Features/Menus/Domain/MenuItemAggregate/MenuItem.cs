@@ -132,15 +132,15 @@ public partial class MenuItem : AggregateRoot<Guid>
     public IReadOnlyCollection<PriceOption> PriceOptions => _priceOptions.ToList().AsReadOnly();
 
     /// <summary>
-    /// The internal collection of allergen identifiers associated with this item.
+    /// The internal collection of allergens associated with this item.
     /// </summary>
-    protected HashSet<Guid> _allergenIds = [];
+    protected HashSet<Allergen> _allergens = [];
 
     /// <summary>
-    /// Gets the read-only collection of allergen identifiers associated with this item.
+    /// Gets the read-only collection of allergens associated with this item.
     /// </summary>
-    /// <value>A read-only collection of allergen GUIDs.</value>
-    public IReadOnlyCollection<Guid> AllergenIds => _allergenIds.ToList().AsReadOnly();
+    /// <value>A read-only collection of <see cref="Allergen"/> entities.</value>
+    public IReadOnlyCollection<Allergen> Allergens => _allergens.ToList().AsReadOnly();
 
     /// <summary>
     /// Gets additional notes about allergens for this item.
