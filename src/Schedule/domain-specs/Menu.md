@@ -178,26 +178,26 @@ Define una política de fianza específica para un item, que sobrescribe la pol�
 | Propiedad | Type | Modificador | Validaciones | Notas |
 |-----------|------|-------------|--------------|-------|
 | Id | Guid | protected set | Required | |
-| PortionType | PortionType (enum) | protected set | Required | Tapa, MediaRacion, Racion, SegunMercado |
-| Price | decimal? | protected set | Range(0, 10000) | null para SegunMercado sin precio actualizado |
+| PortionType | PortionType (enum) | protected set | Required | Small, Half, Full, MarketPrice |
+| Price | decimal? | protected set | Range(0, 10000) | null para MarketPrice sin precio actualizado |
 | IsActive | bool | protected set | | Porción disponible/no disponible |
 
 **Enums**:
 ```csharp
 public enum PortionType {
-    Tapa = 1,
-    MediaRacion = 2,
-    Racion = 3,
-    SegunMercado = 4
+    Small = 1,        // Porción pequeña (tapa), ~25% de ración
+    Half = 2,         // Media ración, ~50% de ración
+    Full = 3,         // Ración completa
+    MarketPrice = 4   // Precio según mercado
 }
 ```
 
 **Propiedades Calculadas**:
-- `RequiresMarketPrice`: `bool` (get only) → `PortionType == SegunMercado && !Price.HasValue`
+- `RequiresMarketPrice`: `bool` (get only) → `PortionType == MarketPrice && !Price.HasValue`
 - `DisplayPrice`: `string` (get only) → `RequiresMarketPrice ? "S/M" : Price.Value.ToString("C")`
 
 **Invariantes**:
-- Si `PortionType != SegunMercado`, entonces `Price` debe tener valor
+- Si `PortionType != MarketPrice`, entonces `Price` debe tener valor
 - `Price` debe ser >= 0 si tiene valor
 
 ---
@@ -574,7 +574,7 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 **Validaciones**:
 - 🟣{UniquePortionTypePolicy}: PortionType no duplicado en el item
-- 🟣{PriceRequiredForFixedPolicy}: Si PortionType != SegunMercado → Price requerido y > 0
+- 🟣{PriceRequiredForFixedPolicy}: Si PortionType != MarketPrice → Price requerido y > 0
 
 **Flujo de Error**:
 ```
@@ -593,7 +593,7 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 ```
 
 **Validaciones** 🟣{OnlyMarketPricePolicy}:
-- PortionType debe ser SegunMercado
+- PortionType debe ser MarketPrice
 - NewPrice >= 0
 
 ---
@@ -857,12 +857,12 @@ var tapaNutrition = nutritionalInfo.GetNutritionForPortion(0.25m);
 
 ✅ **Example (Success - Crear sin precio)**:
 - Agregar "Pulpo al Horno" con precio "Según Mercado" sin especificar precio
-- **Acción**: `item.AddPriceOption(PortionType.SegunMercado, price: null)`
+- **Acción**: `item.AddPriceOption(PortionType.MarketPrice, price: null)`
 - **Resultado**: PriceOption creada, RequiresMarketPrice = true, DisplayPrice = "S/M"
 
 ✅ **Example (Success - Actualizar precio)**:
 - Actualizar precio del pulpo a €22.00
-- **Precondición**: Item "Pulpo" con precio SegunMercado sin valor
+- **Precondición**: Item "Pulpo" con precio MarketPrice sin valor
 - **Acción**: `priceOption.UpdateMarketPrice(22.00m)`
 - **Resultado**: Price = 22.00, RequiresMarketPrice = false, DisplayPrice = "€22,00"
 
@@ -1306,7 +1306,7 @@ Menu (Root)
           "priceOptions": [
             {
               "id": "price-202",
-              "portionType": 4, // SegunMercado
+              "portionType": 4, // MarketPrice
               "price": 22.00,
               "isActive": true
             }
@@ -1410,7 +1410,7 @@ public decimal CalculateReservationDeposit(
 - ServingSize entre 1 y 10000 gramos
 
 **A Nivel de PriceOption**:
-- Si PortionType != SegunMercado, Price debe tener valor
+- Si PortionType != MarketPrice, Price debe tener valor
 - Price >= 0 si tiene valor
 
 **A Nivel de DepositPolicy**:
@@ -1563,7 +1563,7 @@ public decimal CalculateReservationDeposit(
 - ✅ Macronutrientes ≤ 1000g
 
 ### PriceOption
-- ✅ Si PortionType != SegunMercado → Price debe tener valor
+- ✅ Si PortionType != MarketPrice → Price debe tener valor
 - ✅ Price >= 0 (si tiene valor)
 
 ### DepositPolicy
