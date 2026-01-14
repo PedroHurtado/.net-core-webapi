@@ -155,6 +155,19 @@ public partial class MenuItem : Entity
     public MenuItem(Guid id) : base(id) { }
 }
 
+public static class MenuItemValidationMessages
+{
+    public const string Required = "{PropertyName} is required";
+    public const string MaxLength = "{PropertyName} cannot exceed {MaxLength} characters";
+    public const string MinValue = "{PropertyName} must be greater than or equal to {ComparisonValue}";
+    public const string InvalidUrl = "{PropertyName} is not valid";
+    public const string RequiresAdvanceOrderMustBeHighRisk = "If RequiresAdvanceOrder is true, IsHighRiskItem must also be true";
+    public const string MinimumQuantityRange = "{PropertyName} must be between {From} and {To}";
+    public const string MinimumAdvanceOrderQuantityRequiresAdvanceOrder = "If MinimumAdvanceOrderQuantity has a value, RequiresAdvanceOrder must be true";
+    public const string AvailableDaysRequired = "Available days must be specified if the item is not always available";
+    public const string PriceOptionsRequired = "Item must have at least one price option";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="MenuItem"/> entity.
 /// </summary>
@@ -178,56 +191,56 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Item Id is required");
+            .WithMessage(MenuItemValidationMessages.Required);
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("Item name is required")
+            .WithMessage(MenuItemValidationMessages.Required)
             .MaximumLength(150)
-            .WithMessage("Name cannot exceed 150 characters");
+            .WithMessage(MenuItemValidationMessages.MaxLength);
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)
-            .WithMessage("Description cannot exceed 1000 characters");
+            .WithMessage(MenuItemValidationMessages.MaxLength);
 
         RuleFor(x => x.ImageUrl)
             .MaximumLength(500)
-            .WithMessage("Image URL cannot exceed 500 characters")
+            .WithMessage(MenuItemValidationMessages.MaxLength)
             .Must(BeAValidUrl)
             .When(x => !string.IsNullOrEmpty(x.ImageUrl))
-            .WithMessage("Image URL is not valid");
+            .WithMessage(MenuItemValidationMessages.InvalidUrl);
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Display order must be greater than or equal to 0");
+            .WithMessage(MenuItemValidationMessages.MinValue);
 
         RuleFor(x => x)
             .Must(x => !x.RequiresAdvanceOrder || x.IsHighRiskItem)
-            .WithMessage("If RequiresAdvanceOrder is true, IsHighRiskItem must also be true")
+            .WithMessage(MenuItemValidationMessages.RequiresAdvanceOrderMustBeHighRisk)
             .WithName("RequiresAdvanceOrder");
 
         RuleFor(x => x.MinimumAdvanceOrderQuantity)
             .InclusiveBetween(1, 100)
             .When(x => x.MinimumAdvanceOrderQuantity.HasValue)
-            .WithMessage("Minimum quantity must be between 1 and 100");
+            .WithMessage(MenuItemValidationMessages.MinimumQuantityRange);
 
         RuleFor(x => x)
             .Must(x => !x.MinimumAdvanceOrderQuantity.HasValue || x.RequiresAdvanceOrder)
-            .WithMessage("If MinimumAdvanceOrderQuantity has a value, RequiresAdvanceOrder must be true")
+            .WithMessage(MenuItemValidationMessages.MinimumAdvanceOrderQuantityRequiresAdvanceOrder)
             .WithName("MinimumAdvanceOrderQuantity");
 
         RuleFor(x => x.AvailableDays)
             .NotEmpty()
             .When(x => !x.IsAlwaysAvailable)
-            .WithMessage("Available days must be specified if the item is not always available");
+            .WithMessage(MenuItemValidationMessages.AvailableDaysRequired);
 
         RuleFor(x => x.PriceOptions)
             .NotEmpty()
-            .WithMessage("Item must have at least one price option");
+            .WithMessage(MenuItemValidationMessages.PriceOptionsRequired);
 
         RuleFor(x => x.AllergenNotes)
             .MaximumLength(500)
-            .WithMessage("Allergen notes cannot exceed 500 characters");
+            .WithMessage(MenuItemValidationMessages.MaxLength);
     }
 
     /// <summary>

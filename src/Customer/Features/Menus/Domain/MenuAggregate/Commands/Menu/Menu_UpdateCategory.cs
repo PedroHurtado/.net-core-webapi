@@ -14,6 +14,11 @@ public record UpdateCategoryCommand(
     int DisplayOrder
 );
 
+public static class UpdateCategoryValidationMessages
+{
+    public const string CategoryNameAlreadyExists = "A category with this name already exists";
+}
+
 public partial class Menu
 {
     /// <summary>
@@ -58,7 +63,7 @@ public partial class Menu
 
             ConflictGuard.ThrowIf(
                 duplicateName,
-                "A category with this name already exists"
+                UpdateCategoryValidationMessages.CategoryNameAlreadyExists
             );
 
             updateCategory.Execute(category!, new UpdateCategoryDetailsCommand(

@@ -156,6 +156,13 @@ public record NutritionalInfo
     }
 }
 
+public static class NutritionalInfoValidationMessages
+{
+    public const string MinValue = "{PropertyName} must be >= {ComparisonValue}";
+    public const string GreaterThanZero = "{PropertyName} must be > {ComparisonValue}";
+    public const string MaxValue = "{PropertyName} cannot exceed {ComparisonValue}";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="NutritionalInfo"/> value object.
 /// </summary>
@@ -173,56 +180,56 @@ public class NutritionalInfoValidator : AbstractValidator<NutritionalInfo>
     {
         RuleFor(x => x.Calories)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Calories must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(10000)
-            .WithMessage("Calories cannot exceed 10,000 kcal");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Protein)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Protein must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(1000)
-            .WithMessage("Protein cannot exceed 1,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Carbohydrates)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Carbohydrates must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(1000)
-            .WithMessage("Carbohydrates cannot exceed 1,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Fat)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Fat must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(1000)
-            .WithMessage("Fat cannot exceed 1,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.ServingSize)
             .GreaterThan(0)
-            .WithMessage("Serving size must be > 0")
+            .WithMessage(NutritionalInfoValidationMessages.GreaterThanZero)
             .LessThanOrEqualTo(10000)
-            .WithMessage("Serving size cannot exceed 10,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Fiber)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Fiber.HasValue)
-            .WithMessage("Fiber must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(1000)
             .When(x => x.Fiber.HasValue)
-            .WithMessage("Fiber cannot exceed 1,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Sugar)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Sugar.HasValue)
-            .WithMessage("Sugar must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(1000)
             .When(x => x.Sugar.HasValue)
-            .WithMessage("Sugar cannot exceed 1,000g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
 
         RuleFor(x => x.Salt)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Salt.HasValue)
-            .WithMessage("Salt must be >= 0")
+            .WithMessage(NutritionalInfoValidationMessages.MinValue)
             .LessThanOrEqualTo(100)
             .When(x => x.Salt.HasValue)
-            .WithMessage("Salt cannot exceed 100g");
+            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
     }
 }

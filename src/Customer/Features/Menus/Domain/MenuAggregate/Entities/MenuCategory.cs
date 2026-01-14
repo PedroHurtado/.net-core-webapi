@@ -62,6 +62,13 @@ public partial class MenuCategory : Entity
     public MenuCategory(Guid id) : base(id) { }
 }
 
+public static class MenuCategoryValidationMessages
+{
+    public const string Required = "{PropertyName} is required";
+    public const string MaxLength = "{PropertyName} cannot exceed {MaxLength} characters";
+    public const string MinValue = "{PropertyName} must be greater than or equal to {ComparisonValue}";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="MenuCategory"/> entity.
 /// </summary>
@@ -79,20 +86,20 @@ public class MenuCategoryValidator : AbstractValidator<MenuCategory>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Category Id is required");
+            .WithMessage(MenuCategoryValidationMessages.Required);
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("Category name is required")
+            .WithMessage(MenuCategoryValidationMessages.Required)
             .MaximumLength(100)
-            .WithMessage("Name cannot exceed 100 characters");
+            .WithMessage(MenuCategoryValidationMessages.MaxLength);
 
         RuleFor(x => x.Description)
             .MaximumLength(500)
-            .WithMessage("Description cannot exceed 500 characters");
+            .WithMessage(MenuCategoryValidationMessages.MaxLength);
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Display order must be greater than or equal to 0");
+            .WithMessage(MenuCategoryValidationMessages.MinValue);
     }
 }

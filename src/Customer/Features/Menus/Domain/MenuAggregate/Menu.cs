@@ -96,6 +96,14 @@ public partial class Menu : AggregateRoot
     public Menu(Guid id) : base(id) { }
 }
 
+public static class MenuValidationMessages
+{
+    public const string Required = "{PropertyName} is required";
+    public const string MaxLength = "{PropertyName} cannot exceed {MaxLength} characters";
+    public const string MinValue = "{PropertyName} must be greater than or equal to {ComparisonValue}";
+    public const string StartDateMustBeEarlierThanEndDate = "Start date must be earlier than end date";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="Menu"/> aggregate root.
 /// </summary>
@@ -114,30 +122,30 @@ public class MenuValidator : AbstractValidator<Menu>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Menu Id is required");
+            .WithMessage(MenuValidationMessages.Required);
 
         RuleFor(x => x.RestaurantId)
             .NotEmpty()
-            .WithMessage("Restaurant Id is required");
+            .WithMessage(MenuValidationMessages.Required);
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage("Menu name is required")
+            .WithMessage(MenuValidationMessages.Required)
             .MaximumLength(100)
-            .WithMessage("Name cannot exceed 100 characters");
+            .WithMessage(MenuValidationMessages.MaxLength);
 
         RuleFor(x => x.Description)
             .MaximumLength(500)
-            .WithMessage("Description cannot exceed 500 characters");
+            .WithMessage(MenuValidationMessages.MaxLength);
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Display order must be greater than or equal to 0");
+            .WithMessage(MenuValidationMessages.MinValue);
 
         RuleFor(x => x)
             .Must(x => !x.EffectiveFrom.HasValue || !x.EffectiveUntil.HasValue
                        || x.EffectiveFrom < x.EffectiveUntil)
-            .WithMessage("Start date must be earlier than end date")
+            .WithMessage(MenuValidationMessages.StartDateMustBeEarlierThanEndDate)
             .WithName("EffectiveFrom");
     }
 }

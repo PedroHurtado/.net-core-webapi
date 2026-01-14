@@ -101,6 +101,13 @@ public record PriceOption
     public string DisplayPrice => RequiresMarketPrice ? "S/M" : Price!.Value.ToString("C");
 }
 
+public static class PriceOptionValidationMessages
+{
+    public const string Required = "{PropertyName} is required";
+    public const string PriceRequiredForFixedPortionTypes = "Price is required for fixed portion types";
+    public const string CannotBeNegative = "{PropertyName} cannot be negative";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="PriceOption"/> value object.
 /// </summary>
@@ -118,16 +125,16 @@ public class PriceOptionValidator : AbstractValidator<PriceOption>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Id is required");
+            .WithMessage(PriceOptionValidationMessages.Required);
 
         RuleFor(x => x.Price)
             .NotNull()
             .When(x => x.PortionType != PortionType.MarketPrice)
-            .WithMessage("Price is required for fixed portion types");
+            .WithMessage(PriceOptionValidationMessages.PriceRequiredForFixedPortionTypes);
 
         RuleFor(x => x.Price)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Price.HasValue)
-            .WithMessage("Price cannot be negative");
+            .WithMessage(PriceOptionValidationMessages.CannotBeNegative);
     }
 }

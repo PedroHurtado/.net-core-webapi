@@ -146,6 +146,16 @@ public record DepositPolicy
     }
 }
 
+public static class DepositPolicyValidationMessages
+{
+    public const string GreaterThanZero = "{PropertyName} must be greater than zero";
+    public const string PercentageRequiredForPercentageOfBill = "Percentage must be specified for PercentageOfBill type";
+    public const string PercentageOnlyForPercentageOfBill = "Percentage only applies to PercentageOfBill type";
+    public const string PercentageRange = "{PropertyName} must be between {From} and {To}";
+    public const string MinValue = "{PropertyName} must be at least {ComparisonValue}";
+    public const string CannotBeNegative = "{PropertyName} cannot be negative";
+}
+
 /// <summary>
 /// Provides validation rules for the <see cref="DepositPolicy"/> value object.
 /// </summary>
@@ -163,31 +173,31 @@ public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
     {
         RuleFor(x => x.Amount)
             .GreaterThan(0)
-            .WithMessage("Amount must be greater than zero");
+            .WithMessage(DepositPolicyValidationMessages.GreaterThanZero);
 
         RuleFor(x => x.Percentage)
             .NotNull()
             .When(x => x.DepositType == DepositType.PercentageOfBill)
-            .WithMessage("Percentage must be specified for PercentageOfBill type");
+            .WithMessage(DepositPolicyValidationMessages.PercentageRequiredForPercentageOfBill);
 
         RuleFor(x => x.Percentage)
             .Null()
             .When(x => x.DepositType != DepositType.PercentageOfBill)
-            .WithMessage("Percentage only applies to PercentageOfBill type");
+            .WithMessage(DepositPolicyValidationMessages.PercentageOnlyForPercentageOfBill);
 
         RuleFor(x => x.Percentage)
             .InclusiveBetween(1, 100)
             .When(x => x.Percentage.HasValue)
-            .WithMessage("Percentage must be between 1 and 100");
+            .WithMessage(DepositPolicyValidationMessages.PercentageRange);
 
         RuleFor(x => x.MinimumGuestsForDeposit)
             .GreaterThanOrEqualTo(1)
             .When(x => x.MinimumGuestsForDeposit.HasValue)
-            .WithMessage("Minimum guests must be at least 1");
+            .WithMessage(DepositPolicyValidationMessages.MinValue);
 
         RuleFor(x => x.MinimumBillForDeposit)
             .GreaterThanOrEqualTo(0)
             .When(x => x.MinimumBillForDeposit.HasValue)
-            .WithMessage("Minimum bill amount cannot be negative");
+            .WithMessage(DepositPolicyValidationMessages.CannotBeNegative);
     }
 }

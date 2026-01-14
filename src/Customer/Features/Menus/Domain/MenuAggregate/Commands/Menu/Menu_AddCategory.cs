@@ -12,6 +12,11 @@ public record AddCategoryCommand(
     int DisplayOrder = 0
 );
 
+public static class AddCategoryValidationMessages
+{
+    public const string CategoryNameAlreadyExists = "A category with this name already exists";
+}
+
 public partial class Menu
 {
     /// <summary>
@@ -49,7 +54,7 @@ public partial class Menu
 
             ConflictGuard.ThrowIf(
                 duplicateName,
-                "A category with this name already exists"
+                AddCategoryValidationMessages.CategoryNameAlreadyExists
             );
 
             var category = createCategory.Execute(new CreateCategoryCommand(

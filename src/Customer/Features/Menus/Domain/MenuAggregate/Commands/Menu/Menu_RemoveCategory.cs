@@ -6,6 +6,11 @@ namespace Customer.Features.Menus.Domain.MenuAggregate;
 /// <param name="CategoryId">The unique identifier of the category to remove.</param>
 public record RemoveCategoryCommand(Guid CategoryId);
 
+public static class RemoveCategoryValidationMessages
+{
+    public const string CannotRemoveCategoryWithItems = "Cannot remove a category that contains items";
+}
+
 public partial class Menu
 {
     /// <summary>
@@ -42,7 +47,7 @@ public partial class Menu
 
             ValidationGuard.ThrowIf(
                 category!.Items.Count != 0,
-                "Cannot remove a category that contains items",
+                RemoveCategoryValidationMessages.CannotRemoveCategoryWithItems,
                 "CategoryId"
             );
 
