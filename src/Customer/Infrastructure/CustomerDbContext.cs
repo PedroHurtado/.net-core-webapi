@@ -1,7 +1,3 @@
-using Customer.Features.Menus.Domain.AllergenAggregate;
-using Customer.Features.Menus.Domain.MenuAggregate;
-using Customer.Features.Menus.Domain.MenuAggregate.Entities;
-using Customer.Features.Menus.Domain.MenuItemAggregate;
 using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
