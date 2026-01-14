@@ -64,16 +64,6 @@ public partial class Menu : AggregateRoot
     public DepositPolicy? DepositPolicy { get; protected set; }
 
     /// <summary>
-    /// Gets the date and time when this menu was created.
-    /// </summary>
-    public DateTime CreatedAt { get; protected set; }
-
-    /// <summary>
-    /// Gets the date and time when this menu was last updated.
-    /// </summary>
-    public DateTime UpdatedAt { get; protected set; }
-
-    /// <summary>
     /// The internal collection of menu categories.
     /// </summary>
     protected HashSet<MenuCategory> _categories = [];

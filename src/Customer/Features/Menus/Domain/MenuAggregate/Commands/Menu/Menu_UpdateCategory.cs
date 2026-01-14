@@ -72,8 +72,6 @@ public partial class Menu
                 command.DisplayOrder
             ));
 
-            menu.UpdatedAt = DateTime.UtcNow;
-
             return menuValidator.ValidateOrThrow(menu);
         }
     }

@@ -52,9 +52,7 @@ public partial class Menu
                 EffectiveFrom = command.EffectiveFrom,
                 EffectiveUntil = command.EffectiveUntil,
                 DisplayOrder = 0,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                IsActive = true
             };
 
             return menuValidator.ValidateOrThrow(menu);

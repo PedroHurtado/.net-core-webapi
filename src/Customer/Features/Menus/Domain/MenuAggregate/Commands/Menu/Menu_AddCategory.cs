@@ -64,7 +64,6 @@ public partial class Menu
             ));
 
             menu._categories.Add(category);
-            menu.UpdatedAt = DateTime.UtcNow;
 
             return menuValidator.ValidateOrThrow(menu);
         }

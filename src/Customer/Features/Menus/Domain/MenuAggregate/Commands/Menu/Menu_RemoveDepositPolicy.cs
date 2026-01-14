@@ -30,7 +30,6 @@ public partial class Menu
         public override Menu Execute(Menu menu)
         {
             menu.DepositPolicy = null;
-            menu.UpdatedAt = DateTime.UtcNow;
 
             return menuValidator.ValidateOrThrow(menu);
         }

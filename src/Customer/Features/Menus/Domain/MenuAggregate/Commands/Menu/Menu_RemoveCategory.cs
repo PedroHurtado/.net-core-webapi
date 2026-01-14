@@ -52,7 +52,6 @@ public partial class Menu
             );
 
             menu._categories.Remove(category);
-            menu.UpdatedAt = DateTime.UtcNow;
 
             return menuValidator.ValidateOrThrow(menu);
         }

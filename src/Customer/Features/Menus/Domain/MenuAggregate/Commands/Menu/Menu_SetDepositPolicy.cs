@@ -55,7 +55,6 @@ public partial class Menu
             );
 
             menu.DepositPolicy = depositPolicy;
-            menu.UpdatedAt = DateTime.UtcNow;
 
             return menuValidator.ValidateOrThrow(menu);
         }

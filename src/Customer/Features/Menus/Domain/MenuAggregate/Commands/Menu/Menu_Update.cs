@@ -24,8 +24,7 @@ public partial class Menu
     /// <remarks>
     /// <para>
     /// This command updates the menu's basic properties including name, description,
-    /// validity dates, and display order. The <see cref="Menu.UpdatedAt"/> timestamp
-    /// is automatically set to the current UTC time.
+    /// validity dates, and display order.
     /// </para>
     /// <para>
     /// The command validates the menu using <see cref="MenuValidator"/> before returning.
@@ -51,7 +50,6 @@ public partial class Menu
             menu.EffectiveFrom = command.EffectiveFrom;
             menu.EffectiveUntil = command.EffectiveUntil;
             menu.DisplayOrder = command.DisplayOrder;
-            menu.UpdatedAt = DateTime.UtcNow;
 
             return menuValidator.ValidateOrThrow(menu);
         }
