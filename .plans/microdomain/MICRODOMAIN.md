@@ -64,6 +64,7 @@ Tests/[Feature]/
 ② ValueObject    → Test factory + Test métodos → Implementar
 ③ Entity hija    → Test validator + Test calculadas → Implementar
 ④ Aggregate      → Test validator + Test calculadas → Implementar
+⑤ DbContext      → Configurar agregados en OnModelCreating
 ```
 
 > ⚠️ **IMPORTANTE**: Los archivos de dominio (Entity, Aggregate, ValueObject, Enum) **NUNCA tienen `using`**.
@@ -274,6 +275,92 @@ public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
 - Validación con `ValidateOrThrow()`
 - Métodos de negocio permitidos
 - NO constructor público
+
+### DbContext con Firestore
+
+Configurar los agregados en el DbContext usando el provider Firestore.
+
+```csharp
+// Infrastructure/CustomerDbContext.cs
+using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+
+public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : DbContext(options)
+{
+    // Solo agregados raíz (root collections)
+    public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<Allergen> Allergens => Set<Allergen>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Menu>(entity =>
+        {
+            // ComplexType: objeto embebido (record/clase sin Id)
+            entity.ComplexProperty(m => m.DepositPolicy);
+
+            // SubCollection: colección anidada bajo el documento padre
+            entity.SubCollection(m => m.Categories, category =>
+            {
+                // ArrayOf embedded con Reference dentro
+                category.ArrayOf(c => c.Items, item =>
+                {
+                    item.Reference(i => i.MenuItem);
+                });
+            });
+        });
+
+        modelBuilder.Entity<MenuItem>(entity =>
+        {
+            // ComplexTypes
+            entity.ComplexProperty(m => m.DepositOverride);
+            entity.ComplexProperty(m => m.NutritionalInfo);
+
+            // ArrayOf embedded (clase sin Id)
+            entity.ArrayOf(m => m.PriceOptions);
+
+            // ArrayOf Reference (referencias a otro agregado)
+            entity.ArrayOf(m => m.Allergens).AsReferences();
+
+            // HashSet<DayOfWeek> → manejado por ListEnumToStringArrayConvention
+            // NO requiere configuración explícita
+        });
+
+        // Allergen: las conventions manejan todo automáticamente
+    }
+}
+```
+
+#### Métodos de Configuración Firestore
+
+| Método | Uso | Ejemplo |
+|--------|-----|---------|
+| `entity.ComplexProperty()` | Objeto embebido (sin Id) | `DepositPolicy`, `Address` |
+| `entity.SubCollection()` | Colección anidada en Firestore | `Menu → Categories` |
+| `entity.ArrayOf()` | Array de objetos embebidos | `List<PriceOption>` |
+| `entity.ArrayOf().AsReferences()` | Array de DocumentReferences | `List<Allergen>` |
+| `builder.Reference()` | Propiedad como DocumentReference | `CategoryItem.MenuItem` |
+
+#### Conventions Automáticas (NO requieren configuración)
+
+| Tipo | Convention | Comportamiento |
+|------|------------|----------------|
+| `Id` / `{Entity}Id` | PrimaryKeyConvention | Auto-detecta clave primaria |
+| Nombre de entidad | CollectionNamingConvention | Pluraliza: `Menu` → `Menus` |
+| `enum` | EnumToStringConvention | Convierte a string |
+| `decimal` | DecimalToDoubleConvention | Convierte a double |
+| `List<enum>` | ListEnumToStringArrayConvention | Convierte a `List<string>` |
+| `List<decimal>` | ListDecimalToDoubleArrayConvention | Convierte a `List<double>` |
+| Clase con Lat/Lng sin Id | GeoPointConvention | Auto-detecta como GeoPoint |
+| `List<T>` donde T no tiene Id | ArrayOfConvention | Auto-detecta como Embedded |
+
+#### Reglas DbContext
+
+- Solo `DbSet<T>` para **agregados raíz** (no entidades hijas)
+- ValueObjects (records sin Id) → `ComplexProperty()`
+- Entidades hijas con colección → `SubCollection()`
+- Referencias a otros agregados → `Reference()` o `ArrayOf().AsReferences()`
+- Tipos primitivos/enums en listas → las conventions los manejan
 
 ---
 
@@ -762,6 +849,12 @@ public class Menu_AddCategoryTests
 - [ ] ValueObject usa factory `Create()` con `ValidateOrThrow()`
 - [ ] Testable helper creado con métodos `With*`
 - [ ] Tests de Validator pasan
+- [ ] **DbContext configurado**:
+  - [ ] `DbSet<T>` solo para agregados raíz
+  - [ ] `ComplexProperty()` para ValueObjects
+  - [ ] `SubCollection()` para entidades hijas
+  - [ ] `ArrayOf()` / `AsReferences()` para colecciones
+  - [ ] Proyecto compila sin errores
 
 ### Fase 2: Commands
 - [ ] Test éxito escrito (red)
