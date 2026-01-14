@@ -1,8 +1,5 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
-using FluentValidation;
-using Fudie.Validation;
-
 /// <summary>
 /// Información nutricional de un item (valores por ración completa).
 /// </summary>

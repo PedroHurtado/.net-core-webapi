@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Fudie.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fudie.UnitTests.DependencyInjection;
 
@@ -248,117 +249,6 @@ public class InjectableAttributeTests
 
     [Injectable(ServiceLifetime.Singleton)]
     private class SingletonService : ITestService { }
-
-    #endregion
-}
-
-public class ServiceLifetimeTests
-{
-    #region Enum Values Tests
-
-    [Fact]
-    public void ServiceLifetime_ShouldHaveTransientValue()
-    {
-        // Act
-        var value = ServiceLifetime.Transient;
-
-        // Assert
-        value.Should().Be(ServiceLifetime.Transient);
-        ((int)value).Should().Be(0);
-    }
-
-    [Fact]
-    public void ServiceLifetime_ShouldHaveScopedValue()
-    {
-        // Act
-        var value = ServiceLifetime.Scoped;
-
-        // Assert
-        value.Should().Be(ServiceLifetime.Scoped);
-        ((int)value).Should().Be(1);
-    }
-
-    [Fact]
-    public void ServiceLifetime_ShouldHaveSingletonValue()
-    {
-        // Act
-        var value = ServiceLifetime.Singleton;
-
-        // Assert
-        value.Should().Be(ServiceLifetime.Singleton);
-        ((int)value).Should().Be(2);
-    }
-
-    #endregion
-
-    #region Enum Behavior Tests
-
-    [Fact]
-    public void ServiceLifetime_ShouldHaveExactlyThreeValues()
-    {
-        // Act
-        var values = Enum.GetValues(typeof(ServiceLifetime)).Cast<ServiceLifetime>();
-
-        // Assert
-        values.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public void ServiceLifetime_AllValuesShouldBeUnique()
-    {
-        // Act
-        var values = Enum.GetValues(typeof(ServiceLifetime)).Cast<ServiceLifetime>().ToList();
-
-        // Assert
-        values.Should().OnlyHaveUniqueItems();
-    }
-
-    [Theory]
-    [InlineData(ServiceLifetime.Transient, "Transient")]
-    [InlineData(ServiceLifetime.Scoped, "Scoped")]
-    [InlineData(ServiceLifetime.Singleton, "Singleton")]
-    public void ServiceLifetime_ToString_ShouldReturnCorrectName(ServiceLifetime lifetime, string expectedName)
-    {
-        // Act
-        var name = lifetime.ToString();
-
-        // Assert
-        name.Should().Be(expectedName);
-    }
-
-    [Fact]
-    public void ServiceLifetime_CanBeCompared()
-    {
-        // Arrange
-        var transient = ServiceLifetime.Transient;
-        var scoped = ServiceLifetime.Scoped;
-        var singleton = ServiceLifetime.Singleton;
-
-        // Act & Assert
-        transient.Should().NotBe(scoped);
-        transient.Should().NotBe(singleton);
-        scoped.Should().NotBe(singleton);
-    }
-
-    [Fact]
-    public void ServiceLifetime_CanBeUsedInSwitch()
-    {
-        // Arrange
-        var lifetime = ServiceLifetime.Scoped;
-        var result = "";
-
-        // Act
-        result = lifetime switch
-        {
-            ServiceLifetime.Transient => "Transient",
-            ServiceLifetime.Scoped => "Scoped",
-            ServiceLifetime.Singleton => "Singleton",
-            _ => "Unknown"
-        };
-
-        // Assert
-        result.Should().Be("Scoped");
-    }
 
     #endregion
 }

@@ -1,26 +1,24 @@
-using FluentValidation;
-using Fudie.Domain;
-
 namespace Customer.Features.Menus.Domain.MenuAggregate.Entities;
 
 /// <summary>
-/// MenuCategory Entity - DTO simple para MicroDomain.
+/// MenuCategory Entity - MicroDomain.
 /// Pertenece al agregado Menu.
 /// </summary>
-public class MenuCategory : Entity
+public partial class MenuCategory : Entity
 {
     // === Propiedades básicas ===
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public int DisplayOrder { get; set; }
-    public bool IsActive { get; set; }
-    
+    public string Name { get; protected set; } = string.Empty;
+    public string? Description { get; protected set; }
+    public int DisplayOrder { get; protected set; }
+    public bool IsActive { get; protected set; }
+
     // === Colecciones ===
-    public HashSet<MenuItem> Items { get; set; } = [];
+    protected HashSet<MenuItem> _items = [];
+    public IReadOnlyCollection<MenuItem> Items => _items.ToList().AsReadOnly();
 
     // === Constructores ===
     protected MenuCategory() : base(Guid.Empty) { }
-    
+
     public MenuCategory(Guid id) : base(id) { }
 }
 
@@ -34,17 +32,17 @@ public class MenuCategoryValidator : AbstractValidator<MenuCategory>
         RuleFor(x => x.Id)
             .NotEmpty()
             .WithMessage("El Id de la categoría es requerido");
-        
+
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("El nombre de la categoría es requerido")
             .MaximumLength(100)
             .WithMessage("El nombre no puede exceder 100 caracteres");
-        
+
         RuleFor(x => x.Description)
             .MaximumLength(500)
             .WithMessage("La descripción no puede exceder 500 caracteres");
-        
+
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
             .WithMessage("El orden de visualización debe ser mayor o igual a 0");

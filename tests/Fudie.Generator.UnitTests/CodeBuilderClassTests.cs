@@ -41,7 +41,7 @@ public class CodeBuilderClassTests
 
         // Assert
         result.Should().Contain("namespace MyApp.Repositories;");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped)]");
         result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>");
         result.Should().Contain("private readonly IEntityLookup _entityLookup;");
         result.Should().NotContain("IChangeTracker");
@@ -243,7 +243,7 @@ public class CodeBuilderClassTests
 
         // Assert - Estructura básica
         result.Should().Contain("namespace MyApp.Repositories;");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped)]");
         result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>, IAdd<Customer>");
 
         // Assert - Fields y constructor
@@ -317,8 +317,8 @@ public class CodeBuilderClassTests
             config);
 
         // Assert
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
     }
 
     [Fact]
@@ -351,10 +351,10 @@ public class CodeBuilderClassTests
             config);
 
         // Assert - should have 3 Injectable attributes (1 container + 2 base, sin IGet duplicado)
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        result.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        result.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
     }
 
     [Fact]
@@ -377,7 +377,7 @@ public class CodeBuilderClassTests
             config);
 
         // Assert - should use legacy behavior (single Injectable without ServiceType)
-        result.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped)]");
         result.Should().NotContain("ServiceType = typeof");
         result.Should().Contain("public class CustomerRepository : IGet<Customer, Guid>, IAdd<Customer>");
     }

@@ -109,13 +109,16 @@ namespace Fudie.Infrastructure
 
 namespace Fudie.DependencyInjection
 {
-    public enum ServiceLifetime { Scoped }
-
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public class InjectableAttribute : System.Attribute
     {
-        public InjectableAttribute(ServiceLifetime lifetime) { }
+        public InjectableAttribute(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime) { }
     }
+}
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public enum ServiceLifetime { Scoped }
 }
 ";
         }
@@ -151,8 +154,8 @@ namespace Fudie.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("public async Task<Customer> Get(System.Guid id)");
         generatedCode.Should().NotContain("AsNoTracking()"); // Sin atributo, no hay AsNoTracking
     }
@@ -181,9 +184,9 @@ namespace Fudie.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IUpdate<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IUpdate<Customer, System.Guid>))]");
         // IUpdate hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
-        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
         generatedCode.Should().NotContain("AsNoTracking()");
     }
@@ -212,7 +215,7 @@ namespace Fudie.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
         generatedCode.Should().Contain("public void Add(Customer entity)");
         generatedCode.Should().Contain("_changeTracker.Entry(entity).State = EntityState.Added");
     }
@@ -241,9 +244,9 @@ namespace Fudie.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
         // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
-        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         // IRemove necesita tracking para eliminar, debe usar Set<T>() en lugar de Query<T>()
         generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
         generatedCode.Should().Contain("public void Remove(Customer entity)");
@@ -279,11 +282,11 @@ namespace Fudie.DependencyInjection
         // Should implement container interface
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
         // Should have multiple [Injectable] with ServiceType
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
         // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
-        generatedCode.Should().NotContain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
         // Should have all methods
         generatedCode.Should().Contain("public async Task<Customer> Get(System.Guid id)");
         generatedCode.Should().Contain("public void Add(Customer entity)");
@@ -542,9 +545,9 @@ namespace Fudie.DependencyInjection
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
 
         // Verificar Injectable attributes
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
 
         // Verificar includes
         generatedCode.Should().Contain("query = query.Include(c => c.Orders);");
@@ -648,8 +651,8 @@ namespace Fudie.DependencyInjection
         result.GeneratedTrees.Should().ContainSingle();
         var generatedCode = result.GeneratedTrees[0].ToString();
         // Should have multiple [Injectable] with ServiceType
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
     }
 
     #endregion
@@ -678,8 +681,8 @@ namespace Fudie.DependencyInjection
         // Should implement container interface with full path
         generatedCode.Should().Contain("public class CreateIngredient_Repository : CreateIngredient.IRepository");
         // Should have multiple [Injectable] with ServiceType
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
     }
 
     [Fact]
@@ -732,10 +735,10 @@ namespace Fudie.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
 
         // Container interface uses full path for typeof
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
         // Base interfaces use simple names
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Ingredient, System.Guid>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Ingredient, System.Guid>))]");
     }
 
     #endregion
@@ -772,7 +775,7 @@ namespace Fudie.DependencyInjection
         // Should generate class implementing the interface
         generatedCode.Should().Contain("public class TenantRepository : ITenantRepository");
         // Should have Injectable for container interface
-        generatedCode.Should().Contain("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ITenantRepository))]");
+        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ITenantRepository))]");
         // Should NOT have Get method (no IGet inheritance)
         generatedCode.Should().NotContain("public async Task<Tenant> Get(");
         // Should have the query method

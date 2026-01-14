@@ -1,8 +1,5 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
-using FluentValidation;
-using Fudie.Validation;
-
 /// <summary>
 /// Fianza específica para un item que sobrescribe la política del menú.
 /// </summary>

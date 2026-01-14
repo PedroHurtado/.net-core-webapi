@@ -330,18 +330,18 @@ internal static class CodeBuilder
         {
             // Generate multiple [Injectable] with ServiceType
             // First for the container interface
-            sb.AppendLine($"[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({config.ContainerInterfaceFullName}))]");
+            sb.AppendLine($"[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({config.ContainerInterfaceFullName}))]");
 
             // Then for each base interface
             foreach (var baseInterface in config.BaseInterfaceNames)
             {
-                sb.AppendLine($"[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({baseInterface}))]");
+                sb.AppendLine($"[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({baseInterface}))]");
             }
         }
         else
         {
             // Legacy behavior: single [Injectable] without ServiceType
-            sb.AppendLine("[Injectable(Fudie.DependencyInjection.ServiceLifetime.Scoped)]");
+            sb.AppendLine("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped)]");
         }
 
         sb.Append($"public class {className}");

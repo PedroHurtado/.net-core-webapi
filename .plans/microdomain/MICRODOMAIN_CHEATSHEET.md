@@ -148,7 +148,10 @@ Features/[Feature]/
 ├── Domain/[Aggregate]/
 │   ├── [Aggregate].cs
 │   ├── Commands/
-│   │   └── [Aggregate]_[Action].cs
+│   │   ├── [Aggregate]/
+│   │   │   └── [Aggregate]_[Action].cs
+│   │   └── [Entity]/
+│   │       └── [Entity]_[Action].cs
 │   ├── Entities/
 │   ├── ValueObjects/
 │   └── Enums/

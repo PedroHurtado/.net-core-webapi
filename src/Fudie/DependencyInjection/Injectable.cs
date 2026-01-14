@@ -1,13 +1,6 @@
 namespace Fudie.DependencyInjection;
 
-public enum ServiceLifetime
-{
-    Transient,
-    Scoped,
-    Singleton
-}
-
-
+using Microsoft.Extensions.DependencyInjection;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class InjectableAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) : Attribute

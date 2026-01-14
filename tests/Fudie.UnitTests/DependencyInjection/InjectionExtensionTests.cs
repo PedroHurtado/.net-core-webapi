@@ -280,7 +280,7 @@ public class InjectionExtensionTests
         services.AddTransient<MultiInterfaceService>();
 
         // Act
-        services.AddInterfacesFor<MultiInterfaceService>(Fudie.DependencyInjection.ServiceLifetime.Transient);
+        services.AddInterfacesFor<MultiInterfaceService>(ServiceLifetime.Transient);
 
         // Assert
         var descriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(IMultiService));
@@ -296,7 +296,7 @@ public class InjectionExtensionTests
         services.AddSingleton<MultiInterfaceService>();
 
         // Act
-        services.AddInterfacesFor<MultiInterfaceService>(Fudie.DependencyInjection.ServiceLifetime.Singleton);
+        services.AddInterfacesFor<MultiInterfaceService>(ServiceLifetime.Singleton);
 
         // Assert
         var descriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(IMultiService));
@@ -757,10 +757,10 @@ public class InjectionExtensionTests
     [Injectable]
     private class TestServiceScoped : ITestService { }
 
-    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Transient)]
+    [Injectable(ServiceLifetime.Transient)]
     private class TestServiceTransient : ITransientService { }
 
-    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    [Injectable(ServiceLifetime.Singleton)]
     private class TestServiceSingleton : ISingletonService { }
 
     [Injectable]
@@ -796,19 +796,19 @@ public class InjectionExtensionTests
     private record TestCommandData(string Value);
     private class TestEntityClass { public string Name { get; set; } = ""; }
 
-    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    [Injectable(ServiceLifetime.Singleton)]
     private class ConcreteCommandWithoutData : AbstractCommand<TestEntityClass>
     {
         public override TestEntityClass Execute(TestEntityClass entity) => entity;
     }
 
-    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    [Injectable(ServiceLifetime.Singleton)]
     private class ConcreteCommandWithData : AbstractCommand<TestCommandData, TestEntityClass>
     {
         public override TestEntityClass Execute(TestEntityClass entity, TestCommandData command) => entity;
     }
 
-    [Injectable(Fudie.DependencyInjection.ServiceLifetime.Singleton)]
+    [Injectable(ServiceLifetime.Singleton)]
     private class AnotherConcreteCommand : AbstractCommand<TestEntityClass>
     {
         public override TestEntityClass Execute(TestEntityClass entity) => entity;

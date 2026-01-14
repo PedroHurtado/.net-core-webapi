@@ -1,8 +1,5 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
-using FluentValidation;
-using Fudie.Validation;
-
 /// <summary>
 /// Opción de precio para un tipo de porción de un item.
 /// </summary>
