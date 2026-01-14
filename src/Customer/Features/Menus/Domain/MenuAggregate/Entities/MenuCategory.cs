@@ -7,7 +7,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate.Entities;
 /// <para>
 /// This entity follows the MicroDomain pattern where business logic is organized
 /// in separate command classes (partial class). Categories belong to the <see cref="Menu"/>
-/// aggregate and contain a collection of <see cref="MenuItem"/> instances.
+/// aggregate and contain a collection of <see cref="CategoryItem"/> value objects.
 /// </para>
 /// <para>
 /// Examples of categories include "Appetizers", "Main Courses", "Desserts", "Beverages", etc.
@@ -40,15 +40,15 @@ public partial class MenuCategory : Entity
     public bool IsActive { get; protected set; }
 
     /// <summary>
-    /// The internal collection of menu items in this category.
+    /// The internal collection of category items in this category.
     /// </summary>
-    protected HashSet<MenuItem> _items = [];
+    protected HashSet<CategoryItem> _items = [];
 
     /// <summary>
     /// Gets the read-only collection of items in this category.
     /// </summary>
-    /// <value>A read-only collection of <see cref="MenuItem"/> instances.</value>
-    public IReadOnlyCollection<MenuItem> Items => _items.ToList().AsReadOnly();
+    /// <value>A read-only collection of <see cref="CategoryItem"/> instances.</value>
+    public IReadOnlyCollection<CategoryItem> Items => _items.ToList().AsReadOnly();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MenuCategory"/> class for ORM purposes.

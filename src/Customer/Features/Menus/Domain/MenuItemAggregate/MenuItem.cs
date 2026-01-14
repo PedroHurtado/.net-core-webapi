@@ -1,21 +1,26 @@
-namespace Customer.Features.Menus.Domain.MenuAggregate.Entities;
+namespace Customer.Features.Menus.Domain.MenuItemAggregate;
 
 /// <summary>
-/// Represents a menu item within a category that can be ordered by customers.
+/// Represents a menu item as an aggregate root that can be shared across different menu types.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This entity follows the MicroDomain pattern where business logic is organized
-/// in separate command classes (partial class). Menu items belong to a <see cref="MenuCategory"/>
-/// within the <see cref="Menu"/> aggregate.
+/// This aggregate follows the MicroDomain pattern where business logic is organized
+/// in separate command classes (partial class). Menu items can be referenced by
+/// multiple aggregates such as <c>Menu</c> and <c>MenuDay</c>.
 /// </para>
 /// <para>
 /// Items can have multiple price options for different portion sizes, nutritional information,
 /// allergen data, and special ordering requirements (such as advance orders for high-risk items).
 /// </para>
 /// </remarks>
-public partial class MenuItem : Entity
+public partial class MenuItem : AggregateRoot
 {
+    /// <summary>
+    /// Gets the unique identifier of the restaurant that owns this menu item.
+    /// </summary>
+    public Guid RestaurantId { get; protected set; }
+
     /// <summary>
     /// Gets the name of the menu item.
     /// </summary>
@@ -169,7 +174,7 @@ public static class MenuItemValidationMessages
 }
 
 /// <summary>
-/// Provides validation rules for the <see cref="MenuItem"/> entity.
+/// Provides validation rules for the <see cref="MenuItem"/> aggregate root.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -190,6 +195,10 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
     public MenuItemValidator()
     {
         RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage(MenuItemValidationMessages.Required);
+
+        RuleFor(x => x.RestaurantId)
             .NotEmpty()
             .WithMessage(MenuItemValidationMessages.Required);
 

@@ -1,4 +1,4 @@
-namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+namespace Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 
 /// <summary>
 /// Represents nutritional information for a menu item per full serving.

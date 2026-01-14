@@ -1,4 +1,4 @@
-namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+namespace Customer.Features.Menus.Domain.Shared.ValueObjects;
 
 /// <summary>
 /// Represents a pricing option for a specific portion type of a menu item.
@@ -15,11 +15,6 @@ namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 /// </remarks>
 public record PriceOption
 {
-    /// <summary>
-    /// Gets the unique identifier for this price option.
-    /// </summary>
-    public Guid Id { get; }
-
     /// <summary>
     /// Gets the portion type this price applies to.
     /// </summary>
@@ -44,17 +39,14 @@ public record PriceOption
     /// <summary>
     /// Initializes a new instance of the <see cref="PriceOption"/> record.
     /// </summary>
-    /// <param name="id">The unique identifier.</param>
     /// <param name="portionType">The portion type.</param>
     /// <param name="price">The price amount.</param>
     /// <param name="isActive">Whether the option is active.</param>
     private PriceOption(
-        Guid id,
         PortionType portionType,
         decimal? price,
         bool isActive)
     {
-        Id = id;
         PortionType = portionType;
         Price = price;
         IsActive = isActive;
@@ -63,7 +55,6 @@ public record PriceOption
     /// <summary>
     /// Creates a new validated <see cref="PriceOption"/> instance.
     /// </summary>
-    /// <param name="id">The unique identifier. Must not be empty.</param>
     /// <param name="portionType">The portion type.</param>
     /// <param name="price">
     /// The price amount. Required for fixed portion types; optional for <see cref="Enums.PortionType.MarketPrice"/>.
@@ -73,12 +64,11 @@ public record PriceOption
     /// <returns>A validated <see cref="PriceOption"/> instance.</returns>
     /// <exception cref="ValidationException">Thrown when validation fails.</exception>
     public static PriceOption Create(
-        Guid id,
         PortionType portionType,
         decimal? price,
         bool isActive = true)
     {
-        var option = new PriceOption(id, portionType, price, isActive);
+        var option = new PriceOption(portionType, price, isActive);
 
         return new PriceOptionValidator().ValidateOrThrow(option);
     }
@@ -103,7 +93,6 @@ public record PriceOption
 
 public static class PriceOptionValidationMessages
 {
-    public const string Required = "{PropertyName} is required";
     public const string PriceRequiredForFixedPortionTypes = "Price is required for fixed portion types";
     public const string CannotBeNegative = "{PropertyName} cannot be negative";
 }
@@ -112,8 +101,8 @@ public static class PriceOptionValidationMessages
 /// Provides validation rules for the <see cref="PriceOption"/> value object.
 /// </summary>
 /// <remarks>
-/// Validates price option invariants including required identifier,
-/// price requirements for fixed portion types, and non-negative price values.
+/// Validates price option invariants including price requirements for fixed portion types
+/// and non-negative price values.
 /// </remarks>
 public class PriceOptionValidator : AbstractValidator<PriceOption>
 {
@@ -123,10 +112,6 @@ public class PriceOptionValidator : AbstractValidator<PriceOption>
     /// </summary>
     public PriceOptionValidator()
     {
-        RuleFor(x => x.Id)
-            .NotEmpty()
-            .WithMessage(PriceOptionValidationMessages.Required);
-
         RuleFor(x => x.Price)
             .NotNull()
             .When(x => x.PortionType != PortionType.MarketPrice)

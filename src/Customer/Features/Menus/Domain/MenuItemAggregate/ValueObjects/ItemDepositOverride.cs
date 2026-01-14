@@ -1,4 +1,4 @@
-namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
+namespace Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 
 /// <summary>
 /// Represents a deposit override for a specific menu item that supersedes the menu's default policy.
@@ -6,7 +6,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 /// <remarks>
 /// <para>
 /// This value object allows individual menu items to have their own deposit requirements,
-/// which take precedence over the menu-level <see cref="DepositPolicy"/>.
+/// which take precedence over the menu-level deposit policy.
 /// </para>
 /// <para>
 /// Useful for high-value items or items requiring special preparation where

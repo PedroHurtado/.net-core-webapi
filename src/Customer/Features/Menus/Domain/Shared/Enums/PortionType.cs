@@ -1,4 +1,4 @@
-namespace Customer.Features.Menus.Domain.MenuAggregate.Enums;
+namespace Customer.Features.Menus.Domain.Shared.Enums;
 
 /// <summary>
 /// Specifies the portion size type for menu item price options.
