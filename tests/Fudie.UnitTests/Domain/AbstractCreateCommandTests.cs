@@ -7,7 +7,7 @@ public class AbstractCreateCommandTests
 {
     #region Test Classes
 
-    private class TestEntity : Entity
+    private class TestEntity : Entity<Guid>
     {
         public TestEntity(Guid id) : base(id) { }
         public string Name { get; set; } = string.Empty;

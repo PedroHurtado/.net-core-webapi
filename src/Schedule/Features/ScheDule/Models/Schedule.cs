@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Schedule.Features.Schedule.Models;
 
-public class Schedule : Entity
+public class Schedule : Entity<Guid>
 {
     public Guid RestaurantId { get; protected set; }
 
@@ -31,7 +31,7 @@ public class Schedule : Entity
     public static Result<Schedule> Create(Guid id, Guid restaurantId)
     {
         var schedule = new Schedule(id, restaurantId);
-        var validationResult = ValidateEntity(schedule, new ScheduleValidator());
+        var validationResult = schedule.ValidateEntity(schedule, new ScheduleValidator());
 
         if (validationResult.IsFailure)
         {

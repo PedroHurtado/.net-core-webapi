@@ -6,7 +6,7 @@ using FluentValidation;
 
 namespace webapi.features.pizzas.models;
 
-public class Pizza : Entity
+public class Pizza : Entity<Guid>
 {
     private const decimal PROFIT = 1.20m;
     public string Name { get; protected set; }
@@ -73,7 +73,7 @@ public class Pizza : Entity
     public Result Update(string name, string description, string url)
     {
         var tempPizza = new Pizza(Id, name, description, url);
-        var validationResult = ValidateEntity(tempPizza, new PizzaValidator());
+        var validationResult = tempPizza.ValidateEntity(tempPizza, new PizzaValidator());
 
         if (validationResult.IsFailure)
         {
@@ -90,7 +90,7 @@ public class Pizza : Entity
     public static Result<Pizza> Create(Guid id, string name, string description, string url)
     {
         var pizza = new Pizza(id, name, description, url);
-        var validationResult = ValidateEntity(pizza, new PizzaValidator());
+        var validationResult = pizza.ValidateEntity(pizza, new PizzaValidator());
 
         if (validationResult.IsFailure)
         {

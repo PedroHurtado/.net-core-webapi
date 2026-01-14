@@ -4,11 +4,11 @@ using FluentValidation;
 
 namespace Schedule.Features.ServiceSchedule.Models;
 
-public class ServiceSchedule : Entity
+public class ServiceSchedule : Entity<Guid>
 {
     public Guid RestaurantId { get; protected set; }
     public ReservationPolicy Policy { get; protected set; }
-    
+
     public IReadOnlyCollection<Service> Services => _services.ToList().AsReadOnly();
     protected List<Service> _services = [];
 
@@ -21,7 +21,7 @@ public class ServiceSchedule : Entity
     public static Result<ServiceSchedule> Create(Guid id, Guid restaurantId, ReservationPolicy policy)
     {
         var serviceSchedule = new ServiceSchedule(id, restaurantId, policy);
-        var validationResult = ValidateEntity(serviceSchedule, new ServiceScheduleValidator());
+        var validationResult = serviceSchedule.ValidateEntity(serviceSchedule, new ServiceScheduleValidator());
 
         if (validationResult.IsFailure)
         {
@@ -188,7 +188,7 @@ public class ServiceSchedule : Entity
     public Result UpdatePolicy(ReservationPolicy newPolicy)
     {
         var tempSchedule = new ServiceSchedule(Id, RestaurantId, newPolicy);
-        var validationResult = ValidateEntity(tempSchedule, new ServiceScheduleValidator());
+        var validationResult = tempSchedule.ValidateEntity(tempSchedule, new ServiceScheduleValidator());
 
         if (validationResult.IsFailure)
         {

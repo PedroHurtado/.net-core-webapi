@@ -340,7 +340,5 @@ public class MenuTests
         // Assert
         menu.DisplayOrder.Should().Be(0);
         menu.Description.Should().Be("Description");
-        menu.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-        menu.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 }

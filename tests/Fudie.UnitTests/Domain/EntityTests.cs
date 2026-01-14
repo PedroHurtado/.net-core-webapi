@@ -8,7 +8,7 @@ public class EntityTests
     #region Test Entity Class
 
     // Clase de entidad concreta para testing
-    private class TestEntity : Entity
+    private class TestEntity : Entity<Guid>
     {
         public TestEntity(Guid id) : base(id) { }
 
@@ -294,8 +294,8 @@ public class EntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        Entity entity1 = new TestEntity(id);
-        Entity entity2 = new AnotherTestEntity(id);
+        Entity<Guid> entity1 = new TestEntity(id);
+        Entity<Guid> entity2 = new AnotherTestEntity(id);
 
         // Act
         var result = entity1 == entity2;
@@ -399,8 +399,8 @@ public class EntityTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        Entity entity1 = new TestEntity(id);
-        Entity entity2 = new AnotherTestEntity(id);
+        Entity<Guid> entity1 = new TestEntity(id);
+        Entity<Guid> entity2 = new AnotherTestEntity(id);
 
         // Act
         var result = entity1 != entity2;
@@ -560,7 +560,7 @@ public class EntityTests
 
     #region Additional Test Entity Class
 
-    private class AnotherTestEntity : Entity
+    private class AnotherTestEntity : Entity<Guid>
     {
         public AnotherTestEntity(Guid id) : base(id) { }
 

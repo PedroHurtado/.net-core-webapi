@@ -14,7 +14,7 @@ namespace Customer.Features.Menus.Domain.MenuItemAggregate;
 /// allergen data, and special ordering requirements (such as advance orders for high-risk items).
 /// </para>
 /// </remarks>
-public partial class MenuItem : AggregateRoot
+public partial class MenuItem : AggregateRoot<Guid>
 {
     /// <summary>
     /// Gets the unique identifier of the restaurant that owns this menu item.

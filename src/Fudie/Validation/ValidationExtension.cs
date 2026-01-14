@@ -9,14 +9,14 @@ public static class ValidatorExtensions
 {
     /// <summary>
     /// Valida cualquier objeto y lo retorna. Lanza ValidationException si falla.
-    /// Para entidades, también valida que el Id no esté vacío.
+    /// Para entidades con Id Guid, también valida que el Id no esté vacío.
     /// </summary>
     public static T ValidateOrThrow<T>(this IValidator<T> validator, T instance)
     {
-        if (instance is Entity entity && entity.Id == Guid.Empty)
+        if (instance is Entity<Guid> entity && entity.Id == Guid.Empty)
         {
             throw new ValidationException([
-                new ValidationFailure(nameof(Entity.Id), "El id no puede estar vacío")
+                new ValidationFailure("Id", "El id no puede estar vacío")
             ]);
         }
 

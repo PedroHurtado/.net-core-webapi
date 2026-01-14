@@ -5,7 +5,7 @@ namespace Fudie.Domain;
 /// </summary>
 /// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
 public abstract class AbstractModifyCommand<TEntity>
-    where TEntity : Entity
+    where TEntity : IEntity
 {
     /// <summary>
     /// Ejecuta la modificación de la entidad.
@@ -33,7 +33,7 @@ public abstract class AbstractModifyCommand<TEntity>
 /// <typeparam name="TEntity">Tipo de la entidad a modificar.</typeparam>
 public abstract class AbstractModifyCommand<TCommand, TEntity>
     where TCommand : class
-    where TEntity : Entity
+    where TEntity : IEntity
 {
     /// <summary>
     /// Ejecuta la modificación de la entidad.

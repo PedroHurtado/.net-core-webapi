@@ -65,9 +65,9 @@ public interface IQuery
     /// <summary>
     /// Creates a queryable collection of entities with no tracking.
     /// </summary>
-    /// <typeparam name="T">The entity type that inherits from <see cref="Entity"/>.</typeparam>
+    /// <typeparam name="T">The entity type that inherits from <see cref="IEntity"/>.</typeparam>
     /// <returns>An <see cref="IQueryable{T}"/> for the entity type.</returns>
-    IQueryable<T> Query<T>() where T : Entity;
+    IQueryable<T> Query<T>() where T : class, IEntity;
 }
 
 /// <summary>
@@ -80,7 +80,7 @@ public interface IEntityLookup
     /// Retrieves an entity by its identifier with optional tracking and navigation properties.
     /// This method is typically used for foreign key validation to ensure referenced entities exist.
     /// </summary>
-    /// <typeparam name="T">The entity type that inherits from <see cref="Entity"/>.</typeparam>
+    /// <typeparam name="T">The entity type that inherits from <see cref="IEntity"/>.</typeparam>
     /// <typeparam name="ID">The identifier type.</typeparam>
     /// <param name="id">The entity identifier.</param>
     /// <param name="tracking">Indicates whether the entity should be tracked by the context. Default is true.</param>
@@ -92,7 +92,7 @@ public interface IEntityLookup
         ID id,
         bool tracking = true,
         CancellationToken cancellationToken = default,
-        params string[] includeProperties) where T : Entity;
+        params string[] includeProperties) where T : class, IEntity;
 
     //TODO:revisar los los metodos
     DbSet<TEntity> Set<TEntity>() where TEntity : class;

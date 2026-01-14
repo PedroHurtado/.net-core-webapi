@@ -4,7 +4,7 @@ using Fudie;
 using Fudie.Domain;
 using FluentValidation;
 
-public class Ingredient : Entity
+public class Ingredient : Entity<Guid>
 {
     public string Name { get; protected set; }
     public decimal Cost { get; protected set; }
@@ -18,23 +18,23 @@ public class Ingredient : Entity
     public Result Update(string name, decimal cost)
     {
         var tempIngredient = new Ingredient(Id, name, cost);
-        var validationResult = ValidateEntity(tempIngredient, new IngredientValidator());
-        
+        var validationResult = tempIngredient.ValidateEntity(tempIngredient, new IngredientValidator());
+
         if (validationResult.IsFailure)
         {
             return validationResult;
         }
-        
+
         Name = name;
         Cost = cost;
-        
+
         return Result.Success();
     }
 
     public static Result<Ingredient> Create(Guid id, string name, decimal cost)
     {
         var ingredient = new Ingredient(id, name, cost);
-        var validationResult = ValidateEntity(ingredient, new IngredientValidator());
+        var validationResult = ingredient.ValidateEntity(ingredient, new IngredientValidator());
         
         if (validationResult.IsFailure)
         {

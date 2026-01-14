@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Schedule.Features.Menu.Models;
 
-public class Menu : Entity
+public class Menu : Entity<Guid>
 {
     public Guid RestaurantId { get; protected set; }
     public string Name { get; protected set; }
@@ -13,8 +13,6 @@ public class Menu : Entity
     public DateTime? EffectiveFrom { get; protected set; }
     public DateTime? EffectiveUntil { get; protected set; }
     public int DisplayOrder { get; protected set; }
-    public DateTime CreatedAt { get; protected set; }
-    public DateTime UpdatedAt { get; protected set; }
 
     public IReadOnlyCollection<MenuCategory> Categories => _categories.ToList().AsReadOnly();
     protected HashSet<MenuCategory> _categories = [];
@@ -29,14 +27,12 @@ public class Menu : Entity
         EffectiveFrom = effectiveFrom;
         EffectiveUntil = effectiveUntil;
         IsActive = true;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public static Result<Menu> Create(Guid id, Guid restaurantId, string name, string? description = null, DateTime? effectiveFrom = null, DateTime? effectiveUntil = null)
     {
         var menu = new Menu(id, restaurantId, name, description, effectiveFrom, effectiveUntil);
-        var validation = ValidateEntity(menu, new MenuValidator());
+        var validation = menu.ValidateEntity(menu, new MenuValidator());
 
         if (validation.IsFailure)
             return Result<Menu>.Failure(validation.Errors);
@@ -58,14 +54,12 @@ public class Menu : Entity
              return Result.Failure("Amount must be greater than zero", nameof(amount));
 
         DepositPolicy = policy;
-        UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
 
     public Result RemoveDepositPolicy()
     {
         DepositPolicy = null;
-        UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
 
@@ -83,7 +77,6 @@ public class Menu : Entity
              return Result.Failure("Name exceeds maximum length", nameof(name));
 
         _categories.Add(category);
-        UpdatedAt = DateTime.UtcNow;
         return Result.Success();
     }
 
@@ -102,7 +95,7 @@ public class Menu : Entity
     }
 }
 
-public class MenuCategory(Guid id, string name, string? description, int displayOrder) : Entity(id)
+public class MenuCategory(Guid id, string name, string? description, int displayOrder) : Entity<Guid>(id)
 {
     public string Name { get; protected set; } = name;
     public string? Description { get; protected set; } = description;
@@ -126,7 +119,7 @@ public class MenuCategory(Guid id, string name, string? description, int display
     }
 }
 
-public class MenuItem(Guid id, string name, string? description, List<PriceOption> priceOptions) : Entity(id)
+public class MenuItem(Guid id, string name, string? description, List<PriceOption> priceOptions) : Entity<Guid>(id)
 {
     public string Name { get; protected set; } = name;
     public string? Description { get; protected set; } = description;

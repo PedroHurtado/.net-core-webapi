@@ -19,7 +19,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     ID id,
     bool tracking = true,
     CancellationToken cancellationToken = default,
-    params string[] includeProperties) where T : Entity
+    params string[] includeProperties) where T : class, IEntity
     {
         var query = Set<T>().AsQueryable();
 
@@ -34,11 +34,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             query = query.AsNoTracking();
         }
 
-        var entity = await query.Where(e => e.Id.Equals(id)).FirstOrDefaultAsync(cancellationToken);
+        var entity = await query.FirstOrDefaultAsync(cancellationToken);
         return entity ?? throw new KeyNotFoundException($"{typeof(T).Name} with ID '{id}' not found.");
     }
 
-    public IQueryable<T> Query<T>() where T : Entity
+    public IQueryable<T> Query<T>() where T : class, IEntity
     {
         return Set<T>().AsQueryable().AsNoTracking();
     }

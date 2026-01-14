@@ -81,7 +81,7 @@ public record PaymentProviderConfig(
     bool IsActive = true
 );
 
-public class Plan : Entity
+public class Plan : Entity<Guid>
 {
     public string Name { get; protected set; }
     public string Description { get; protected set; }
@@ -136,7 +136,7 @@ public class Plan : Entity
                 return Result<Plan>.Failure(addResult.Errors);
         }
 
-        var validation = ValidateEntity(plan, new PlanValidator());
+        var validation = plan.ValidateEntity(plan, new PlanValidator());
         return validation.IsFailure ? Result<Plan>.Failure(validation.Errors) : Result<Plan>.Success(plan);
     }
 

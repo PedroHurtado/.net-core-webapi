@@ -2,25 +2,27 @@ namespace Fudie.Domain;
 
 using FluentValidation;
 
-public abstract class Entity(Guid id)
+public interface IEntity;
+
+public abstract class Entity<TId>(TId id) : IEntity where TId : notnull
 {
-    public Guid Id { get; init ; } = id;
+    public TId Id { get; init; } = id;
 
     public override bool Equals(object? obj)
     {
-        if (obj is Entity entity)
+        if (obj is Entity<TId> entity)
         {
-            return entity.Id == Id;
+            return EqualityComparer<TId>.Default.Equals(entity.Id, Id);
         }
         return false;
     }
 
     public override int GetHashCode()
     {
-        return Id.GetHashCode();
+        return EqualityComparer<TId>.Default.GetHashCode(Id);
     }
 
-    public static bool operator ==(Entity? left, Entity? right)
+    public static bool operator ==(Entity<TId>? left, Entity<TId>? right)
     {
         if (ReferenceEquals(left, right))
         {
@@ -32,17 +34,18 @@ public abstract class Entity(Guid id)
             return false;
         }
 
-        return left.Id == right.Id;
+        return EqualityComparer<TId>.Default.Equals(left.Id, right.Id);
     }
 
-    public static bool operator !=(Entity? left, Entity? right)
+    public static bool operator !=(Entity<TId>? left, Entity<TId>? right)
     {
         return !(left == right);
     }
 
-    public static Result<T> ValidateEntity<T>(T entity, AbstractValidator<T> validator) where T : Entity
+    protected Result<T> ValidateEntity<T>(T entity, AbstractValidator<T> validator)
+        where T : IEntity
     {
-        if (entity.Id == Guid.Empty)
+        if (Id is null || Id.Equals(default(TId)))
         {
             return Result<T>.Failure("El id no puede estar vacío", nameof(Id));
         }

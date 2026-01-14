@@ -14,7 +14,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate;
 /// and <see cref="EffectiveUntil"/> properties.
 /// </para>
 /// </remarks>
-public partial class Menu : AggregateRoot
+public partial class Menu : AggregateRoot<Guid>
 {
     /// <summary>
     /// Gets the unique identifier of the restaurant that owns this menu.

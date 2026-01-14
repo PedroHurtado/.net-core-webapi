@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate.Entities;
 /// Examples of categories include "Appetizers", "Main Courses", "Desserts", "Beverages", etc.
 /// </para>
 /// </remarks>
-public partial class MenuCategory : Entity
+public partial class MenuCategory : Entity<Guid>
 {
     /// <summary>
     /// Gets the name of the category.
