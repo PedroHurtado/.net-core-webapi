@@ -12,27 +12,46 @@ Máximo paralelismo en desarrollo. Cada desarrollador trabaja en un **comando co
 
 ## 📁 Estructura
 ```
-Domain/[Aggregate]/
-├── [Aggregate].cs              ← Aggregate Root (partial)
-├── [Aggregate]_[Action].cs     ← Command anidado (partial)
-├── Entities/
-│   ├── [Entity].cs             ← Entidad hija (partial)
-│   └── [Entity]_[Action].cs    ← Command de entidad hija (partial)
-├── ValueObjects/
-│   └── [ValueObject].cs        ← Objetos de valor
-└── Enums/
-    └── [Enum].cs               ← Enumeraciones
+Features/[Feature]/
+├── Domain/
+│   └── [Aggregate]/
+│       ├── [Aggregate].cs              ← Aggregate Root (partial)
+│       ├── Commands/
+│       │   ├── [Aggregate]_Create.cs   ← Command anidado (partial)
+│       │   ├── [Aggregate]_Update.cs
+│       │   └── [Aggregate]_[Action].cs
+│       ├── Entities/
+│       │   ├── [Entity].cs             ← Entidad hija (partial)
+│       │   └── [Entity]_Create.cs      ← Command de entidad hija
+│       ├── ValueObjects/
+│       │   └── [ValueObject].cs
+│       └── Enums/
+│           └── [Enum].cs
+│
+├── Api/
+│   ├── Commands/                       ← POST, PUT, DELETE
+│   │   ├── Create[Aggregate].cs
+│   │   ├── Update[Aggregate].cs
+│   │   └── [Action].cs
+│   └── Queries/                        ← GET
+│       ├── Get[Aggregate].cs
+│       └── Get[Aggregate]s.cs
+│
+└── Contracts/                          ← Solo si Response se comparte (3+ usos)
+    └── [Aggregate]Response.cs
 
 Tests/
-├── Helpers/
-│   └── Testables/
-│       └── Testable[Entity].cs ← Helper para tests de validadores
-└── Domain/
-    ├── [Entity]ValidatorTests.cs
-    └── [Entity]_[Action]Tests.cs
+└── [Feature]/
+    ├── Helpers/
+    │   └── Testables/
+    │       └── Testable[Entity].cs
+    └── Domain/
+        ├── [Entity]ValidatorTests.cs
+        └── [Entity]_[Action]Tests.cs
 ```
 
-**Naming de archivos**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`, `MenuCategory.cs`, `MenuCategory_Create.cs`
+**Naming de archivos Domain**: `Menu.cs`, `Menu_Create.cs`, `Menu_Update.cs`
+**Naming de archivos Api**: `CreateMenu.cs`, `UpdateMenu.cs`, `GetMenu.cs`
 
 ---
 
