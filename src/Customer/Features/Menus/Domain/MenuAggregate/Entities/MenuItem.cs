@@ -21,6 +21,7 @@ public class MenuItem : Entity
     // === Alto riesgo / Pedido anticipado ===
     public bool IsHighRiskItem { get; set; }
     public bool RequiresAdvanceOrder { get; set; }
+    public int? MinimumAdvanceOrderQuantity { get; set; }
     
     // === Stock/Disponibilidad ===
     public bool IsAvailable { get; set; } = true;
@@ -79,6 +80,18 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
             .Must(x => !x.RequiresAdvanceOrder || x.IsHighRiskItem)
             .WithMessage("Si RequiresAdvanceOrder es true, IsHighRiskItem también debe serlo")
             .WithName("RequiresAdvanceOrder");
+
+        // MinimumAdvanceOrderQuantity debe estar en rango válido
+        RuleFor(x => x.MinimumAdvanceOrderQuantity)
+            .InclusiveBetween(1, 100)
+            .When(x => x.MinimumAdvanceOrderQuantity.HasValue)
+            .WithMessage("La cantidad mínima debe estar entre 1 y 100");
+
+        // Si MinimumAdvanceOrderQuantity tiene valor, RequiresAdvanceOrder debe ser true
+        RuleFor(x => x)
+            .Must(x => !x.MinimumAdvanceOrderQuantity.HasValue || x.RequiresAdvanceOrder)
+            .WithMessage("Si MinimumAdvanceOrderQuantity tiene valor, RequiresAdvanceOrder debe ser true")
+            .WithName("MinimumAdvanceOrderQuantity");
         
         // Si no está siempre disponible, debe tener días configurados
         RuleFor(x => x.AvailableDays)
