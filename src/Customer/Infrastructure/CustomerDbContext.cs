@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Customer.Infrastructure;
 
-public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : DbContext(options)
+public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid tenantId) : DbContext(options)
 {
     // Root collections (aggregates)
     public DbSet<Menu> Menus => Set<Menu>();
@@ -15,6 +15,9 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : Db
         // Menu aggregate configuration
         modelBuilder.Entity<Menu>(entity =>
         {
+            // QueryFilter: multi-tenancy by RestaurantId
+            entity.HasQueryFilter(m => m.RestaurantId == tenantId);
+
             // ComplexType: DepositPolicy (embedded object, no Id)
             entity.ComplexProperty(m => m.DepositPolicy);
 
@@ -32,6 +35,9 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : Db
         // MenuItem aggregate configuration
         modelBuilder.Entity<MenuItem>(entity =>
         {
+            // QueryFilter: multi-tenancy by RestaurantId
+            entity.HasQueryFilter(m => m.RestaurantId == tenantId);
+
             // ComplexTypes (embedded objects)
             entity.ComplexProperty(m => m.DepositOverride);
             entity.ComplexProperty(m => m.NutritionalInfo);
