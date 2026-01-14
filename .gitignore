@@ -433,3 +433,6 @@ Thumbs.db
 *.crt
 *.key
 *.pem
+
+# Claude Code temp files
+tmpclaude-*
