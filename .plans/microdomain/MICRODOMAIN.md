@@ -10,27 +10,36 @@
 
 ```
 Features/[Feature]/
-├── Domain/[Aggregate]/
-│   ├── [Aggregate].cs                    ← Aggregate Root (partial)
-│   ├── Commands/
-│   │   ├── [Aggregate]/
-│   │   │   ├── [Aggregate]_Create.cs     ← Command anidado (partial)
-│   │   │   ├── [Aggregate]_Update.cs
-│   │   │   └── [Aggregate]_[Action].cs
-│   │   └── [Entity]/
-│   │       └── [Entity]_[Action].cs
-│   ├── Entities/
-│   │   └── [Entity].cs                   ← Entidad hija (partial)
-│   ├── ValueObjects/
-│   │   └── [ValueObject].cs
-│   └── Enums/
-│       └── [Enum].cs
+├── Domain/
+│   ├── Shared/                           ← ValueObjects/Enums compartidos entre agregados
+│   │   ├── ValueObjects/
+│   │   │   └── [SharedValueObject].cs
+│   │   └── Enums/
+│   │       └── [SharedEnum].cs
+│   │
+│   └── [Aggregate]/
+│       ├── [Aggregate].cs                ← Aggregate Root (partial)
+│       ├── Commands/
+│       │   ├── [Aggregate]/
+│       │   │   ├── [Aggregate]_Create.cs ← Command anidado (partial)
+│       │   │   ├── [Aggregate]_Update.cs
+│       │   │   └── [Aggregate]_[Action].cs
+│       │   └── [Entity]/
+│       │       └── [Entity]_[Action].cs
+│       ├── Entities/
+│       │   └── [Entity].cs               ← Entidad hija (partial)
+│       ├── ValueObjects/
+│       │   └── [ValueObject].cs
+│       └── Enums/
+│           └── [Enum].cs
 │
 ├── Api/
 │   ├── Commands/                         ← POST, PUT, DELETE
 │   │   └── [Action][Aggregate].cs
 │   └── Queries/                          ← GET
 │       └── Get[Aggregate].cs
+│
+├── GlobalUsings.cs                       ← Todos los using del feature
 │
 └── Contracts/                            ← Solo si Response se comparte (3+ usos)
     └── [Aggregate]Response.cs
@@ -56,6 +65,9 @@ Tests/[Feature]/
 ③ Entity hija    → Test validator + Test calculadas → Implementar
 ④ Aggregate      → Test validator + Test calculadas → Implementar
 ```
+
+> ⚠️ **IMPORTANTE**: Los archivos de dominio (Entity, Aggregate, ValueObject, Enum) **NUNCA tienen `using`**.
+> Todos los namespaces van en `GlobalUsings.cs` del feature.
 
 **PR + Code Review antes de Fase 2**
 
@@ -720,6 +732,7 @@ public class Menu_AddCategoryTests
 
 | Error | Corrección |
 |-------|------------|
+| `using` en archivos de dominio | Mover a `GlobalUsings.cs` |
 | Lógica en Entity | Mover a Command |
 | `protected set` en Id | Usar `init` (inmutable) |
 | Constructor público en ValueObject | Usar factory `Create()` |
@@ -738,6 +751,7 @@ public class Menu_AddCategoryTests
 ## Checklists
 
 ### Fase 1: Modelo
+- [ ] **Sin `using`** en archivos de dominio (van en `GlobalUsings.cs`)
 - [ ] Entity es `partial class`
 - [ ] Entity tiene dos constructores (protected + public)
 - [ ] `Id` usa `init` (no `protected set`)
