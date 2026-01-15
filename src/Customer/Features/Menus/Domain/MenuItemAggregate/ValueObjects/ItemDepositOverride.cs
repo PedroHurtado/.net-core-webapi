@@ -61,8 +61,8 @@ public partial record ItemDepositOverride
 
 public static class ItemDepositOverrideValidationMessages
 {
-    public const string GreaterThanZero = "{PropertyName} must be greater than zero";
-    public const string MinValue = "{PropertyName} must be at least {ComparisonValue}";
+    public const string DepositAmountGreaterThanZero = "Deposit Amount must be greater than zero";
+    public const string MinimumQuantityMin = "Minimum Quantity For Deposit must be at least 1";
 }
 
 /// <summary>
@@ -81,11 +81,11 @@ public class ItemDepositOverrideValidator : AbstractValidator<ItemDepositOverrid
     {
         RuleFor(x => x.DepositAmount)
             .GreaterThan(0)
-            .WithMessage(ItemDepositOverrideValidationMessages.GreaterThanZero);
+            .WithMessage(ItemDepositOverrideValidationMessages.DepositAmountGreaterThanZero);
 
         RuleFor(x => x.MinimumQuantityForDeposit)
             .GreaterThanOrEqualTo(1)
             .When(x => x.MinimumQuantityForDeposit.HasValue)
-            .WithMessage(ItemDepositOverrideValidationMessages.MinValue);
+            .WithMessage(ItemDepositOverrideValidationMessages.MinimumQuantityMin);
     }
 }
