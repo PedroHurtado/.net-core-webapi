@@ -122,9 +122,22 @@ public partial record NutritionalInfo
 
 public static class NutritionalInfoValidationMessages
 {
-    public const string MinValue = "{PropertyName} must be >= {ComparisonValue}";
-    public const string GreaterThanZero = "{PropertyName} must be > {ComparisonValue}";
-    public const string MaxValue = "{PropertyName} cannot exceed {ComparisonValue}";
+    public const string CaloriesMin = "Calories must be >= 0";
+    public const string CaloriesMax = "Calories cannot exceed 10000";
+    public const string ProteinMin = "Protein must be >= 0";
+    public const string ProteinMax = "Protein cannot exceed 1000";
+    public const string CarbohydratesMin = "Carbohydrates must be >= 0";
+    public const string CarbohydratesMax = "Carbohydrates cannot exceed 1000";
+    public const string FatMin = "Fat must be >= 0";
+    public const string FatMax = "Fat cannot exceed 1000";
+    public const string ServingSizeMin = "Serving Size must be > 0";
+    public const string ServingSizeMax = "Serving Size cannot exceed 10000";
+    public const string FiberMin = "Fiber must be >= 0";
+    public const string FiberMax = "Fiber cannot exceed 1000";
+    public const string SugarMin = "Sugar must be >= 0";
+    public const string SugarMax = "Sugar cannot exceed 1000";
+    public const string SaltMin = "Salt must be >= 0";
+    public const string SaltMax = "Salt cannot exceed 100";
 }
 
 /// <summary>
@@ -144,56 +157,56 @@ public class NutritionalInfoValidator : AbstractValidator<NutritionalInfo>
     {
         RuleFor(x => x.Calories)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.CaloriesMin)
             .LessThanOrEqualTo(10000)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.CaloriesMax);
 
         RuleFor(x => x.Protein)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.ProteinMin)
             .LessThanOrEqualTo(1000)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.ProteinMax);
 
         RuleFor(x => x.Carbohydrates)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.CarbohydratesMin)
             .LessThanOrEqualTo(1000)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.CarbohydratesMax);
 
         RuleFor(x => x.Fat)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.FatMin)
             .LessThanOrEqualTo(1000)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.FatMax);
 
         RuleFor(x => x.ServingSize)
             .GreaterThan(0)
-            .WithMessage(NutritionalInfoValidationMessages.GreaterThanZero)
+            .WithMessage(NutritionalInfoValidationMessages.ServingSizeMin)
             .LessThanOrEqualTo(10000)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.ServingSizeMax);
 
         RuleFor(x => x.Fiber)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Fiber.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.FiberMin)
             .LessThanOrEqualTo(1000)
             .When(x => x.Fiber.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.FiberMax);
 
         RuleFor(x => x.Sugar)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Sugar.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.SugarMin)
             .LessThanOrEqualTo(1000)
             .When(x => x.Sugar.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.SugarMax);
 
         RuleFor(x => x.Salt)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Salt.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MinValue)
+            .WithMessage(NutritionalInfoValidationMessages.SaltMin)
             .LessThanOrEqualTo(100)
             .When(x => x.Salt.HasValue)
-            .WithMessage(NutritionalInfoValidationMessages.MaxValue);
+            .WithMessage(NutritionalInfoValidationMessages.SaltMax);
     }
 }
