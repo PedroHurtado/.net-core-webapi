@@ -27,14 +27,16 @@ public partial class Menu
     /// how deposits are calculated for reservations using this menu.
     /// </para>
     /// <para>
-    /// The deposit policy is validated through <see cref="DepositPolicy.Create"/> factory method,
+    /// The deposit policy is validated through <see cref="DepositPolicy.Create"/> command,
     /// and the menu is validated after modification.
     /// </para>
     /// </remarks>
     /// <param name="menuValidator">The validator for menu instances.</param>
+    /// <param name="createDepositPolicy">The command handler for creating deposit policies.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class SetDepositPolicy(
-        IValidator<Menu> menuValidator
+        IValidator<Menu> menuValidator,
+        DepositPolicy.Create createDepositPolicy
     ) : AbstractModifyCommand<SetDepositPolicyCommand, Menu>
     {
         /// <summary>
@@ -46,13 +48,13 @@ public partial class Menu
         /// <exception cref="ValidationException">Thrown when the deposit policy or menu data is invalid.</exception>
         public override Menu Execute(Menu menu, SetDepositPolicyCommand command)
         {
-            var depositPolicy = DepositPolicy.Create(
+            var depositPolicy = createDepositPolicy.Execute(new CreateDepositPolicyCommand(
                 command.DepositType,
                 command.Amount,
                 command.Percentage,
                 command.MinimumBillForDeposit,
                 command.MinimumGuestsForDeposit
-            );
+            ));
 
             menu.DepositPolicy = depositPolicy;
 

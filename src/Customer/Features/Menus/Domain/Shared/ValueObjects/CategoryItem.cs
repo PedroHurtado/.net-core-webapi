@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.Shared.ValueObjects;
 /// <see cref="MenuItem"/> (equality by MenuItem reference).
 /// </para>
 /// </remarks>
-public record CategoryItem
+public partial record CategoryItem
 {
     /// <summary>
     /// Gets the menu item associated with this category item.
@@ -52,7 +52,7 @@ public record CategoryItem
     /// <param name="menuItem">The menu item reference.</param>
     /// <param name="displayOrder">The display order within the category.</param>
     /// <param name="priceOverrides">Optional price overrides for this category context.</param>
-    private CategoryItem(
+    protected CategoryItem(
         MenuItem menuItem,
         int displayOrder,
         HashSet<PriceOption>? priceOverrides)
@@ -60,24 +60,6 @@ public record CategoryItem
         MenuItem = menuItem;
         DisplayOrder = displayOrder;
         _priceOverrides = priceOverrides ?? [];
-    }
-
-    /// <summary>
-    /// Creates a new validated <see cref="CategoryItem"/> instance.
-    /// </summary>
-    /// <param name="menuItem">The menu item reference. Must not be null.</param>
-    /// <param name="displayOrder">The display order within the category. Must be non-negative.</param>
-    /// <param name="priceOverrides">Optional price overrides for this category context.</param>
-    /// <returns>A validated <see cref="CategoryItem"/> instance.</returns>
-    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
-    public static CategoryItem Create(
-        MenuItem menuItem,
-        int displayOrder = 0,
-        HashSet<PriceOption>? priceOverrides = null)
-    {
-        var item = new CategoryItem(menuItem, displayOrder, priceOverrides);
-
-        return new CategoryItemValidator().ValidateOrThrow(item);
     }
 
     /// <summary>

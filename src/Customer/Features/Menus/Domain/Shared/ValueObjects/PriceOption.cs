@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.Shared.ValueObjects;
 /// and determined at order time based on current market conditions.
 /// </para>
 /// </remarks>
-public record PriceOption
+public partial record PriceOption
 {
     /// <summary>
     /// Gets the portion type this price applies to.
@@ -42,7 +42,7 @@ public record PriceOption
     /// <param name="portionType">The portion type.</param>
     /// <param name="price">The price amount.</param>
     /// <param name="isActive">Whether the option is active.</param>
-    private PriceOption(
+    protected PriceOption(
         PortionType portionType,
         decimal? price,
         bool isActive)
@@ -50,27 +50,6 @@ public record PriceOption
         PortionType = portionType;
         Price = price;
         IsActive = isActive;
-    }
-
-    /// <summary>
-    /// Creates a new validated <see cref="PriceOption"/> instance.
-    /// </summary>
-    /// <param name="portionType">The portion type.</param>
-    /// <param name="price">
-    /// The price amount. Required for fixed portion types; optional for <see cref="Enums.PortionType.MarketPrice"/>.
-    /// Must be non-negative when specified.
-    /// </param>
-    /// <param name="isActive">Whether the option is active. Defaults to <c>true</c>.</param>
-    /// <returns>A validated <see cref="PriceOption"/> instance.</returns>
-    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
-    public static PriceOption Create(
-        PortionType portionType,
-        decimal? price,
-        bool isActive = true)
-    {
-        var option = new PriceOption(portionType, price, isActive);
-
-        return new PriceOptionValidator().ValidateOrThrow(option);
     }
 
     /// <summary>

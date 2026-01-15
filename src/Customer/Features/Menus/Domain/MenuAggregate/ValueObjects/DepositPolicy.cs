@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 /// the guest count or estimated bill exceeds certain minimums.
 /// </para>
 /// </remarks>
-public record DepositPolicy
+public partial record DepositPolicy
 {
     /// <summary>
     /// Gets the type of deposit calculation to use.
@@ -60,7 +60,7 @@ public record DepositPolicy
     /// <param name="percentage">The percentage for percentage-based calculations.</param>
     /// <param name="minimumBillForDeposit">The minimum bill threshold.</param>
     /// <param name="minimumGuestsForDeposit">The minimum guest count threshold.</param>
-    private DepositPolicy(
+    protected DepositPolicy(
         DepositType depositType,
         decimal amount,
         decimal? percentage,
@@ -72,33 +72,6 @@ public record DepositPolicy
         Percentage = percentage;
         MinimumBillForDeposit = minimumBillForDeposit;
         MinimumGuestsForDeposit = minimumGuestsForDeposit;
-    }
-
-    /// <summary>
-    /// Creates a new validated <see cref="DepositPolicy"/> instance.
-    /// </summary>
-    /// <param name="depositType">The type of deposit calculation.</param>
-    /// <param name="amount">The base amount for calculations. Must be greater than zero.</param>
-    /// <param name="percentage">The percentage (1-100) for <see cref="Enums.DepositType.PercentageOfBill"/>.</param>
-    /// <param name="minimumBillForDeposit">Optional minimum bill threshold.</param>
-    /// <param name="minimumGuestsForDeposit">Optional minimum guest count threshold.</param>
-    /// <returns>A validated <see cref="DepositPolicy"/> instance.</returns>
-    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
-    public static DepositPolicy Create(
-        DepositType depositType,
-        decimal amount,
-        decimal? percentage = null,
-        decimal? minimumBillForDeposit = null,
-        int? minimumGuestsForDeposit = null)
-    {
-        var policy = new DepositPolicy(
-            depositType,
-            amount,
-            percentage,
-            minimumBillForDeposit,
-            minimumGuestsForDeposit);
-
-        return new DepositPolicyValidator().ValidateOrThrow(policy);
     }
 
     /// <summary>

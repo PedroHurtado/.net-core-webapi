@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 /// to calculate nutritional values for smaller portion sizes.
 /// </para>
 /// </remarks>
-public record NutritionalInfo
+public partial record NutritionalInfo
 {
     /// <summary>
     /// Gets the calorie count per full serving.
@@ -74,7 +74,7 @@ public record NutritionalInfo
     /// <param name="fiber">Optional fiber content in grams.</param>
     /// <param name="sugar">Optional sugar content in grams.</param>
     /// <param name="salt">Optional salt content in grams.</param>
-    private NutritionalInfo(
+    protected NutritionalInfo(
         int calories,
         decimal protein,
         decimal carbohydrates,
@@ -92,42 +92,6 @@ public record NutritionalInfo
         Fiber = fiber;
         Sugar = sugar;
         Salt = salt;
-    }
-
-    /// <summary>
-    /// Creates a new validated <see cref="NutritionalInfo"/> instance.
-    /// </summary>
-    /// <param name="calories">The calorie count (0-10,000).</param>
-    /// <param name="protein">The protein content in grams (0-1,000).</param>
-    /// <param name="carbohydrates">The carbohydrate content in grams (0-1,000).</param>
-    /// <param name="fat">The fat content in grams (0-1,000).</param>
-    /// <param name="servingSize">The serving size in grams (1-10,000).</param>
-    /// <param name="fiber">Optional fiber content in grams (0-1,000).</param>
-    /// <param name="sugar">Optional sugar content in grams (0-1,000).</param>
-    /// <param name="salt">Optional salt content in grams (0-100).</param>
-    /// <returns>A validated <see cref="NutritionalInfo"/> instance.</returns>
-    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
-    public static NutritionalInfo Create(
-        int calories,
-        decimal protein,
-        decimal carbohydrates,
-        decimal fat,
-        int servingSize,
-        decimal? fiber = null,
-        decimal? sugar = null,
-        decimal? salt = null)
-    {
-        var info = new NutritionalInfo(
-            calories,
-            protein,
-            carbohydrates,
-            fat,
-            servingSize,
-            fiber,
-            sugar,
-            salt);
-
-        return new NutritionalInfoValidator().ValidateOrThrow(info);
     }
 
     /// <summary>

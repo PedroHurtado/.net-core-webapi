@@ -13,7 +13,7 @@ namespace Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 /// a specific deposit amount is needed regardless of the menu's general policy.
 /// </para>
 /// </remarks>
-public record ItemDepositOverride
+public partial record ItemDepositOverride
 {
     /// <summary>
     /// Gets the fixed deposit amount for this item.
@@ -35,28 +35,12 @@ public record ItemDepositOverride
     /// </summary>
     /// <param name="depositAmount">The fixed deposit amount.</param>
     /// <param name="minimumQuantityForDeposit">The minimum quantity threshold.</param>
-    private ItemDepositOverride(
+    protected ItemDepositOverride(
         decimal depositAmount,
         int? minimumQuantityForDeposit)
     {
         DepositAmount = depositAmount;
         MinimumQuantityForDeposit = minimumQuantityForDeposit;
-    }
-
-    /// <summary>
-    /// Creates a new validated <see cref="ItemDepositOverride"/> instance.
-    /// </summary>
-    /// <param name="depositAmount">The fixed deposit amount. Must be greater than zero.</param>
-    /// <param name="minimumQuantityForDeposit">Optional minimum quantity threshold (must be at least 1 if specified).</param>
-    /// <returns>A validated <see cref="ItemDepositOverride"/> instance.</returns>
-    /// <exception cref="ValidationException">Thrown when validation fails.</exception>
-    public static ItemDepositOverride Create(
-        decimal depositAmount,
-        int? minimumQuantityForDeposit = null)
-    {
-        var itemOverride = new ItemDepositOverride(depositAmount, minimumQuantityForDeposit);
-
-        return new ItemDepositOverrideValidator().ValidateOrThrow(itemOverride);
     }
 
     /// <summary>

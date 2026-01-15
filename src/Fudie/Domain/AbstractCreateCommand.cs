@@ -7,7 +7,7 @@ namespace Fudie.Domain;
 /// <typeparam name="TEntity">Tipo de la entidad a crear.</typeparam>
 public abstract class AbstractCreateCommand<TCommand, TEntity>
     where TCommand : class
-    where TEntity : IEntity
+    where TEntity : class
 {
     /// <summary>
     /// Ejecuta la creación de la entidad.
