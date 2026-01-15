@@ -121,12 +121,12 @@ public partial record DepositPolicy
 
 public static class DepositPolicyValidationMessages
 {
-    public const string GreaterThanZero = "{PropertyName} must be greater than zero";
+    public const string AmountGreaterThanZero = "Amount must be greater than zero";
     public const string PercentageRequiredForPercentageOfBill = "Percentage must be specified for PercentageOfBill type";
     public const string PercentageOnlyForPercentageOfBill = "Percentage only applies to PercentageOfBill type";
-    public const string PercentageRange = "{PropertyName} must be between {From} and {To}";
-    public const string MinValue = "{PropertyName} must be at least {ComparisonValue}";
-    public const string CannotBeNegative = "{PropertyName} cannot be negative";
+    public const string PercentageRange = "Percentage must be between 1 and 100";
+    public const string MinimumGuestsForDepositMin = "MinimumGuestsForDeposit must be at least 1";
+    public const string MinimumBillForDepositCannotBeNegative = "MinimumBillForDeposit cannot be negative";
 }
 
 /// <summary>
@@ -146,7 +146,7 @@ public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
     {
         RuleFor(x => x.Amount)
             .GreaterThan(0)
-            .WithMessage(DepositPolicyValidationMessages.GreaterThanZero);
+            .WithMessage(DepositPolicyValidationMessages.AmountGreaterThanZero);
 
         RuleFor(x => x.Percentage)
             .NotNull()
@@ -166,11 +166,11 @@ public class DepositPolicyValidator : AbstractValidator<DepositPolicy>
         RuleFor(x => x.MinimumGuestsForDeposit)
             .GreaterThanOrEqualTo(1)
             .When(x => x.MinimumGuestsForDeposit.HasValue)
-            .WithMessage(DepositPolicyValidationMessages.MinValue);
+            .WithMessage(DepositPolicyValidationMessages.MinimumGuestsForDepositMin);
 
         RuleFor(x => x.MinimumBillForDeposit)
             .GreaterThanOrEqualTo(0)
             .When(x => x.MinimumBillForDeposit.HasValue)
-            .WithMessage(DepositPolicyValidationMessages.CannotBeNegative);
+            .WithMessage(DepositPolicyValidationMessages.MinimumBillForDepositCannotBeNegative);
     }
 }

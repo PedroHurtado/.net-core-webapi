@@ -7,7 +7,9 @@ global using Customer.Features.Menus.Domain.Shared.ValueObjects;
 global using Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 global using Customer.Features.Menus.Domain.AllergenAggregate;
 global using Customer.Features.Menus.Domain.MenuItemAggregate;
+global using Customer.Features.Menus.Domain.MenuAggregate;
 global using Customer.Features.Menus.Domain.MenuAggregate.Entities;
+global using Customer.Features.Menus.Domain.MenuAggregate.ValueObjects;
 
 global using Customer.UnitTests.Helpers;
 
@@ -15,3 +17,4 @@ global using PriceOptionVO = Customer.Features.Menus.Domain.Shared.ValueObjects.
 global using CategoryItemVO = Customer.Features.Menus.Domain.Shared.ValueObjects.CategoryItem;
 global using ItemDepositOverrideVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.ItemDepositOverride;
 global using NutritionalInfoVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.NutritionalInfo;
+global using DepositPolicyVO = Customer.Features.Menus.Domain.MenuAggregate.ValueObjects.DepositPolicy;

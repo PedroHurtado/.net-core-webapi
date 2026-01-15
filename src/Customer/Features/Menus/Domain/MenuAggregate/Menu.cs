@@ -88,9 +88,12 @@ public partial class Menu : AggregateRoot<Guid>
 
 public static class MenuValidationMessages
 {
-    public const string Required = "{PropertyName} is required";
-    public const string MaxLength = "{PropertyName} cannot exceed {MaxLength} characters";
-    public const string MinValue = "{PropertyName} must be greater than or equal to {ComparisonValue}";
+    public const string IdRequired = "Id is required";
+    public const string TenantIdRequired = "TenantId is required";
+    public const string NameRequired = "Name is required";
+    public const string NameMaxLength = "Name cannot exceed 100 characters";
+    public const string DescriptionMaxLength = "Description cannot exceed 500 characters";
+    public const string DisplayOrderMin = "DisplayOrder must be greater than or equal to 0";
     public const string StartDateMustBeEarlierThanEndDate = "Start date must be earlier than end date";
 }
 
@@ -112,25 +115,25 @@ public class MenuValidator : AbstractValidator<Menu>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage(MenuValidationMessages.Required);
+            .WithMessage(MenuValidationMessages.IdRequired);
 
         RuleFor(x => x.TenantId)
             .NotEmpty()
-            .WithMessage(MenuValidationMessages.Required);
+            .WithMessage(MenuValidationMessages.TenantIdRequired);
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage(MenuValidationMessages.Required)
+            .WithMessage(MenuValidationMessages.NameRequired)
             .MaximumLength(100)
-            .WithMessage(MenuValidationMessages.MaxLength);
+            .WithMessage(MenuValidationMessages.NameMaxLength);
 
         RuleFor(x => x.Description)
             .MaximumLength(500)
-            .WithMessage(MenuValidationMessages.MaxLength);
+            .WithMessage(MenuValidationMessages.DescriptionMaxLength);
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(MenuValidationMessages.MinValue);
+            .WithMessage(MenuValidationMessages.DisplayOrderMin);
 
         RuleFor(x => x)
             .Must(x => !x.EffectiveFrom.HasValue || !x.EffectiveUntil.HasValue
