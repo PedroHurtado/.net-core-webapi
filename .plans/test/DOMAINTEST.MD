@@ -27,6 +27,7 @@
 - Helper `CreateUnvalidated()` con reflection en proyecto de tests
 - `[Theory]` por regla, verificar `WithErrorMessage()`
 - Separar casos inválidos y válidos
+- Seperar los test de validaación y clases o value objects en archivos separados
 
 ## Convenciones
 
