@@ -1,5 +1,6 @@
 global using FluentAssertions;
 global using FluentValidation;
+global using Fudie.Domain;
 
 global using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 global using Customer.Features.Menus.Domain.Shared.Enums;
