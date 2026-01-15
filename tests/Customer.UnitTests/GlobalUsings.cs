@@ -21,3 +21,4 @@ global using NutritionalInfoVO = Customer.Features.Menus.Domain.MenuItemAggregat
 global using DepositPolicyVO = Customer.Features.Menus.Domain.MenuAggregate.ValueObjects.DepositPolicy;
 global using MenuAgg = Customer.Features.Menus.Domain.MenuAggregate.Menu;
 global using MenuCategoryEntity = Customer.Features.Menus.Domain.MenuAggregate.Entities.MenuCategory;
+global using MenuItemAgg = Customer.Features.Menus.Domain.MenuItemAggregate.MenuItem;
