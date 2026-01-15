@@ -17,9 +17,9 @@ namespace Customer.Features.Menus.Domain.MenuItemAggregate;
 public partial class MenuItem : AggregateRoot<Guid>
 {
     /// <summary>
-    /// Gets the unique identifier of the restaurant that owns this menu item.
+    /// Gets the unique identifier of the tenant that owns this menu item.
     /// </summary>
-    public Guid RestaurantId { get; protected set; }
+    public Guid TenantId { get; protected set; }
 
     /// <summary>
     /// Gets the name of the menu item.
@@ -198,7 +198,7 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
             .NotEmpty()
             .WithMessage(MenuItemValidationMessages.Required);
 
-        RuleFor(x => x.RestaurantId)
+        RuleFor(x => x.TenantId)
             .NotEmpty()
             .WithMessage(MenuItemValidationMessages.Required);
 

@@ -3,13 +3,13 @@ namespace Customer.Features.Menus.Domain.MenuAggregate;
 /// <summary>
 /// Command data for creating a new menu.
 /// </summary>
-/// <param name="RestaurantId">The unique identifier of the restaurant that will own the menu.</param>
+/// <param name="TenantId">The unique identifier of the tenant that will own the menu.</param>
 /// <param name="Name">The name of the menu. Required, maximum 100 characters.</param>
 /// <param name="Description">Optional description of the menu. Maximum 500 characters.</param>
 /// <param name="EffectiveFrom">Optional start date for the menu's validity period.</param>
 /// <param name="EffectiveUntil">Optional end date for the menu's validity period.</param>
 public record CreateMenuCommand(
-    Guid RestaurantId,
+    Guid TenantId,
     string Name,
     string? Description = null,
     DateTime? EffectiveFrom = null,
@@ -46,7 +46,7 @@ public partial class Menu
         {
             var menu = new Menu(Guid.NewGuid())
             {
-                RestaurantId = command.RestaurantId,
+                TenantId = command.TenantId,
                 Name = command.Name,
                 Description = command.Description,
                 EffectiveFrom = command.EffectiveFrom,

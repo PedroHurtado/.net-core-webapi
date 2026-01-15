@@ -15,8 +15,8 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
         // Menu aggregate configuration
         modelBuilder.Entity<Menu>(entity =>
         {
-            // QueryFilter: multi-tenancy by RestaurantId
-            entity.HasQueryFilter(m => m.RestaurantId == tenantId);
+            // QueryFilter: multi-tenancy by TenantId
+            entity.HasQueryFilter(m => m.TenantId == tenantId);
 
             // ComplexType: DepositPolicy (embedded object, no Id)
             entity.ComplexProperty(m => m.DepositPolicy);
@@ -35,8 +35,8 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
         // MenuItem aggregate configuration
         modelBuilder.Entity<MenuItem>(entity =>
         {
-            // QueryFilter: multi-tenancy by RestaurantId
-            entity.HasQueryFilter(m => m.RestaurantId == tenantId);
+            // QueryFilter: multi-tenancy by TenantId
+            entity.HasQueryFilter(m => m.TenantId == tenantId);
 
             // ComplexTypes (embedded objects)
             entity.ComplexProperty(m => m.DepositOverride);
