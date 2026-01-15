@@ -12,6 +12,9 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Global: use backing fields for all properties
+        modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
+
         // Menu aggregate configuration
         modelBuilder.Entity<Menu>(entity =>
         {
@@ -42,10 +45,8 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
             entity.ComplexProperty(m => m.DepositOverride);
             entity.ComplexProperty(m => m.NutritionalInfo);
 
-            // ArrayOf embedded: PriceOptions (no Id)
+            // ArrayOf embedded: PriceOptions
             entity.ArrayOf(m => m.PriceOptions);
-
-            // AvailableDays: HashSet<DayOfWeek> is handled by ListEnumToStringArrayConvention
 
             // ArrayOf Reference: Allergens (references to Allergen aggregate)
             entity.ArrayOf(m => m.Allergens).AsReferences();
