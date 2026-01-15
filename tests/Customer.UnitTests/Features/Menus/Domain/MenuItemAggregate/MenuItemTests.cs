@@ -5,6 +5,7 @@ public class MenuItemTests
     private readonly PriceOptionVO.Create _createPriceOption = new(new PriceOptionValidator());
     private readonly ItemDepositOverrideVO.Create _createDepositOverride = new(new ItemDepositOverrideValidator());
     private readonly NutritionalInfoVO.Create _createNutritionalInfo = new(new NutritionalInfoValidator());
+    private readonly Allergen.Create _createAllergen = new(new AllergenValidator());
 
     [Fact]
     public void ParameterlessConstructor_InitializesWithEmptyId()
@@ -193,7 +194,7 @@ public class MenuItemTests
     public void Allergens_ReturnsAddedAllergens()
     {
         var menuItem = new TestableMenuItem(Guid.NewGuid());
-        var allergen = new TestableAllergen("GLUTEN") { Name = "Gluten" };
+        var allergen = _createAllergen.Execute(new CreateAllergenCommand("GLUTEN", "Gluten"));
 
         menuItem.AddAllergen(allergen);
 
