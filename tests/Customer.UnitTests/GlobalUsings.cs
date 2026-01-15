@@ -20,3 +20,4 @@ global using ItemDepositOverrideVO = Customer.Features.Menus.Domain.MenuItemAggr
 global using NutritionalInfoVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.NutritionalInfo;
 global using DepositPolicyVO = Customer.Features.Menus.Domain.MenuAggregate.ValueObjects.DepositPolicy;
 global using MenuAgg = Customer.Features.Menus.Domain.MenuAggregate.Menu;
+global using MenuCategoryEntity = Customer.Features.Menus.Domain.MenuAggregate.Entities.MenuCategory;

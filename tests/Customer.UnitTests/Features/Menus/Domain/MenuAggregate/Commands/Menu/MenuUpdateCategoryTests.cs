@@ -9,8 +9,8 @@ public class MenuUpdateCategoryTests
 
     public MenuUpdateCategoryTests()
     {
-        var createCategory = new MenuCategory.Create(_categoryValidator);
-        var updateCategoryDetails = new MenuCategory.Update(_categoryValidator);
+        var createCategory = new MenuCategoryEntity.Create(_categoryValidator);
+        var updateCategoryDetails = new MenuCategoryEntity.Update(_categoryValidator);
         _addCategory = new(createCategory, _menuValidator);
         _updateCategory = new(updateCategoryDetails, _menuValidator);
     }
