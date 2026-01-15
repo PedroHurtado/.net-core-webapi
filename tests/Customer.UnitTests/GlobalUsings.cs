@@ -7,6 +7,7 @@ global using Customer.Features.Menus.Domain.Shared.ValueObjects;
 global using Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects;
 global using Customer.Features.Menus.Domain.AllergenAggregate;
 global using Customer.Features.Menus.Domain.MenuItemAggregate;
+global using Customer.Features.Menus.Domain.MenuAggregate.Entities;
 
 global using Customer.UnitTests.Helpers;
 
