@@ -10,3 +10,4 @@ global using Customer.Features.Menus.Domain.AllergenAggregate;
 global using Customer.UnitTests.Helpers;
 
 global using PriceOptionVO = Customer.Features.Menus.Domain.Shared.ValueObjects.PriceOption;
+global using ItemDepositOverrideVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.ItemDepositOverride;
