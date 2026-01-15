@@ -11,5 +11,6 @@ global using Customer.Features.Menus.Domain.MenuItemAggregate;
 global using Customer.UnitTests.Helpers;
 
 global using PriceOptionVO = Customer.Features.Menus.Domain.Shared.ValueObjects.PriceOption;
+global using CategoryItemVO = Customer.Features.Menus.Domain.Shared.ValueObjects.CategoryItem;
 global using ItemDepositOverrideVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.ItemDepositOverride;
 global using NutritionalInfoVO = Customer.Features.Menus.Domain.MenuItemAggregate.ValueObjects.NutritionalInfo;
