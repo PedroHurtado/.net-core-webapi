@@ -73,7 +73,7 @@ public partial record PriceOption
 public static class PriceOptionValidationMessages
 {
     public const string PriceRequiredForFixedPortionTypes = "Price is required for fixed portion types";
-    public const string CannotBeNegative = "{PropertyName} cannot be negative";
+    public const string PriceCannotBeNegative = "Price cannot be negative";
 }
 
 /// <summary>
@@ -99,6 +99,6 @@ public class PriceOptionValidator : AbstractValidator<PriceOption>
         RuleFor(x => x.Price)
             .GreaterThanOrEqualTo(0)
             .When(x => x.Price.HasValue)
-            .WithMessage(PriceOptionValidationMessages.CannotBeNegative);
+            .WithMessage(PriceOptionValidationMessages.PriceCannotBeNegative);
     }
 }
