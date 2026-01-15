@@ -162,15 +162,20 @@ public partial class MenuItem : AggregateRoot<Guid>
 
 public static class MenuItemValidationMessages
 {
-    public const string Required = "{PropertyName} is required";
-    public const string MaxLength = "{PropertyName} cannot exceed {MaxLength} characters";
-    public const string MinValue = "{PropertyName} must be greater than or equal to {ComparisonValue}";
-    public const string InvalidUrl = "{PropertyName} is not valid";
+    public const string IdRequired = "Id is required";
+    public const string TenantIdRequired = "TenantId is required";
+    public const string NameRequired = "Name is required";
+    public const string NameMaxLength = "Name cannot exceed 150 characters";
+    public const string DescriptionMaxLength = "Description cannot exceed 1000 characters";
+    public const string ImageUrlMaxLength = "ImageUrl cannot exceed 500 characters";
+    public const string ImageUrlInvalid = "ImageUrl must be a valid URL";
+    public const string DisplayOrderMin = "DisplayOrder must be greater than or equal to 0";
     public const string RequiresAdvanceOrderMustBeHighRisk = "If RequiresAdvanceOrder is true, IsHighRiskItem must also be true";
-    public const string MinimumQuantityRange = "{PropertyName} must be between {From} and {To}";
+    public const string MinimumQuantityRange = "MinimumAdvanceOrderQuantity must be between 1 and 100";
     public const string MinimumAdvanceOrderQuantityRequiresAdvanceOrder = "If MinimumAdvanceOrderQuantity has a value, RequiresAdvanceOrder must be true";
     public const string AvailableDaysRequired = "Available days must be specified if the item is not always available";
     public const string PriceOptionsRequired = "Item must have at least one price option";
+    public const string AllergenNotesMaxLength = "AllergenNotes cannot exceed 500 characters";
 }
 
 /// <summary>
@@ -196,32 +201,32 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage(MenuItemValidationMessages.Required);
+            .WithMessage(MenuItemValidationMessages.IdRequired);
 
         RuleFor(x => x.TenantId)
             .NotEmpty()
-            .WithMessage(MenuItemValidationMessages.Required);
+            .WithMessage(MenuItemValidationMessages.TenantIdRequired);
 
         RuleFor(x => x.Name)
             .NotEmpty()
-            .WithMessage(MenuItemValidationMessages.Required)
+            .WithMessage(MenuItemValidationMessages.NameRequired)
             .MaximumLength(150)
-            .WithMessage(MenuItemValidationMessages.MaxLength);
+            .WithMessage(MenuItemValidationMessages.NameMaxLength);
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)
-            .WithMessage(MenuItemValidationMessages.MaxLength);
+            .WithMessage(MenuItemValidationMessages.DescriptionMaxLength);
 
         RuleFor(x => x.ImageUrl)
             .MaximumLength(500)
-            .WithMessage(MenuItemValidationMessages.MaxLength)
+            .WithMessage(MenuItemValidationMessages.ImageUrlMaxLength)
             .Must(BeAValidUrl)
             .When(x => !string.IsNullOrEmpty(x.ImageUrl))
-            .WithMessage(MenuItemValidationMessages.InvalidUrl);
+            .WithMessage(MenuItemValidationMessages.ImageUrlInvalid);
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(MenuItemValidationMessages.MinValue);
+            .WithMessage(MenuItemValidationMessages.DisplayOrderMin);
 
         RuleFor(x => x)
             .Must(x => !x.RequiresAdvanceOrder || x.IsHighRiskItem)
@@ -249,7 +254,7 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
 
         RuleFor(x => x.AllergenNotes)
             .MaximumLength(500)
-            .WithMessage(MenuItemValidationMessages.MaxLength);
+            .WithMessage(MenuItemValidationMessages.AllergenNotesMaxLength);
     }
 
     /// <summary>
