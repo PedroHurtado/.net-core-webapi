@@ -127,6 +127,14 @@ public class FeatureTests
         feature.IsValid.Should().BeFalse();
     }
 
+    [Fact]
+    public void IsValid_WhenUnknownType_ReturnsFalse()
+    {
+        var feature = new TestableFeature("TEST_CODE", "Test Feature", null, (FeatureType)999);
+
+        feature.IsValid.Should().BeFalse();
+    }
+
     #endregion
 
     #region DisplayValue
@@ -153,6 +161,14 @@ public class FeatureTests
         var feature = new TestableFeature("PRIORITY_SUPPORT", "Soporte prioritario", null, FeatureType.Boolean);
 
         feature.DisplayValue.Should().Be("Incluido");
+    }
+
+    [Fact]
+    public void DisplayValue_WhenUnknownType_ReturnsEmptyString()
+    {
+        var feature = new TestableFeature("TEST_CODE", "Test Feature", null, (FeatureType)999);
+
+        feature.DisplayValue.Should().BeEmpty();
     }
 
     #endregion
