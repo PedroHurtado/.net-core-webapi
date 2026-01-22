@@ -4,13 +4,16 @@ public class MenuItemCreateTests
 {
     private readonly MenuItemValidator _validator = new();
     private readonly PriceOptionValidator _priceOptionValidator = new();
+    private readonly AllergenValidator _allergenValidator = new();
     private readonly MenuItemAgg.Create _create;
     private readonly PriceOptionVO.Create _createPriceOption;
+    private readonly AllergenAgg.Create _createAllergen;
 
     public MenuItemCreateTests()
     {
         _create = new(_validator);
         _createPriceOption = new(_priceOptionValidator);
+        _createAllergen = new(_allergenValidator);
     }
 
     private HashSet<PriceOption> CreateValidPriceOptions() =>
@@ -102,6 +105,27 @@ public class MenuItemCreateTests
 
         result.IsAlwaysAvailable.Should().BeFalse();
         result.AvailableDays.Should().BeEquivalentTo(availableDays);
+    }
+
+    [Fact]
+    public void Execute_WithAllergens_SetsAllergens()
+    {
+        var priceOptions = CreateValidPriceOptions();
+        var allergens = new HashSet<Allergen>
+        {
+            _createAllergen.Execute(new CreateAllergenCommand("GLUTEN", "Gluten")),
+            _createAllergen.Execute(new CreateAllergenCommand("LACTEOS", "Lácteos"))
+        };
+        var command = new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: "Pizza Margherita",
+            PriceOptions: priceOptions,
+            Allergens: allergens);
+
+        var result = _create.Execute(command);
+
+        result.Allergens.Should().HaveCount(2);
+        result.Allergens.Should().BeEquivalentTo(allergens);
     }
 
     #region Validation Throws

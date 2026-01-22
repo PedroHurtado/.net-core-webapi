@@ -22,3 +22,4 @@ global using DepositPolicyVO = Customer.Features.Menus.Domain.MenuAggregate.Valu
 global using MenuAgg = Customer.Features.Menus.Domain.MenuAggregate.Menu;
 global using MenuCategoryEntity = Customer.Features.Menus.Domain.MenuAggregate.Entities.MenuCategory;
 global using MenuItemAgg = Customer.Features.Menus.Domain.MenuItemAggregate.MenuItem;
+global using AllergenAgg = Customer.Features.Menus.Domain.AllergenAggregate.Allergen;
