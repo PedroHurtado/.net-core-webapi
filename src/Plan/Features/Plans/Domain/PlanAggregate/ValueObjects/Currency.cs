@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 /// <summary>
