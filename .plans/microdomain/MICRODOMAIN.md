@@ -891,3 +891,118 @@ public class Menu_AddCategoryTests
 ---
 
 *¿Dudas? Pregunta antes de implementar.*
+
+---
+
+## Api con IFeatureModule
+
+### Estructura de carpetas
+
+```
+Features/[Feature]/
+├── Api/
+│   ├── Commands/
+│   │   └── [Aggregates]/              ← PLURAL para evitar conflicto de namespace
+│   │       └── Create[Aggregate].cs
+│   └── Queries/
+│       └── [Aggregates]/
+│           └── Get[Aggregate].cs
+├── GlobalUsings.cs                    ← Puede estar aquí o en root del proyecto
+```
+
+> ⚠️ **IMPORTANTE**: La carpeta debe ser en **plural** (`Allergens/`) para evitar conflictos de namespace con el tipo `Allergen`.
+
+### Estructura del archivo (nested classes)
+
+```csharp
+// Api/Commands/Allergens/CreateAllergen.cs
+namespace Customer.Features.Menus.Api.Commands.Allergens;
+
+public class CreateAllergen : IFeatureModule
+{
+    public record Request(
+        string Code,
+        string Name,
+        string? IconUrl = null,
+        bool IsActive = true,
+        int DisplayOrder = 0
+    );
+
+    public record Response(
+        string Id,
+        string Name,
+        string? IconUrl,
+        bool IsActive,
+        int DisplayOrder
+    );
+
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/allergens", async (IService service, Request request) =>
+        {
+            var response = await service.HandleAsync(request);
+            return Results.Created($"/allergens/{response.Id}", response);
+        });
+    }
+
+    public interface IService
+    {
+        Task<Response> HandleAsync(Request request);
+    }
+
+    [Injectable]
+    public class Service(
+        Allergen.Create createAllergen,
+        IRepository repository,
+        IUnitOfWork unitOfWork
+    ) : IService
+    {
+        public async Task<Response> HandleAsync(Request request)
+        {
+            var command = new CreateAllergenCommand(
+                request.Code,
+                request.Name,
+                request.IconUrl,
+                request.IsActive,
+                request.DisplayOrder
+            );
+
+            var allergen = createAllergen.Execute(command);
+
+            repository.Add(allergen);
+            await unitOfWork.SaveChangesAsync();
+
+            return new Response(
+                allergen.Id,
+                allergen.Name,
+                allergen.IconUrl,
+                allergen.IsActive,
+                allergen.DisplayOrder
+            );
+        }
+    }
+
+    public interface IRepository : IAdd<Allergen> { }
+}
+```
+
+### Reglas Api con IFeatureModule
+
+- Implementa `IFeatureModule`
+- Nested classes: `Request`, `Response`, `IService`, `Service`, `IRepository`
+- `Request` incluye valores por defecto para opcionales
+- `Response` devuelve **toda la entidad** creada/modificada
+- `Service` con `[Injectable]` inyecta Domain Command + Repository + UnitOfWork
+- `IRepository` hereda de `IAdd<T>`, `IUpdate<T>`, etc. según operación
+- Sin `using` en el archivo (van en `GlobalUsings.cs`)
+
+### Checklist Api con IFeatureModule
+
+- [ ] Carpeta en **plural** (`Allergens/`, no `Allergen/`)
+- [ ] Implementa `IFeatureModule`
+- [ ] `Request` con valores por defecto para opcionales
+- [ ] `Response` devuelve toda la entidad
+- [ ] `Service` inyecta Domain Command
+- [ ] `IRepository` define operaciones necesarias
+- [ ] Sin `using` (van en `GlobalUsings.cs`)
+- [ ] Códigos HTTP correctos (201 Created, 200 OK, etc.)
