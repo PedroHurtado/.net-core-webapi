@@ -1,9 +1,12 @@
 using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
+using Fudie.Domain;
+using Fudie.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Customer.Infrastructure;
 
-public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid tenantId) : DbContext(options)
+public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid tenantId) :
+    DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
 {
     // Root collections (aggregates)
     public DbSet<Menu> Menus => Set<Menu>();
@@ -54,5 +57,32 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
 
         // Allergen is simple - conventions handle it automatically
         // (Id as PK, collection name pluralized, etc.)
+    }
+
+    public async Task<T> GetRequiredAsync<T, ID>(
+        ID id,
+        bool tracking = true,
+        CancellationToken cancellationToken = default,
+        params string[] includeProperties) where T : class, IEntity
+    {
+        var query = Set<T>().AsQueryable();
+
+        foreach (var includeProperty in includeProperties)
+        {
+            query = query.Include(includeProperty);
+        }
+
+        if (!tracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        var entity = await query.FirstOrDefaultAsync(cancellationToken);
+        return entity ?? throw new KeyNotFoundException($"{typeof(T).Name} with ID '{id}' not found.");
+    }
+
+    public IQueryable<T> Query<T>() where T : class, IEntity
+    {
+        return Set<T>().AsQueryable().AsNoTracking();
     }
 }
