@@ -1,10 +1,18 @@
+global using System.Linq.Expressions;
 global using FluentAssertions;
 global using FluentValidation;
 global using Fudie.Domain;
 global using Fudie.Infrastructure;
 global using Moq;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Infrastructure;
+global using Microsoft.EntityFrameworkCore.Metadata;
+
+global using Customer.Infrastructure;
+global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 
 global using Customer.Features.Menus.Api.Commands.Allergens;
+global using Customer.Features.Menus.Api.Queries.Allergens;
 
 global using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 global using Customer.Features.Menus.Domain.Shared.Enums;
