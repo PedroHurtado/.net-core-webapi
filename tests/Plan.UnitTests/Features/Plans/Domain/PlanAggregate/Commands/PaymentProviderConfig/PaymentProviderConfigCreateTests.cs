@@ -3,7 +3,7 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PaymentPro
 public class PaymentProviderConfigCreateTests
 {
     private readonly PaymentProviderConfigValidator _validator = new();
-    private readonly Plan.Features.Plans.Domain.PlanAggregate.ValueObjects.PaymentProviderConfig.Create _create;
+    private readonly PaymentProviderConfigVO.Create _create;
 
     public PaymentProviderConfigCreateTests()
     {
