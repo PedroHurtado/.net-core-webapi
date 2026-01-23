@@ -8,22 +8,34 @@ public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Global: use backing fields for all properties
         modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // Plan aggregate configuration
         modelBuilder.Entity<PlanAgg>(entity =>
         {
-            // ComplexType: Price (Money value object, no Id)
-            entity.ComplexProperty(p => p.Price);            
+            // Ignore: propiedades computed (no backing fields)
+            entity.Ignore(p => p.HasActiveProvider);            
 
-            // ArrayOf embedded: Features
-            entity.ArrayOf(p => p.Features);
+            // ComplexType: Price (Money con Currency anidado)
+            entity.ComplexProperty(p => p.Price, price =>
+            {
+                // Ignore: propiedades computed de Money
+                price.Ignore(m => m.IsZero);
+                price.Ignore(m => m.IsPositive);
+                price.Ignore(m => m.IsNegative);
 
-            // ArrayOf embedded: ProviderConfigurations
+                price.ComplexProperty(m => m.Currency);
+            });
+
+            // ArrayOf: Features (usa backing field _features)
+            entity.ArrayOf(p => p.Features, feature =>
+            {
+                // Ignore: propiedades computed de Feature
+                feature.Ignore(f => f.IsValid);
+                feature.Ignore(f => f.DisplayValue);
+            });
+
+            // ArrayOf: ProviderConfigurations (usa backing field _providerConfigurations)
             entity.ArrayOf(p => p.ProviderConfigurations);
-
-            entity.Ignore(p=>p.HasActiveProvider);
         });
     }
 

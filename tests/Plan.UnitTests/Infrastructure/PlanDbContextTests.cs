@@ -21,10 +21,10 @@ public class PlanDbContextTests
             .Options;
 
         _context = new PlanDbContext(options);
-        _model = _context.Model;        
+        _model = _context.Model;
     }
 
-    [Fact(Skip = "Pending Firestore EF Core configuration for ArrayOf collections")]
+    [Fact]
     public void Model_ShouldUsePropertyAccessModeField()
     {
         var designTimeModel = _context.GetService<IDesignTimeModel>().Model;
@@ -33,7 +33,7 @@ public class PlanDbContextTests
         accessMode.Should().Be(PropertyAccessMode.Field);
     }
 
-    [Fact(Skip = "Pending Firestore EF Core configuration for ArrayOf collections")]
+    [Fact]
     public void Model_ShouldHavePlanEntityType()
     {
         var entityType = _model.FindEntityType(typeof(global::Plan.Features.Plans.Domain.PlanAggregate.Plan));
@@ -41,7 +41,7 @@ public class PlanDbContextTests
         entityType.Should().NotBeNull();
     }
 
-    [Fact(Skip = "Pending Firestore EF Core configuration for ArrayOf collections")]
+    [Fact]
     public void Plan_ShouldNotHaveQueryFilter()
     {
         var entityType = _model.FindEntityType(typeof(global::Plan.Features.Plans.Domain.PlanAggregate.Plan))!;
@@ -49,7 +49,7 @@ public class PlanDbContextTests
         entityType.GetQueryFilter().Should().BeNull();
     }
 
-    [Fact(Skip = "Pending Firestore EF Core configuration for ArrayOf collections")]
+    [Fact]
     public void DbContext_ShouldExposePlansDbSet()
     {
         _context.Plans.Should().NotBeNull();
