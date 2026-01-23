@@ -1,3 +1,4 @@
+global using System.Linq.Expressions;
 global using FluentAssertions;
 global using FluentValidation;
 global using Fudie.Domain;

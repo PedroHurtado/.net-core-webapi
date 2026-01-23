@@ -244,7 +244,8 @@ public class CreateAllergenIntegrationTests(WebApplicationFactory<Program> facto
     public async Task CreateAllergen_WithCodeExactly20Characters_ShouldReturnCreated()
     {
         // Arrange
-        var code = new string('A', 20);
+        var prefix = Guid.NewGuid().ToString("N")[..12].ToUpper();
+        var code = prefix + new string('A', 8); // Total: 20 caracteres
         var request = new CreateAllergen.Request(
             Code: code,
             Name: "Gluten"
