@@ -1,9 +1,3 @@
-using Customer.Infrastructure;
-using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-
 namespace Customer.UnitTests.Infrastructure;
 
 public class CustomerDbContextTests

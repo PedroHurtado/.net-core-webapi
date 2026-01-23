@@ -1,8 +1,3 @@
-using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
-using Fudie.Domain;
-using Fudie.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-
 namespace Customer.Infrastructure;
 
 public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid tenantId) :
