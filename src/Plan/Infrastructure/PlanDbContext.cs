@@ -15,13 +15,15 @@ public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
         modelBuilder.Entity<PlanAgg>(entity =>
         {
             // ComplexType: Price (Money value object, no Id)
-            entity.ComplexProperty(p => p.Price);
+            entity.ComplexProperty(p => p.Price);            
 
             // ArrayOf embedded: Features
             entity.ArrayOf(p => p.Features);
 
             // ArrayOf embedded: ProviderConfigurations
             entity.ArrayOf(p => p.ProviderConfigurations);
+
+            entity.Ignore(p=>p.HasActiveProvider);
         });
     }
 

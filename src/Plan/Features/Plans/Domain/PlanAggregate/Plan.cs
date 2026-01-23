@@ -50,7 +50,7 @@ public partial class Plan : AggregateRoot<Guid>
     /// <summary>
     /// The internal collection of plan features.
     /// </summary>
-    protected List<Feature> _features = [];
+    protected HashSet<Feature> _features = [];
 
     /// <summary>
     /// Gets the read-only collection of features in this plan.
@@ -61,7 +61,7 @@ public partial class Plan : AggregateRoot<Guid>
     /// <summary>
     /// The internal collection of payment provider configurations.
     /// </summary>
-    protected List<PaymentProviderConfig> _providerConfigurations = [];
+    protected HashSet<PaymentProviderConfig> _providerConfigurations = [];
 
     /// <summary>
     /// Gets the read-only collection of payment provider configurations for this plan.
