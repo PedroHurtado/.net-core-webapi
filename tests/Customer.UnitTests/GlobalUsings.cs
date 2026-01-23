@@ -5,6 +5,7 @@ global using Fudie.Infrastructure;
 global using Moq;
 
 global using Customer.Features.Menus.Api.Commands.Allergens;
+global using Customer.Features.Menus.Api.Queries.Allergens;
 
 global using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 global using Customer.Features.Menus.Domain.Shared.Enums;
