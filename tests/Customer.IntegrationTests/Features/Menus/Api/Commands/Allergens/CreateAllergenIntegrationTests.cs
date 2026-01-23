@@ -1,63 +1,15 @@
 using System.Net;
 using System.Net.Http.Json;
 using Customer.Features.Menus.Api.Commands.Allergens;
-using Customer.Infrastructure;
+using Customer.IntegrationTests.Fixtures;
 using FluentAssertions;
-using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
-using Fudie.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Customer.IntegrationTests.Features.Menus.Api.Commands.Allergens;
 
-public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public class CreateAllergenIntegrationTests(WebApplicationFactory<Program> factory)
+    : CustomerWebApplicationFixture(factory)
 {
-    private const string EmulatorHost = "127.0.0.1:8080";
-
-    private readonly WebApplicationFactory<Program> _factory;
-    private readonly HttpClient _client;
-
-    public CreateAllergenIntegrationTests(WebApplicationFactory<Program> factory)
-    {
-        Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", EmulatorHost);
-
-        _factory = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                // Remover el DbContext existente
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions<CustomerDbContext>));
-
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
-
-                // Tenant ID para tests
-                var tenantId = Guid.NewGuid();
-
-                // Agregar DbContext con Firestore emulator
-                services.AddDbContext<CustomerDbContext>(options =>
-                {
-                    options.UseFirestore("demo-project");
-                }, ServiceLifetime.Scoped);
-
-                // Re-registrar el tenantId
-                services.AddScoped(typeof(Guid), _ => tenantId);
-
-                // Re-registrar las interfaces que usa CustomerDbContext
-                services.AddScoped<IChangeTracker>(sp => sp.GetRequiredService<CustomerDbContext>());
-                services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<CustomerDbContext>());
-                services.AddScoped<IQuery>(sp => sp.GetRequiredService<CustomerDbContext>());
-                services.AddScoped<IEntityLookup>(sp => sp.GetRequiredService<CustomerDbContext>());
-            });
-        });
-
-        _client = _factory.CreateClient();
-    }
-
     #region Success Tests
 
     [Fact]
@@ -71,7 +23,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -96,7 +48,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -121,7 +73,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
         var result = await response.Content.ReadFromJsonAsync<CreateAllergen.Response>();
 
         // Assert
@@ -129,10 +81,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         result.Should().NotBeNull();
 
         // Verificar en base de datos
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
-
-        var allergen = await dbContext.Allergens.FindAsync(result!.Id);
+        var allergen = await ExecuteWithDbContext(db => db.Allergens.FindAsync(result!.Id).AsTask());
 
         allergen.Should().NotBeNull();
         allergen!.Name.Should().Be("Nueces");
@@ -146,7 +95,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         var request = new CreateAllergen.Request(code, "Soja");
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -173,7 +122,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -193,7 +142,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -209,7 +158,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -228,7 +177,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -245,7 +194,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -263,7 +212,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -281,7 +230,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -302,7 +251,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -323,7 +272,7 @@ public class CreateAllergenIntegrationTests : IClassFixture<WebApplicationFactor
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/allergens", request);
+        var response = await Client.PostAsJsonAsync("/allergens", request);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
