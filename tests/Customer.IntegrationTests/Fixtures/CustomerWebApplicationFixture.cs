@@ -1,12 +1,3 @@
-using System.Net.Http.Json;
-using Customer.Features.Menus.Api.Commands.Allergens;
-using Customer.Infrastructure;
-using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
-using Fudie.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Customer.IntegrationTests.Fixtures;
 
 public class CustomerWebApplicationFixture : IClassFixture<WebApplicationFactory<Program>>

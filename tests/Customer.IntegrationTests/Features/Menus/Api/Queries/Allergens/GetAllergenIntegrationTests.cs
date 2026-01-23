@@ -1,10 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using Customer.Features.Menus.Api.Queries.Allergens;
-using Customer.IntegrationTests.Fixtures;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
-
 namespace Customer.IntegrationTests.Features.Menus.Api.Queries.Allergens;
 
 public class GetAllergenIntegrationTests(WebApplicationFactory<Program> factory)
