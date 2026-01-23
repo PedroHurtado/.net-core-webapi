@@ -3,7 +3,7 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Currency;
 public class CurrencyCreateTests
 {
     private readonly CurrencyValidator _validator = new();
-    private readonly Plan.Features.Plans.Domain.PlanAggregate.ValueObjects.Currency.Create _create;
+    private readonly CurrencyVO.Create _create;
 
     public CurrencyCreateTests()
     {

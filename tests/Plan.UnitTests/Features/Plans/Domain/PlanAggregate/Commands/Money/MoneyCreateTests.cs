@@ -1,11 +1,11 @@
 namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Money;
 
-using CurrencyVO = Plan.Features.Plans.Domain.PlanAggregate.ValueObjects.Currency;
+
 
 public class MoneyCreateTests
 {
     private readonly MoneyValidator _validator = new();
-    private readonly Plan.Features.Plans.Domain.PlanAggregate.ValueObjects.Money.Create _create;
+    private readonly MoneyVO.Create _create;
 
     public MoneyCreateTests()
     {

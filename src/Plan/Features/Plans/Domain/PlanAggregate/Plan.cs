@@ -139,4 +139,5 @@ public class PlanValidator : AbstractValidator<Plan>
         RuleFor(x => x.BillingPeriod)
             .IsInEnum();
     }
+
 }

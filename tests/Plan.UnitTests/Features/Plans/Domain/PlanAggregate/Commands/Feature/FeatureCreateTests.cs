@@ -3,7 +3,7 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Feature;
 public class FeatureCreateTests
 {
     private readonly FeatureValidator _validator = new();
-    private readonly Plan.Features.Plans.Domain.PlanAggregate.ValueObjects.Feature.Create _create;
+    private readonly FeatureVO.Create _create;
 
     public FeatureCreateTests()
     {
