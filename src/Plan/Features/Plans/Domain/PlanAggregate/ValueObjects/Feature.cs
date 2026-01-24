@@ -80,6 +80,22 @@ public partial record Feature
     }
 
     /// <summary>
+    /// Creates a new instance of <see cref="Feature"/>.
+    /// </summary>
+    public static Feature New(
+        string code,
+        string name,
+        string? description,
+        FeatureType type,
+        int? limit = null,
+        string? unit = null)
+    {
+        return new Feature(code, name, description, type, limit, unit);
+    }
+
+
+
+    /// <summary>
     /// Gets a value indicating whether this feature configuration is valid.
     /// </summary>
     /// <value>
