@@ -9,3 +9,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using PlanAgg = Plan.Features.Plans.Domain.PlanAggregate.Plan;
 global using Plan.Features.Plans.Domain.PlanAggregate.Enums;
 global using Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
+
+global using Plan.Infrastructure;
+global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
+global using Microsoft.EntityFrameworkCore.Diagnostics;

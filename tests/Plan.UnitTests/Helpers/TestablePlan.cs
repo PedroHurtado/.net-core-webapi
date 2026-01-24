@@ -10,6 +10,6 @@ public class TestablePlan : Plan.Features.Plans.Domain.PlanAggregate.Plan
     public void SetBillingPeriod(BillingPeriod billingPeriod) => BillingPeriod = billingPeriod;
     public void SetIsActive(bool isActive) => IsActive = isActive;
     
-    public void AddFeature(Feature feature) => _features.Add(feature);
-    public void AddProviderConfiguration(PaymentProviderConfig config) => _providerConfigurations.Add(config);
+    public new void AddFeature(Feature feature) => _features.Add(feature);
+    public new void AddProviderConfiguration(PaymentProviderConfig config) => _providerConfigurations.Add(config);
 }
