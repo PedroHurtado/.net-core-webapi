@@ -360,6 +360,29 @@ public IReadOnlyCollection<PaymentProviderConfig> ProviderConfigurations => _pro
 
 ---
 
+#### 3.3 Activar Configuración de Proveedor
+```
+🟡[Admin] → 🔵(ActivateProviderConfiguration) → 🟤[[Plan]] → 🟠<ProviderConfigActivated>
+                                                      │
+                                            🟣{NoProveedorDuplicadoActivo}
+```
+
+**Input**: Provider (nombre del proveedor)
+
+**Validaciones** 🟣{NoProveedorDuplicadoActivo}:
+- No debe existir otra configuración activa para el mismo proveedor (si hay otra, debe desactivarse primero o fallar)
+
+**Resultado**: Configuración activada
+
+**Flujo de Error**:
+```
+🟡[Admin] → 🔵(ActivateProviderConfiguration) → 🟤[[Plan]] → 🔴<Error: ProveedorYaTieneConfigActiva>
+                                                      │
+                                            🟣{NoProveedorDuplicadoActivo} ❌
+```
+
+---
+
 ### Flujo 4: Activación/Desactivación de Plan
 
 #### 4.1 Activar Plan
