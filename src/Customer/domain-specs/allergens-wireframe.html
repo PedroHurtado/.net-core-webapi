@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alérgenos | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B',allergen:'#8B5CF6'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-get{background:#F3F4F6;color:#374151}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<main>
+<!-- LIST VIEW -->
+<div id="list" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Catálogo de Alérgenos</h1>
+        <p class="text-gray-500 text-sm mt-1">Gestiona los alérgenos del sistema</p>
+    </div>
+    <button onclick="show('create')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2">
+        <i class="fas fa-plus"></i>Nuevo Alérgeno
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="flex flex-wrap items-center gap-3 mb-6">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /allergens → ListAllergens</span>
+    <div class="flex items-center gap-2 ml-auto">
+        <span class="text-sm text-gray-500">Filtrar:</span>
+        <select id="filterStatus" onchange="filterAllergens()" class="bg-white border rounded-lg px-3 py-1.5 text-sm font-medium focus:border-primary outline-none">
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+        </select>
+    </div>
+</div>
+
+<!-- Grid de Alérgenos -->
+<div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+    <div class="grid grid-cols-12 gap-4 p-4 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
+        <div class="col-span-1">Orden</div>
+        <div class="col-span-2">Código</div>
+        <div class="col-span-4">Nombre</div>
+        <div class="col-span-2">Icono</div>
+        <div class="col-span-2">Estado</div>
+        <div class="col-span-1"></div>
+    </div>
+    
+    <!-- Row 1: GLUTEN -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">1</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">GLUTEN</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Gluten</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <i class="fas fa-bread-slice text-amber-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 2: CRUSTACEOS -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">2</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">CRUSTACEOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Crustáceos</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                <i class="fas fa-shrimp text-red-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 3: HUEVOS -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">3</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">HUEVOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Huevos</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                <i class="fas fa-egg text-yellow-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 4: PESCADO -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">4</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">PESCADO</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Pescado</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-fish text-blue-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 5: LACTEOS -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">5</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">LACTEOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Lácteos</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
+                <i class="fas fa-cheese text-sky-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 6: FRUTOS_SECOS -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">6</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">FRUTOS_SECOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Frutos de cáscara</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <i class="fas fa-seedling text-orange-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 7: MOLUSCOS -->
+    <div class="row grid grid-cols-12 gap-4 p-4 border-b items-center cursor-pointer group" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">7</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-2 py-1 rounded">MOLUSCOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium">Moluscos</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <i class="fas fa-shell text-purple-600 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Row 8: SULFITOS (Inactivo) -->
+    <div class="row grid grid-cols-12 gap-4 p-4 items-center cursor-pointer group opacity-60" onclick="show('edit')">
+        <div class="col-span-1">
+            <span class="text-gray-400 font-mono text-sm">8</span>
+        </div>
+        <div class="col-span-2">
+            <span class="font-mono text-sm font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">SULFITOS</span>
+        </div>
+        <div class="col-span-4">
+            <span class="font-medium text-gray-500">Sulfitos</span>
+        </div>
+        <div class="col-span-2">
+            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-flask text-gray-400 text-sm"></i>
+            </div>
+        </div>
+        <div class="col-span-2">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Inactivo
+            </span>
+        </div>
+        <div class="col-span-1 flex justify-end">
+            <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 opacity-0 group-hover:opacity-100">
+                <i class="fas fa-chevron-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="mt-6 flex items-center justify-between text-sm text-gray-500">
+    <span>Mostrando 8 alérgenos (7 activos, 1 inactivo)</span>
+    <span class="text-xs text-gray-400">Ordenados por DisplayOrder</span>
+</div>
+
+</div></div>
+
+<!-- CREATE VIEW -->
+<div id="create" class="view p-4 md:p-8"><div class="max-w-2xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Alérgenos</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>Nuevo</span>
+        </div>
+        <h1 class="text-2xl font-bold">Crear Alérgeno</h1>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="show('edit');toast('Alérgeno creado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2">
+            <i class="fas fa-save"></i>Crear
+        </button>
+    </div>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /allergens → Allergen.Create</span>
+</div>
+
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+    <div class="p-6 border-b bg-gray-50/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-allergen/10 flex items-center justify-center text-allergen">
+                <i class="fas fa-allergies"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Información del Alérgeno</h3>
+                <p class="text-xs text-gray-500">Código, nombre e icono</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="p-6 space-y-6">
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Código <span class="text-primary">*</span></label>
+            <input type="text" placeholder="Ej: GLUTEN, LACTEOS..." maxlength="20" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-mono font-bold uppercase focus:border-primary outline-none">
+            <p class="text-xs text-gray-400 mt-1">Máximo 20 caracteres. Solo mayúsculas, números y guiones bajos. Este será el identificador único.</p>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+            <input type="text" placeholder="Ej: Gluten, Lácteos..." maxlength="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            <p class="text-xs text-gray-400 mt-1">Máximo 100 caracteres</p>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL del Icono</label>
+            <input type="url" placeholder="https://cdn.fudie.com/icons/allergens/..." maxlength="500" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            <p class="text-xs text-gray-400 mt-1">URL válida del icono SVG o PNG. Máximo 500 caracteres.</p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden de visualización</label>
+                <input type="number" value="0" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold focus:border-primary outline-none">
+                <p class="text-xs text-gray-400 mt-1">Número >= 0</p>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Estado inicial</label>
+                <div class="flex items-center gap-3 p-4 bg-gray-50 border rounded-xl">
+                    <input type="checkbox" checked class="w-5 h-5 rounded text-primary">
+                    <label class="text-sm font-medium">Activo</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-6 flex items-start gap-3">
+    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+    <div>
+        <p class="text-sm text-blue-800 font-medium">Alérgenos del sistema</p>
+        <p class="text-xs text-blue-700 mt-1">Los alérgenos son datos maestros compartidos entre todos los restaurantes. Una vez creado, el código no se puede modificar.</p>
+    </div>
+</div>
+
+</div></div>
+
+<!-- EDIT VIEW -->
+<div id="edit" class="view p-4 md:p-8"><div class="max-w-4xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Alérgenos</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>GLUTEN</span>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-bold">Gluten</h1>
+            <span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Activo
+            </span>
+            <span class="font-mono text-sm font-bold text-allergen bg-allergen/10 px-3 py-1 rounded-lg">GLUTEN</span>
+        </div>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">
+            <i class="fas fa-arrow-left mr-2"></i>Volver
+        </button>
+    </div>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /allergens/{code}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Info Card -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-allergen/10 flex items-center justify-center text-allergen">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Información</h3>
+                        <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Allergen.Update</span>
+                    </div>
+                </div>
+                <button onclick="openM('mAllergen')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm">
+                    <i class="fas fa-pencil-alt mr-1"></i>Editar
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Código</p>
+                        <p class="font-mono font-bold text-allergen">GLUTEN</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Orden</p>
+                        <p class="font-bold">1</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p>
+                        <p class="font-medium text-lg">Gluten</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">URL del Icono</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                                <i class="fas fa-bread-slice text-amber-600 text-xl"></i>
+                            </div>
+                            <code class="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg flex-1 truncate">
+                                https://cdn.fudie.com/icons/allergens/gluten.svg
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Usage Info -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-gray-50/50 border-b">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Uso en el Sistema</h3>
+                        <p class="text-xs text-gray-500">Referencias a este alérgeno</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold">MenuItems</p>
+                            <p class="text-xs text-gray-500">Platos que contienen este alérgeno</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-primary">24</p>
+                        <p class="text-xs text-gray-400">referencias</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                    <p class="text-xs text-amber-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Si desactivas este alérgeno, los MenuItems que lo referencian mostrarán una advertencia en el frontend.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Status Card -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-4">Estado del Alérgeno</h3>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-gray-500">Estado</span>
+                <span id="statusText" class="font-bold text-success">Activo</span>
+            </div>
+            <button id="toggleBtn" onclick="toggleStatus()" class="w-full px-4 py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 flex items-center justify-center gap-2">
+                <i class="fas fa-pause"></i>Desactivar
+            </button>
+            <p class="text-xs text-gray-400 mt-3 text-center">Los alérgenos no se eliminan, solo se desactivan.</p>
+        </div>
+        
+        <!-- Quick Info -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-3">Información Rápida</h3>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-code text-gray-500 text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">ID / Código</p>
+                        <p class="font-mono font-bold">GLUTEN</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-sort-numeric-up text-gray-500 text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">DisplayOrder</p>
+                        <p class="font-bold">1</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Reference -->
+        <div class="bg-gray-50 border rounded-2xl p-4">
+            <h3 class="font-bold mb-3 text-sm">Endpoints API</h3>
+            <div class="space-y-2">
+                <span class="block cmd-get text-[10px] font-bold px-2 py-1 rounded">GET /allergens/{code}</span>
+                <span class="block cmd-update text-[10px] font-bold px-2 py-1 rounded">PUT /allergens/{code}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div></div>
+</main>
+
+<!-- MODALS -->
+
+<!-- Allergen Edit Modal -->
+<div id="mAllergen" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Editar Alérgeno</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /allergens/{code} → Allergen.Update</span>
+            </div>
+            <button onclick="closeM('mAllergen')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Código</label>
+                <input type="text" value="GLUTEN" disabled class="w-full bg-gray-100 border rounded-xl px-4 py-3 font-mono font-bold text-gray-500 cursor-not-allowed">
+                <p class="text-xs text-gray-400 mt-1">El código no se puede modificar</p>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+                <input type="text" value="Gluten" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL del Icono</label>
+                <input type="url" value="https://cdn.fudie.com/icons/allergens/gluten.svg" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label>
+                    <input type="number" value="1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold focus:border-primary outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Estado</label>
+                    <div class="flex items-center gap-3 p-4 bg-gray-50 border rounded-xl h-[50px]">
+                        <input type="checkbox" checked class="w-5 h-5 rounded text-primary">
+                        <label class="text-sm font-medium">Activo</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mAllergen')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mAllergen');toast('Alérgeno actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+    <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center">
+        <i class="fas fa-check"></i>
+    </div>
+    <span id="toastMsg">OK</span>
+</div>
+
+<script>
+let isActive = true;
+
+function show(v) {
+    document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+    document.getElementById(v)?.classList.add('active');
+}
+
+function openM(id) {
+    document.getElementById(id)?.classList.remove('hidden');
+}
+
+function closeM(id) {
+    document.getElementById(id)?.classList.add('hidden');
+}
+
+function toast(msg) {
+    const t = document.getElementById('toastEl');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+function toggleStatus() {
+    isActive = !isActive;
+    const b = document.getElementById('statusBadge');
+    const t = document.getElementById('statusText');
+    const btn = document.getElementById('toggleBtn');
+    
+    if (isActive) {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-circle text-[6px]"></i>Activo';
+        t.className = 'font-bold text-success';
+        t.textContent = 'Activo';
+        btn.className = 'w-full px-4 py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 flex items-center justify-center gap-2';
+        btn.innerHTML = '<i class="fas fa-pause"></i>Desactivar';
+    } else {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-circle text-[6px]"></i>Inactivo';
+        t.className = 'font-bold text-gray-500';
+        t.textContent = 'Inactivo';
+        btn.className = 'w-full px-4 py-2.5 rounded-xl font-bold text-green-600 bg-green-50 hover:bg-green-100 flex items-center justify-center gap-2';
+        btn.innerHTML = '<i class="fas fa-play"></i>Activar';
+    }
+    toast(isActive ? 'Alérgeno activado' : 'Alérgeno desactivado');
+}
+
+function filterAllergens() {
+    // Simulación de filtro - en producción se haría llamada API
+    toast('Filtro aplicado');
+}
+</script>
+</body>
+</html>

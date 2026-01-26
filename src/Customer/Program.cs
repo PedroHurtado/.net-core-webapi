@@ -55,6 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.RoutePrefix = "swagger";
+        c.SwaggerEndpoint("/openapi/allergen-api.yaml", "Allergen API");
         c.SwaggerEndpoint("/openapi/menuitem-api.yaml", "MenuItem API");
     });
 
