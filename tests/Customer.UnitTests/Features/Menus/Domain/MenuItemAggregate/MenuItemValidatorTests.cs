@@ -105,7 +105,7 @@ public class MenuItemValidatorTests
     public void Name_WhenExceedsMaxLength_ReturnsError()
     {
         var menuItem = CreateValidMenuItem();
-        menuItem.Name = new string('a', 151);
+        menuItem.Name = new string('a', 101);
 
         var result = _validator.Validate(menuItem);
 
@@ -115,7 +115,7 @@ public class MenuItemValidatorTests
 
     [Theory]
     [InlineData(1)]
-    [InlineData(150)]
+    [InlineData(100)]
     public void Name_WhenWithinMaxLength_ReturnsSuccess(int length)
     {
         var menuItem = CreateValidMenuItem();
@@ -400,6 +400,30 @@ public class MenuItemValidatorTests
         var result = _validator.Validate(menuItem);
 
         result.Errors.Should().NotContain(e => e.ErrorMessage == MenuItemValidationMessages.PriceOptionsRequired);
+    }
+
+    [Fact]
+    public void PriceOptions_WhenDuplicatePortionType_ReturnsError()
+    {
+        var menuItem = CreateValidMenuItem();
+        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 12.00m)));
+
+        var result = _validator.Validate(menuItem);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == MenuItemValidationMessages.PriceOptionsDuplicatePortionType);
+    }
+
+    [Fact]
+    public void PriceOptions_WhenUniquePortionTypes_ReturnsSuccess()
+    {
+        var menuItem = CreateValidMenuItem();
+        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Half, 8.00m)));
+        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Small, 4.00m)));
+
+        var result = _validator.Validate(menuItem);
+
+        result.Errors.Should().NotContain(e => e.ErrorMessage == MenuItemValidationMessages.PriceOptionsDuplicatePortionType);
     }
 
     #endregion

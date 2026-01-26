@@ -44,6 +44,12 @@ public partial record ItemDepositOverride
     }
 
     /// <summary>
+    /// Gets a value indicating whether the deposit applies to all quantities.
+    /// </summary>
+    /// <value><c>true</c> if no minimum quantity is specified; otherwise, <c>false</c>.</value>
+    public bool AppliesToAllQuantities => !MinimumQuantityForDeposit.HasValue;
+
+    /// <summary>
     /// Determines whether the deposit applies based on the ordered quantity.
     /// </summary>
     /// <param name="quantity">The quantity of items being ordered.</param>
@@ -52,17 +58,16 @@ public partial record ItemDepositOverride
     /// </returns>
     public bool IsApplicable(int quantity)
     {
-        if (MinimumQuantityForDeposit.HasValue)
-            return quantity >= MinimumQuantityForDeposit.Value;
-
-        return true;
+        return AppliesToAllQuantities || quantity >= MinimumQuantityForDeposit!.Value;
     }
 }
 
 public static class ItemDepositOverrideValidationMessages
 {
-    public const string DepositAmountGreaterThanZero = "Deposit Amount must be greater than zero";
-    public const string MinimumQuantityMin = "Minimum Quantity For Deposit must be at least 1";
+    public const string DepositAmountGreaterThanZero = "Deposit amount must be greater than zero";
+    public const string DepositAmountMax = "Deposit amount cannot exceed 10000";
+    public const string MinimumQuantityMin = "Minimum quantity must be at least 1";
+    public const string MinimumQuantityMax = "Minimum quantity cannot exceed 100";
 }
 
 /// <summary>
@@ -81,11 +86,16 @@ public class ItemDepositOverrideValidator : AbstractValidator<ItemDepositOverrid
     {
         RuleFor(x => x.DepositAmount)
             .GreaterThan(0)
-            .WithMessage(ItemDepositOverrideValidationMessages.DepositAmountGreaterThanZero);
+            .WithMessage(ItemDepositOverrideValidationMessages.DepositAmountGreaterThanZero)
+            .LessThanOrEqualTo(10000)
+            .WithMessage(ItemDepositOverrideValidationMessages.DepositAmountMax);
 
         RuleFor(x => x.MinimumQuantityForDeposit)
             .GreaterThanOrEqualTo(1)
             .When(x => x.MinimumQuantityForDeposit.HasValue)
-            .WithMessage(ItemDepositOverrideValidationMessages.MinimumQuantityMin);
+            .WithMessage(ItemDepositOverrideValidationMessages.MinimumQuantityMin)
+            .LessThanOrEqualTo(100)
+            .When(x => x.MinimumQuantityForDeposit.HasValue)
+            .WithMessage(ItemDepositOverrideValidationMessages.MinimumQuantityMax);
     }
 }

@@ -42,13 +42,25 @@ public class ItemDepositOverrideValidatorTests
     [InlineData(0.01)]
     [InlineData(50.00)]
     [InlineData(1000.00)]
-    public void DepositAmount_WhenPositive_ReturnsSuccess(decimal amount)
+    [InlineData(10000.00)]
+    public void DepositAmount_WhenWithinRange_ReturnsSuccess(decimal amount)
     {
         var deposit = new TestableItemDepositOverride(amount);
 
         var result = _validator.Validate(deposit);
 
         result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void DepositAmount_WhenExceedsMax_ReturnsError()
+    {
+        var deposit = new TestableItemDepositOverride(10001.00m);
+
+        var result = _validator.Validate(deposit);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == ItemDepositOverrideValidationMessages.DepositAmountMax);
     }
 
     #endregion
@@ -91,13 +103,24 @@ public class ItemDepositOverrideValidatorTests
     [InlineData(1)]
     [InlineData(5)]
     [InlineData(100)]
-    public void MinimumQuantityForDeposit_WhenPositive_ReturnsSuccess(int quantity)
+    public void MinimumQuantityForDeposit_WhenWithinRange_ReturnsSuccess(int quantity)
     {
         var deposit = new TestableItemDepositOverride(50.00m, quantity);
 
         var result = _validator.Validate(deposit);
 
         result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void MinimumQuantityForDeposit_WhenExceedsMax_ReturnsError()
+    {
+        var deposit = new TestableItemDepositOverride(50.00m, 101);
+
+        var result = _validator.Validate(deposit);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.ErrorMessage == ItemDepositOverrideValidationMessages.MinimumQuantityMax);
     }
 
     #endregion
