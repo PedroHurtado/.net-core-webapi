@@ -44,6 +44,20 @@ public partial class Plan
                 "Cannot activate a plan that is already active"
             );
 
+            // 422 - Validación: Al menos un Feature (dato inválido: lista vacía)
+            ValidationGuard.ThrowIf(
+                !plan.Features.Any(),
+                PlanValidationMessages.AtLeastOneFeatureRequired,
+                nameof(plan.Features)
+            );
+
+            // 422 - Validación: Al menos una configuración de proveedor activa (dato inválido: ninguna activa)
+            ValidationGuard.ThrowIf(
+                !plan.ProviderConfigurations.Any(c => c.IsActive),
+                PlanValidationMessages.AtLeastOneActiveProviderRequired,
+                nameof(plan.ProviderConfigurations)
+            );
+
             plan.IsActive = true;
 
             return planValidator.ValidateOrThrow(plan);
