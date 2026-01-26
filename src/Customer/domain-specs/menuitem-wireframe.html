@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platos del Menú | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B',orange:'#F97316'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-activate{background:#D1FAE5;color:#065F46}.cmd-deactivate{background:#FEE2E2;color:#991B1B}.cmd-add{background:#E0E7FF;color:#3730A3}.cmd-remove{background:#FCE7F3;color:#9D174D}.cmd-get{background:#F3F4F6;color:#374151}.cmd-mark{background:#FEF3C7;color:#92400E}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+        .portion-small{background:#FEF3C7;color:#92400E}.portion-half{background:#DBEAFE;color:#1E40AF}.portion-full{background:#D1FAE5;color:#065F46}.portion-market{background:#F3E8FF;color:#7C3AED}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<main>
+<!-- LIST VIEW -->
+<div id="list" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6"><div><h1 class="text-2xl font-bold">Platos del Menú</h1><p class="text-gray-500 text-sm mt-1">Gestiona los platos y sus opciones de precio</p></div><button onclick="show('create')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2"><i class="fas fa-plus"></i>Nuevo Plato</button></div>
+<div class="mb-4 flex flex-wrap gap-2"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /menu-items → ListMenuItems</span></div>
+
+<!-- Filters -->
+<div class="bg-white rounded-2xl border p-4 mb-6 flex flex-wrap gap-4 items-center">
+<div class="flex items-center gap-2"><span class="text-sm text-gray-500">Filtrar:</span>
+<button class="px-3 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">Todos</button>
+<button class="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100">Activos</button>
+<button class="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100">Disponibles</button>
+<button class="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100">Alto Riesgo</button>
+</div></div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Pulpo al Horno -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg" onclick="show('edit')">
+<div class="relative">
+<img src="https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=200&fit=crop" alt="Pulpo al Horno" class="w-full h-32 object-cover">
+<div class="absolute top-2 right-2 flex gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/90 text-white text-[10px] font-bold uppercase backdrop-blur-sm"><i class="fas fa-circle text-[6px]"></i>Activo</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange/90 text-white text-[10px] font-bold uppercase backdrop-blur-sm"><i class="fas fa-exclamation-triangle text-[8px]"></i>Alto Riesgo</span>
+</div>
+<div class="absolute bottom-2 left-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold backdrop-blur-sm"><i class="fas fa-calendar-day text-[8px]"></i>Vie-Sáb</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-start justify-between mb-2">
+<div><h3 class="font-bold">Pulpo al Horno</h3><p class="text-xs text-gray-500 line-clamp-1">Pulpo gallego con pimentón y aceite</p></div>
+<div class="text-right"><p class="text-lg font-bold text-primary">S/M</p><p class="text-[10px] text-gray-400">Precio mercado</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t">
+<div class="flex -space-x-1">
+<span class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-[10px] border-2 border-white" title="Moluscos"><i class="fas fa-fish"></i></span>
+<span class="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-[10px] border-2 border-white" title="Sulfitos"><i class="fas fa-wine-bottle"></i></span>
+</div>
+<span class="text-[10px] text-gray-400">2 alérgenos</span>
+<div class="ml-auto flex items-center gap-1 text-emerald-600 text-xs"><i class="fas fa-check-circle"></i><span class="font-medium">Disponible</span></div>
+</div>
+</div></div>
+
+<!-- Card 2: Jamón Ibérico -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg" onclick="show('edit')">
+<div class="relative">
+<img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&h=200&fit=crop" alt="Jamón Ibérico" class="w-full h-32 object-cover">
+<div class="absolute top-2 right-2 flex gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/90 text-white text-[10px] font-bold uppercase backdrop-blur-sm"><i class="fas fa-circle text-[6px]"></i>Activo</span>
+</div>
+<div class="absolute bottom-2 left-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold backdrop-blur-sm"><i class="fas fa-infinity text-[8px]"></i>Siempre</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-start justify-between mb-2">
+<div><h3 class="font-bold">Jamón Ibérico</h3><p class="text-xs text-gray-500 line-clamp-1">Jamón de bellota 100% ibérico</p></div>
+<div class="text-right"><p class="text-lg font-bold text-primary">14,00€</p><p class="text-[10px] text-gray-400">Ración completa</p></div>
+</div>
+<div class="flex items-center gap-1 mb-2">
+<span class="portion-small text-[10px] px-1.5 py-0.5 rounded font-bold">3,50€</span>
+<span class="portion-half text-[10px] px-1.5 py-0.5 rounded font-bold">7,00€</span>
+<span class="portion-full text-[10px] px-1.5 py-0.5 rounded font-bold">14,00€</span>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t">
+<span class="text-[10px] text-gray-400">Sin alérgenos declarados</span>
+<div class="ml-auto flex items-center gap-1 text-emerald-600 text-xs"><i class="fas fa-check-circle"></i><span class="font-medium">Disponible</span></div>
+</div>
+</div></div>
+
+<!-- Card 3: Croquetas (Agotado) -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-75" onclick="show('edit')">
+<div class="relative">
+<img src="https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=400&h=200&fit=crop" alt="Croquetas" class="w-full h-32 object-cover grayscale">
+<div class="absolute inset-0 bg-black/30 flex items-center justify-center"><span class="px-4 py-2 bg-red-500 text-white font-bold rounded-full text-sm">AGOTADO</span></div>
+<div class="absolute top-2 right-2 flex gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/90 text-white text-[10px] font-bold uppercase backdrop-blur-sm"><i class="fas fa-circle text-[6px]"></i>Activo</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-start justify-between mb-2">
+<div><h3 class="font-bold text-gray-500">Croquetas de Jamón</h3><p class="text-xs text-gray-400 line-clamp-1">Cremosas croquetas caseras</p></div>
+<div class="text-right"><p class="text-lg font-bold text-gray-400">8,50€</p><p class="text-[10px] text-gray-400">Ración</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t">
+<div class="flex -space-x-1">
+<span class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-[10px] border-2 border-white"><i class="fas fa-wheat-awn"></i></span>
+<span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] border-2 border-white"><i class="fas fa-cheese"></i></span>
+<span class="w-5 h-5 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-[10px] border-2 border-white"><i class="fas fa-egg"></i></span>
+</div>
+<span class="text-[10px] text-gray-400">3 alérgenos</span>
+<div class="ml-auto flex items-center gap-1 text-red-500 text-xs"><i class="fas fa-times-circle"></i><span class="font-medium">Agotado</span></div>
+</div>
+</div></div>
+
+<!-- Card 4: Plan Enterprise (Inactivo) -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-60" onclick="show('edit')">
+<div class="relative">
+<img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=200&fit=crop" alt="Tarta" class="w-full h-32 object-cover grayscale">
+<div class="absolute top-2 right-2 flex gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-500/90 text-white text-[10px] font-bold uppercase backdrop-blur-sm"><i class="fas fa-circle text-[6px]"></i>Inactivo</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-start justify-between mb-2">
+<div><h3 class="font-bold text-gray-400">Tarta de Queso</h3><p class="text-xs text-gray-400 line-clamp-1">Tarta vasca tradicional</p></div>
+<div class="text-right"><p class="text-lg font-bold text-gray-400">6,50€</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t text-xs text-gray-400"><i class="fas fa-exclamation-triangle"></i><span>Sin opciones de precio activas</span></div>
+</div></div>
+</div></div></div>
+
+<!-- CREATE VIEW -->
+<div id="create" class="view p-4 md:p-8"><div class="max-w-4xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6"><div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('list')" class="hover:text-primary">Platos</a><i class="fas fa-chevron-right text-xs"></i><span>Nuevo</span></div><h1 class="text-2xl font-bold">Crear Plato</h1></div><div class="flex gap-3"><button onclick="show('list')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="show('edit');toast('Plato creado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2"><i class="fas fa-save"></i>Crear</button></div></div>
+<div class="mb-6"><span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /menu-items → MenuItem.Create</span></div>
+
+<!-- Información Básica -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6"><div class="p-6 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-utensils"></i></div><div><h3 class="font-bold text-lg">Información del Plato</h3><p class="text-xs text-gray-500">Nombre, descripción e imagen</p></div></div></div>
+<div class="p-6 space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label><input type="text" placeholder="Ej: Pulpo al Horno..." maxlength="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Máximo 100 caracteres</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden de visualización</label><input type="number" placeholder="1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="3" placeholder="Describe el plato..." maxlength="1000" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea><p class="text-xs text-gray-400 mt-1">Máximo 1000 caracteres</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL de Imagen</label><input type="url" placeholder="https://..." maxlength="500" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Máximo 500 caracteres</p></div>
+</div></div>
+
+<!-- Opciones de Precio -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6"><div class="p-6 border-b bg-emerald-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-tags"></i></div><div><h3 class="font-bold text-lg">Opciones de Precio <span class="text-primary">*</span></h3><p class="text-xs text-gray-500">Al menos una opción requerida</p></div></div></div>
+<div class="p-6">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-amber-500 peer-checked:bg-amber-50 text-center hover:border-gray-300"><i class="fas fa-xs text-amber-500 mb-2"></i><p class="font-bold text-sm">Tapa</p><p class="text-[10px] text-gray-400">~25%</p><input type="number" placeholder="0.00" step="0.01" class="w-full mt-2 bg-white border rounded-lg px-2 py-1 text-center text-sm font-bold"></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center hover:border-gray-300"><i class="fas fa-sm text-blue-500 mb-2"></i><p class="font-bold text-sm">Media</p><p class="text-[10px] text-gray-400">~50%</p><input type="number" placeholder="0.00" step="0.01" class="w-full mt-2 bg-white border rounded-lg px-2 py-1 text-center text-sm font-bold"></div></label>
+<label class="cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 text-center hover:border-gray-300"><i class="fas fa-lg text-emerald-500 mb-2"></i><p class="font-bold text-sm">Ración</p><p class="text-[10px] text-gray-400">100%</p><input type="number" placeholder="0.00" step="0.01" value="14.00" class="w-full mt-2 bg-white border rounded-lg px-2 py-1 text-center text-sm font-bold"></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-purple-500 peer-checked:bg-purple-50 text-center hover:border-gray-300"><i class="fas fa-scale-balanced text-purple-500 mb-2"></i><p class="font-bold text-sm">S/Mercado</p><p class="text-[10px] text-gray-400">Variable</p><div class="mt-2 text-xs text-purple-600 font-medium">Sin precio fijo</div></div></label>
+</div>
+</div></div>
+
+<!-- Disponibilidad -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6"><div class="p-6 border-b bg-blue-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-calendar-alt"></i></div><div><h3 class="font-bold text-lg">Disponibilidad</h3><p class="text-xs text-gray-500">Cuándo está disponible el plato</p></div></div></div>
+<div class="p-6">
+<div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-4"><input type="checkbox" checked id="alwaysAvailable" class="w-5 h-5 rounded text-primary"><label for="alwaysAvailable" class="text-sm font-medium">Siempre disponible</label></div>
+<div class="grid grid-cols-7 gap-2" id="daysSelector">
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">L</span>Lun</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">M</span>Mar</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">X</span>Mié</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">J</span>Jue</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">V</span>Vie</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">S</span>Sáb</button>
+<button type="button" class="p-3 rounded-xl border-2 text-center hover:border-primary hover:bg-primary/5 font-medium text-sm opacity-50" disabled><span class="block text-xs text-gray-400">D</span>Dom</button>
+</div>
+</div></div>
+
+<!-- Alto Riesgo / Pedido Anticipado -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6"><div class="p-6 border-b bg-orange-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><i class="fas fa-exclamation-triangle"></i></div><div><h3 class="font-bold text-lg">Configuración Especial</h3><p class="text-xs text-gray-500">Alto riesgo y pedidos anticipados</p></div></div></div>
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl"><div class="flex items-center gap-3"><input type="checkbox" id="highRisk" class="w-5 h-5 rounded text-orange-500"><label for="highRisk" class="font-medium">Artículo de alto riesgo</label></div><span class="text-xs text-gray-400">Ej: Marisco, productos frescos</span></div>
+<div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl opacity-50"><div class="flex items-center gap-3"><input type="checkbox" id="advanceOrder" disabled class="w-5 h-5 rounded text-orange-500"><label for="advanceOrder" class="font-medium text-gray-400">Requiere pedido anticipado</label></div><span class="text-xs text-gray-400">Solo para alto riesgo</span></div>
+<div class="p-4 bg-gray-50 rounded-xl opacity-50"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">Cantidad mínima anticipada</label><input type="number" placeholder="4" min="1" max="100" disabled class="w-full bg-white border rounded-xl px-4 py-3 font-medium outline-none"></div>
+</div></div>
+
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3"><i class="fas fa-info-circle text-blue-500 mt-0.5"></i><div><p class="text-sm text-blue-800 font-medium">Plato creado como borrador</p><p class="text-xs text-blue-700 mt-1">Se creará en estado <strong>inactivo</strong>. Actívalo cuando esté listo para mostrarse en el menú.</p></div></div>
+</div></div>
+
+<!-- EDIT VIEW -->
+<div id="edit" class="view p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6"><div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('list')" class="hover:text-primary">Platos</a><i class="fas fa-chevron-right text-xs"></i><span>Pulpo al Horno</span></div><div class="flex items-center gap-3 flex-wrap"><h1 class="text-2xl font-bold">Pulpo al Horno</h1><span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase"><i class="fas fa-circle text-[6px]"></i>Activo</span><span id="availableBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase"><i class="fas fa-check text-[8px]"></i>Disponible</span></div></div><div class="flex gap-2 flex-wrap"><button onclick="show('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button><button id="availableBtn" onclick="toggleAvailable()" class="px-4 py-2.5 rounded-full font-bold text-amber-600 bg-amber-50 hover:bg-amber-100"><i class="fas fa-ban mr-2"></i>Agotar</button><button id="toggleBtn" onclick="toggleStatus()" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100"><i class="fas fa-pause mr-2"></i>Desactivar</button></div></div>
+<div class="mb-6 flex flex-wrap gap-2"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /menu-items/{id}</span></div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-6">
+
+<!-- INFO -->
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-gray-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-edit"></i></div><div><h3 class="font-bold">Información</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → MenuItem.Update</span></div></div><button onclick="openM('mItem')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Editar</button></div>
+<div class="p-4">
+<div class="flex gap-4 mb-4"><img src="https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=200&h=120&fit=crop" alt="Pulpo" class="w-32 h-20 rounded-xl object-cover">
+<div class="flex-1 grid grid-cols-2 gap-4">
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p><p class="font-medium">Pulpo al Horno</p></div>
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Orden</p><p class="font-medium">#1</p></div>
+<div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase mb-1">Descripción</p><p class="text-sm text-gray-600">Pulpo gallego con pimentón y aceite de oliva virgen extra</p></div>
+</div></div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+<div class="flex items-center gap-2 p-2 bg-orange-50 rounded-lg"><i class="fas fa-exclamation-triangle text-orange-500"></i><div><p class="text-[10px] text-gray-400">Alto Riesgo</p><p class="text-xs font-bold text-orange-600">Sí</p></div></div>
+<div class="flex items-center gap-2 p-2 bg-blue-50 rounded-lg"><i class="fas fa-clock text-blue-500"></i><div><p class="text-[10px] text-gray-400">Pedido Anticipado</p><p class="text-xs font-bold text-blue-600">Mín. 4 uds</p></div></div>
+<div class="flex items-center gap-2 p-2 bg-purple-50 rounded-lg"><i class="fas fa-calendar text-purple-500"></i><div><p class="text-[10px] text-gray-400">Disponibilidad</p><p class="text-xs font-bold text-purple-600">Vie-Sáb</p></div></div>
+<div class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"><i class="fas fa-sticky-note text-gray-500"></i><div><p class="text-[10px] text-gray-400">Notas Alérgenos</p><p class="text-xs font-bold text-gray-600 truncate">Trazas crustáceos</p></div></div>
+</div></div></div>
+
+<!-- PRICE OPTIONS -->
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-emerald-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-tags"></i></div><div><h3 class="font-bold">Opciones de Precio</h3><p class="text-xs text-gray-500">1 configurada</p></div></div><button onclick="openM('mPriceAdd')" class="px-4 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold text-sm"><i class="fas fa-plus mr-1"></i>Añadir</button></div>
+<div class="px-4 py-2 bg-emerald-50/30 border-b flex flex-wrap gap-2"><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddPriceOption</span><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdatePriceOption</span><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemovePriceOption</span></div>
+<div class="divide-y">
+<div class="row p-4 flex items-center gap-4 group"><div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600"><i class="fas fa-scale-balanced text-lg"></i></div><div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Precio de Mercado</h4><span class="portion-market text-[10px] px-2 py-0.5 rounded font-bold">MARKET PRICE</span><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold"><i class="fas fa-circle text-[4px]"></i>ACTIVO</span></div><p class="text-sm text-gray-500">Precio según mercado del día</p></div><div class="text-right"><p class="text-2xl font-bold text-primary">S/M</p><p class="text-xs text-gray-400">Actualizar diariamente</p></div><div class="flex gap-1 opacity-0 group-hover:opacity-100"><button onclick="openM('mPriceEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button><button onclick="openM('mPriceRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button></div></div>
+</div></div>
+
+<!-- DEPOSIT OVERRIDE -->
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-amber-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-hand-holding-dollar"></i></div><div><h3 class="font-bold">Depósito Especial</h3><p class="text-xs text-gray-500">Override de depósito del menú</p></div></div><button onclick="openM('mDeposit')" class="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Configurar</button></div>
+<div class="px-4 py-2 bg-amber-50/30 border-b flex flex-wrap gap-2"><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → SetDepositOverride</span><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveDepositOverride</span></div>
+<div class="p-4">
+<div class="flex items-center gap-4 p-4 bg-amber-50 rounded-xl"><div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl"><i class="fas fa-piggy-bank"></i></div><div class="flex-1"><p class="font-bold text-amber-800">30,00€ de depósito</p><p class="text-sm text-amber-600">Aplica desde 4 unidades</p></div><button onclick="openM('mDepositRm')" class="text-amber-600 hover:text-amber-800"><i class="fas fa-times"></i></button></div>
+</div></div>
+
+<!-- ALLERGENS -->
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-red-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600"><i class="fas fa-allergies"></i></div><div><h3 class="font-bold">Alérgenos</h3><p class="text-xs text-gray-500">2 declarados</p></div></div><button onclick="openM('mAllergenAdd')" class="px-4 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 font-bold text-sm"><i class="fas fa-plus mr-1"></i>Añadir</button></div>
+<div class="px-4 py-2 bg-red-50/30 border-b flex flex-wrap gap-2"><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddAllergen</span><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveAllergen</span></div>
+<div class="p-4 flex flex-wrap gap-3">
+<div class="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl group"><div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-fish"></i></div><span class="font-medium text-amber-800">Moluscos</span><button class="w-6 h-6 rounded-full hover:bg-amber-200 flex items-center justify-center text-amber-400 hover:text-amber-600 opacity-0 group-hover:opacity-100"><i class="fas fa-times text-xs"></i></button></div>
+<div class="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-xl group"><div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="fas fa-wine-bottle"></i></div><span class="font-medium text-purple-800">Sulfitos</span><button class="w-6 h-6 rounded-full hover:bg-purple-200 flex items-center justify-center text-purple-400 hover:text-purple-600 opacity-0 group-hover:opacity-100"><i class="fas fa-times text-xs"></i></button></div>
+</div></div>
+
+<!-- NUTRITIONAL INFO -->
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-teal-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600"><i class="fas fa-apple-whole"></i></div><div><h3 class="font-bold">Información Nutricional</h3><p class="text-xs text-gray-500">Por ración de 350g</p></div></div><button onclick="openM('mNutrition')" class="px-4 py-2 rounded-xl bg-teal-100 hover:bg-teal-200 text-teal-700 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Editar</button></div>
+<div class="px-4 py-2 bg-teal-50/30 border-b flex flex-wrap gap-2"><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → SetNutritionalInfo</span><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveNutritionalInfo</span></div>
+<div class="p-4">
+<div class="grid grid-cols-4 md:grid-cols-8 gap-3 text-center">
+<div class="p-3 bg-orange-50 rounded-xl"><p class="text-xl font-bold text-orange-600">450</p><p class="text-[10px] text-gray-500 uppercase">kcal</p></div>
+<div class="p-3 bg-red-50 rounded-xl"><p class="text-xl font-bold text-red-600">38.5</p><p class="text-[10px] text-gray-500 uppercase">Proteína</p></div>
+<div class="p-3 bg-amber-50 rounded-xl"><p class="text-xl font-bold text-amber-600">8.2</p><p class="text-[10px] text-gray-500 uppercase">Carbos</p></div>
+<div class="p-3 bg-yellow-50 rounded-xl"><p class="text-xl font-bold text-yellow-600">28</p><p class="text-[10px] text-gray-500 uppercase">Grasa</p></div>
+<div class="p-3 bg-green-50 rounded-xl"><p class="text-xl font-bold text-green-600">2.5</p><p class="text-[10px] text-gray-500 uppercase">Fibra</p></div>
+<div class="p-3 bg-pink-50 rounded-xl"><p class="text-xl font-bold text-pink-600">1.0</p><p class="text-[10px] text-gray-500 uppercase">Azúcar</p></div>
+<div class="p-3 bg-blue-50 rounded-xl"><p class="text-xl font-bold text-blue-600">2.8</p><p class="text-[10px] text-gray-500 uppercase">Sal</p></div>
+<div class="p-3 bg-gray-50 rounded-xl"><p class="text-xl font-bold text-gray-600">350</p><p class="text-[10px] text-gray-500 uppercase">Ración(g)</p></div>
+</div>
+</div></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="space-y-4">
+<div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-4">Estado del Plato</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center"><span class="text-sm text-gray-500">Activación</span><span id="statusText" class="font-bold text-success">Activo</span></div>
+<div class="flex justify-between items-center"><span class="text-sm text-gray-500">Disponibilidad</span><span id="availableText" class="font-bold text-emerald-600">Disponible</span></div>
+<div class="flex justify-between items-center"><span class="text-sm text-gray-500">Hoy</span><span class="font-bold text-purple-600">Sábado ✓</span></div>
+</div>
+<div class="pt-4 border-t mt-4 space-y-2"><p class="text-xs font-bold text-gray-400 uppercase">Comandos</p>
+<span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST /menu-items/{id}/activate</span>
+<span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded">POST /menu-items/{id}/deactivate</span>
+<span class="block cmd-mark text-[10px] font-bold px-2 py-1 rounded">POST /menu-items/{id}/mark-available</span>
+<span class="block cmd-mark text-[10px] font-bold px-2 py-1 rounded">POST /menu-items/{id}/mark-unavailable</span>
+</div></div>
+
+<div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Requisitos para Activar</h3><div class="space-y-2">
+<div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Al menos 1 opción de precio activa</span></div>
+</div></div>
+
+<div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Cálculos</h3>
+<div class="space-y-2 text-sm">
+<div class="flex items-center gap-2"><code class="text-xs bg-gray-100 px-2 py-1 rounded">IsAvailableToday</code><span class="text-gray-400">=</span><span class="font-mono text-emerald-600">true</span></div>
+<div class="flex items-center gap-2"><code class="text-xs bg-gray-100 px-2 py-1 rounded">CanBeOrdered</code><span class="text-gray-400">=</span><span class="font-mono text-emerald-600">true</span></div>
+<div class="flex items-center gap-2"><code class="text-xs bg-gray-100 px-2 py-1 rounded">HasDepositOverride</code><span class="text-gray-400">=</span><span class="font-mono text-emerald-600">true</span></div>
+<div class="flex items-center gap-2"><code class="text-xs bg-gray-100 px-2 py-1 rounded">HasActivePriceOption</code><span class="text-gray-400">=</span><span class="font-mono text-emerald-600">true</span></div>
+</div></div>
+
+<div class="bg-amber-50 border border-amber-200 rounded-2xl p-4"><div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-amber-500"></i><span class="font-bold text-amber-800 text-sm">Hot Spots</span></div><ul class="text-xs text-amber-700 space-y-1"><li>• ¿Validar alérgenos vs catálogo?</li><li>• ¿Precios en múltiples monedas?</li><li>• ¿Vinculación a menús?</li></ul></div>
+</div></div></div></div>
+</main>
+
+<!-- MODALS -->
+<!-- Item Edit -->
+<div id="mItem" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"><div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white"><div><h3 class="text-lg font-bold">Editar Plato</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /menu-items/{id} → MenuItem.Update</span></div><button onclick="closeM('mItem')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input type="text" value="Pulpo al Horno" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="3" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none">Pulpo gallego con pimentón y aceite de oliva virgen extra</textarea></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL de Imagen</label><input type="url" value="https://images.unsplash.com/photo-1565680018434-b513d5e5fd47" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="1" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Notas Alérgenos</label><input type="text" value="Trazas crustáceos" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="p-4 bg-orange-50 rounded-xl space-y-3">
+<div class="flex items-center gap-3"><input type="checkbox" checked class="w-5 h-5 rounded text-orange-500"><label class="font-medium">Alto riesgo</label></div>
+<div class="flex items-center gap-3"><input type="checkbox" checked class="w-5 h-5 rounded text-orange-500"><label class="font-medium">Requiere pedido anticipado</label></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Cantidad mínima</label><input type="number" value="4" class="w-full bg-white border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="p-4 bg-purple-50 rounded-xl space-y-3">
+<div class="flex items-center gap-3"><input type="checkbox" class="w-5 h-5 rounded text-purple-500"><label class="font-medium">Siempre disponible</label></div>
+<div class="flex flex-wrap gap-2">
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Lun</span></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Mar</span></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Mié</span></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Jue</span></label>
+<label class="cursor-pointer"><input type="checkbox" checked class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Vie</span></label>
+<label class="cursor-pointer"><input type="checkbox" checked class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Sáb</span></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><span class="px-3 py-1.5 rounded-full border-2 peer-checked:border-purple-500 peer-checked:bg-purple-100 font-medium text-sm">Dom</span></label>
+</div>
+</div>
+</div><div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white"><button onclick="closeM('mItem')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mItem');toast('Plato actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button></div></div></div>
+
+<!-- Price Add -->
+<div id="mPriceAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Añadir Opción de Precio</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → MenuItem.AddPriceOption</span></div><button onclick="closeM('mPriceAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Porción *</label>
+<div class="grid grid-cols-2 gap-3">
+<label class="cursor-pointer"><input type="radio" name="pt" value="Small" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-amber-500 peer-checked:bg-amber-50 text-center"><i class="fas fa-xs text-amber-500 mb-1"></i><p class="font-bold">Tapa</p><p class="text-[10px] text-gray-400">~25% ración</p></div></label>
+<label class="cursor-pointer"><input type="radio" name="pt" value="Half" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center"><i class="fas fa-sm text-blue-500 mb-1"></i><p class="font-bold">Media</p><p class="text-[10px] text-gray-400">~50% ración</p></div></label>
+<label class="cursor-pointer"><input type="radio" name="pt" value="Full" class="sr-only peer" checked><div class="p-4 rounded-xl border-2 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 text-center"><i class="fas fa-lg text-emerald-500 mb-1"></i><p class="font-bold">Ración</p><p class="text-[10px] text-gray-400">100%</p></div></label>
+<label class="cursor-pointer"><input type="radio" name="pt" value="MarketPrice" class="sr-only peer"><div class="p-4 rounded-xl border-2 peer-checked:border-purple-500 peer-checked:bg-purple-50 text-center"><i class="fas fa-scale-balanced text-purple-500 mb-1"></i><p class="font-bold">S/Mercado</p><p class="text-[10px] text-gray-400">Precio variable</p></div></label>
+</div></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Precio</label><div class="relative"><input type="number" placeholder="0.00" step="0.01" class="w-full bg-gray-50 border rounded-xl pl-4 pr-10 py-3 font-bold focus:border-primary outline-none"><span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">€</span></div><p class="text-xs text-gray-400 mt-1">Dejar vacío para S/Mercado</p></div>
+<div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl"><input type="checkbox" checked class="w-5 h-5 rounded text-primary"><label class="text-sm font-medium">Activar inmediatamente</label></div>
+</div><div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mPriceAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mPriceAdd');toast('Opción añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button></div></div></div>
+
+<!-- Price Edit -->
+<div id="mPriceEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Editar Precio de Mercado</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → MenuItem.UpdatePriceOption</span></div><button onclick="closeM('mPriceEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Porción</label><div class="flex items-center gap-3 p-4 bg-purple-50 rounded-xl"><div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600"><i class="fas fa-scale-balanced"></i></div><span class="font-bold">Precio de Mercado</span></div></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Precio del día</label><div class="relative"><input type="number" placeholder="22.00" step="0.01" class="w-full bg-gray-50 border rounded-xl pl-4 pr-10 py-3 font-bold text-xl focus:border-primary outline-none"><span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">€</span></div><p class="text-xs text-gray-400 mt-1">Actualiza el precio según el mercado</p></div>
+<div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl"><input type="checkbox" checked class="w-5 h-5 rounded text-primary"><label class="text-sm font-medium">Activo</label></div>
+</div><div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mPriceEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mPriceEdit');toast('Precio actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button></div></div></div>
+
+<!-- Price Remove -->
+<div id="mPriceRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl"><div class="p-6 text-center"><div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div><h3 class="text-lg font-bold mb-2">¿Eliminar Opción?</h3><p class="text-sm text-gray-500 mb-3">Se eliminará <strong>Precio de Mercado</strong></p><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → MenuItem.RemovePriceOption</span><div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-4 text-left"><p class="text-xs text-amber-700"><i class="fas fa-exclamation-triangle mr-1"></i>No se puede eliminar la última opción de precio.</p></div></div><div class="p-6 border-t flex gap-3"><button onclick="closeM('mPriceRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button><button onclick="closeM('mPriceRm');toast('Opción eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button></div></div></div>
+
+<!-- Deposit -->
+<div id="mDeposit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Configurar Depósito</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → MenuItem.SetDepositOverride</span></div><button onclick="closeM('mDeposit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Importe del depósito *</label><div class="relative"><input type="number" value="30.00" step="0.01" min="0.01" max="10000" class="w-full bg-gray-50 border rounded-xl pl-4 pr-10 py-3 font-bold text-xl focus:border-primary outline-none"><span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">€</span></div><p class="text-xs text-gray-400 mt-1">Entre 0.01€ y 10.000€</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Cantidad mínima (opcional)</label><input type="number" value="4" min="1" max="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Dejar vacío para aplicar siempre</p></div>
+</div><div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mDeposit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mDeposit');toast('Depósito configurado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button></div></div></div>
+
+<!-- Deposit Remove -->
+<div id="mDepositRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl"><div class="p-6 text-center"><div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-2xl mx-auto mb-4"><i class="fas fa-piggy-bank"></i></div><h3 class="text-lg font-bold mb-2">¿Eliminar Depósito?</h3><p class="text-sm text-gray-500 mb-3">Se usará el depósito por defecto del menú</p><span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → MenuItem.RemoveDepositOverride</span></div><div class="p-6 border-t flex gap-3"><button onclick="closeM('mDepositRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button><button onclick="closeM('mDepositRm');toast('Depósito eliminado')" class="flex-1 bg-amber-500 text-white px-6 py-2.5 rounded-full font-bold hover:bg-amber-600">Eliminar</button></div></div></div>
+
+<!-- Allergen Add -->
+<div id="mAllergenAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Añadir Alérgeno</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → MenuItem.AddAllergen</span></div><button onclick="closeM('mAllergenAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6">
+<p class="text-sm text-gray-500 mb-4">Selecciona los alérgenos presentes en este plato:</p>
+<div class="grid grid-cols-2 gap-3">
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-amber-500 peer-checked:bg-amber-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-wheat-awn"></i></div><span class="font-medium">Gluten</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-blue-500 peer-checked:bg-blue-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-cheese"></i></div><span class="font-medium">Lácteos</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600"><i class="fas fa-egg"></i></div><span class="font-medium">Huevo</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-cyan-500 peer-checked:bg-cyan-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600"><i class="fas fa-shrimp"></i></div><span class="font-medium">Crustáceos</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" disabled class="sr-only peer"><div class="p-3 rounded-xl border-2 bg-gray-50 flex items-center gap-3 opacity-50"><div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-fish"></i></div><span class="font-medium text-gray-400">Moluscos ✓</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" disabled class="sr-only peer"><div class="p-3 rounded-xl border-2 bg-gray-50 flex items-center gap-3 opacity-50"><div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="fas fa-wine-bottle"></i></div><span class="font-medium text-gray-400">Sulfitos ✓</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-orange-500 peer-checked:bg-orange-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><i class="fas fa-seedling"></i></div><span class="font-medium">Frutos secos</span></div></label>
+<label class="cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="p-3 rounded-xl border-2 peer-checked:border-green-500 peer-checked:bg-green-50 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600"><i class="fas fa-leaf"></i></div><span class="font-medium">Soja</span></div></label>
+</div>
+</div><div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mAllergenAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mAllergenAdd');toast('Alérgeno añadido')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button></div></div></div>
+
+<!-- Nutrition -->
+<div id="mNutrition" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto"><div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white"><div><h3 class="text-lg font-bold">Información Nutricional</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → MenuItem.SetNutritionalInfo</span></div><button onclick="closeM('mNutrition')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4">
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Calorías (kcal) *</label><input type="number" value="450" min="0" max="10000" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tamaño ración (g) *</label><input type="number" value="350" min="1" max="10000" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold focus:border-primary outline-none"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Proteína (g) *</label><input type="number" value="38.5" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Carbohidratos (g) *</label><input type="number" value="8.2" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Grasa (g) *</label><input type="number" value="28" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fibra (g)</label><input type="number" value="2.5" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Azúcar (g)</label><input type="number" value="1.0" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Sal (g)</label><input type="number" value="2.8" step="0.1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="flex justify-end"><button onclick="closeM('mNutrition');toast('Info nutricional eliminada')" class="text-sm text-red-500 hover:text-red-700 font-medium"><i class="fas fa-trash mr-1"></i>Eliminar info nutricional</button></div>
+</div><div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white"><button onclick="closeM('mNutrition')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mNutrition');toast('Info nutricional actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button></div></div></div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50"><div class="w-8 h-8 rounded-full bg-success flex items-center justify-center"><i class="fas fa-check"></i></div><span id="toastMsg">OK</span></div>
+
+<script>
+let isActive=true,isAvailable=true;
+function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));document.getElementById(v)?.classList.add('active');}
+function openM(id){document.getElementById(id)?.classList.remove('hidden');}
+function closeM(id){document.getElementById(id)?.classList.add('hidden');}
+function toast(msg){const t=document.getElementById('toastEl');document.getElementById('toastMsg').textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2500);}
+function toggleStatus(){isActive=!isActive;const b=document.getElementById('statusBadge'),t=document.getElementById('statusText'),btn=document.getElementById('toggleBtn');if(isActive){b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase';b.innerHTML='<i class="fas fa-circle text-[6px]"></i>Activo';t.className='font-bold text-success';t.textContent='Activo';btn.className='px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100';btn.innerHTML='<i class="fas fa-pause mr-2"></i>Desactivar';}else{b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';b.innerHTML='<i class="fas fa-circle text-[6px]"></i>Inactivo';t.className='font-bold text-gray-500';t.textContent='Inactivo';btn.className='px-4 py-2.5 rounded-full font-bold text-green-600 bg-green-50 hover:bg-green-100';btn.innerHTML='<i class="fas fa-play mr-2"></i>Activar';}toast(isActive?'Plato activado':'Plato desactivado');}
+function toggleAvailable(){isAvailable=!isAvailable;const b=document.getElementById('availableBadge'),t=document.getElementById('availableText'),btn=document.getElementById('availableBtn');if(isAvailable){b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase';b.innerHTML='<i class="fas fa-check text-[8px]"></i>Disponible';t.className='font-bold text-emerald-600';t.textContent='Disponible';btn.className='px-4 py-2.5 rounded-full font-bold text-amber-600 bg-amber-50 hover:bg-amber-100';btn.innerHTML='<i class="fas fa-ban mr-2"></i>Agotar';}else{b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold uppercase';b.innerHTML='<i class="fas fa-times text-[8px]"></i>Agotado';t.className='font-bold text-red-600';t.textContent='Agotado';btn.className='px-4 py-2.5 rounded-full font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100';btn.innerHTML='<i class="fas fa-check mr-2"></i>Disponible';}toast(isAvailable?'Plato disponible':'Plato agotado');}
+</script>
+</body>
+</html>
