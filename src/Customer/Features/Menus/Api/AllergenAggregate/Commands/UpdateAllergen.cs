@@ -19,12 +19,14 @@ public class UpdateAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/allergens/{id}", async (IService service, string id, Request request) =>
-        {
-            var response = await service.HandleAsync(id, request);
-            return Results.Ok(response);
-        });
+        app.MapPut("/allergens/{id}", Handler);
     }
+
+    public static Func<IService, string, Request, Task<IResult>> Handler => async (service, id, request) =>
+    {
+        var response = await service.HandleAsync(id, request);
+        return Results.Ok(response);
+    };
 
     public interface IService
     {

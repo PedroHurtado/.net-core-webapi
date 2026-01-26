@@ -1,13 +1,13 @@
 namespace Customer.UnitTests.Features.Menus.Api.AllergenAggregate.Queries;
 
-public class GetAllergensServiceTests
+public class GetAllergensTests
 {
     private readonly AllergenValidator _validator = new();
     private readonly AllergenAgg.Create _createAllergen;
     private readonly Mock<IQuery> _queryMock;
     private readonly GetAllergens.Service _service;
 
-    public GetAllergensServiceTests()
+    public GetAllergensTests()
     {
         _createAllergen = new(_validator);
         _queryMock = new Mock<IQuery>();
@@ -113,6 +113,42 @@ public class GetAllergensServiceTests
         await _service.HandleAsync();
 
         _queryMock.Verify(q => q.Query<AllergenAgg>(), Times.Once);
+    }
+
+    #endregion
+
+    #region Handler Tests
+
+    [Fact]
+    public async Task Handler_ReturnsOkResult()
+    {
+        var serviceMock = new Mock<GetAllergens.IService>();
+        var expectedResponse = new List<GetAllergens.Response>
+        {
+            new("GLUTEN", "Gluten", null, true, 0),
+            new("LACTEOS", "Lácteos", null, true, 1)
+        };
+
+        serviceMock.Setup(s => s.HandleAsync()).ReturnsAsync(expectedResponse);
+
+        var result = await GetAllergens.Handler(serviceMock.Object);
+
+        result.Should().BeOfType<Ok<List<GetAllergens.Response>>>();
+        var okResult = (Ok<List<GetAllergens.Response>>)result;
+        okResult.Value.Should().BeEquivalentTo(expectedResponse);
+    }
+
+    [Fact]
+    public async Task Handler_CallsService()
+    {
+        var serviceMock = new Mock<GetAllergens.IService>();
+        var expectedResponse = new List<GetAllergens.Response>();
+
+        serviceMock.Setup(s => s.HandleAsync()).ReturnsAsync(expectedResponse);
+
+        await GetAllergens.Handler(serviceMock.Object);
+
+        serviceMock.Verify(s => s.HandleAsync(), Times.Once);
     }
 
     #endregion

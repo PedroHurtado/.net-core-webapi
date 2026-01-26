@@ -1,6 +1,6 @@
 namespace Customer.UnitTests.Features.Menus.Api.AllergenAggregate.Commands;
 
-public class UpdateAllergenServiceTests
+public class UpdateAllergenTests
 {
     private readonly AllergenValidator _validator = new();
     private readonly AllergenAgg.Create _createAllergen;
@@ -9,7 +9,7 @@ public class UpdateAllergenServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly UpdateAllergen.Service _service;
 
-    public UpdateAllergenServiceTests()
+    public UpdateAllergenTests()
     {
         _createAllergen = new(_validator);
         _updateAllergen = new(_validator);
@@ -203,6 +203,52 @@ public class UpdateAllergenServiceTests
         try { await _service.HandleAsync("GLUTEN", request); } catch { }
 
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    #endregion
+
+    #region Handler Tests
+
+    [Fact]
+    public async Task Handler_WithValidRequest_ReturnsOkResult()
+    {
+        var request = new UpdateAllergen.Request("Updated Name", null, true, 0);
+        var serviceMock = new Mock<UpdateAllergen.IService>();
+        var expectedResponse = new UpdateAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Updated Name",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync("GLUTEN", request)).ReturnsAsync(expectedResponse);
+
+        var result = await UpdateAllergen.Handler(serviceMock.Object, "GLUTEN", request);
+
+        result.Should().BeOfType<Ok<UpdateAllergen.Response>>();
+        var okResult = (Ok<UpdateAllergen.Response>)result;
+        okResult.Value.Should().Be(expectedResponse);
+    }
+
+    [Fact]
+    public async Task Handler_CallsServiceWithIdAndRequest()
+    {
+        var request = new UpdateAllergen.Request("Updated Name", null, true, 0);
+        var serviceMock = new Mock<UpdateAllergen.IService>();
+        var expectedResponse = new UpdateAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Updated Name",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync(It.IsAny<string>(), It.IsAny<UpdateAllergen.Request>())).ReturnsAsync(expectedResponse);
+
+        await UpdateAllergen.Handler(serviceMock.Object, "GLUTEN", request);
+
+        serviceMock.Verify(s => s.HandleAsync("GLUTEN", request), Times.Once);
     }
 
     #endregion

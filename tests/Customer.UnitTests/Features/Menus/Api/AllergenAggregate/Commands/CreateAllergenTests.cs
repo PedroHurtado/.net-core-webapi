@@ -1,6 +1,6 @@
 namespace Customer.UnitTests.Features.Menus.Api.AllergenAggregate.Commands;
 
-public class CreateAllergenServiceTests
+public class CreateAllergenTests
 {
     private readonly AllergenValidator _validator = new();
     private readonly AllergenAgg.Create _createAllergen;
@@ -8,7 +8,7 @@ public class CreateAllergenServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly CreateAllergen.Service _service;
 
-    public CreateAllergenServiceTests()
+    public CreateAllergenTests()
     {
         _createAllergen = new(_validator);
         _repositoryMock = new Mock<CreateAllergen.IRepository>();
@@ -181,6 +181,53 @@ public class CreateAllergenServiceTests
         try { await _service.HandleAsync(request); } catch { }
 
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    #endregion
+
+    #region Handler Tests
+
+    [Fact]
+    public async Task Handler_WithValidRequest_ReturnsCreatedResult()
+    {
+        var request = new CreateAllergen.Request("GLUTEN", "Gluten");
+        var serviceMock = new Mock<CreateAllergen.IService>();
+        var expectedResponse = new CreateAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Gluten",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync(request)).ReturnsAsync(expectedResponse);
+
+        var result = await CreateAllergen.Handler(serviceMock.Object, request);
+
+        result.Should().BeOfType<Created<CreateAllergen.Response>>();
+        var createdResult = (Created<CreateAllergen.Response>)result;
+        createdResult.Location.Should().Be($"/allergens/{expectedResponse.Id}");
+        createdResult.Value.Should().Be(expectedResponse);
+    }
+
+    [Fact]
+    public async Task Handler_CallsServiceWithRequest()
+    {
+        var request = new CreateAllergen.Request("GLUTEN", "Gluten");
+        var serviceMock = new Mock<CreateAllergen.IService>();
+        var expectedResponse = new CreateAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Gluten",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync(It.IsAny<CreateAllergen.Request>())).ReturnsAsync(expectedResponse);
+
+        await CreateAllergen.Handler(serviceMock.Object, request);
+
+        serviceMock.Verify(s => s.HandleAsync(request), Times.Once);
     }
 
     #endregion

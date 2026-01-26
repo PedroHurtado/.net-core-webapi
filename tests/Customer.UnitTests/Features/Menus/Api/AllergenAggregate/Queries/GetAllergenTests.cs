@@ -1,13 +1,13 @@
 namespace Customer.UnitTests.Features.Menus.Api.AllergenAggregate.Queries;
 
-public class GetAllergenServiceTests
+public class GetAllergenTests
 {
     private readonly AllergenValidator _validator = new();
     private readonly AllergenAgg.Create _createAllergen;
     private readonly Mock<GetAllergen.IRepository> _repositoryMock;
     private readonly GetAllergen.Service _service;
 
-    public GetAllergenServiceTests()
+    public GetAllergenTests()
     {
         _createAllergen = new(_validator);
         _repositoryMock = new Mock<GetAllergen.IRepository>();
@@ -122,6 +122,50 @@ public class GetAllergenServiceTests
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Database error");
+    }
+
+    #endregion
+
+    #region Handler Tests
+
+    [Fact]
+    public async Task Handler_WithValidId_ReturnsOkResult()
+    {
+        var serviceMock = new Mock<GetAllergen.IService>();
+        var expectedResponse = new GetAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Gluten",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync("GLUTEN")).ReturnsAsync(expectedResponse);
+
+        var result = await GetAllergen.Handler(serviceMock.Object, "GLUTEN");
+
+        result.Should().BeOfType<Ok<GetAllergen.Response>>();
+        var okResult = (Ok<GetAllergen.Response>)result;
+        okResult.Value.Should().Be(expectedResponse);
+    }
+
+    [Fact]
+    public async Task Handler_CallsServiceWithId()
+    {
+        var serviceMock = new Mock<GetAllergen.IService>();
+        var expectedResponse = new GetAllergen.Response(
+            Id: "GLUTEN",
+            Name: "Gluten",
+            IconUrl: null,
+            IsActive: true,
+            DisplayOrder: 0
+        );
+
+        serviceMock.Setup(s => s.HandleAsync(It.IsAny<string>())).ReturnsAsync(expectedResponse);
+
+        await GetAllergen.Handler(serviceMock.Object, "GLUTEN");
+
+        serviceMock.Verify(s => s.HandleAsync("GLUTEN"), Times.Once);
     }
 
     #endregion

@@ -20,12 +20,14 @@ public class CreateAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/allergens", async (IService service, Request request) =>
-        {
-            var response = await service.HandleAsync(request);
-            return Results.Created($"/allergens/{response.Id}", response);
-        });
+        app.MapPost("/allergens", Handler);
     }
+
+    public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>
+    {
+        var response = await service.HandleAsync(request);
+        return Results.Created($"/allergens/{response.Id}", response);
+    };
 
     public interface IService
     {

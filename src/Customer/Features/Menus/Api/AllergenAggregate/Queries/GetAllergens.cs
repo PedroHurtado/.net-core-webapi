@@ -12,12 +12,14 @@ public class GetAllergens : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/allergens", async (IService service) =>
-        {
-            var response = await service.HandleAsync();
-            return Results.Ok(response);
-        });
+        app.MapGet("/allergens", Handler);
     }
+
+    public static Func<IService, Task<IResult>> Handler => async (service) =>
+    {
+        var response = await service.HandleAsync();
+        return Results.Ok(response);
+    };
 
     public interface IService
     {
