@@ -48,7 +48,7 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
             // ComplexTypes (embedded objects)
             entity.ComplexProperty(m => m.DepositOverride, complex =>
             {
-                complex.Ignore(d => d.AppliesToAllQuantities);
+                complex.Ignore(d => d!.AppliesToAllQuantities);
             });
             entity.ComplexProperty(m => m.NutritionalInfo);
 
