@@ -75,20 +75,21 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify by getting the updated item from database
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        // Verify by getting the updated item via API
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem.Should().NotBeNull();
-        dbMenuItem!.Name.Should().Be("Updated Dish");
-        dbMenuItem.Description.Should().Be("Updated Description");
-        dbMenuItem.ImageUrl.Should().Be("https://example.com/updated.jpg");
-        dbMenuItem.DisplayOrder.Should().Be(10);
-        dbMenuItem.IsHighRiskItem.Should().BeTrue();
-        dbMenuItem.RequiresAdvanceOrder.Should().BeTrue();
-        dbMenuItem.MinimumAdvanceOrderQuantity.Should().Be(4);
-        dbMenuItem.IsAlwaysAvailable.Should().BeFalse();
-        dbMenuItem.AvailableDays.Should().HaveCount(2);
-        dbMenuItem.AllergenNotes.Should().Be("Contains allergens");
+        updatedMenuItem.Should().NotBeNull();
+        updatedMenuItem!.Name.Should().Be("Updated Dish");
+        updatedMenuItem.Description.Should().Be("Updated Description");
+        updatedMenuItem.ImageUrl.Should().Be("https://example.com/updated.jpg");
+        updatedMenuItem.DisplayOrder.Should().Be(10);
+        updatedMenuItem.IsHighRiskItem.Should().BeTrue();
+        updatedMenuItem.RequiresAdvanceOrder.Should().BeTrue();
+        updatedMenuItem.MinimumAdvanceOrderQuantity.Should().Be(4);
+        updatedMenuItem.IsAlwaysAvailable.Should().BeFalse();
+        updatedMenuItem.AvailableDays.Should().HaveCount(2);
+        updatedMenuItem.AllergenNotes.Should().Be("Contains allergens");
     }
 
     [Fact]
@@ -109,12 +110,13 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem.Should().NotBeNull();
-        dbMenuItem!.Name.Should().Be("After Update");
-        dbMenuItem.Description.Should().Be("New description");
-        dbMenuItem.DisplayOrder.Should().Be(5);
+        updatedMenuItem.Should().NotBeNull();
+        updatedMenuItem!.Name.Should().Be("After Update");
+        updatedMenuItem.Description.Should().Be("New description");
+        updatedMenuItem.DisplayOrder.Should().Be(5);
     }
 
     [Fact]
@@ -141,11 +143,12 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.Description.Should().BeNull();
-        dbMenuItem.ImageUrl.Should().BeNull();
-        dbMenuItem.AllergenNotes.Should().BeNull();
+        updatedMenuItem!.Description.Should().BeNull();
+        updatedMenuItem.ImageUrl.Should().BeNull();
+        updatedMenuItem.AllergenNotes.Should().BeNull();
     }
 
     [Fact]
@@ -166,10 +169,11 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.IsAlwaysAvailable.Should().BeFalse();
-        dbMenuItem.AvailableDays.Should().HaveCount(3);
+        updatedMenuItem!.IsAlwaysAvailable.Should().BeFalse();
+        updatedMenuItem.AvailableDays.Should().HaveCount(3);
     }
 
     [Fact]
@@ -193,10 +197,11 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.IsAlwaysAvailable.Should().BeTrue();
-        dbMenuItem.AvailableDays.Should().BeEmpty();
+        updatedMenuItem!.IsAlwaysAvailable.Should().BeTrue();
+        updatedMenuItem.AvailableDays.Should().BeEmpty();
     }
 
     [Fact]
@@ -221,11 +226,12 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.IsHighRiskItem.Should().BeTrue();
-        dbMenuItem.RequiresAdvanceOrder.Should().BeTrue();
-        dbMenuItem.MinimumAdvanceOrderQuantity.Should().Be(4);
+        updatedMenuItem!.IsHighRiskItem.Should().BeTrue();
+        updatedMenuItem.RequiresAdvanceOrder.Should().BeTrue();
+        updatedMenuItem.MinimumAdvanceOrderQuantity.Should().Be(4);
     }
 
     [Fact]
@@ -242,10 +248,11 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.IsActive.Should().Be(menuItem.IsActive);
-        dbMenuItem.IsAvailable.Should().Be(menuItem.IsAvailable);
+        updatedMenuItem!.IsActive.Should().Be(menuItem.IsActive);
+        updatedMenuItem.IsAvailable.Should().Be(menuItem.IsAvailable);
     }
 
     [Fact]
@@ -267,9 +274,10 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
 
-        dbMenuItem!.PriceOptions.Should().HaveCount(2);
+        updatedMenuItem!.PriceOptions.Should().HaveCount(2);
     }
 
     #endregion
@@ -462,8 +470,9 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
-        dbMenuItem!.Name.Should().Be(name);
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
+        updatedMenuItem!.Name.Should().Be(name);
     }
 
     [Fact]
@@ -481,8 +490,9 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
-        dbMenuItem!.Description.Should().Be(description);
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
+        updatedMenuItem!.Description.Should().Be(description);
     }
 
     [Fact]
@@ -502,8 +512,9 @@ public class UpdateMenuItemIntegrationTests(WebApplicationFactory<Program> facto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var dbMenuItem = await ExecuteWithDbContext(db => db.Set<MenuItem>().FindAsync(menuItem.Id).AsTask());
-        dbMenuItem!.DisplayOrder.Should().Be(0);
+        var getResponse = await Client.GetAsync($"/menu-items/{menuItem.Id}");
+        var updatedMenuItem = await getResponse.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions);
+        updatedMenuItem!.DisplayOrder.Should().Be(0);
     }
 
     [Fact]
