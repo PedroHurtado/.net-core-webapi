@@ -39,8 +39,17 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
             // QueryFilter: multi-tenancy by TenantId
             entity.HasQueryFilter(m => m.TenantId == tenantId);
 
+            // Ignore computed properties (no backing field)
+            entity.Ignore(m => m.IsAvailableToday);
+            entity.Ignore(m => m.CanBeOrdered);
+            entity.Ignore(m => m.HasDepositOverride);
+            entity.Ignore(m => m.HasActivePriceOption);
+
             // ComplexTypes (embedded objects)
-            entity.ComplexProperty(m => m.DepositOverride);
+            entity.ComplexProperty(m => m.DepositOverride, complex =>
+            {
+                complex.Ignore(d => d.AppliesToAllQuantities);
+            });
             entity.ComplexProperty(m => m.NutritionalInfo);
 
             // ArrayOf embedded: PriceOptions
