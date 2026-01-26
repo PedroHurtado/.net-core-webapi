@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Customer.IntegrationTests.Fixtures;
 
 public class CustomerWebApplicationFixture : IClassFixture<WebApplicationFactory<Program>>
@@ -8,6 +11,12 @@ public class CustomerWebApplicationFixture : IClassFixture<WebApplicationFactory
 
     public HttpClient Client { get; }
     public IServiceProvider Services => _factory.Services;
+
+    public static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     public CustomerWebApplicationFixture(WebApplicationFactory<Program> factory)
     {

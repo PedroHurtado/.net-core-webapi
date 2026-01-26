@@ -4,6 +4,7 @@ global using FluentValidation;
 global using Fudie.Domain;
 global using Fudie.Infrastructure;
 global using Moq;
+global using Microsoft.AspNetCore.Http.HttpResults;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.EntityFrameworkCore.Metadata;
@@ -13,6 +14,8 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 
 global using Customer.Features.Menus.Api.AllergenAggregate.Commands;
 global using Customer.Features.Menus.Api.AllergenAggregate.Queries;
+global using Customer.Features.Menus.Api.MenuItemAggregate;
+global using Customer.Features.Menus.Api.MenuItemAggregate.Commands;
 
 global using Customer.Features.Menus.Domain.MenuAggregate.Enums;
 global using Customer.Features.Menus.Domain.Shared.Enums;

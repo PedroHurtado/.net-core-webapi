@@ -1,6 +1,6 @@
 using System.Reflection;
+using System.Text.Json.Serialization;
 using Customer.Infrastructure;
-using FluentValidation;
 using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 using Fudie.Http;
 using Microsoft.AspNetCore.StaticFiles;
@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Tenant ID (temporal - hardcoded for development)
 var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
