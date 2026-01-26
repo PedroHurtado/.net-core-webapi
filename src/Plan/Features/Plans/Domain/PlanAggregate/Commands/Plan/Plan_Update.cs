@@ -9,12 +9,14 @@ namespace Plan.Features.Plans.Domain.PlanAggregate;
 /// </remarks>
 /// <param name="Name">The updated name of the plan. Required, maximum 100 characters.</param>
 /// <param name="Description">The updated description of the plan. Required, maximum 500 characters.</param>
-/// <param name="Price">The updated price of the plan as a Money value object.</param>
+/// <param name="Amount">The updated price amount of the plan.</param>
+/// <param name="CurrencyCode">The updated currency code of the plan price.</param>
 /// <param name="BillingPeriod">The updated billing period (Monthly, Quarterly, Semester, Yearly).</param>
 public record UpdatePlanCommand(
     string Name,
     string Description,
-    Money Price,
+    decimal Amount,
+    string CurrencyCode,
     BillingPeriod BillingPeriod
 );
 
@@ -36,9 +38,11 @@ public partial class Plan
     /// Use specific commands for collection modifications following CQRS principles.
     /// </para>
     /// </remarks>
+    /// <param name="moneyCreate">The service to create money instances.</param>
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class Update(
+        Money.Create moneyCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<UpdatePlanCommand, Plan>
     {
@@ -51,10 +55,13 @@ public partial class Plan
         /// <exception cref="ValidationException">Thrown when the updated data is invalid.</exception>
         public override Plan Execute(Plan plan, UpdatePlanCommand command)
         {
+            var currency = Currency.FromCode(command.CurrencyCode);
+            var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, currency));
+
             // Update basic properties only
             plan.Name = command.Name;
             plan.Description = command.Description;
-            plan.Price = command.Price;
+            plan.Price = price;
             plan.BillingPeriod = command.BillingPeriod;
 
             return planValidator.ValidateOrThrow(plan);
