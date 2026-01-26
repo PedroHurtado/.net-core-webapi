@@ -464,11 +464,26 @@ public record ProviderConfigResponse(
 
 ---
 
-## 5. Comandos
+## 5. Event Storming - Leyenda
+
+| Color | Elemento | Símbolo | Descripción |
+|-------|----------|---------|-------------|
+| 🟠 Naranja | Domain Event | `<EventName>` | Algo que ocurrió (pasado) |
+| 🔵 Azul | Command | `(CommandName)` | Intención/Acción (imperativo) |
+| 🟡 Amarillo | Actor | `[ActorName]` | Usuario o sistema que inicia |
+| 🟣 Púrpura | Policy | `{PolicyName}` | Regla de negocio/Política |
+| 🟤 Marrón | Aggregate | `[[AggregateName]]` | Entidad raíz del agregado |
+| 🔴 Rojo | Hot Spot | `⚠️` | Dudas o conflictos pendientes |
+| 🟢 Verde | Read Model | `📊` | Vista/Proyección de datos |
+| ⚪ Blanco | External System | `⚡` | Sistema externo |
 
 ---
 
-### 5.1 Plan.Create
+## 6. Comandos
+
+---
+
+### 6.1 Plan.Create
 
 #### Event Storming
 ```
@@ -523,7 +538,7 @@ public record CreatePlanRequest(
 
 **Response**: 201 Created → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Crear plan con datos válidos
 - Input: Name="Plan Básico", Description="Ideal para empezar", Amount=9.99, CurrencyCode="EUR", BillingPeriod=Monthly
@@ -545,6 +560,23 @@ public record CreatePlanRequest(
 - Input: CurrencyCode="XXX"
 - Resultado: ArgumentException "Currency XXX not supported"
 
+#### Tests Unitarios (Servicio)
+
+✅ Llama a Money.Create con los parámetros correctos
+- Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
+
+✅ Llama a Plan.Create con los parámetros correctos
+- Verifica que se invoca planCreate.Execute con el command correcto
+
+✅ Añade el plan al repositorio
+- Verifica que repository.Add es llamado con el plan creado
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del plan
+
 #### Tests Integración
 
 ✅ 201 Created → PlanResponse con IsActive=false
@@ -553,7 +585,7 @@ public record CreatePlanRequest(
 
 ---
 
-### 5.2 Plan.Update
+### 6.2 Plan.Update
 
 #### Event Storming
 ```
@@ -604,7 +636,7 @@ public record UpdatePlanRequest(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Actualizar plan existente
 - Precondición: Plan existe
@@ -614,6 +646,20 @@ public record UpdatePlanRequest(
 ❌ Name vacío
 - Input: Name=""
 - Resultado: ValidationException "Name is required"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Money.Create con los parámetros correctos
+- Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
+
+✅ Llama a Plan.Update con los parámetros correctos
+- Verifica que se invoca planUpdate.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 #### Tests Integración
 
@@ -625,7 +671,7 @@ public record UpdatePlanRequest(
 
 ---
 
-### 5.3 Plan.Activate
+### 6.3 Plan.Activate
 
 #### Event Storming
 ```
@@ -664,7 +710,7 @@ return planValidator.ValidateOrThrow(plan);
 
 **Response**: 200 OK → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Activar plan completo
 - Precondición: Plan con Features y ProviderConfig activa, IsActive=false
@@ -682,6 +728,20 @@ return planValidator.ValidateOrThrow(plan);
 - Precondición: Plan con Features, sin ProviderConfig activa
 - Resultado: ValidationException "Plan must have at least one active provider configuration"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.Activate
+- Verifica que se invoca planActivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=true
+
 #### Tests Integración
 
 ✅ 200 OK → PlanResponse con IsActive=true
@@ -694,7 +754,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-### 5.4 Plan.Deactivate
+### 6.4 Plan.Deactivate
 
 #### Event Storming
 ```
@@ -726,7 +786,7 @@ return planValidator.ValidateOrThrow(plan);
 
 **Response**: 200 OK → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Desactivar plan activo
 - Precondición: Plan con IsActive=true
@@ -735,6 +795,20 @@ return planValidator.ValidateOrThrow(plan);
 ❌ Plan ya inactivo
 - Precondición: Plan con IsActive=false
 - Resultado: ConflictException "Plan is already inactive"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.Deactivate
+- Verifica que se invoca planDeactivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=false
 
 #### Tests Integración
 
@@ -746,7 +820,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-### 5.5 Plan.AddFeature
+### 6.5 Plan.AddFeature
 
 #### Event Storming
 ```
@@ -811,7 +885,7 @@ public record AddFeatureRequest(
 
 **Response**: 201 Created → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Añadir Feature tipo Limit
 - Precondición: Plan sin Feature RESERVATIONS_MONTHLY
@@ -835,6 +909,20 @@ public record AddFeatureRequest(
 - Input: Type=Limit, Limit=null
 - Resultado: ValidationException "Limit is required when feature type is Limit"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.AddFeature con los parámetros correctos
+- Verifica que se invoca addFeature.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene el Feature añadido
+
 #### Tests Integración
 
 ✅ 201 Created → PlanResponse con Feature añadido
@@ -847,7 +935,7 @@ public record AddFeatureRequest(
 
 ---
 
-### 5.6 Plan.UpdateFeature
+### 6.6 Plan.UpdateFeature
 
 #### Event Storming
 ```
@@ -912,7 +1000,7 @@ public record UpdateFeatureRequest(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Actualizar Feature existente
 - Precondición: Plan tiene Feature RESERVATIONS_MONTHLY con Limit=100
@@ -928,6 +1016,17 @@ public record UpdateFeatureRequest(
 - Precondición: Plan no tiene Feature NONEXISTENT
 - Resultado: NotFoundException "Feature with code 'NONEXISTENT' not found"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.UpdateFeature con los parámetros correctos
+- Verifica que se invoca updateFeature.Execute con el code y command correctos
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
 #### Tests Integración
 
 ✅ 204 No Content
@@ -938,7 +1037,7 @@ public record UpdateFeatureRequest(
 
 ---
 
-### 5.7 Plan.RemoveFeature
+### 6.7 Plan.RemoveFeature
 
 #### Event Storming
 ```
@@ -980,7 +1079,7 @@ return planValidator.ValidateOrThrow(plan);
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Eliminar Feature (plan tiene varios)
 - Precondición: Plan con 3 Features
@@ -999,6 +1098,17 @@ return planValidator.ValidateOrThrow(plan);
 - Precondición: Plan activo con 1 Feature
 - Resultado: ValidationException "Cannot remove last feature from active plan"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.RemoveFeature con el code correcto
+- Verifica que se invoca removeFeature.Execute con el code
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
 #### Tests Integración
 
 ✅ 204 No Content
@@ -1009,7 +1119,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-### 5.8 Plan.AddProviderConfiguration
+### 6.8 Plan.AddProviderConfiguration
 
 #### Event Storming
 ```
@@ -1068,7 +1178,7 @@ public record AddProviderConfigRequest(
 
 **Response**: 201 Created → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Añadir primera config (Stripe)
 - Precondición: Plan sin ProviderConfigurations
@@ -1089,6 +1199,20 @@ public record AddProviderConfigRequest(
 - Input: Provider="Stripe", IsActive=true
 - Resultado: ConflictException "Active configuration for 'Stripe' already exists"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.AddProviderConfiguration con los parámetros correctos
+- Verifica que se invoca addProviderConfig.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene la Config añadida
+
 #### Tests Integración
 
 ✅ 201 Created → PlanResponse con Config añadida
@@ -1101,7 +1225,7 @@ public record AddProviderConfigRequest(
 
 ---
 
-### 5.9 Plan.UpdateProviderConfiguration
+### 6.9 Plan.UpdateProviderConfiguration
 
 #### Event Storming
 ```
@@ -1158,7 +1282,7 @@ public record UpdateProviderConfigRequest(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Actualizar IDs de Stripe
 - Precondición: Plan con config Stripe
@@ -1168,6 +1292,17 @@ public record UpdateProviderConfigRequest(
 ❌ Config no existe
 - Precondición: Plan sin config Paddle
 - Resultado: NotFoundException "Configuration for 'Paddle' not found"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.UpdateProviderConfiguration con los parámetros correctos
+- Verifica que se invoca updateProviderConfig.Execute con el provider y command correctos
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 #### Tests Integración
 
@@ -1179,7 +1314,7 @@ public record UpdateProviderConfigRequest(
 
 ---
 
-### 5.10 Plan.ActivateProviderConfiguration
+### 6.10 Plan.ActivateProviderConfiguration
 
 #### Event Storming
 ```
@@ -1231,7 +1366,7 @@ return planValidator.ValidateOrThrow(plan);
 
 **Response**: 200 OK → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Activar config inactiva
 - Precondición: Plan con config Stripe inactiva
@@ -1244,6 +1379,20 @@ return planValidator.ValidateOrThrow(plan);
 ❌ Config no existe
 - Resultado: NotFoundException "Configuration for 'Paddle' not found"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.ActivateProviderConfiguration con el provider correcto
+- Verifica que se invoca activateProviderConfig.Execute con el provider
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene la Config activada
+
 #### Tests Integración
 
 ✅ 200 OK → PlanResponse
@@ -1254,7 +1403,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-### 5.11 Plan.DeactivateProviderConfiguration
+### 6.11 Plan.DeactivateProviderConfiguration
 
 #### Event Storming
 ```
@@ -1308,7 +1457,7 @@ return planValidator.ValidateOrThrow(plan);
 
 **Response**: 200 OK → `PlanResponse`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Desactivar config (hay otras activas)
 - Precondición: Plan con Stripe y Paddle activas
@@ -1330,6 +1479,20 @@ return planValidator.ValidateOrThrow(plan);
 - Precondición: Plan activo con solo Stripe activa
 - Resultado: ValidationException "Cannot deactivate last provider on active plan"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Plan.DeactivateProviderConfiguration con el provider correcto
+- Verifica que se invoca deactivateProviderConfig.Execute con el provider
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene la Config desactivada
+
 #### Tests Integración
 
 ✅ 200 OK → PlanResponse
@@ -1340,7 +1503,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-## 6. Queries
+## 7. Queries
 
 ### GetPlan
 
@@ -1370,7 +1533,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-## 7. Resumen de Endpoints
+## 8. Resumen de Endpoints
 
 | Método | Ruta | Comando/Query | Response |
 |--------|------|---------------|----------|
@@ -1390,7 +1553,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-## 8. Persistencia (Firestore)
+## 9. Persistencia (Firestore)
 
 ### Colección
 
@@ -1468,7 +1631,7 @@ modelBuilder.Entity<PlanAgg>(entity =>
 
 ---
 
-## 9. Hot Spots ⚠️
+## 10. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|

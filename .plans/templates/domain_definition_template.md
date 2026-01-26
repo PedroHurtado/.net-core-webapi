@@ -150,11 +150,26 @@ public record {ValueObject2}Response(
 
 ---
 
-## 5. Comandos
+## 5. Event Storming - Leyenda
+
+| Color | Elemento | Símbolo | Descripción |
+|-------|----------|---------|-------------|
+| 🟠 Naranja | Domain Event | `<EventName>` | Algo que ocurrió (pasado) |
+| 🔵 Azul | Command | `(CommandName)` | Intención/Acción (imperativo) |
+| 🟡 Amarillo | Actor | `[ActorName]` | Usuario o sistema que inicia |
+| 🟣 Púrpura | Policy | `{PolicyName}` | Regla de negocio/Política |
+| 🟤 Marrón | Aggregate | `[[AggregateName]]` | Entidad raíz del agregado |
+| 🔴 Rojo | Hot Spot | `⚠️` | Dudas o conflictos pendientes |
+| 🟢 Verde | Read Model | `📊` | Vista/Proyección de datos |
+| ⚪ Blanco | External System | `⚡` | Sistema externo |
 
 ---
 
-### 5.1 {AggregateName}.Create
+## 6. Comandos
+
+---
+
+### 6.1 {AggregateName}.Create
 
 #### Event Storming
 ```
@@ -201,7 +216,7 @@ public record Create{AggregateName}Request(
 
 **Response**: 201 Created → `{AggregateName}Response`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Crear {aggregate} con datos válidos
 - Input: {Field1}={value1}, {Field2}={value2}
@@ -211,6 +226,20 @@ public record Create{AggregateName}Request(
 - Input: {Field1}=""
 - Resultado: ValidationException "{Field1} is required"
 
+#### Tests Unitarios (Servicio)
+
+✅ Llama a {AggregateName}.Create con los parámetros correctos
+- Verifica que se invoca {aggregate}Create.Execute con el command correcto
+
+✅ Añade el aggregate al repositorio
+- Verifica que repository.Add es llamado con el {aggregate} creado
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del {aggregate}
+
 #### Tests Integración
 
 ✅ 201 Created → {AggregateName}Response
@@ -219,7 +248,7 @@ public record Create{AggregateName}Request(
 
 ---
 
-### 5.2 {AggregateName}.Update
+### 6.2 {AggregateName}.Update
 
 #### Event Storming
 ```
@@ -262,7 +291,7 @@ public record Update{AggregateName}Request(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Actualizar {aggregate} existente
 - Precondición: {AggregateName} existe
@@ -272,6 +301,17 @@ public record Update{AggregateName}Request(
 ❌ {Field1} vacío
 - Input: {Field1}=""
 - Resultado: ValidationException "{Field1} is required"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Update con los parámetros correctos
+- Verifica que se invoca {aggregate}Update.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 #### Tests Integración
 
@@ -283,7 +323,7 @@ public record Update{AggregateName}Request(
 
 ---
 
-### 5.3 {AggregateName}.Activate
+### 6.3 {AggregateName}.Activate
 
 #### Event Storming
 ```
@@ -322,7 +362,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 **Response**: 200 OK → `{AggregateName}Response`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Activar {aggregate} completo
 - Precondición: {AggregateName} con {Collection1} y {Collection2}, IsActive=false
@@ -336,6 +376,20 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 - Precondición: {AggregateName} sin {Collection1}
 - Resultado: ValidationException "{AggregateName} must have at least one {requisito1}"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Activate
+- Verifica que se invoca {aggregate}Activate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=true
+
 #### Tests Integración
 
 ✅ 200 OK → {AggregateName}Response con IsActive=true
@@ -348,7 +402,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-### 5.4 {AggregateName}.Deactivate
+### 6.4 {AggregateName}.Deactivate
 
 #### Event Storming
 ```
@@ -380,7 +434,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 **Response**: 200 OK → `{AggregateName}Response`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Desactivar {aggregate} activo
 - Precondición: {AggregateName} con IsActive=true
@@ -389,6 +443,20 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 ❌ Ya inactivo
 - Precondición: {AggregateName} con IsActive=false
 - Resultado: ConflictException "{AggregateName} is already inactive"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Deactivate
+- Verifica que se invoca {aggregate}Deactivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=false
 
 #### Tests Integración
 
@@ -400,7 +468,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-### 5.5 {AggregateName}.Add{ValueObject}
+### 6.5 {AggregateName}.Add{ValueObject}
 
 #### Event Storming
 ```
@@ -456,7 +524,7 @@ public record Add{ValueObject}Request(
 
 **Response**: 201 Created → `{AggregateName}Response`
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Añadir {valueObject} válido
 - Precondición: {AggregateName} sin {ValueObject} con {Key}={value}
@@ -472,6 +540,20 @@ public record Add{ValueObject}Request(
 - Input: {Field1}=""
 - Resultado: ValidationException "{Field1} is required"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Add{ValueObject} con los parámetros correctos
+- Verifica que se invoca add{ValueObject}.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene el {ValueObject} añadido
+
 #### Tests Integración
 
 ✅ 201 Created → {AggregateName}Response con {ValueObject} añadido
@@ -484,7 +566,7 @@ public record Add{ValueObject}Request(
 
 ---
 
-### 5.6 {AggregateName}.Update{ValueObject}
+### 6.6 {AggregateName}.Update{ValueObject}
 
 #### Event Storming
 ```
@@ -540,7 +622,7 @@ public record Update{ValueObject}Request(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Actualizar {valueObject} existente
 - Precondición: {AggregateName} tiene {ValueObject} con {Key}={value}
@@ -550,6 +632,17 @@ public record Update{ValueObject}Request(
 ❌ {ValueObject} no existe
 - Precondición: {AggregateName} no tiene {ValueObject} con {Key}={value}
 - Resultado: NotFoundException "{ValueObject} with {key} '{value}' not found"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Update{ValueObject} con los parámetros correctos
+- Verifica que se invoca update{ValueObject}.Execute con el {key} y command correctos
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 #### Tests Integración
 
@@ -561,7 +654,7 @@ public record Update{ValueObject}Request(
 
 ---
 
-### 5.7 {AggregateName}.Remove{ValueObject}
+### 6.7 {AggregateName}.Remove{ValueObject}
 
 #### Event Storming
 ```
@@ -603,7 +696,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 **Response**: 204 No Content
 
-#### Tests Unitarios
+#### Tests Unitarios (Dominio)
 
 ✅ Eliminar {valueObject} (hay varios)
 - Precondición: {AggregateName} con múltiples {ValueObject}s
@@ -620,6 +713,17 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 - Precondición: {AggregateName} activo con 1 {ValueObject}
 - Resultado: ValidationException "Cannot remove last {valueObject} from active {aggregateName}"
 
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Remove{ValueObject} con el {key} correcto
+- Verifica que se invoca remove{ValueObject}.Execute con el {key}
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
 #### Tests Integración
 
 ✅ 204 No Content
@@ -630,7 +734,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-## 6. Queries
+## 7. Queries
 
 ### Get{AggregateName}
 
@@ -660,7 +764,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-## 7. Resumen de Endpoints
+## 8. Resumen de Endpoints
 
 | Método | Ruta | Comando/Query | Response |
 |--------|------|---------------|----------|
@@ -676,7 +780,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-## 8. Persistencia (Firestore)
+## 9. Persistencia (Firestore)
 
 ### Colección
 
@@ -752,7 +856,7 @@ modelBuilder.Entity<{AggregateName}Agg>(entity =>
 
 ---
 
-## 9. Hot Spots ⚠️
+## 10. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|
