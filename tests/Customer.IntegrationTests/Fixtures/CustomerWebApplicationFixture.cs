@@ -81,4 +81,37 @@ public class CustomerWebApplicationFixture : IClassFixture<WebApplicationFactory
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CreateAllergen.Response>())!;
     }
+
+    public async Task<MenuItemResponse> CreateMenuItemAsync(
+        string name = "Test MenuItem",
+        string? description = null,
+        string? imageUrl = null,
+        int displayOrder = 0,
+        bool isHighRiskItem = false,
+        bool requiresAdvanceOrder = false,
+        int? minimumAdvanceOrderQuantity = null,
+        bool isAlwaysAvailable = true,
+        DayOfWeek[]? availableDays = null,
+        string? allergenNotes = null,
+        CreateMenuItem.CreatePriceOptionRequest[]? priceOptions = null)
+    {
+        var request = new CreateMenuItem.Request(
+            Name: name,
+            Description: description,
+            ImageUrl: imageUrl,
+            DisplayOrder: displayOrder,
+            IsHighRiskItem: isHighRiskItem,
+            RequiresAdvanceOrder: requiresAdvanceOrder,
+            MinimumAdvanceOrderQuantity: minimumAdvanceOrderQuantity,
+            IsAlwaysAvailable: isAlwaysAvailable,
+            AvailableDays: availableDays ?? [],
+            AllergenNotes: allergenNotes,
+            PriceOptions: priceOptions ?? [new(PortionType.Full, 22.00m)]
+        );
+
+        var response = await Client.PostAsJsonAsync("/menu-items", request);
+
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions))!;
+    }
 }
