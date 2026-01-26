@@ -1,12 +1,13 @@
-namespace Customer.Features.Menus.Api.Commands.Allergens;
+namespace Customer.Features.Menus.Api.AllergenAggregate.Commands;
 
-public class UpdateAllergen : IFeatureModule
+public class CreateAllergen : IFeatureModule
 {
     public record Request(
+        string Code,
         string Name,
-        string? IconUrl,
-        bool IsActive,
-        int DisplayOrder
+        string? IconUrl = null,
+        bool IsActive = true,
+        int DisplayOrder = 0
     );
 
     public record Response(
@@ -19,38 +20,38 @@ public class UpdateAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/allergens/{id}", async (IService service, string id, Request request) =>
+        app.MapPost("/allergens", async (IService service, Request request) =>
         {
-            var response = await service.HandleAsync(id, request);
-            return Results.Ok(response);
+            var response = await service.HandleAsync(request);
+            return Results.Created($"/allergens/{response.Id}", response);
         });
     }
 
     public interface IService
     {
-        Task<Response> HandleAsync(string id, Request request);
+        Task<Response> HandleAsync(Request request);
     }
 
     [Injectable]
     public class Service(
-        Allergen.Update updateAllergen,
+        Allergen.Create createAllergen,
         IRepository repository,
         IUnitOfWork unitOfWork
     ) : IService
     {
-        public async Task<Response> HandleAsync(string id, Request request)
+        public async Task<Response> HandleAsync(Request request)
         {
-            var allergen = await repository.Get(id);
-
-            var command = new UpdateAllergenCommand(
+            var command = new CreateAllergenCommand(
+                request.Code,
                 request.Name,
                 request.IconUrl,
                 request.IsActive,
                 request.DisplayOrder
             );
 
-            updateAllergen.Execute(allergen, command);
+            var allergen = createAllergen.Execute(command);
 
+            repository.Add(allergen);
             await unitOfWork.SaveChangesAsync();
 
             return new Response(
@@ -63,5 +64,5 @@ public class UpdateAllergen : IFeatureModule
         }
     }
 
-    public interface IRepository : IUpdate<Allergen, string> { }
+    public interface IRepository : IAdd<Allergen> { }
 }

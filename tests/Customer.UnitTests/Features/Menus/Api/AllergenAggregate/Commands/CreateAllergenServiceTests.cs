@@ -1,4 +1,4 @@
-namespace Customer.UnitTests.Features.Menus.Api.Commands.Allergens;
+namespace Customer.UnitTests.Features.Menus.Api.AllergenAggregate.Commands;
 
 public class CreateAllergenServiceTests
 {

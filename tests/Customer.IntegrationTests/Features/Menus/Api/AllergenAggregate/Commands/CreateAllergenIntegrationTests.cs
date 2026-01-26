@@ -1,4 +1,4 @@
-namespace Customer.IntegrationTests.Features.Menus.Api.Commands.Allergens;
+namespace Customer.IntegrationTests.Features.Menus.Api.AllergenAggregate.Commands;
 
 public class CreateAllergenIntegrationTests(WebApplicationFactory<Program> factory)
     : CustomerWebApplicationFixture(factory)

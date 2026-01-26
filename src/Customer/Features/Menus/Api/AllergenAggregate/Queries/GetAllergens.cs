@@ -1,4 +1,4 @@
-namespace Customer.Features.Menus.Api.Queries.Allergens;
+namespace Customer.Features.Menus.Api.AllergenAggregate.Queries;
 
 public class GetAllergens : IFeatureModule
 {
