@@ -16,16 +16,19 @@ public partial class Plan
     /// <remarks>
     /// <para>
     /// This command deactivates an existing provider configuration.
+    /// If the configuration is already inactive, the operation is idempotent.
     /// </para>
     /// <para>
     /// Validations:
-    /// - Configuration for the provider must exist and be active.
-    /// - Plan must have at least one active configuration remaining after deactivation.
+    /// - Configuration for the provider must exist.
+    /// - If the plan is active and this is the only active configuration, deactivation is not allowed.
     /// </para>
     /// </remarks>
+    /// <param name="providerConfigCreate">Command to create provider configurations.</param>
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class DeactivateProviderConfiguration(
+        PaymentProviderConfig.Create providerConfigCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<DeactivateProviderConfigurationCommand, Plan>
     {
@@ -39,59 +42,28 @@ public partial class Plan
         /// <exception cref="NotFoundException">Thrown when the provider configuration is not found.</exception>
         public override Plan Execute(Plan plan, DeactivateProviderConfigurationCommand command)
         {
-            // Find existing config
-            var existingConfig = plan.ProviderConfigurations.FirstOrDefault(p => p.Provider == command.Provider);
+            var existing = plan.ProviderConfigurations.FirstOrDefault(p => p.Provider == command.Provider);
+            NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{command.Provider}' not found");
 
-            // 404 - Validation: Config must exist
-            NotFoundGuard.ThrowIfNull(
-                existingConfig,
-                $"Configuration for provider '{command.Provider}' not found in the plan"
-            );
-
-            // If already inactive, nothing to do (idempotent) or throw? 
-            // Usually idempotent is better, but if we want to be strict about "Deactivate" implies it was active...
-            // Let's assume if it's found, we proceed.
-
-            // 422 - Validation: At least one active configuration must remain
-            // We check if this is the ONLY active configuration
-            var activeConfigsCount = plan.ProviderConfigurations.Count(p => p.IsActive);
-            
-            if (existingConfig.IsActive)
-            {
-                ValidationGuard.ThrowIf(
-                    activeConfigsCount <= 1,
-                    "Plan must have at least one active provider configuration",
-                    nameof(plan.ProviderConfigurations)
-                );
-            }
-            else
-            {
-                // If it's already inactive, we can just return the plan or throw.
-                // Let's just return.
+            if (!existing!.IsActive)
                 return plan;
-            }
 
-            // Create new inactive config using derived record to access protected constructor
-            var newConfig = new CreatablePaymentProviderConfig(
-                existingConfig.Provider,
-                existingConfig.ExternalProductId,
-                existingConfig.ExternalPriceId,
-                false // Set to inactive
-            );
+            var activeConfigsCount = plan.ProviderConfigurations.Count(p => p.IsActive);
+            ValidationGuard.ThrowIf(
+                plan.IsActive && activeConfigsCount <= 1,
+                "Plan must have at least one active provider configuration",
+                nameof(plan.ProviderConfigurations));
 
-            // Replace in collection
-            plan._providerConfigurations.Remove(existingConfig);
-            plan._providerConfigurations.Add(newConfig);
+            var deactivated = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
+                existing.Provider,
+                existing.ExternalProductId,
+                existing.ExternalPriceId,
+                false));
+
+            plan._providerConfigurations.Remove(existing);
+            plan._providerConfigurations.Add(deactivated);
 
             return planValidator.ValidateOrThrow(plan);
         }
-
-        // Helper record to access protected constructor
-        private record CreatablePaymentProviderConfig(
-            string Provider,
-            string ExternalProductId,
-            string ExternalPriceId,
-            bool IsActive
-        ) : PaymentProviderConfig(Provider, ExternalProductId, ExternalPriceId, IsActive);
     }
 }
