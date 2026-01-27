@@ -24,7 +24,7 @@ public partial class MenuItem : AggregateRoot<Guid>
     /// <summary>
     /// Gets the name of the menu item.
     /// </summary>
-    /// <value>The item name. Maximum length is 150 characters.</value>
+    /// <value>The item name. Maximum length is 100 characters.</value>
     public string Name { get; protected set; } = string.Empty;
 
     /// <summary>
@@ -149,6 +149,31 @@ public partial class MenuItem : AggregateRoot<Guid>
     public string? AllergenNotes { get; protected set; }
 
     /// <summary>
+    /// Gets a value indicating whether the item is available today based on <see cref="IsAlwaysAvailable"/>
+    /// or <see cref="AvailableDays"/>.
+    /// </summary>
+    /// <value><c>true</c> if the item is available today; otherwise, <c>false</c>.</value>
+    public bool IsAvailableToday => IsAlwaysAvailable || _availableDays.Contains(DateTime.Today.DayOfWeek);
+
+    /// <summary>
+    /// Gets a value indicating whether the item can currently be ordered.
+    /// </summary>
+    /// <value><c>true</c> if the item is active, available today, and not marked as unavailable; otherwise, <c>false</c>.</value>
+    public bool CanBeOrdered => IsActive && IsAvailableToday && IsAvailable;
+
+    /// <summary>
+    /// Gets a value indicating whether this item has a deposit override configured.
+    /// </summary>
+    /// <value><c>true</c> if <see cref="DepositOverride"/> is not null; otherwise, <c>false</c>.</value>
+    public bool HasDepositOverride => DepositOverride != null;
+
+    /// <summary>
+    /// Gets a value indicating whether this item has at least one active price option.
+    /// </summary>
+    /// <value><c>true</c> if any price option is active; otherwise, <c>false</c>.</value>
+    public bool HasActivePriceOption => _priceOptions.Any(p => p.IsActive);
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MenuItem"/> class for ORM purposes.
     /// </summary>
     protected MenuItem() : base(Guid.Empty) { }
@@ -163,19 +188,20 @@ public partial class MenuItem : AggregateRoot<Guid>
 public static class MenuItemValidationMessages
 {
     public const string IdRequired = "Id is required";
-    public const string TenantIdRequired = "TenantId is required";
+    public const string TenantIdRequired = "Tenant id is required";
     public const string NameRequired = "Name is required";
-    public const string NameMaxLength = "Name cannot exceed 150 characters";
+    public const string NameMaxLength = "Name cannot exceed 100 characters";
     public const string DescriptionMaxLength = "Description cannot exceed 1000 characters";
-    public const string ImageUrlMaxLength = "ImageUrl cannot exceed 500 characters";
-    public const string ImageUrlInvalid = "ImageUrl must be a valid URL";
+    public const string ImageUrlMaxLength = "Image URL cannot exceed 500 characters";
+    public const string ImageUrlInvalid = "Image URL must be a valid URL";
     public const string DisplayOrderMin = "DisplayOrder must be greater than or equal to 0";
-    public const string RequiresAdvanceOrderMustBeHighRisk = "If RequiresAdvanceOrder is true, IsHighRiskItem must also be true";
-    public const string MinimumQuantityRange = "MinimumAdvanceOrderQuantity must be between 1 and 100";
-    public const string MinimumAdvanceOrderQuantityRequiresAdvanceOrder = "If MinimumAdvanceOrderQuantity has a value, RequiresAdvanceOrder must be true";
-    public const string AvailableDaysRequired = "Available days must be specified if the item is not always available";
+    public const string RequiresAdvanceOrderMustBeHighRisk = "Only high-risk items can require advance order";
+    public const string MinimumQuantityRange = "Minimum advance order quantity must be between 1 and 100";
+    public const string MinimumAdvanceOrderQuantityRequiresAdvanceOrder = "Minimum quantity requires advance order to be enabled";
+    public const string AvailableDaysRequired = "Available days are required when item is not always available";
     public const string PriceOptionsRequired = "Item must have at least one price option";
-    public const string AllergenNotesMaxLength = "AllergenNotes cannot exceed 500 characters";
+    public const string PriceOptionsDuplicatePortionType = "Duplicate portion types are not allowed";
+    public const string AllergenNotesMaxLength = "Allergen notes cannot exceed 500 characters";
 }
 
 /// <summary>
@@ -210,7 +236,7 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage(MenuItemValidationMessages.NameRequired)
-            .MaximumLength(150)
+            .MaximumLength(100)
             .WithMessage(MenuItemValidationMessages.NameMaxLength);
 
         RuleFor(x => x.Description)
@@ -250,7 +276,9 @@ public class MenuItemValidator : AbstractValidator<MenuItem>
 
         RuleFor(x => x.PriceOptions)
             .NotEmpty()
-            .WithMessage(MenuItemValidationMessages.PriceOptionsRequired);
+            .WithMessage(MenuItemValidationMessages.PriceOptionsRequired)
+            .Must(options => options.Select(o => o.PortionType).Distinct().Count() == options.Count)
+            .WithMessage(MenuItemValidationMessages.PriceOptionsDuplicatePortionType);
 
         RuleFor(x => x.AllergenNotes)
             .MaximumLength(500)

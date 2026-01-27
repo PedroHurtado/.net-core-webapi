@@ -26,6 +26,26 @@ public class ItemDepositOverrideTests
         deposit.MinimumQuantityForDeposit.Should().BeNull();
     }
 
+    #region AppliesToAllQuantities
+
+    [Fact]
+    public void AppliesToAllQuantities_WhenNoMinimumQuantity_ReturnsTrue()
+    {
+        var deposit = new TestableItemDepositOverride(50.00m);
+
+        deposit.AppliesToAllQuantities.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AppliesToAllQuantities_WhenMinimumQuantitySet_ReturnsFalse()
+    {
+        var deposit = new TestableItemDepositOverride(50.00m, 5);
+
+        deposit.AppliesToAllQuantities.Should().BeFalse();
+    }
+
+    #endregion
+
     #region IsApplicable
 
     [Fact]

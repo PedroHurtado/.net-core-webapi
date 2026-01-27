@@ -1,0 +1,432 @@
+openapi: 3.0.3
+info:
+  title: Allergen API
+  description: |
+    API para la gestión de alérgenos del sistema Fudie.
+
+    ## Conceptos Clave
+
+    - **Allergen**: Representa un alérgeno como entidad de catálogo gestionada por el sistema.
+    - Los alérgenos son datos maestros precargados y compartidos entre todos los restaurantes.
+    - Pueden ser referenciados por MenuItems para indicar qué alérgenos están presentes en el plato.
+
+    ## Identificación
+
+    El `code` es el identificador único del alérgeno (ej: "GLUTEN", "LACTEOS") y sirve como
+    identificador natural. Debe ser en mayúsculas, solo letras, números y guiones bajos.
+
+    ## Gestión de Estado
+
+    Los alérgenos no se eliminan, solo se desactivan para mantener la integridad referencial
+    con los MenuItems que los referencian.
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Allergens
+    description: Gestión de alérgenos del catálogo del sistema
+paths:
+  /allergens:
+    post:
+      tags:
+        - Allergens
+      summary: Crear un nuevo alérgeno
+      description: |
+        Crea un nuevo alérgeno en el catálogo del sistema.
+
+        El `code` debe ser único y seguir el formato: mayúsculas, números y guiones bajos.
+      operationId: createAllergen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAllergenRequest'
+            examples:
+              basic:
+                summary: Alérgeno básico
+                value:
+                  code: GLUTEN
+                  name: Gluten
+              withIcon:
+                summary: Alérgeno con icono
+                value:
+                  code: LACTEOS
+                  name: Lácteos
+                  iconUrl: https://cdn.fudie.com/icons/allergens/lacteos.svg
+                  isActive: true
+                  displayOrder: 7
+              inactive:
+                summary: Alérgeno inactivo
+                value:
+                  code: NUEVO_ALERGENO
+                  name: Nuevo Alérgeno
+                  isActive: false
+                  displayOrder: 99
+      responses:
+        '201':
+          description: Alérgeno creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllergenResponse'
+          headers:
+            Location:
+              description: URL del alérgeno creado
+              schema:
+                type: string
+                example: /allergens/GLUTEN
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                codeRequired:
+                  summary: Code requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Code:
+                        - Code is required
+                codeFormat:
+                  summary: Formato de code inválido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Code:
+                        - Code must be uppercase letters, numbers, and underscores only
+                nameRequired:
+                  summary: Name requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Name:
+                        - Name is required
+                invalidIconUrl:
+                  summary: URL de icono inválida
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      IconUrl:
+                        - IconUrl must be a valid URL
+    get:
+      tags:
+        - Allergens
+      summary: Listar alérgenos
+      description: |
+        Obtiene la lista de todos los alérgenos, opcionalmente filtrados por estado.
+
+        Los resultados se devuelven ordenados por `displayOrder`.
+      operationId: listAllergens
+      parameters:
+        - name: isActive
+          in: query
+          description: Filtrar por estado activo/inactivo
+          required: false
+          schema:
+            type: boolean
+          examples:
+            onlyActive:
+              summary: Solo activos
+              value: true
+            onlyInactive:
+              summary: Solo inactivos
+              value: false
+      responses:
+        '200':
+          description: Lista de alérgenos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AllergenResponse'
+              example:
+                - id: GLUTEN
+                  name: Gluten
+                  iconUrl: https://cdn.fudie.com/icons/allergens/gluten.svg
+                  isActive: true
+                  displayOrder: 1
+                - id: CRUSTACEOS
+                  name: Crustáceos
+                  iconUrl: https://cdn.fudie.com/icons/allergens/crustaceos.svg
+                  isActive: true
+                  displayOrder: 2
+                - id: HUEVOS
+                  name: Huevos
+                  iconUrl: https://cdn.fudie.com/icons/allergens/huevos.svg
+                  isActive: true
+                  displayOrder: 3
+  '/allergens/{code}':
+    parameters:
+      - name: code
+        in: path
+        description: Código único del alérgeno
+        required: true
+        schema:
+          type: string
+          pattern: '^[A-Z0-9_]+$'
+          maxLength: 20
+          example: GLUTEN
+    get:
+      tags:
+        - Allergens
+      summary: Obtener un alérgeno
+      description: Obtiene los detalles de un alérgeno específico por su código.
+      operationId: getAllergen
+      responses:
+        '200':
+          description: Alérgeno encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllergenResponse'
+              example:
+                id: GLUTEN
+                name: Gluten
+                iconUrl: https://cdn.fudie.com/icons/allergens/gluten.svg
+                isActive: true
+                displayOrder: 1
+        '404':
+          description: Alérgeno no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                title: Not Found
+                status: 404
+                detail: Allergen with code 'INEXISTENTE' not found
+    put:
+      tags:
+        - Allergens
+      summary: Actualizar un alérgeno
+      description: |
+        Actualiza los datos de un alérgeno existente.
+
+        **Nota:** El `code` no se puede modificar ya que es el identificador natural.
+      operationId: updateAllergen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAllergenRequest'
+            examples:
+              updateName:
+                summary: Actualizar nombre
+                value:
+                  name: Gluten (trigo, centeno, cebada, avena)
+                  iconUrl: https://cdn.fudie.com/icons/allergens/gluten.svg
+                  isActive: true
+                  displayOrder: 1
+              deactivate:
+                summary: Desactivar alérgeno
+                value:
+                  name: Gluten
+                  iconUrl: https://cdn.fudie.com/icons/allergens/gluten.svg
+                  isActive: false
+                  displayOrder: 1
+              removeIcon:
+                summary: Eliminar icono
+                value:
+                  name: Gluten
+                  iconUrl: null
+                  isActive: true
+                  displayOrder: 1
+      responses:
+        '204':
+          description: Alérgeno actualizado exitosamente
+        '404':
+          description: Alérgeno no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                title: Not Found
+                status: 404
+                detail: Allergen with code 'INEXISTENTE' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                nameRequired:
+                  summary: Name requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Name:
+                        - Name is required
+                nameTooLong:
+                  summary: Name demasiado largo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Name:
+                        - Name cannot exceed 100 characters
+                invalidIconUrl:
+                  summary: URL de icono inválida
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      IconUrl:
+                        - IconUrl must be a valid URL
+                displayOrderNegative:
+                  summary: DisplayOrder negativo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      DisplayOrder:
+                        - DisplayOrder must be greater than or equal to 0
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    AllergenResponse:
+      type: object
+      required:
+        - id
+        - name
+        - isActive
+        - displayOrder
+      properties:
+        id:
+          type: string
+          maxLength: 20
+          pattern: '^[A-Z0-9_]+$'
+          example: GLUTEN
+          description: Código único del alérgeno (mayúsculas, números y guiones bajos)
+        name:
+          type: string
+          maxLength: 100
+          example: Gluten
+          description: Nombre visible del alérgeno
+        iconUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/icons/allergens/gluten.svg
+          description: URL del icono del alérgeno
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si el alérgeno está activo en el sistema
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+          description: Orden de visualización para ordenar alérgenos en la UI
+    CreateAllergenRequest:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          maxLength: 20
+          pattern: '^[A-Z0-9_]+$'
+          example: GLUTEN
+          description: |
+            Código único del alérgeno. Será usado como identificador.
+            - Máximo 20 caracteres
+            - Solo mayúsculas, números y guiones bajos
+            - No puede contener espacios
+        name:
+          type: string
+          maxLength: 100
+          example: Gluten
+          description: Nombre visible del alérgeno (máximo 100 caracteres)
+        iconUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/icons/allergens/gluten.svg
+          description: URL del icono del alérgeno (debe ser una URL válida)
+        isActive:
+          type: boolean
+          default: true
+          example: true
+          description: Estado inicial del alérgeno
+        displayOrder:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 1
+          description: Orden de visualización (debe ser >= 0)
+    UpdateAllergenRequest:
+      type: object
+      required:
+        - name
+        - isActive
+        - displayOrder
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Gluten (trigo, centeno, cebada)
+          description: Nombre visible del alérgeno
+        iconUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/icons/allergens/gluten.svg
+          description: URL del icono del alérgeno (null para eliminar)
+        isActive:
+          type: boolean
+          example: true
+          description: Estado del alérgeno
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+          description: Orden de visualización

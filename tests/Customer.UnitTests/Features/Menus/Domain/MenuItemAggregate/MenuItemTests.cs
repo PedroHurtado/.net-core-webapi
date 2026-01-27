@@ -176,6 +176,119 @@ public class MenuItemTests
 
     #endregion
 
+    #region Computed Properties
+
+    [Fact]
+    public void IsAvailableToday_WhenAlwaysAvailable_ReturnsTrue()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid()) { IsAlwaysAvailable = true };
+
+        menuItem.IsAvailableToday.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAvailableToday_WhenTodayIsInAvailableDays_ReturnsTrue()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid()) { IsAlwaysAvailable = false };
+        menuItem.AddAvailableDay(DateTime.Today.DayOfWeek);
+
+        menuItem.IsAvailableToday.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAvailableToday_WhenTodayIsNotInAvailableDays_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid()) { IsAlwaysAvailable = false };
+        var tomorrow = DateTime.Today.AddDays(1).DayOfWeek;
+        menuItem.AddAvailableDay(tomorrow);
+
+        menuItem.IsAvailableToday.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CanBeOrdered_WhenActiveAndAvailableTodayAndAvailable_ReturnsTrue()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid())
+        {
+            IsActive = true,
+            IsAvailable = true,
+            IsAlwaysAvailable = true
+        };
+
+        menuItem.CanBeOrdered.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CanBeOrdered_WhenNotActive_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid())
+        {
+            IsActive = false,
+            IsAvailable = true,
+            IsAlwaysAvailable = true
+        };
+
+        menuItem.CanBeOrdered.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CanBeOrdered_WhenNotAvailable_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid())
+        {
+            IsActive = true,
+            IsAvailable = false,
+            IsAlwaysAvailable = true
+        };
+
+        menuItem.CanBeOrdered.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasDepositOverride_WhenDepositOverrideIsSet_ReturnsTrue()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid());
+        menuItem.DepositOverride = _createDepositOverride.Execute(new CreateItemDepositOverrideCommand(25.00m));
+
+        menuItem.HasDepositOverride.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasDepositOverride_WhenDepositOverrideIsNull_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid());
+
+        menuItem.HasDepositOverride.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasActivePriceOption_WhenHasActivePriceOption_ReturnsTrue()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid());
+        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, true)));
+
+        menuItem.HasActivePriceOption.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasActivePriceOption_WhenAllPriceOptionsInactive_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid());
+        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, false)));
+
+        menuItem.HasActivePriceOption.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasActivePriceOption_WhenNoPriceOptions_ReturnsFalse()
+    {
+        var menuItem = new TestableMenuItem(Guid.NewGuid());
+
+        menuItem.HasActivePriceOption.Should().BeFalse();
+    }
+
+    #endregion
+
     #region Collections
 
     [Fact]

@@ -12,7 +12,7 @@ public class MenuRemoveCategoryTests
     private readonly MenuAgg.RemoveCategory _removeCategory;
     private readonly MenuCategoryEntity.AddItem _addItem;
     private readonly MenuItemAgg.Create _createMenuItem;
-    private readonly PriceOptionVO.Create _createPriceOption;
+    private readonly PriceOption.Create _createPriceOption;
 
     public MenuRemoveCategoryTests()
     {
@@ -24,8 +24,8 @@ public class MenuRemoveCategoryTests
         var createCategoryItem = new CategoryItemVO.Create(_categoryItemValidator);
         _addItem = new(createCategoryItem, _categoryValidator);
 
-        _createMenuItem = new(_menuItemValidator);
         _createPriceOption = new(_priceOptionValidator);
+        _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }
 
     private MenuAgg CreateMenuWithCategory(out Guid categoryId)
@@ -41,15 +41,20 @@ public class MenuRemoveCategoryTests
 
     private MenuItem CreateMenuItem()
     {
-        var priceOptions = new HashSet<PriceOption>
-        {
-            _createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m))
-        };
+        CreatePriceOptionCommand[] priceOptions = [new(PortionType.Full, 10.99m)];
         return _createMenuItem.Execute(new CreateMenuItemCommand(
-            TenantId: Guid.NewGuid(),
-            Name: "Test Item",
-            PriceOptions: priceOptions
-        ));
+            Guid.NewGuid(),
+            "Test Item",
+            null,
+            null,
+            0,
+            false,
+            false,
+            null,
+            true,
+            [],
+            null,
+            priceOptions));
     }
 
     [Fact]

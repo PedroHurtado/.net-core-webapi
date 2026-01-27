@@ -122,22 +122,22 @@ public partial record NutritionalInfo
 
 public static class NutritionalInfoValidationMessages
 {
-    public const string CaloriesMin = "Calories must be >= 0";
-    public const string CaloriesMax = "Calories cannot exceed 10000";
-    public const string ProteinMin = "Protein must be >= 0";
-    public const string ProteinMax = "Protein cannot exceed 1000";
-    public const string CarbohydratesMin = "Carbohydrates must be >= 0";
-    public const string CarbohydratesMax = "Carbohydrates cannot exceed 1000";
-    public const string FatMin = "Fat must be >= 0";
-    public const string FatMax = "Fat cannot exceed 1000";
-    public const string ServingSizeMin = "Serving Size must be > 0";
-    public const string ServingSizeMax = "Serving Size cannot exceed 10000";
-    public const string FiberMin = "Fiber must be >= 0";
-    public const string FiberMax = "Fiber cannot exceed 1000";
-    public const string SugarMin = "Sugar must be >= 0";
-    public const string SugarMax = "Sugar cannot exceed 1000";
-    public const string SaltMin = "Salt must be >= 0";
-    public const string SaltMax = "Salt cannot exceed 100";
+    public const string CaloriesMin = "Calories cannot be negative";
+    public const string CaloriesMax = "Calories cannot exceed 10000 kcal";
+    public const string ProteinMin = "Protein cannot be negative";
+    public const string ProteinMax = "Protein cannot exceed 1000g";
+    public const string CarbohydratesMin = "Carbohydrates cannot be negative";
+    public const string CarbohydratesMax = "Carbohydrates cannot exceed 1000g";
+    public const string FatMin = "Fat cannot be negative";
+    public const string FatMax = "Fat cannot exceed 1000g";
+    public const string ServingSizeMin = "Serving size must be greater than zero";
+    public const string ServingSizeMax = "Serving size cannot exceed 10000g";
+    public const string FiberMin = "Fiber cannot be negative";
+    public const string FiberMax = "Fiber cannot exceed 1000g";
+    public const string SugarMin = "Sugar cannot be negative";
+    public const string SugarMax = "Sugar cannot exceed 1000g";
+    public const string SaltMin = "Salt cannot be negative";
+    public const string SaltMax = "Salt cannot exceed 100g";
 }
 
 /// <summary>

@@ -1,0 +1,1467 @@
+openapi: 3.0.3
+info:
+  title: MenuItem API
+  description: |
+    API para la gestión de elementos del menú de Fudie.
+
+    ## Conceptos Clave
+
+    - **MenuItem**: Representa un plato o elemento del menú con precios, disponibilidad y configuración
+    - **PriceOption**: Opción de precio por tipo de porción (Small, Half, Full, MarketPrice)
+    - **DepositOverride**: Configuración de depósito específica del ítem
+    - **NutritionalInfo**: Información nutricional del plato
+    - **AllergenReference**: Referencia a alérgenos del catálogo del sistema
+
+    ## Flujo de Activación
+
+    Un MenuItem solo puede activarse cuando:
+    1. Tiene al menos una PriceOption activa
+
+    ## Disponibilidad
+
+    - **IsActive**: Configuración administrativa (si el ítem está habilitado)
+    - **IsAvailable**: Estado operativo en tiempo real (si hay stock/disponible hoy)
+    - **IsAvailableToday**: Calculado según IsAlwaysAvailable o AvailableDays
+    - **CanBeOrdered**: IsActive AND IsAvailable AND IsAvailableToday
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Menu Items
+    description: Operaciones CRUD sobre elementos del menú
+  - name: Availability
+    description: Gestión de disponibilidad operativa
+  - name: Price Options
+    description: Gestión de opciones de precio por porción
+  - name: Deposit Override
+    description: Configuración de depósito específico del ítem
+  - name: Nutritional Info
+    description: Información nutricional del plato
+  - name: Allergens
+    description: Gestión de alérgenos del ítem
+paths:
+  /menu-items:
+    post:
+      tags:
+        - Menu Items
+      summary: Crear un nuevo elemento del menú
+      description: |
+        Crea un nuevo elemento del menú. El ítem se crea con `isActive=false` e `isAvailable=true`.
+
+        Para activarlo, debe tener al menos una PriceOption activa.
+
+        **Tipos de porción:**
+        - `Small`: Porción pequeña (tapa), ~25% de ración
+        - `Half`: Media ración, ~50% de ración
+        - `Full`: Ración completa
+        - `MarketPrice`: Precio según mercado (puede no tener precio fijo)
+      operationId: createMenuItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMenuItemRequest'
+            examples:
+              basic:
+                summary: Plato básico siempre disponible
+                value:
+                  name: Pulpo al Horno
+                  description: Pulpo gallego con pimentón y aceite de oliva
+                  imageUrl: https://cdn.fudie.com/images/pulpo.jpg
+                  displayOrder: 1
+                  isHighRiskItem: false
+                  requiresAdvanceOrder: false
+                  isAlwaysAvailable: true
+                  availableDays: []
+                  priceOptions:
+                    - portionType: Full
+                      price: 22.00
+                      isActive: true
+              multiplePrices:
+                summary: Plato con múltiples porciones
+                value:
+                  name: Jamón Ibérico
+                  description: Jamón ibérico de bellota cortado a cuchillo
+                  displayOrder: 2
+                  isHighRiskItem: false
+                  requiresAdvanceOrder: false
+                  isAlwaysAvailable: true
+                  availableDays: []
+                  priceOptions:
+                    - portionType: Small
+                      price: 8.00
+                      isActive: true
+                    - portionType: Half
+                      price: 16.00
+                      isActive: true
+                    - portionType: Full
+                      price: 32.00
+                      isActive: true
+              highRisk:
+                summary: Plato de alto riesgo con pedido anticipado
+                value:
+                  name: Cochinillo Asado
+                  description: Cochinillo de Segovia asado en horno de leña
+                  displayOrder: 10
+                  isHighRiskItem: true
+                  requiresAdvanceOrder: true
+                  minimumAdvanceOrderQuantity: 4
+                  isAlwaysAvailable: false
+                  availableDays:
+                    - Friday
+                    - Saturday
+                    - Sunday
+                  priceOptions:
+                    - portionType: MarketPrice
+                      isActive: true
+      responses:
+        '201':
+          description: MenuItem creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+          headers:
+            Location:
+              description: URL del MenuItem creado
+              schema:
+                type: string
+                example: /api/v1/menu-items/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                nameRequired:
+                  summary: Nombre requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Name:
+                        - Name is required
+                noPriceOptions:
+                  summary: Sin opciones de precio
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      PriceOptions:
+                        - Item must have at least one price option
+                duplicatePortionType:
+                  summary: Tipo de porción duplicado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      PriceOptions:
+                        - Duplicate portion types are not allowed
+                advanceOrderWithoutHighRisk:
+                  summary: Pedido anticipado sin alto riesgo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      RequiresAdvanceOrder:
+                        - Only high-risk items can require advance order
+                noDaysWhenNotAlwaysAvailable:
+                  summary: Sin días cuando no siempre disponible
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      AvailableDays:
+                        - Available days are required when item is not always available
+    get:
+      tags:
+        - Menu Items
+      summary: Listar elementos del menú
+      description: 'Obtiene la lista de todos los elementos del menú, opcionalmente filtrados por estado'
+      operationId: listMenuItems
+      parameters:
+        - name: isActive
+          in: query
+          description: Filtrar por estado activo/inactivo
+          required: false
+          schema:
+            type: boolean
+        - name: isAvailable
+          in: query
+          description: Filtrar por disponibilidad operativa
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de elementos del menú
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItemResponse'
+  '/menu-items/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Menu Items
+      summary: Obtener un elemento del menú
+      description: Obtiene los detalles de un elemento del menú específico
+      operationId: getMenuItem
+      responses:
+        '200':
+          description: MenuItem encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    put:
+      tags:
+        - Menu Items
+      summary: Actualizar un elemento del menú
+      description: |
+        Actualiza los datos básicos de un elemento del menú existente.
+
+        **Nota:** No modifica PriceOptions, DepositOverride, NutritionalInfo ni Allergens.
+        Use los endpoints específicos para esas operaciones.
+      operationId: updateMenuItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuItemRequest'
+      responses:
+        '204':
+          description: MenuItem actualizado exitosamente
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/menu-items/{id}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Menu Items
+      summary: Activar un elemento del menú
+      description: |
+        Activa un elemento del menú para que esté disponible para pedidos.
+
+        **Requisitos:**
+        - El ítem debe tener al menos una PriceOption activa
+        - El ítem no debe estar ya activo
+      operationId: activateMenuItem
+      responses:
+        '200':
+          description: MenuItem activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El MenuItem ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Menu item is already active
+        '422':
+          description: El MenuItem no cumple los requisitos para activarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  PriceOptions:
+                    - Menu item must have at least one active price option
+  '/menu-items/{id}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Menu Items
+      summary: Desactivar un elemento del menú
+      description: |
+        Desactiva un elemento del menú para que no esté disponible para pedidos.
+
+        **Nota:** Esto es una configuración administrativa. Para marcar temporalmente
+        como agotado, use `/mark-unavailable`.
+      operationId: deactivateMenuItem
+      responses:
+        '200':
+          description: MenuItem desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El MenuItem ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Menu item is already inactive
+  '/menu-items/{id}/mark-available':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Availability
+      summary: Marcar como disponible
+      description: |
+        Marca el ítem como disponible operativamente (hay stock).
+
+        **Idempotente:** Si ya está disponible, no hace cambios.
+
+        Este endpoint es típicamente usado por el personal del restaurante
+        para indicar que un plato vuelve a estar disponible después de haberse agotado.
+      operationId: markMenuItemAsAvailable
+      responses:
+        '200':
+          description: MenuItem marcado como disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/menu-items/{id}/mark-unavailable':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Availability
+      summary: Marcar como no disponible (agotado)
+      description: |
+        Marca el ítem como no disponible operativamente (agotado/sin stock).
+
+        **Idempotente:** Si ya está no disponible, no hace cambios.
+
+        Este endpoint es típicamente usado por el personal del restaurante
+        para indicar que un plato se ha agotado durante el servicio.
+      operationId: markMenuItemAsUnavailable
+      responses:
+        '200':
+          description: MenuItem marcado como no disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/menu-items/{id}/deposit-override':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - Deposit Override
+      summary: Configurar depósito específico
+      description: |
+        Configura un depósito específico para este ítem que sobrescribe
+        la política de depósito del menú o restaurante.
+
+        Útil para platos de alto valor o que requieren reserva previa.
+      operationId: setMenuItemDepositOverride
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDepositOverrideRequest'
+            examples:
+              allQuantities:
+                summary: Depósito para cualquier cantidad
+                value:
+                  depositAmount: 30.00
+              minimumQuantity:
+                summary: Depósito solo a partir de 4 unidades
+                value:
+                  depositAmount: 50.00
+                  minimumQuantityForDeposit: 4
+      responses:
+        '204':
+          description: Depósito configurado exitosamente
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                zeroAmount:
+                  summary: Importe cero
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      DepositAmount:
+                        - Deposit amount must be greater than zero
+                zeroQuantity:
+                  summary: Cantidad mínima cero
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      MinimumQuantityForDeposit:
+                        - Minimum quantity must be at least 1
+    delete:
+      tags:
+        - Deposit Override
+      summary: Eliminar depósito específico
+      description: |
+        Elimina la configuración de depósito específica del ítem.
+
+        El ítem volverá a usar la política de depósito del menú o restaurante.
+
+        **Idempotente:** Si no tiene depósito configurado, no hace cambios.
+      operationId: removeMenuItemDepositOverride
+      responses:
+        '204':
+          description: Depósito eliminado exitosamente
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/menu-items/{id}/nutritional-info':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - Nutritional Info
+      summary: Configurar información nutricional
+      description: |
+        Configura la información nutricional del plato.
+
+        Los valores son por porción (`servingSize` en gramos).
+      operationId: setMenuItemNutritionalInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetNutritionalInfoRequest'
+            example:
+              calories: 450
+              protein: 38.5
+              carbohydrates: 8.2
+              fat: 28.0
+              fiber: 2.5
+              sugar: 1.0
+              salt: 2.8
+              servingSize: 350
+      responses:
+        '204':
+          description: Información nutricional configurada exitosamente
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                negativeCalories:
+                  summary: Calorías negativas
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Calories:
+                        - Calories cannot be negative
+                zeroServingSize:
+                  summary: Tamaño de porción cero
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      ServingSize:
+                        - Serving size must be greater than zero
+    delete:
+      tags:
+        - Nutritional Info
+      summary: Eliminar información nutricional
+      description: |
+        Elimina la información nutricional del ítem.
+
+        **Idempotente:** Si no tiene información nutricional, no hace cambios.
+      operationId: removeMenuItemNutritionalInfo
+      responses:
+        '204':
+          description: Información nutricional eliminada exitosamente
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/menu-items/{id}/price-options':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Price Options
+      summary: Añadir opción de precio
+      description: |
+        Añade una nueva opción de precio al ítem.
+
+        **Tipos de porción:**
+        - `Small` (1): Porción pequeña (tapa), ~25% de ración
+        - `Half` (2): Media ración, ~50% de ración
+        - `Full` (3): Ración completa
+        - `MarketPrice` (4): Precio según mercado
+
+        El `portionType` debe ser único dentro del ítem.
+
+        Para `MarketPrice`, el precio puede ser null (se mostrará "S/M" o "Según Mercado").
+      operationId: addPriceOption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPriceOptionRequest'
+            examples:
+              fixed:
+                summary: Precio fijo
+                value:
+                  portionType: Half
+                  price: 11.00
+                  isActive: true
+              marketPrice:
+                summary: Precio de mercado (sin valor)
+                value:
+                  portionType: MarketPrice
+                  isActive: true
+              marketPriceWithValue:
+                summary: Precio de mercado actualizado
+                value:
+                  portionType: MarketPrice
+                  price: 22.00
+                  isActive: true
+      responses:
+        '201':
+          description: Opción de precio añadida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una opción de precio con ese tipo de porción
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Price option with portion type 'Full' already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                negativePrice:
+                  summary: Precio negativo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Price:
+                        - Price cannot be negative
+                noPriceForFixedType:
+                  summary: Sin precio para tipo fijo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Price:
+                        - Price is required for fixed portion types
+  '/menu-items/{id}/price-options/{portionType}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: portionType
+        in: path
+        description: Tipo de porción
+        required: true
+        schema:
+          $ref: '#/components/schemas/PortionType'
+    put:
+      tags:
+        - Price Options
+      summary: Actualizar opción de precio
+      description: |
+        Actualiza una opción de precio existente del ítem.
+
+        **Nota:** El `portionType` no se puede modificar.
+
+        **Restricción:** No se puede desactivar la última opción de precio activa.
+      operationId: updatePriceOption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePriceOptionRequest'
+      responses:
+        '204':
+          description: Opción de precio actualizada exitosamente
+        '404':
+          description: MenuItem o PriceOption no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                menuItemNotFound:
+                  summary: MenuItem no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Menu item with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                priceOptionNotFound:
+                  summary: PriceOption no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Price option with portion type 'Half' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                cannotDeactivateLast:
+                  summary: No se puede desactivar la última activa
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      PriceOptions:
+                        - Cannot deactivate last active price option
+    delete:
+      tags:
+        - Price Options
+      summary: Eliminar opción de precio
+      description: |
+        Elimina una opción de precio del ítem.
+
+        **Restricción:** No se puede eliminar la última opción de precio.
+      operationId: removePriceOption
+      responses:
+        '204':
+          description: Opción de precio eliminada exitosamente
+        '404':
+          description: MenuItem o PriceOption no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: No se puede eliminar la última opción de precio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  PriceOptions:
+                    - Cannot remove last price option
+  '/menu-items/{id}/allergens':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Allergens
+      summary: Añadir alérgeno
+      description: |
+        Añade una referencia a un alérgeno del catálogo del sistema.
+
+        El `allergenId` debe ser único dentro del ítem.
+      operationId: addAllergen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddAllergenRequest'
+            example:
+              allergenId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      responses:
+        '201':
+          description: Alérgeno añadido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '404':
+          description: MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El alérgeno ya existe en este ítem
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Allergen already exists in this item
+  '/menu-items/{id}/allergens/{allergenId}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: allergenId
+        in: path
+        description: ID del alérgeno
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      tags:
+        - Allergens
+      summary: Eliminar alérgeno
+      description: Elimina una referencia a un alérgeno del ítem.
+      operationId: removeAllergen
+      responses:
+        '204':
+          description: Alérgeno eliminado exitosamente
+        '404':
+          description: MenuItem o alérgeno no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                menuItemNotFound:
+                  summary: MenuItem no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Menu item with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                allergenNotFound:
+                  summary: Alérgeno no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Allergen not found in this item
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    PortionType:
+      type: string
+      enum:
+        - Small
+        - Half
+        - Full
+        - MarketPrice
+      description: |
+        Tipo de porción:
+        - Small: Porción pequeña (tapa), ~25% de ración
+        - Half: Media ración, ~50% de ración
+        - Full: Ración completa
+        - MarketPrice: Precio según mercado
+    DayOfWeek:
+      type: string
+      enum:
+        - Sunday
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+      description: Día de la semana
+    PriceOptionResponse:
+      type: object
+      required:
+        - id
+        - portionType
+        - isActive
+        - requiresMarketPrice
+        - displayPrice
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 22.00
+          description: Precio de la porción (null para MarketPrice sin valor)
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si esta opción de precio está activa
+        requiresMarketPrice:
+          type: boolean
+          example: false
+          description: Indica si requiere actualización de precio de mercado
+        displayPrice:
+          type: string
+          example: '22,00 €'
+          description: Precio formateado para mostrar (o "S/M" si requiere mercado)
+    ItemDepositOverrideResponse:
+      type: object
+      required:
+        - depositAmount
+        - appliesToAllQuantities
+      properties:
+        depositAmount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 30.00
+          description: Importe del depósito
+        minimumQuantityForDeposit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 4
+          description: Cantidad mínima para aplicar depósito (null = todas)
+        appliesToAllQuantities:
+          type: boolean
+          example: false
+          description: Indica si aplica a cualquier cantidad
+    NutritionalInfoResponse:
+      type: object
+      required:
+        - calories
+        - protein
+        - carbohydrates
+        - fat
+        - servingSize
+      properties:
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          example: 450
+          description: Calorías (kcal)
+        protein:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 38.5
+          description: Proteínas (g)
+        carbohydrates:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 8.2
+          description: Carbohidratos (g)
+        fat:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 28.0
+          description: Grasas (g)
+        fiber:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          nullable: true
+          example: 2.5
+          description: Fibra (g)
+        sugar:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          nullable: true
+          example: 1.0
+          description: Azúcares (g)
+        salt:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 100
+          nullable: true
+          example: 2.8
+          description: Sal (g)
+        servingSize:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 350
+          description: Tamaño de porción (g)
+    AllergenReferenceResponse:
+      type: object
+      required:
+        - allergenId
+      properties:
+        allergenId:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: ID del alérgeno en el catálogo del sistema
+    MenuItemResponse:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - displayOrder
+        - isActive
+        - isAvailable
+        - isHighRiskItem
+        - requiresAdvanceOrder
+        - isAlwaysAvailable
+        - isAvailableToday
+        - canBeOrdered
+        - hasDepositOverride
+        - priceOptions
+        - availableDays
+        - allergens
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        tenantId:
+          type: string
+          format: uuid
+          example: tenant-001-guid
+        name:
+          type: string
+          maxLength: 100
+          example: Pulpo al Horno
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Pulpo gallego con pimentón y aceite de oliva
+        imageUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/images/pulpo.jpg
+        displayOrder:
+          type: integer
+          example: 1
+          description: Orden de visualización en el menú
+        isActive:
+          type: boolean
+          example: true
+          description: Configuración administrativa (habilitado/deshabilitado)
+        isAvailable:
+          type: boolean
+          example: true
+          description: Estado operativo (hay stock / agotado)
+        isHighRiskItem:
+          type: boolean
+          example: true
+          description: Indica si es un ítem de alto riesgo (ej. marisco fresco)
+        requiresAdvanceOrder:
+          type: boolean
+          example: true
+          description: Indica si requiere pedido anticipado
+        minimumAdvanceOrderQuantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 4
+          description: Cantidad mínima para pedido anticipado
+        isAlwaysAvailable:
+          type: boolean
+          example: false
+          description: Si es true, disponible todos los días
+        allergenNotes:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Puede contener trazas de crustáceos
+          description: Notas adicionales sobre alérgenos
+        isAvailableToday:
+          type: boolean
+          example: true
+          description: Calculado según IsAlwaysAvailable o AvailableDays
+        canBeOrdered:
+          type: boolean
+          example: true
+          description: IsActive AND IsAvailable AND IsAvailableToday
+        hasDepositOverride:
+          type: boolean
+          example: true
+          description: Indica si tiene depósito específico configurado
+        depositOverride:
+          $ref: '#/components/schemas/ItemDepositOverrideResponse'
+        nutritionalInfo:
+          $ref: '#/components/schemas/NutritionalInfoResponse'
+        priceOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceOptionResponse'
+        availableDays:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+          description: Días en que está disponible (vacío si IsAlwaysAvailable=true)
+        allergens:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllergenReferenceResponse'
+    CreatePriceOptionRequest:
+      type: object
+      required:
+        - portionType
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 22.00
+          description: Precio (requerido excepto para MarketPrice)
+        isActive:
+          type: boolean
+          default: true
+          example: true
+    CreateMenuItemRequest:
+      type: object
+      required:
+        - name
+        - displayOrder
+        - isHighRiskItem
+        - requiresAdvanceOrder
+        - isAlwaysAvailable
+        - availableDays
+        - priceOptions
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Pulpo al Horno
+          description: Nombre del plato
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Pulpo gallego con pimentón y aceite de oliva
+          description: Descripción del plato
+        imageUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/images/pulpo.jpg
+          description: URL de la imagen del plato
+        displayOrder:
+          type: integer
+          example: 1
+          description: Orden de visualización en el menú
+        isHighRiskItem:
+          type: boolean
+          example: false
+          description: Indica si es un ítem de alto riesgo
+        requiresAdvanceOrder:
+          type: boolean
+          example: false
+          description: Indica si requiere pedido anticipado (solo si isHighRiskItem=true)
+        minimumAdvanceOrderQuantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 4
+          description: Cantidad mínima para pedido anticipado (solo si requiresAdvanceOrder=true)
+        isAlwaysAvailable:
+          type: boolean
+          example: true
+          description: Si es true, disponible todos los días
+        availableDays:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+          description: Días en que está disponible (requerido si isAlwaysAvailable=false)
+        allergenNotes:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Puede contener trazas de crustáceos
+          description: Notas adicionales sobre alérgenos
+        priceOptions:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CreatePriceOptionRequest'
+          description: Al menos una opción de precio es requerida
+    UpdateMenuItemRequest:
+      type: object
+      required:
+        - name
+        - displayOrder
+        - isHighRiskItem
+        - requiresAdvanceOrder
+        - isAlwaysAvailable
+        - availableDays
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Pulpo a la Gallega
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Nueva descripción del plato
+        imageUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: https://cdn.fudie.com/images/pulpo-nuevo.jpg
+        displayOrder:
+          type: integer
+          example: 2
+        isHighRiskItem:
+          type: boolean
+          example: true
+        requiresAdvanceOrder:
+          type: boolean
+          example: true
+        minimumAdvanceOrderQuantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 4
+        isAlwaysAvailable:
+          type: boolean
+          example: false
+        availableDays:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayOfWeek'
+        allergenNotes:
+          type: string
+          maxLength: 500
+          nullable: true
+    AddPriceOptionRequest:
+      type: object
+      required:
+        - portionType
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 11.00
+          description: Precio (requerido excepto para MarketPrice)
+        isActive:
+          type: boolean
+          default: true
+          example: true
+    UpdatePriceOptionRequest:
+      type: object
+      required:
+        - isActive
+      properties:
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 16.00
+          description: Nuevo precio
+        isActive:
+          type: boolean
+          example: true
+          description: Estado activo/inactivo
+    SetDepositOverrideRequest:
+      type: object
+      required:
+        - depositAmount
+      properties:
+        depositAmount:
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000
+          example: 30.00
+          description: Importe del depósito (debe ser mayor que 0)
+        minimumQuantityForDeposit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 4
+          description: Cantidad mínima para aplicar el depósito (null = cualquier cantidad)
+    SetNutritionalInfoRequest:
+      type: object
+      required:
+        - calories
+        - protein
+        - carbohydrates
+        - fat
+        - servingSize
+      properties:
+        calories:
+          type: integer
+          minimum: 0
+          maximum: 10000
+          example: 450
+          description: Calorías (kcal)
+        protein:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 38.5
+          description: Proteínas (g)
+        carbohydrates:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 8.2
+          description: Carbohidratos (g)
+        fat:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          example: 28.0
+          description: Grasas (g)
+        fiber:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          nullable: true
+          example: 2.5
+          description: Fibra (g)
+        sugar:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 1000
+          nullable: true
+          example: 1.0
+          description: Azúcares (g)
+        salt:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 100
+          nullable: true
+          example: 2.8
+          description: Sal (g)
+        servingSize:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 350
+          description: Tamaño de porción (g)
+    AddAllergenRequest:
+      type: object
+      required:
+        - allergenId
+      properties:
+        allergenId:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: ID del alérgeno en el catálogo del sistema
