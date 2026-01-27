@@ -9,6 +9,12 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
     public HttpClient Client { get; }
     public IServiceProvider Services => _factory.Services;
 
+    public static JsonSerializerOptions JsonOptions { get; } = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public PlanWebApplicationFixture(WebApplicationFactory<Program> factory)
     {
         Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", EmulatorHost);

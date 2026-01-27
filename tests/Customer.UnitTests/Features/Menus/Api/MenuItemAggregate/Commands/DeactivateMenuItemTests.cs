@@ -34,7 +34,7 @@ public class DeactivateMenuItemTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 22.00m));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -51,7 +51,7 @@ public class DeactivateMenuItemTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 22.00m));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }

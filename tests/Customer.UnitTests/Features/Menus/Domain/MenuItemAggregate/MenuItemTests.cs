@@ -265,7 +265,7 @@ public class MenuItemTests
     public void HasActivePriceOption_WhenHasActivePriceOption_ReturnsTrue()
     {
         var menuItem = new TestableMenuItem(Guid.NewGuid());
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, true)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, true)));
 
         menuItem.HasActivePriceOption.Should().BeTrue();
     }
@@ -274,7 +274,7 @@ public class MenuItemTests
     public void HasActivePriceOption_WhenAllPriceOptionsInactive_ReturnsFalse()
     {
         var menuItem = new TestableMenuItem(Guid.NewGuid());
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, false)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m, false)));
 
         menuItem.HasActivePriceOption.Should().BeFalse();
     }
@@ -297,7 +297,7 @@ public class MenuItemTests
         var menuItem = new TestableMenuItem(Guid.NewGuid());
         var priceOption = _createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m));
 
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         menuItem.PriceOptions.Should().ContainSingle()
             .Which.Should().Be(priceOption);

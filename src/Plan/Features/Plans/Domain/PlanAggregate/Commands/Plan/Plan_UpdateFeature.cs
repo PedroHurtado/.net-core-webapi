@@ -66,7 +66,7 @@ public partial class Plan
                 command.Name,
                 command.Description,
                 command.Type,
-                command.Limit,
+                command.Type == FeatureType.Limit ? command.Limit : null,
                 command.Unit
             ));
 

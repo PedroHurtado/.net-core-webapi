@@ -25,7 +25,7 @@ public class MenuItemActivateTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -42,7 +42,7 @@ public class MenuItemActivateTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -59,7 +59,7 @@ public class MenuItemActivateTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: false));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -124,7 +124,7 @@ public class MenuItemActivateTests
     {
         var menuItem = CreateInactiveMenuItemWithActivePriceOption();
         var secondPriceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Half, 7.00m, IsActive: true));
-        menuItem.AddPriceOption(secondPriceOption);
+        menuItem.AddPriceOptionDirect(secondPriceOption);
         var command = new ActivateMenuItemCommand();
 
         var result = _activate.Execute(menuItem, command);
@@ -197,8 +197,8 @@ public class MenuItemActivateTests
         };
         var inactivePriceOption1 = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: false));
         var inactivePriceOption2 = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Half, 7.00m, IsActive: false));
-        menuItem.AddPriceOption(inactivePriceOption1);
-        menuItem.AddPriceOption(inactivePriceOption2);
+        menuItem.AddPriceOptionDirect(inactivePriceOption1);
+        menuItem.AddPriceOptionDirect(inactivePriceOption2);
         var command = new ActivateMenuItemCommand();
 
         var act = () => _activate.Execute(menuItem, command);
@@ -219,8 +219,8 @@ public class MenuItemActivateTests
         };
         var activePriceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true));
         var inactivePriceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Half, 7.00m, IsActive: false));
-        menuItem.AddPriceOption(activePriceOption);
-        menuItem.AddPriceOption(inactivePriceOption);
+        menuItem.AddPriceOptionDirect(activePriceOption);
+        menuItem.AddPriceOptionDirect(inactivePriceOption);
         var command = new ActivateMenuItemCommand();
 
         var result = _activate.Execute(menuItem, command);
