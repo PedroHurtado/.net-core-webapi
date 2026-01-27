@@ -155,7 +155,8 @@ namespace Microsoft.Extensions.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("public async Task<Customer> Get(System.Guid id)");
         generatedCode.Should().NotContain("AsNoTracking()"); // Sin atributo, no hay AsNoTracking
     }
@@ -184,8 +185,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IUpdate<Customer, System.Guid>))]");
-        // IUpdate hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IUpdate<Customer, System.Guid>))]");
         generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
         generatedCode.Should().NotContain("AsNoTracking()");
@@ -215,7 +216,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
         generatedCode.Should().Contain("public void Add(Customer entity)");
         generatedCode.Should().Contain("_changeTracker.Entry(entity).State = EntityState.Added");
     }
@@ -244,8 +246,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         var generatedCode = result.GeneratedTrees[0].ToString();
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
-        // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
         generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
         // IRemove necesita tracking para eliminar, debe usar Set<T>() en lugar de Query<T>()
         generatedCode.Should().Contain("_entityLookup.Set<Customer>()");
@@ -281,12 +283,12 @@ namespace Microsoft.Extensions.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
         // Should implement container interface
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
-        // Should have multiple [Injectable] with ServiceType
+        // Should have [Injectable] only for container interface
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        // IRemove hereda de IGet, así que NO se debe registrar IGet por separado (evita duplicados en DI)
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
         generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, System.Guid>))]");
         // Should have all methods
         generatedCode.Should().Contain("public async Task<Customer> Get(System.Guid id)");
         generatedCode.Should().Contain("public void Add(Customer entity)");
@@ -544,10 +546,11 @@ namespace Microsoft.Extensions.DependencyInjection
         // Verificar container interface
         generatedCode.Should().Contain("public class CustomerRepository : ICustomerRepository");
 
-        // Verificar Injectable attributes
+        // Verificar Injectable attributes - only container interface should have [Injectable]
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
 
         // Verificar includes
         generatedCode.Should().Contain("query = query.Include(c => c.Orders);");
@@ -635,7 +638,7 @@ namespace Microsoft.Extensions.DependencyInjection
     #region Injectable Attribute Tests
 
     [Fact]
-    public void Generator_ShouldAddMultipleInjectableAttributesWithServiceType()
+    public void Generator_ShouldAddInjectableAttributeOnlyForContainerInterface()
     {
         // Arrange - SIN atributos
         var source = CreateTestCode(
@@ -650,9 +653,10 @@ namespace Microsoft.Extensions.DependencyInjection
         // Assert
         result.GeneratedTrees.Should().ContainSingle();
         var generatedCode = result.GeneratedTrees[0].ToString();
-        // Should have multiple [Injectable] with ServiceType
+        // Should have [Injectable] only for container interface
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, System.Guid>))]");
     }
 
     #endregion
@@ -680,9 +684,10 @@ namespace Microsoft.Extensions.DependencyInjection
         var generatedCode = result.GeneratedTrees[0].ToString();
         // Should implement container interface with full path
         generatedCode.Should().Contain("public class CreateIngredient_Repository : CreateIngredient.IRepository");
-        // Should have multiple [Injectable] with ServiceType
+        // Should have [Injectable] only for container interface
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
     }
 
     [Fact]
@@ -736,9 +741,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
         // Container interface uses full path for typeof
         generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
-        // Base interfaces use simple names
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
-        generatedCode.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Ingredient, System.Guid>))]");
+        // Base interfaces are marker interfaces and should NOT have [Injectable]
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        generatedCode.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Ingredient, System.Guid>))]");
     }
 
     #endregion

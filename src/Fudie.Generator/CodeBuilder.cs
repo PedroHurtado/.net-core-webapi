@@ -328,15 +328,9 @@ internal static class CodeBuilder
         // Class declaration with [Injectable] attributes
         if (!string.IsNullOrEmpty(config.ContainerInterfaceFullName))
         {
-            // Generate multiple [Injectable] with ServiceType
-            // First for the container interface
+            // Generate [Injectable] only for the container interface
+            // Base interfaces (IAdd, IGet, IUpdate, IRemove) are marker interfaces and don't need DI registration
             sb.AppendLine($"[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({config.ContainerInterfaceFullName}))]");
-
-            // Then for each base interface
-            foreach (var baseInterface in config.BaseInterfaceNames)
-            {
-                sb.AppendLine($"[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof({baseInterface}))]");
-            }
         }
         else
         {

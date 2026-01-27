@@ -1,7 +1,12 @@
 global using FluentAssertions;
 global using FluentValidation;
 global using Fudie.Domain;
+global using Fudie.Infrastructure;
+global using Microsoft.AspNetCore.Http.HttpResults;
+global using Moq;
 
+global using Plan.Features.Plans.Api.PlanAggregate;
+global using Plan.Features.Plans.Api.PlanAggregate.Commands;
 global using Plan.Features.Plans.Domain.PlanAggregate;
 global using Plan.Features.Plans.Domain.PlanAggregate.Enums;
 global using Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;

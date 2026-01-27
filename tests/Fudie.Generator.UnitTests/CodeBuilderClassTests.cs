@@ -297,7 +297,7 @@ public class CodeBuilderClassTests
     }
 
     [Fact]
-    public void GenerateRepositoryClass_WithContainerInterface_ShouldGenerateMultipleInjectableAttributes()
+    public void GenerateRepositoryClass_WithContainerInterface_ShouldGenerateInjectableForContainerOnly()
     {
         // Arrange
         var config = new CodeBuilder.RepositoryConfig
@@ -316,17 +316,16 @@ public class CodeBuilderClassTests
             "Guid",
             config);
 
-        // Assert
+        // Assert - Only container interface should have [Injectable], base interfaces are marker interfaces
         result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(CreateIngredient.IRepository))]");
-        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
+        result.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Ingredient>))]");
     }
 
     [Fact]
-    public void GenerateRepositoryClass_WithMultipleBaseInterfaces_ShouldGenerateInjectableForEach()
+    public void GenerateRepositoryClass_WithMultipleBaseInterfaces_ShouldGenerateInjectableOnlyForContainer()
     {
         // Arrange
-        // Nota: IRemove hereda de IGet, así que en el uso real NO se incluye IGet en BaseInterfaceNames
-        // cuando hay IRemove (eso lo filtra RepositorySourceGenerator). Este test refleja ese comportamiento.
+        // Base interfaces (IGet, IAdd, IUpdate, IRemove) are marker interfaces and don't need DI registration
         var config = new CodeBuilder.RepositoryConfig
         {
             ImplementIGet = true,
@@ -336,7 +335,6 @@ public class CodeBuilderClassTests
             ContainerInterfaceFullName = "ICustomerRepository",
             BaseInterfaceNames = new List<string>
             {
-                // IGet NO se incluye porque IRemove ya hereda de IGet
                 "IAdd<Customer>",
                 "IRemove<Customer, Guid>"
             }
@@ -350,11 +348,12 @@ public class CodeBuilderClassTests
             "Guid",
             config);
 
-        // Assert - should have 3 Injectable attributes (1 container + 2 base, sin IGet duplicado)
+        // Assert - should have only 1 Injectable attribute for container interface
         result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(ICustomerRepository))]");
+        // Base interfaces should NOT have [Injectable] - they are marker interfaces
         result.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IGet<Customer, Guid>))]");
-        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
-        result.Should().Contain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
+        result.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IAdd<Customer>))]");
+        result.Should().NotContain("[Injectable(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped, ServiceType = typeof(IRemove<Customer, Guid>))]");
     }
 
     [Fact]
