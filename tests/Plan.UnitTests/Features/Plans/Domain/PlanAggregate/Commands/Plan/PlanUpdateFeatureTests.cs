@@ -129,7 +129,7 @@ public class PlanUpdateFeatureTests
 
         var act = () => _updateFeature.Execute(plan, command);
 
-        act.Should().Throw<NotFoundException>()
+        act.Should().Throw<KeyNotFoundException>()
             .WithMessage("*code 'NONEXISTENT' not found*");
     }
 

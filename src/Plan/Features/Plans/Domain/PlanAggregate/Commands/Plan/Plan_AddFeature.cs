@@ -66,7 +66,7 @@ public partial class Plan
             ));
 
             // Add to internal collection
-            plan.AddFeature(feature);
+            plan._features.Add(feature);
 
             return planValidator.ValidateOrThrow(plan);
         }
