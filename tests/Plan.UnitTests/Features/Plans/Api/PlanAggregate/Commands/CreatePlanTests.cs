@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Features.Plans.Api.PlanAggregate.Commands;
+﻿namespace Plans.UnitTests.Features.Plans.Api.PlanAggregate.Commands;
 
 public class CreatePlanTests
 {
@@ -10,8 +10,8 @@ public class CreatePlanTests
     {
         var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var createMoney = new MoneyVO.Create(moneyValidator);
-        var planCreate = new PlanAgg.Create(createMoney, planValidator);
+        var createMoney = new Money.Create(moneyValidator);
+        var planCreate = new Plan.Create(createMoney, planValidator);
 
         _service = new CreatePlan.Service(
             planCreate,
@@ -58,7 +58,7 @@ public class CreatePlanTests
 
         await _service.HandleAsync(request);
 
-        _repository.Verify(r => r.Add(It.IsAny<PlanAgg>()), Times.Once);
+        _repository.Verify(r => r.Add(It.IsAny<Plan>()), Times.Once);
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class CreatePlanTests
 
         var act = () => _service.HandleAsync(request);
 
-        await act.Should().ThrowAsync<ArgumentException>()
+        await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*XXX*not supported*");
     }
 

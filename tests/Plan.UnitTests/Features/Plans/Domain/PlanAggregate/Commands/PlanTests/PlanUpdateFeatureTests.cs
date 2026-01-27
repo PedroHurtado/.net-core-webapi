@@ -1,14 +1,14 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanUpdateFeatureTests
 {
     private readonly PlanValidator _validator = new();
     private readonly FeatureValidator _featureValidator = new();
     private readonly MoneyValidator _moneyValidator = new();
-    private readonly MoneyVO.Create _createMoney;
-    private readonly FeatureVO.Create _createFeature;
-    private readonly PaymentProviderConfigVO.Create _createProviderConfig;
-    private readonly PlanAgg.UpdateFeature _updateFeature;
+    private readonly Money.Create _createMoney;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
+    private readonly Plan.UpdateFeature _updateFeature;
 
     public PlanUpdateFeatureTests()
     {
@@ -20,7 +20,7 @@ public class PlanUpdateFeatureTests
 
     private TestablePlan CreatePlanWithFeature(string code, FeatureType type, int? limit = null)
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
+        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature = _createFeature.Execute(new CreateFeatureCommand(code, "Original Name", "Original Desc", type, limit, "units"));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
 

@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Api.PlanAggregate.Commands;
+namespace Plans.Features.Plans.Api.PlanAggregate.Commands;
 
 public class CreatePlan : IFeatureModule
 {
@@ -29,7 +29,7 @@ public class CreatePlan : IFeatureModule
 
     [Injectable]
     public class Service(
-        PlanAgg.Create planCreate,
+        Plan.Create planCreate,
         IRepository repository,
         IUnitOfWork unitOfWork
     ) : IService
@@ -53,5 +53,5 @@ public class CreatePlan : IFeatureModule
         }
     }
 
-    public interface IRepository : IAdd<PlanAgg> { }
+    public interface IRepository : IAdd<Plan> { }
 }

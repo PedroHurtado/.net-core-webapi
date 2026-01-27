@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.ValueObjects;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 public class MoneyValidatorTests
 {

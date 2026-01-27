@@ -1,4 +1,4 @@
-namespace Plan.IntegrationTests.Features.Plans.Api.PlanAggregate.Commands;
+namespace Plans.IntegrationTests.Features.Plans.Api.PlanAggregate.Commands;
 
 public class CreatePlanTests : PlanWebApplicationFixture
 {

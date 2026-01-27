@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Enums;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Enums;
 
 public class FeatureTypeTests
 {

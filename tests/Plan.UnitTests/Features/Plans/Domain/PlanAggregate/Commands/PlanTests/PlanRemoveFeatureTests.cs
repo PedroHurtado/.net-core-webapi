@@ -1,12 +1,12 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanRemoveFeatureTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly PlanAgg.RemoveFeature _removeFeature;
-    private readonly MoneyVO.Create _createMoney;
-    private readonly FeatureVO.Create _createFeature;
-    private readonly PaymentProviderConfigVO.Create _createProviderConfig;
+    private readonly Plan.RemoveFeature _removeFeature;
+    private readonly Money.Create _createMoney;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
 
     public PlanRemoveFeatureTests()
     {
@@ -18,7 +18,7 @@ public class PlanRemoveFeatureTests
 
     private TestablePlan CreateValidPlanWithMultipleFeatures()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
+        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature1 = _createFeature.Execute(new CreateFeatureCommand("FEATURE_1", "Feature 1", null, FeatureType.Boolean));
         var feature2 = _createFeature.Execute(new CreateFeatureCommand("FEATURE_2", "Feature 2", null, FeatureType.Limit, 10, "units"));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_original", "price_original", true));

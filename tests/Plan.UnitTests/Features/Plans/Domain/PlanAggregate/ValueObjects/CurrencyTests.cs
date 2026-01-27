@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.ValueObjects;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 public class CurrencyTests
 {
@@ -109,7 +109,7 @@ public class CurrencyTests
     {
         var act = () => Currency.FromCode("JPY");
 
-        act.Should().Throw<ArgumentException>()
+        act.Should().Throw<ValidationException>()
             .WithMessage("*Currency JPY not supported*");
     }
 

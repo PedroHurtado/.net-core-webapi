@@ -1,13 +1,13 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanActivateTests
 {
     private readonly PlanValidator _validator = new();
     private readonly MoneyValidator _moneyValidator = new();
-    private readonly MoneyVO.Create _createMoney;
-    private readonly FeatureVO.Create _createFeature;
-    private readonly PaymentProviderConfigVO.Create _createProviderConfig;
-    private readonly PlanAgg.Activate _activate;
+    private readonly Money.Create _createMoney;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
+    private readonly Plan.Activate _activate;
 
     public PlanActivateTests()
     {
@@ -22,7 +22,7 @@ public class PlanActivateTests
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Inactive Plan");
         plan.SetDescription("Plan description");
-        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR)));
+        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR)));
         plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(false);
         return plan;

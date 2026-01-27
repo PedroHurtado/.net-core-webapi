@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate.Enums;
+namespace Plans.Features.Plans.Domain.PlanAggregate.Enums;
 
 /// <summary>
 /// Specifies the type of feature in a subscription plan.

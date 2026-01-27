@@ -1,11 +1,11 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Money;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.MoneyTests;
 
 
 
 public class MoneyCreateTests
 {
     private readonly MoneyValidator _validator = new();
-    private readonly MoneyVO.Create _create;
+    private readonly Money.Create _create;
 
     public MoneyCreateTests()
     {
@@ -15,13 +15,13 @@ public class MoneyCreateTests
     [Fact]
     public void Execute_WithValidCommand_ReturnsMoney()
     {
-        var command = new CreateMoneyCommand(10.00m, CurrencyVO.EUR);
+        var command = new CreateMoneyCommand(10.00m, Currency.EUR);
 
         var result = _create.Execute(command);
 
         result.Should().NotBeNull();
         result.Amount.Should().Be(10.00m);
-        result.Currency.Should().Be(CurrencyVO.EUR);
+        result.Currency.Should().Be(Currency.EUR);
     }
 
     [Theory]
@@ -30,7 +30,7 @@ public class MoneyCreateTests
     [InlineData(100.00)]
     public void Execute_WithDifferentAmounts_SetsCorrectAmount(decimal amount)
     {
-        var command = new CreateMoneyCommand(amount, CurrencyVO.EUR);
+        var command = new CreateMoneyCommand(amount, Currency.EUR);
 
         var result = _create.Execute(command);
 
@@ -43,7 +43,7 @@ public class MoneyCreateTests
     [InlineData("GBP")]
     public void Execute_WithDifferentCurrencies_SetsCorrectCurrency(string currencyCode)
     {
-        var currency = CurrencyVO.FromCode(currencyCode);
+        var currency = Currency.FromCode(currencyCode);
         var command = new CreateMoneyCommand(10.00m, currency);
 
         var result = _create.Execute(command);
@@ -54,7 +54,7 @@ public class MoneyCreateTests
     [Fact]
     public void Execute_WithZeroAmount_ReturnsMoneyWithZero()
     {
-        var command = new CreateMoneyCommand(0, CurrencyVO.USD);
+        var command = new CreateMoneyCommand(0, Currency.USD);
 
         var result = _create.Execute(command);
 
@@ -70,7 +70,7 @@ public class MoneyCreateTests
     [InlineData(-100.50)]
     public void Execute_WithNegativeAmount_ThrowsValidationException(decimal amount)
     {
-        var command = new CreateMoneyCommand(amount, CurrencyVO.EUR);
+        var command = new CreateMoneyCommand(amount, Currency.EUR);
 
         var act = () => _create.Execute(command);
 

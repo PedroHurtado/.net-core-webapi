@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Helpers;
+﻿namespace Plans.UnitTests.Helpers;
 
 public record TestablePaymentProviderConfig : PaymentProviderConfig
 {

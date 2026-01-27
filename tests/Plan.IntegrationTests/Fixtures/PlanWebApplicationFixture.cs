@@ -1,4 +1,4 @@
-namespace Plan.IntegrationTests.Fixtures;
+namespace Plans.IntegrationTests.Fixtures;
 
 public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Program>>
 {

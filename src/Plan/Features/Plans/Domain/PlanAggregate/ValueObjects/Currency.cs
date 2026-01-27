@@ -1,4 +1,6 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
+
+
+namespace Plans.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 /// <summary>
 /// Represents a currency according to ISO 4217 standard.
@@ -75,13 +77,13 @@ public partial record Currency
     /// </summary>
     /// <param name="code">The ISO 4217 currency code (case-insensitive).</param>
     /// <returns>A currency instance for the specified code.</returns>
-    /// <exception cref="ArgumentException">Thrown when the currency code is not supported.</exception>
+    /// <exception cref="ValidationException">Thrown when the currency code is not supported.</exception>
     public static Currency FromCode(string code) => code.ToUpper() switch
     {
         "EUR" => EUR,
         "USD" => USD,
         "GBP" => GBP,
-        _ => throw new ArgumentException($"Currency {code} not supported", nameof(code))
+        _ => throw new ValidationException([new ValidationFailure("CurrencyCode", $"Currency {code} not supported")])
     };
 }
 

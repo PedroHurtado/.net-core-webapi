@@ -1,16 +1,16 @@
-namespace Plan.Infrastructure;
+namespace Plans.Infrastructure;
 
 public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
     DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
 {
     // Root collections (aggregates)
-    public DbSet<PlanAgg> Plans => Set<PlanAgg>();
+    public DbSet<Plan> Plans => Set<Plan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        modelBuilder.Entity<PlanAgg>(entity =>
+        modelBuilder.Entity<Plan>(entity =>
         {
             // Ignore: propiedades computed (no backing fields)
             entity.Ignore(p => p.HasActiveProvider);            

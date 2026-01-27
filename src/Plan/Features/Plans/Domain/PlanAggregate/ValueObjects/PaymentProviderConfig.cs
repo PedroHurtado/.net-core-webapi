@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
+namespace Plans.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 /// <summary>
 /// Represents the configuration for a payment provider specific to this plan.

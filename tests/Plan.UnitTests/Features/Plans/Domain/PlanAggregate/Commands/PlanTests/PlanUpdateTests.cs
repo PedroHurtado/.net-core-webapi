@@ -1,11 +1,11 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanUpdateTests
 {
     private readonly PlanValidator _validator = new();
     private readonly MoneyValidator _moneyValidator = new();
-    private readonly MoneyVO.Create _createMoney;
-    private readonly PlanAgg.Update _update;
+    private readonly Money.Create _createMoney;
+    private readonly Plan.Update _update;
 
     public PlanUpdateTests()
     {
@@ -18,7 +18,7 @@ public class PlanUpdateTests
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Original Plan");
         plan.SetDescription("Original description");
-        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR)));
+        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR)));
         plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(true);
         return plan;
@@ -190,7 +190,7 @@ public class PlanUpdateTests
 
         var act = () => _update.Execute(plan, command);
 
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ValidationException>();
     }
 
     #endregion

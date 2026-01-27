@@ -1,4 +1,4 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate;
 
 public class PlanTests
 {
