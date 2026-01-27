@@ -77,22 +77,7 @@ public partial record Feature
         Type = type;
         Limit = limit;
         Unit = unit;
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="Feature"/>.
-    /// </summary>
-    public static Feature New(
-        string code,
-        string name,
-        string? description,
-        FeatureType type,
-        int? limit = null,
-        string? unit = null)
-    {
-        return new Feature(code, name, description, type, limit, unit);
-    }
-
+    }    
 
 
     /// <summary>
