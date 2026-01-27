@@ -3,43 +3,47 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
 public class PlanActivateTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly PlanAgg.Activate _activate;
+    private readonly MoneyValidator _moneyValidator = new();
     private readonly MoneyVO.Create _createMoney;
     private readonly FeatureVO.Create _createFeature;
     private readonly PaymentProviderConfigVO.Create _createProviderConfig;
+    private readonly PlanAgg.Activate _activate;
 
     public PlanActivateTests()
     {
-        _activate = new(_validator);
-        _createMoney = new(new MoneyValidator());
+        _createMoney = new(_moneyValidator);
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
+        _activate = new(_validator);
     }
 
     private TestablePlan CreateInactivePlan()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
-        var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
-        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
-
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Inactive Plan");
         plan.SetDescription("Plan description");
-        plan.SetPrice(price);
+        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR)));
         plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(false);
+        return plan;
+    }
+
+    private TestablePlan CreateReadyToActivatePlan()
+    {
+        var plan = CreateInactivePlan();
+        var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
+        
         plan.AddFeature(feature);
         plan.AddProviderConfiguration(provider);
-
+        
         return plan;
     }
 
     [Fact]
-    public void Execute_WithInactivePlan_ActivatesPlan()
+    public void Execute_WithReadyPlan_ActivatesPlan()
     {
-        var plan = CreateInactivePlan();
-        plan.IsActive.Should().BeFalse();
-
+        var plan = CreateReadyToActivatePlan();
         var command = new ActivatePlanCommand();
 
         var result = _activate.Execute(plan, command);
@@ -50,7 +54,7 @@ public class PlanActivateTests
     [Fact]
     public void Execute_PreservesOtherProperties()
     {
-        var plan = CreateInactivePlan();
+        var plan = CreateReadyToActivatePlan();
         var originalId = plan.Id;
         var originalName = plan.Name;
         var originalDescription = plan.Description;
@@ -75,9 +79,8 @@ public class PlanActivateTests
     [Fact]
     public void Execute_WithActivePlan_ThrowsConflictException()
     {
-        var plan = CreateInactivePlan();
+        var plan = CreateReadyToActivatePlan();
         plan.SetIsActive(true);
-        plan.IsActive.Should().BeTrue();
 
         var command = new ActivatePlanCommand();
 
@@ -88,19 +91,52 @@ public class PlanActivateTests
     }
 
     [Fact]
-    public void Execute_CannotActivateTwice()
+    public void Execute_WithNoFeatures_ThrowsValidationException()
     {
         var plan = CreateInactivePlan();
+        // Add only provider, no features
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
+        plan.AddProviderConfiguration(provider);
+
         var command = new ActivatePlanCommand();
 
-        // First activation should succeed
-        var result = _activate.Execute(plan, command);
-        result.IsActive.Should().BeTrue();
-
-        // Second activation should throw
         var act = () => _activate.Execute(plan, command);
 
-        act.Should().Throw<ConflictException>()
-            .WithMessage("*already active*");
+        act.Should().Throw<ValidationException>()
+            .WithMessage("*at least one feature*");
+    }
+
+    [Fact]
+    public void Execute_WithNoActiveProvider_ThrowsValidationException()
+    {
+        var plan = CreateInactivePlan();
+        // Add only feature, no provider
+        var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
+        plan.AddFeature(feature);
+
+        var command = new ActivatePlanCommand();
+
+        var act = () => _activate.Execute(plan, command);
+
+        act.Should().Throw<ValidationException>()
+            .WithMessage("*at least one active provider*");
+    }
+
+    [Fact]
+    public void Execute_WithInactiveProviderOnly_ThrowsValidationException()
+    {
+        var plan = CreateInactivePlan();
+        var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", false)); // Inactive
+        
+        plan.AddFeature(feature);
+        plan.AddProviderConfiguration(provider);
+
+        var command = new ActivatePlanCommand();
+
+        var act = () => _activate.Execute(plan, command);
+
+        act.Should().Throw<ValidationException>()
+            .WithMessage("*at least one active provider*");
     }
 }

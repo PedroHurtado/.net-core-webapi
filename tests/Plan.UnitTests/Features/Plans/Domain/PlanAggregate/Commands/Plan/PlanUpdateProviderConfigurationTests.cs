@@ -3,7 +3,11 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
 public class PlanUpdateProviderConfigurationTests
 {
     private readonly PlanValidator _validator = new();
+    private readonly PlanAgg.Create _createPlan;
+    private readonly PlanAgg.AddFeature _addFeature;
+    private readonly PlanAgg.AddProviderConfiguration _addProviderConfig;
     private readonly PlanAgg.UpdateProviderConfiguration _updateProviderConfig;
+    private readonly PlanAgg.Activate _activate;
     private readonly MoneyVO.Create _createMoney;
     private readonly FeatureVO.Create _createFeature;
     private readonly PaymentProviderConfigVO.Create _createProviderConfig;
@@ -13,25 +17,32 @@ public class PlanUpdateProviderConfigurationTests
         _createMoney = new(new MoneyValidator());
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
-        _updateProviderConfig = new(_validator, _createProviderConfig);
+        _createPlan = new(_createMoney, _validator);
+        _addFeature = new(_createFeature, _validator);
+        _addProviderConfig = new(_createProviderConfig, _validator);
+        _updateProviderConfig = new(_createProviderConfig, _validator);
+        _activate = new(_validator);
     }
 
-    private TestablePlan CreatePlanWithProviders()
+    private PlanAgg CreatePlanWithProviders()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
-        var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
-        var provider1 = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_stripe", "price_stripe", true));
-        var provider2 = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Paddle", "prod_paddle", "price_paddle", false));
+        var plan = _createPlan.Execute(new CreatePlanCommand(
+            "Test Plan",
+            "Test description",
+            10m,
+            "EUR",
+            BillingPeriod.Monthly));
 
-        var plan = new TestablePlan(Guid.NewGuid());
-        plan.SetName("Test Plan");
-        plan.SetDescription("Plan description");
-        plan.SetPrice(price);
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
-        plan.SetIsActive(true);
-        plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider1);
-        plan.AddProviderConfiguration(provider2);
+        plan = _addFeature.Execute(plan, new AddFeatureCommand(
+            "TEST_FEATURE", "Test Feature", null, FeatureType.Boolean));
+
+        plan = _addProviderConfig.Execute(plan, new AddProviderConfigurationCommand(
+            "Stripe", "prod_stripe", "price_stripe", true));
+
+        plan = _addProviderConfig.Execute(plan, new AddProviderConfigurationCommand(
+            "Paddle", "prod_paddle", "price_paddle", false));
+
+        plan = _activate.Execute(plan, new ActivatePlanCommand());
 
         return plan;
     }
@@ -48,9 +59,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             Provider: "Stripe",
             ExternalProductId: "prod_stripe_updated",
-            ExternalPriceId: "price_stripe_updated",
-            IsActive: true
-        );
+            ExternalPriceId: "price_stripe_updated");
 
         var result = _updateProviderConfig.Execute(plan, command);
 
@@ -61,7 +70,7 @@ public class PlanUpdateProviderConfigurationTests
     }
 
     [Fact]
-    public void Execute_CanChangeProviderActiveStatus()
+    public void Execute_PreservesIsActiveStatus()
     {
         var plan = CreatePlanWithProviders();
         var paddleConfig = plan.ProviderConfigurations.First(p => p.Provider == "Paddle");
@@ -70,14 +79,13 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Paddle",
             "prod_paddle_new",
-            "price_paddle_new",
-            true
-        );
+            "price_paddle_new");
 
         var result = _updateProviderConfig.Execute(plan, command);
 
         var updatedConfig = result.ProviderConfigurations.First(p => p.Provider == "Paddle");
-        updatedConfig.IsActive.Should().BeTrue();
+        updatedConfig.ExternalProductId.Should().Be("prod_paddle_new");
+        updatedConfig.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -89,9 +97,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             "prod_stripe_updated",
-            "price_stripe_updated",
-            true
-        );
+            "price_stripe_updated");
 
         var result = _updateProviderConfig.Execute(plan, command);
 
@@ -117,9 +123,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             "prod_new",
-            "price_new",
-            true
-        );
+            "price_new");
 
         var result = _updateProviderConfig.Execute(plan, command);
 
@@ -134,43 +138,6 @@ public class PlanUpdateProviderConfigurationTests
 
     #region Validation Throws (422)
 
-    [Fact]
-    public void Execute_WithNonExistentProvider_ThrowsValidationException()
-    {
-        var plan = CreatePlanWithProviders();
-
-        var command = new UpdateProviderConfigurationCommand(
-            "PayPal",
-            "prod_paypal",
-            "price_paypal",
-            true
-        );
-
-        var act = () => _updateProviderConfig.Execute(plan, command);
-
-        act.Should().Throw<ValidationException>()
-            .WithMessage("*not found*");
-    }
-
-    [Fact]
-    public void Execute_DeactivatingLastActiveProvider_ThrowsValidationException()
-    {
-        var plan = CreatePlanWithProviders();
-        // Stripe is the only active provider
-
-        var command = new UpdateProviderConfigurationCommand(
-            "Stripe",
-            "prod_stripe",
-            "price_stripe",
-            false // Trying to deactivate
-        );
-
-        var act = () => _updateProviderConfig.Execute(plan, command);
-
-        act.Should().Throw<ValidationException>()
-            .WithMessage("*at least one active provider*");
-    }
-
     [Theory]
     [InlineData("")]
     [InlineData(null)]
@@ -181,9 +148,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             productId!,
-            "price_stripe",
-            true
-        );
+            "price_stripe");
 
         var act = () => _updateProviderConfig.Execute(plan, command);
 
@@ -200,9 +165,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             "prod_stripe",
-            priceId!,
-            true
-        );
+            priceId!);
 
         var act = () => _updateProviderConfig.Execute(plan, command);
 
@@ -217,9 +180,7 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             new string('a', 101),
-            "price_stripe",
-            true
-        );
+            "price_stripe");
 
         var act = () => _updateProviderConfig.Execute(plan, command);
 
@@ -234,13 +195,31 @@ public class PlanUpdateProviderConfigurationTests
         var command = new UpdateProviderConfigurationCommand(
             "Stripe",
             "prod_stripe",
-            new string('a', 101),
-            true
-        );
+            new string('a', 101));
 
         var act = () => _updateProviderConfig.Execute(plan, command);
 
         act.Should().Throw<ValidationException>();
+    }
+
+    #endregion
+
+    #region Not Found Throws (404)
+
+    [Fact]
+    public void Execute_WithNonExistentProvider_ThrowsKeyNotFoundException()
+    {
+        var plan = CreatePlanWithProviders();
+
+        var command = new UpdateProviderConfigurationCommand(
+            "PayPal",
+            "prod_paypal",
+            "price_paypal");
+
+        var act = () => _updateProviderConfig.Execute(plan, command);
+
+        act.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*Configuration for 'PayPal' not found*");
     }
 
     #endregion

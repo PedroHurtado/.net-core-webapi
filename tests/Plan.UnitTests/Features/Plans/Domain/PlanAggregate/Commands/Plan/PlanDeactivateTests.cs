@@ -3,17 +3,18 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
 public class PlanDeactivateTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly PlanAgg.Deactivate _deactivate;
+    private readonly MoneyValidator _moneyValidator = new();
     private readonly MoneyVO.Create _createMoney;
     private readonly FeatureVO.Create _createFeature;
     private readonly PaymentProviderConfigVO.Create _createProviderConfig;
+    private readonly PlanAgg.Deactivate _deactivate;
 
     public PlanDeactivateTests()
     {
-        _deactivate = new(_validator);
-        _createMoney = new(new MoneyValidator());
+        _createMoney = new(_moneyValidator);
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
+        _deactivate = new(_validator);
     }
 
     private TestablePlan CreateActivePlan()
