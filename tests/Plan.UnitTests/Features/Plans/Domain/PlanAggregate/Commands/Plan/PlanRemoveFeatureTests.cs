@@ -93,7 +93,7 @@ public class PlanRemoveFeatureTests
         var act = () => _removeFeature.Execute(plan, command);
 
         act.Should().Throw<ValidationException>()
-            .WithMessage("*at least one feature*");
+            .WithMessage("*Cannot remove last feature from active plan*");
     }
 
     #endregion

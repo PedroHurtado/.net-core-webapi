@@ -39,27 +39,18 @@ public partial class Plan
         /// <exception cref="NotFoundException">Thrown when the feature is not found.</exception>
         public override Plan Execute(Plan plan, RemoveFeatureCommand command)
         {
-            // Find existing feature
-            var existingFeature = plan.Features.FirstOrDefault(f => f.Code == command.Code);
-            
-            // 404 - Validation: Feature must exist
-            NotFoundGuard.ThrowIfNull(
-                existingFeature,
-                $"Feature with code '{command.Code}' not found in the plan"
-            );
+            var existing = plan.Features.FirstOrDefault(f => f.Code == command.Code);
+            NotFoundGuard.ThrowIfNull(existing, $"Feature with code '{command.Code}' not found");
 
-            // 422 - Validation: At least one feature must remain
-            // We check if this is the last feature
             ValidationGuard.ThrowIf(
-                plan.Features.Count <= 1,
-                PlanValidationMessages.AtLeastOneFeatureRequired,
-                nameof(plan.Features)
-            );
+                plan.IsActive && plan.Features.Count <= 1,
+                "Cannot remove last feature from active plan",
+                nameof(plan.Features));
 
-            // Remove from collection
-            plan._features.Remove(existingFeature!);
+            plan._features.Remove(existing!);
 
             return planValidator.ValidateOrThrow(plan);
+
         }
     }
 }
