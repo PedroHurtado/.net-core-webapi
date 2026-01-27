@@ -51,7 +51,7 @@ public partial class Plan
                 command.Provider,
                 command.ExternalProductId,
                 command.ExternalPriceId,
-                existing.IsActive));
+                existing!.IsActive));
 
             plan._providerConfigurations.Remove(existing);
             plan._providerConfigurations.Add(updated);

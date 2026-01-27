@@ -34,7 +34,7 @@ public class ActivateMenuItemTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 22.00m, IsActive: true));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -51,7 +51,7 @@ public class ActivateMenuItemTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 22.00m, IsActive: true));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }
@@ -68,7 +68,7 @@ public class ActivateMenuItemTests
         };
 
         var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 22.00m, IsActive: false));
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         return menuItem;
     }

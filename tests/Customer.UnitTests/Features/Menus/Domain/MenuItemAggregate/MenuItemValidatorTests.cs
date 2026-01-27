@@ -13,7 +13,7 @@ public class MenuItemValidatorTests
             Name = "Paella Valenciana",
             IsActive = true
         };
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 15.99m)));
         return menuItem;
     }
 
@@ -51,7 +51,7 @@ public class MenuItemValidatorTests
             TenantId = Guid.NewGuid(),
             Name = "Valid Name"
         };
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
 
         var result = _validator.Validate(menuItem);
 
@@ -71,7 +71,7 @@ public class MenuItemValidatorTests
             TenantId = Guid.Empty,
             Name = "Valid Name"
         };
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
 
         var result = _validator.Validate(menuItem);
 
@@ -93,7 +93,7 @@ public class MenuItemValidatorTests
             TenantId = Guid.NewGuid(),
             Name = name!
         };
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 10m)));
 
         var result = _validator.Validate(menuItem);
 
@@ -406,7 +406,7 @@ public class MenuItemValidatorTests
     public void PriceOptions_WhenDuplicatePortionType_ReturnsError()
     {
         var menuItem = CreateValidMenuItem();
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 12.00m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 12.00m)));
 
         var result = _validator.Validate(menuItem);
 
@@ -418,8 +418,8 @@ public class MenuItemValidatorTests
     public void PriceOptions_WhenUniquePortionTypes_ReturnsSuccess()
     {
         var menuItem = CreateValidMenuItem();
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Half, 8.00m)));
-        menuItem.AddPriceOption(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Small, 4.00m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Half, 8.00m)));
+        menuItem.AddPriceOptionDirect(_createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Small, 4.00m)));
 
         var result = _validator.Validate(menuItem);
 

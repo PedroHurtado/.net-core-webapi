@@ -32,7 +32,7 @@ public class MenuItemResponseTests
             DepositOverride = depositOverride,
             NutritionalInfo = nutritionalInfo
         };
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
         menuItem.AddAllergen(allergen);
         menuItem.AddAvailableDay(DayOfWeek.Friday);
         menuItem.AddAvailableDay(DayOfWeek.Saturday);
@@ -70,7 +70,7 @@ public class MenuItemResponseTests
             IsAlwaysAvailable = true,
             DepositOverride = new TestableItemDepositOverride(30.00m)
         };
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         // Act
         var response = MenuItemResponse.Map(menuItem);
@@ -97,7 +97,7 @@ public class MenuItemResponseTests
             NutritionalInfo = null,
             IsAlwaysAvailable = true
         };
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
 
         // Act
         var response = MenuItemResponse.Map(menuItem);
@@ -121,9 +121,9 @@ public class MenuItemResponseTests
             Name = "Multi Price Item",
             IsAlwaysAvailable = true
         };
-        menuItem.AddPriceOption(new TestablePriceOption(PortionType.Small, 3.50m));
-        menuItem.AddPriceOption(new TestablePriceOption(PortionType.Half, 7.00m));
-        menuItem.AddPriceOption(new TestablePriceOption(PortionType.Full, 14.00m));
+        menuItem.AddPriceOptionDirect(new TestablePriceOption(PortionType.Small, 3.50m));
+        menuItem.AddPriceOptionDirect(new TestablePriceOption(PortionType.Half, 7.00m));
+        menuItem.AddPriceOptionDirect(new TestablePriceOption(PortionType.Full, 14.00m));
 
         // Act
         var response = MenuItemResponse.Map(menuItem);
@@ -146,7 +146,7 @@ public class MenuItemResponseTests
             Name = "Multi Allergen Item",
             IsAlwaysAvailable = true
         };
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
         menuItem.AddAllergen(new TestableAllergen("GLUTEN") { Name = "Gluten" });
         menuItem.AddAllergen(new TestableAllergen("LACTEOS") { Name = "Lácteos" });
 
@@ -170,7 +170,7 @@ public class MenuItemResponseTests
             Name = "Weekend Item",
             IsAlwaysAvailable = false
         };
-        menuItem.AddPriceOption(priceOption);
+        menuItem.AddPriceOptionDirect(priceOption);
         menuItem.AddAvailableDay(DayOfWeek.Friday);
         menuItem.AddAvailableDay(DayOfWeek.Saturday);
         menuItem.AddAvailableDay(DayOfWeek.Sunday);
