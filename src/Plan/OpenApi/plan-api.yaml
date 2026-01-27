@@ -19,7 +19,7 @@ info:
   contact:
     name: Equipo Fudie
 servers:
-  - url: 'http://localhost:5181'
+  - url: 'http://localhost:5177'
     description: Development
   - url: 'https://api-staging.fudie.com'
     description: Staging

@@ -137,7 +137,7 @@ public class PlanCreateTests
 
         var act = () => _create.Execute(command);
 
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ValidationException>();
     }
 
     #endregion

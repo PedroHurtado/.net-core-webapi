@@ -190,7 +190,7 @@ public class PlanUpdateTests
 
         var act = () => _update.Execute(plan, command);
 
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ValidationException>();
     }
 
     #endregion

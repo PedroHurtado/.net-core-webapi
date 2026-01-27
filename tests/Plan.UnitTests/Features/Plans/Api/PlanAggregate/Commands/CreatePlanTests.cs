@@ -141,7 +141,7 @@ public class CreatePlanTests
 
         var act = () => _service.HandleAsync(request);
 
-        await act.Should().ThrowAsync<ArgumentException>()
+        await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*XXX*not supported*");
     }
 

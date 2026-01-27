@@ -109,7 +109,7 @@ public class CurrencyTests
     {
         var act = () => Currency.FromCode("JPY");
 
-        act.Should().Throw<ArgumentException>()
+        act.Should().Throw<ValidationException>()
             .WithMessage("*Currency JPY not supported*");
     }
 
