@@ -1,15 +1,15 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanAddProviderConfigurationTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly PlanAgg.Create _createPlan;
-    private readonly PlanAgg.AddFeature _addFeature;
-    private readonly PlanAgg.AddProviderConfiguration _addProviderConfig;
-    private readonly PlanAgg.Activate _activate;
-    private readonly MoneyVO.Create _createMoney;
-    private readonly FeatureVO.Create _createFeature;
-    private readonly PaymentProviderConfigVO.Create _createProviderConfig;
+    private readonly Plan.Create _createPlan;
+    private readonly Plan.AddFeature _addFeature;
+    private readonly Plan.AddProviderConfiguration _addProviderConfig;
+    private readonly Plan.Activate _activate;
+    private readonly Money.Create _createMoney;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
 
     public PlanAddProviderConfigurationTests()
     {
@@ -22,7 +22,7 @@ public class PlanAddProviderConfigurationTests
         _activate = new(_validator);
     }
 
-    private PlanAgg CreateValidPlan()
+    private Plan CreateValidPlan()
     {
         var plan = _createPlan.Execute(new CreatePlanCommand(
             "Test Plan",

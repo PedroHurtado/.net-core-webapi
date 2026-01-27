@@ -1,6 +1,6 @@
-namespace Plan.UnitTests.Helpers;
+﻿namespace Plans.UnitTests.Helpers;
 
-public class TestablePlan : Plan.Features.Plans.Domain.PlanAggregate.Plan
+public class TestablePlan : Plans.Features.Plans.Domain.PlanAggregate.Plan
 {
     public TestablePlan(Guid id) : base(id) { }
 

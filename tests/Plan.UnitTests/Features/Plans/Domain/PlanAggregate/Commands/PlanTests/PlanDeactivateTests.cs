@@ -1,13 +1,13 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanDeactivateTests
 {
     private readonly PlanValidator _validator = new();
     private readonly MoneyValidator _moneyValidator = new();
-    private readonly MoneyVO.Create _createMoney;
-    private readonly FeatureVO.Create _createFeature;
-    private readonly PaymentProviderConfigVO.Create _createProviderConfig;
-    private readonly PlanAgg.Deactivate _deactivate;
+    private readonly Money.Create _createMoney;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
+    private readonly Plan.Deactivate _deactivate;
 
     public PlanDeactivateTests()
     {
@@ -19,7 +19,7 @@ public class PlanDeactivateTests
 
     private TestablePlan CreateActivePlan()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
+        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
 

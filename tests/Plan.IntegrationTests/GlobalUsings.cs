@@ -7,9 +7,10 @@ global using Microsoft.AspNetCore.Mvc.Testing;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;
 
+global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Infrastructure;
 
-global using Plan.Features.Plans.Api.PlanAggregate;
-global using Plan.Features.Plans.Domain.PlanAggregate.Enums;
-global using Plan.Infrastructure;
-global using Plan.IntegrationTests.Fixtures;
+global using Plans.Features.Plans.Api.PlanAggregate;
+global using Plans.Features.Plans.Domain.PlanAggregate.Enums;
+global using Plans.Infrastructure;
+global using Plans.IntegrationTests.Fixtures;

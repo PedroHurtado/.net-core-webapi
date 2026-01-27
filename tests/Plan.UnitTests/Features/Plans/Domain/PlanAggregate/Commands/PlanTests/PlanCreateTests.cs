@@ -1,11 +1,11 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.PlanTests;
 
 public class PlanCreateTests
 {
     private readonly PlanValidator _validator = new();
     private readonly MoneyValidator _moneyValidator = new();
-    private readonly MoneyVO.Create _createMoney;
-    private readonly PlanAgg.Create _create;
+    private readonly Money.Create _createMoney;
+    private readonly Plan.Create _create;
 
     public PlanCreateTests()
     {

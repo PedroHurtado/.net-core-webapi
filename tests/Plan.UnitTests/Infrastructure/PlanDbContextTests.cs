@@ -1,10 +1,10 @@
-using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
+﻿using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Plan.Infrastructure;
+using Plans.Infrastructure;
 
-namespace Plan.UnitTests.Infrastructure;
+namespace Plans.UnitTests.Infrastructure;
 
 public class PlanDbContextTests
 {
@@ -36,7 +36,7 @@ public class PlanDbContextTests
     [Fact]
     public void Model_ShouldHavePlanEntityType()
     {
-        var entityType = _model.FindEntityType(typeof(global::Plan.Features.Plans.Domain.PlanAggregate.Plan));
+        var entityType = _model.FindEntityType(typeof(Plan));
 
         entityType.Should().NotBeNull();
     }
@@ -44,7 +44,7 @@ public class PlanDbContextTests
     [Fact]
     public void Plan_ShouldNotHaveQueryFilter()
     {
-        var entityType = _model.FindEntityType(typeof(global::Plan.Features.Plans.Domain.PlanAggregate.Plan))!;
+        var entityType = _model.FindEntityType(typeof(Plan))!;
 
         entityType.GetQueryFilter().Should().BeNull();
     }

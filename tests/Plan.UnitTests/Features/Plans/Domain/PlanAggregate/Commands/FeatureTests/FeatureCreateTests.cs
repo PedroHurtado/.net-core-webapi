@@ -1,9 +1,9 @@
-namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Feature;
+﻿namespace Plans.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.FeatureTests;
 
 public class FeatureCreateTests
 {
     private readonly FeatureValidator _validator = new();
-    private readonly FeatureVO.Create _create;
+    private readonly Feature.Create _create;
 
     public FeatureCreateTests()
     {
