@@ -3,17 +3,19 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
 public class PlanAddFeatureTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly PlanAgg.AddFeature _addFeature;
+    private readonly MoneyValidator _moneyValidator = new();
+    private readonly FeatureValidator _featureValidator = new();
     private readonly MoneyVO.Create _createMoney;
     private readonly FeatureVO.Create _createFeature;
     private readonly PaymentProviderConfigVO.Create _createProviderConfig;
+    private readonly PlanAgg.AddFeature _addFeature;
 
     public PlanAddFeatureTests()
     {
-        _addFeature = new(_validator);
-        _createMoney = new(new MoneyValidator());
-        _createFeature = new(new FeatureValidator());
+        _createMoney = new(_moneyValidator);
+        _createFeature = new(_featureValidator);
         _createProviderConfig = new(new PaymentProviderConfigValidator());
+        _addFeature = new(_createFeature, _validator);
     }
 
     private TestablePlan CreateValidPlan()
@@ -35,7 +37,7 @@ public class PlanAddFeatureTests
     }
 
     [Fact]
-    public void Execute_WithValidCommand_AddsFeature()
+    public void Execute_WithLimitType_AddsFeature()
     {
         var plan = CreateValidPlan();
         var originalCount = plan.Features.Count;
@@ -61,7 +63,7 @@ public class PlanAddFeatureTests
     }
 
     [Fact]
-    public void Execute_WithBooleanType_IgnoresLimit()
+    public void Execute_WithBooleanType_AddsFeature()
     {
         var plan = CreateValidPlan();
         
@@ -70,7 +72,7 @@ public class PlanAddFeatureTests
             Name: "Boolean Feature",
             Description: "",
             Type: FeatureType.Boolean,
-            Limit: 999, // Should be ignored
+            Limit: 0,
             Unit: ""
         );
 
@@ -78,6 +80,27 @@ public class PlanAddFeatureTests
 
         var addedFeature = result.Features.First(f => f.Code == "BOOL_FEATURE");
         addedFeature.Type.Should().Be(FeatureType.Boolean);
+        addedFeature.Limit.Should().BeNull();
+    }
+
+    [Fact]
+    public void Execute_WithUnlimitedType_AddsFeature()
+    {
+        var plan = CreateValidPlan();
+        
+        var command = new AddFeatureCommand(
+            Code: "UNLIMITED_FEATURE",
+            Name: "Unlimited Feature",
+            Description: "",
+            Type: FeatureType.Unlimited,
+            Limit: 0,
+            Unit: ""
+        );
+
+        var result = _addFeature.Execute(plan, command);
+
+        var addedFeature = result.Features.First(f => f.Code == "UNLIMITED_FEATURE");
+        addedFeature.Type.Should().Be(FeatureType.Unlimited);
         addedFeature.Limit.Should().BeNull();
     }
 
@@ -107,30 +130,6 @@ public class PlanAddFeatureTests
         result.IsActive.Should().Be(originalIsActive);
         result.ProviderConfigurations.Should().HaveCount(originalProvidersCount);
     }
-
-    #region Validation Throws (422)
-
-    [Fact]
-    public void Execute_WithInvalidLimitForLimitType_ThrowsValidationException()
-    {
-        var plan = CreateValidPlan();
-
-        var command = new AddFeatureCommand(
-            Code: "INVALID_LIMIT",
-            Name: "Invalid Limit",
-            Description: "",
-            Type: FeatureType.Limit,
-            Limit: 0, // Invalid: must be > 0
-            Unit: "units"
-        );
-
-        var act = () => _addFeature.Execute(plan, command);
-
-        act.Should().Throw<ValidationException>()
-            .WithMessage("*limit value greater than 0*");
-    }
-
-    #endregion
 
     #region Conflict Throws (409)
 

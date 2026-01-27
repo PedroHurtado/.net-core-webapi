@@ -37,6 +37,7 @@ public partial class Plan
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class UpdateFeature(
+        Feature.Create featureCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<UpdateFeatureCommand, Plan>
     {
@@ -59,26 +60,15 @@ public partial class Plan
                 $"Feature with code '{command.Code}' not found in the plan"
             );
 
-            // Validate Feature Type rules
-            if (command.Type == FeatureType.Limit)
-            {
-                ValidationGuard.ThrowIf(
-                    command.Limit <= 0,
-                    "Feature of type Limit must have a limit value greater than 0",
-                    nameof(command.Limit)
-                );
-            }
-            // For other types, we ignore the Limit value from command as it's forced to be int
-
-            // Create new feature instance
-            var newFeature = Feature.New(
+            // Create new feature instance using the service
+            var newFeature = featureCreate.Execute(new CreateFeatureCommand(
                 command.Code,
                 command.Name,
                 command.Description,
                 command.Type,
-                command.Type == FeatureType.Limit ? command.Limit : null,
+                command.Limit,
                 command.Unit
-            );
+            ));
 
             // Replace in collection (remove old, add new)
             plan._features.Remove(existingFeature!);

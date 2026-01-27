@@ -36,6 +36,7 @@ public partial class Plan
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class AddFeature(
+        Feature.Create featureCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<AddFeatureCommand, Plan>
     {
@@ -55,38 +56,17 @@ public partial class Plan
                 $"Feature with code '{command.Code}' already exists in the plan"
             );
 
-            // Create the new feature value object
-            // The Feature record constructor or factory should handle basic validations, 
-            // but we can also validate specific business rules here if needed.
-            
-            // Validate Feature Type rules specific to this flow if not covered by Feature VO
-            if (command.Type == FeatureType.Limit)
-            {
-                ValidationGuard.ThrowIf(
-                    command.Limit <= 0,
-                    "Feature of type Limit must have a limit value greater than 0",
-                    nameof(command.Limit)
-                );
-            }
-            else // Boolean or Unlimited
-            {
-                // We don't throw here if Limit has value because the command forces an int value.
-                // Instead, we just ignore it when creating the Feature (pass null).
-                // However, if we want to be strict that the client should send 0 or something specific, we could validte.
-                // But usually, we just ensure we don't create an invalid Feature.
-            }
-
-            var feature = Feature.New(
+            var feature = featureCreate.Execute(new CreateFeatureCommand(
                 command.Code,
                 command.Name,
                 command.Description,
                 command.Type,
-                command.Type == FeatureType.Limit ? command.Limit : null,
+                command.Limit,
                 command.Unit
-            );
+            ));
 
             // Add to internal collection
-            plan._features.Add(feature);
+            plan.AddFeature(feature);
 
             return planValidator.ValidateOrThrow(plan);
         }
