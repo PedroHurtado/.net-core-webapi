@@ -77,7 +77,8 @@ public partial record Feature
         Type = type;
         Limit = limit;
         Unit = unit;
-    }
+    }    
+
 
     /// <summary>
     /// Gets a value indicating whether this feature configuration is valid.

@@ -742,11 +742,50 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 **Response**: 200 OK → `{AggregateName}Response`
 
+#### Tests Unitarios (Handler)
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Lanza NotFoundException si no existe
+- Verifica que se lanza excepción cuando repository devuelve null
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del {aggregate}
+
 #### Tests Integración
 
 ✅ 200 OK → {AggregateName}Response
 
 ❌ 404 → No encontrado
+
+---
+
+### List{AggregateName}s
+
+**Slice**: GET /{aggregates}?isActive=true
+
+**Response**: 200 OK → `{AggregateName}Response[]`
+
+#### Tests Unitarios (Handler)
+
+✅ Obtiene los {aggregate}s del repositorio
+- Verifica que repository.GetAllAsync es llamado
+
+✅ Filtra por isActive cuando se proporciona
+- Verifica que se aplica el filtro correctamente
+
+✅ Retorna array vacío si no hay resultados
+- Verifica que devuelve colección vacía, no null
+
+✅ Retorna Responses mapeados correctamente
+- Verifica que cada Response contiene los datos del {aggregate}
+
+#### Tests Integración
+
+✅ 200 OK → Array de {AggregateName}Response
+
+✅ 200 OK → Array vacío si no hay {aggregateName}s
 
 ---
 

@@ -1,0 +1,1009 @@
+openapi: 3.0.3
+info:
+  title: Plan API
+  description: |
+    API para la gestión de planes de suscripción de Fudie.
+
+    ## Conceptos Clave
+
+    - **Plan**: Representa un plan de suscripción con precio, período de facturación y características
+    - **Feature**: Característica incluida en un plan (Boolean, Limit o Unlimited)
+    - **ProviderConfiguration**: Configuración de integración con proveedores de pago (Stripe, Paddle, etc.)
+
+    ## Flujo de Activación
+
+    Un plan solo puede activarse cuando:
+    1. Tiene al menos una Feature
+    2. Tiene al menos una ProviderConfiguration activa
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5181'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Plans
+    description: Operaciones CRUD sobre planes
+  - name: Features
+    description: Gestión de características de un plan
+  - name: Provider Configurations
+    description: Configuraciones de proveedores de pago
+paths:
+  /plans:
+    post:
+      tags:
+        - Plans
+      summary: Crear un nuevo plan
+      description: |
+        Crea un nuevo plan de suscripción. El plan se crea con `isActive=false`.
+
+        Para activarlo, primero debe tener al menos una Feature y una ProviderConfiguration activa.
+      operationId: createPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '201':
+          description: Plan creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+          headers:
+            Location:
+              description: URL del plan creado
+              schema:
+                type: string
+                example: /api/v1/plans/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    get:
+      tags:
+        - Plans
+      summary: Listar planes
+      description: 'Obtiene la lista de todos los planes, opcionalmente filtrados por estado'
+      operationId: listPlans
+      parameters:
+        - name: isActive
+          in: query
+          description: Filtrar por estado activo/inactivo
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de planes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanResponse'
+  '/plans/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Plans
+      summary: Obtener un plan
+      description: Obtiene los detalles de un plan específico
+      operationId: getPlan
+      responses:
+        '200':
+          description: Plan encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    put:
+      tags:
+        - Plans
+      summary: Actualizar un plan
+      description: Actualiza los datos básicos de un plan existente
+      operationId: updatePlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+      responses:
+        '204':
+          description: Plan actualizado exitosamente
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/plans/{id}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Plans
+      summary: Activar un plan
+      description: |
+        Activa un plan para que esté disponible para nuevas suscripciones.
+
+        **Requisitos:**
+        - El plan debe tener al menos una Feature
+        - El plan debe tener al menos una ProviderConfiguration activa
+        - El plan no debe estar ya activo
+      operationId: activatePlan
+      responses:
+        '200':
+          description: Plan activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El plan ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Plan is already active
+        '422':
+          description: El plan no cumple los requisitos para activarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                noFeatures:
+                  summary: Sin características
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Features:
+                        - Plan must have at least one feature
+                noProvider:
+                  summary: Sin proveedor activo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      ProviderConfigurations:
+                        - Plan must have at least one active provider configuration
+  '/plans/{id}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Plans
+      summary: Desactivar un plan
+      description: |
+        Desactiva un plan para que no esté disponible para nuevas suscripciones.
+
+        **Nota:** Los suscriptores existentes no se ven afectados.
+      operationId: deactivatePlan
+      responses:
+        '200':
+          description: Plan desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El plan ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Plan is already inactive
+  '/plans/{id}/features':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Features
+      summary: Añadir una característica
+      description: |
+        Añade una nueva característica al plan.
+
+        **Tipos de características:**
+        - `Boolean`: Incluido/No incluido (ej: "Soporte prioritario")
+        - `Limit`: Con límite numérico (ej: "100 reservas/mes")
+        - `Unlimited`: Sin límite (ej: "Reservas ilimitadas")
+
+        El `code` debe ser único dentro del plan.
+      operationId: addFeature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFeatureRequest'
+            examples:
+              limit:
+                summary: Feature con límite
+                value:
+                  code: RESERVATIONS_MONTHLY
+                  name: Reservas mensuales
+                  description: Número máximo de reservas por mes
+                  type: Limit
+                  limit: 100
+                  unit: reservas/mes
+              boolean:
+                summary: Feature booleano
+                value:
+                  code: PRIORITY_SUPPORT
+                  name: Soporte prioritario
+                  description: Acceso a soporte prioritario 24/7
+                  type: Boolean
+              unlimited:
+                summary: Feature ilimitado
+                value:
+                  code: RESERVATIONS_MONTHLY
+                  name: Reservas ilimitadas
+                  type: Unlimited
+      responses:
+        '201':
+          description: Característica añadida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una característica con ese código
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Feature with code 'RESERVATIONS_MONTHLY' already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/plans/{id}/features/{code}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: code
+        in: path
+        description: Código de la característica
+        required: true
+        schema:
+          type: string
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          example: RESERVATIONS_MONTHLY
+    put:
+      tags:
+        - Features
+      summary: Actualizar una característica
+      description: |
+        Actualiza una característica existente del plan.
+
+        **Nota:** El `code` no se puede modificar.
+      operationId: updateFeature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureRequest'
+      responses:
+        '204':
+          description: Característica actualizada exitosamente
+        '404':
+          description: Plan o característica no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                planNotFound:
+                  summary: Plan no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Plan with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                featureNotFound:
+                  summary: Característica no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Feature with code 'NONEXISTENT' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Features
+      summary: Eliminar una característica
+      description: |
+        Elimina una característica del plan.
+
+        **Restricción:** No se puede eliminar la última característica de un plan activo.
+      operationId: removeFeature
+      responses:
+        '204':
+          description: Característica eliminada exitosamente
+        '404':
+          description: Plan o característica no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: No se puede eliminar la última característica de un plan activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  Features:
+                    - Cannot remove last feature from active plan
+  '/plans/{id}/provider-configurations':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Provider Configurations
+      summary: Añadir configuración de proveedor
+      description: |
+        Añade una nueva configuración de proveedor de pagos al plan.
+
+        **Regla:** Solo puede haber una configuración activa por proveedor.
+      operationId: addProviderConfiguration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddProviderConfigRequest'
+            example:
+              provider: Stripe
+              externalProductId: prod_xxx123
+              externalPriceId: price_xxx123
+              isActive: true
+      responses:
+        '201':
+          description: Configuración añadida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una configuración activa para ese proveedor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Active configuration for 'Stripe' already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/plans/{id}/provider-configurations/{provider}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: provider
+        in: path
+        description: Nombre del proveedor
+        required: true
+        schema:
+          type: string
+          example: Stripe
+    put:
+      tags:
+        - Provider Configurations
+      summary: Actualizar configuración de proveedor
+      description: |
+        Actualiza los IDs externos de una configuración de proveedor existente.
+
+        **Nota:** El estado `isActive` no se modifica con este endpoint.
+      operationId: updateProviderConfiguration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderConfigRequest'
+      responses:
+        '204':
+          description: Configuración actualizada exitosamente
+        '404':
+          description: Plan o configuración no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                planNotFound:
+                  summary: Plan no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Plan with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                configNotFound:
+                  summary: Configuración no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Configuration for 'Paddle' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/plans/{id}/provider-configurations/{provider}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: provider
+        in: path
+        description: Nombre del proveedor
+        required: true
+        schema:
+          type: string
+          example: Stripe
+    post:
+      tags:
+        - Provider Configurations
+      summary: Activar configuración de proveedor
+      description: |
+        Activa una configuración de proveedor.
+
+        **Idempotente:** Si ya está activa, no hace cambios.
+      operationId: activateProviderConfiguration
+      responses:
+        '200':
+          description: Configuración activada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan o configuración no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe otra configuración activa para ese proveedor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Another active configuration for 'Stripe' already exists
+  '/plans/{id}/provider-configurations/{provider}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: provider
+        in: path
+        description: Nombre del proveedor
+        required: true
+        schema:
+          type: string
+          example: Stripe
+    post:
+      tags:
+        - Provider Configurations
+      summary: Desactivar configuración de proveedor
+      description: |
+        Desactiva una configuración de proveedor.
+
+        **Restricción:** No se puede desactivar la última configuración activa de un plan activo.
+
+        **Idempotente:** Si ya está inactiva, no hace cambios.
+      operationId: deactivateProviderConfiguration
+      responses:
+        '200':
+          description: Configuración desactivada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan o configuración no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: No se puede desactivar la última configuración activa de un plan activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  ProviderConfigurations:
+                    - Cannot deactivate last provider on active plan
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        extensions:
+          type: object
+          additionalProperties: true
+    BillingPeriod:
+      type: string
+      enum:
+        - Monthly
+        - Quarterly
+        - Semester
+        - Yearly
+      description: Período de facturación del plan
+    FeatureType:
+      type: string
+      enum:
+        - Boolean
+        - Limit
+        - Unlimited
+      description: |
+        Tipo de característica:
+        - Boolean: Incluido/No incluido
+        - Limit: Con límite numérico
+        - Unlimited: Sin límite
+    CurrencyResponse:
+      type: object
+      required:
+        - code
+        - symbol
+        - decimalPlaces
+      properties:
+        code:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          example: EUR
+          description: Código ISO 4217 de la moneda
+        symbol:
+          type: string
+          maxLength: 5
+          example: €
+          description: Símbolo de la moneda
+        decimalPlaces:
+          type: integer
+          minimum: 0
+          maximum: 4
+          example: 2
+          description: Número de decimales
+    MoneyResponse:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 9.99
+          description: Cantidad monetaria
+        currency:
+          $ref: '#/components/schemas/CurrencyResponse'
+    FeatureResponse:
+      type: object
+      required:
+        - code
+        - name
+        - type
+        - displayValue
+      properties:
+        code:
+          type: string
+          maxLength: 50
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          example: RESERVATIONS_MONTHLY
+          description: 'Código único de la característica (uppercase, sin espacios)'
+        name:
+          type: string
+          maxLength: 100
+          example: Reservas mensuales
+          description: Nombre visible de la característica
+        description:
+          type: string
+          maxLength: 250
+          nullable: true
+          example: Número máximo de reservas por mes
+          description: Descripción detallada
+        type:
+          $ref: '#/components/schemas/FeatureType'
+        limit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 100
+          description: Límite numérico (solo cuando type=Limit)
+        unit:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: reservas/mes
+          description: Unidad de medida para el límite
+        displayValue:
+          type: string
+          example: 100 reservas/mes
+          description: Valor formateado para mostrar al usuario
+    ProviderConfigResponse:
+      type: object
+      required:
+        - provider
+        - externalProductId
+        - externalPriceId
+        - isActive
+      properties:
+        provider:
+          type: string
+          maxLength: 50
+          example: Stripe
+          description: Nombre del proveedor de pagos
+        externalProductId:
+          type: string
+          maxLength: 100
+          example: prod_xxx123
+          description: ID del producto en el proveedor externo
+        externalPriceId:
+          type: string
+          maxLength: 100
+          example: price_xxx123
+          description: ID del precio en el proveedor externo
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si esta configuración está activa
+    PlanResponse:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - price
+        - billingPeriod
+        - isActive
+        - hasActiveProvider
+        - features
+        - providerConfigurations
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          maxLength: 100
+          example: Plan Básico
+        description:
+          type: string
+          maxLength: 500
+          example: Ideal para restaurantes que están empezando
+        price:
+          $ref: '#/components/schemas/MoneyResponse'
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si el plan está disponible para nuevas suscripciones
+        hasActiveProvider:
+          type: boolean
+          example: true
+          description: Indica si tiene al menos una configuración de proveedor activa
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureResponse'
+        providerConfigurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderConfigResponse'
+    CreatePlanRequest:
+      type: object
+      required:
+        - name
+        - description
+        - amount
+        - currencyCode
+        - billingPeriod
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Plan Básico
+          description: Nombre del plan
+        description:
+          type: string
+          maxLength: 500
+          example: Ideal para restaurantes que están empezando
+          description: Descripción del plan
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 9.99
+          description: Precio del plan
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          example: EUR
+          description: Código ISO 4217 de la moneda
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+    UpdatePlanRequest:
+      type: object
+      required:
+        - name
+        - description
+        - amount
+        - currencyCode
+        - billingPeriod
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Plan Básico Actualizado
+        description:
+          type: string
+          maxLength: 500
+          example: Nueva descripción del plan
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 12.99
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          example: EUR
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+    AddFeatureRequest:
+      type: object
+      required:
+        - code
+        - name
+        - type
+      properties:
+        code:
+          type: string
+          maxLength: 50
+          pattern: '^[A-Z][A-Z0-9_]*$'
+          example: RESERVATIONS_MONTHLY
+          description: 'Código único (uppercase, sin espacios)'
+        name:
+          type: string
+          maxLength: 100
+          example: Reservas mensuales
+        description:
+          type: string
+          maxLength: 250
+          nullable: true
+          example: Número máximo de reservas por mes
+        type:
+          $ref: '#/components/schemas/FeatureType'
+        limit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 100
+          description: Requerido cuando type=Limit
+        unit:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: reservas/mes
+    UpdateFeatureRequest:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Reservas mensuales
+        description:
+          type: string
+          maxLength: 250
+          nullable: true
+        type:
+          $ref: '#/components/schemas/FeatureType'
+        limit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 200
+        unit:
+          type: string
+          maxLength: 50
+          nullable: true
+    AddProviderConfigRequest:
+      type: object
+      required:
+        - provider
+        - externalProductId
+        - externalPriceId
+      properties:
+        provider:
+          type: string
+          maxLength: 50
+          example: Stripe
+        externalProductId:
+          type: string
+          maxLength: 100
+          example: prod_xxx123
+        externalPriceId:
+          type: string
+          maxLength: 100
+          example: price_xxx123
+        isActive:
+          type: boolean
+          default: true
+          example: true
+    UpdateProviderConfigRequest:
+      type: object
+      required:
+        - externalProductId
+        - externalPriceId
+      properties:
+        externalProductId:
+          type: string
+          maxLength: 100
+          example: prod_new123
+        externalPriceId:
+          type: string
+          maxLength: 100
+          example: price_new123

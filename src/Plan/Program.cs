@@ -1,7 +1,3 @@
-using Plan.Infrastructure;
-using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -29,3 +25,5 @@ app.UseHttpsRedirection();
 
 app.Run();
 
+
+public partial class Program { }
