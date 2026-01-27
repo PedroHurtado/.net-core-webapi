@@ -3,33 +3,41 @@ namespace Plan.UnitTests.Features.Plans.Domain.PlanAggregate.Commands.Plan;
 public class PlanAddProviderConfigurationTests
 {
     private readonly PlanValidator _validator = new();
+    private readonly PlanAgg.Create _createPlan;
+    private readonly PlanAgg.AddFeature _addFeature;
     private readonly PlanAgg.AddProviderConfiguration _addProviderConfig;
+    private readonly PlanAgg.Activate _activate;
     private readonly MoneyVO.Create _createMoney;
     private readonly FeatureVO.Create _createFeature;
     private readonly PaymentProviderConfigVO.Create _createProviderConfig;
 
     public PlanAddProviderConfigurationTests()
     {
-        _addProviderConfig = new(_validator);
         _createMoney = new(new MoneyValidator());
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
+        _createPlan = new(_createMoney, _validator);
+        _addFeature = new(_createFeature, _validator);
+        _addProviderConfig = new(_createProviderConfig, _validator);
+        _activate = new(_validator);
     }
 
-    private TestablePlan CreateValidPlan()
+    private PlanAgg CreateValidPlan()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, CurrencyVO.EUR));
-        var feature = _createFeature.Execute(new CreateFeatureCommand("ORIGINAL_FEATURE", "Original", null, FeatureType.Boolean));
-        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_original", "price_original", true));
+        var plan = _createPlan.Execute(new CreatePlanCommand(
+            "Test Plan",
+            "Test description",
+            10m,
+            "EUR",
+            BillingPeriod.Monthly));
 
-        var plan = new TestablePlan(Guid.NewGuid());
-        plan.SetName("Original Plan");
-        plan.SetDescription("Original description");
-        plan.SetPrice(price);
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
-        plan.SetIsActive(true);
-        plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider);
+        plan = _addFeature.Execute(plan, new AddFeatureCommand(
+            "TEST_FEATURE", "Test Feature", null, FeatureType.Boolean));
+
+        plan = _addProviderConfig.Execute(plan, new AddProviderConfigurationCommand(
+            "Stripe", "prod_original", "price_original", true));
+
+        plan = _activate.Execute(plan, new ActivatePlanCommand());
 
         return plan;
     }
@@ -44,8 +52,7 @@ public class PlanAddProviderConfigurationTests
             Provider: "Paddle",
             ExternalProductId: "prod_paddle",
             ExternalPriceId: "price_paddle",
-            IsActive: true
-        );
+            IsActive: true);
 
         var result = _addProviderConfig.Execute(plan, command);
 
@@ -66,8 +73,7 @@ public class PlanAddProviderConfigurationTests
             Provider: "Paddle",
             ExternalProductId: "prod_paddle",
             ExternalPriceId: "price_paddle",
-            IsActive: false
-        );
+            IsActive: false);
 
         var result = _addProviderConfig.Execute(plan, command);
 
@@ -89,8 +95,7 @@ public class PlanAddProviderConfigurationTests
         var originalFeaturesCount = plan.Features.Count;
 
         var command = new AddProviderConfigurationCommand(
-            "Paddle", "prod", "price", true
-        );
+            "Paddle", "prod", "price", true);
 
         var result = _addProviderConfig.Execute(plan, command);
 
@@ -116,8 +121,7 @@ public class PlanAddProviderConfigurationTests
             Provider: provider!,
             ExternalProductId: "prod",
             ExternalPriceId: "price",
-            IsActive: true
-        );
+            IsActive: true);
 
         var act = () => _addProviderConfig.Execute(plan, command);
 
@@ -133,33 +137,29 @@ public class PlanAddProviderConfigurationTests
     public void Execute_WithDuplicateActiveProvider_ThrowsConflictException()
     {
         var plan = CreateValidPlan();
-        // Plan already has active Stripe config
 
         var command = new AddProviderConfigurationCommand(
             Provider: "Stripe",
             ExternalProductId: "prod_new",
             ExternalPriceId: "price_new",
-            IsActive: true
-        );
+            IsActive: true);
 
         var act = () => _addProviderConfig.Execute(plan, command);
 
         act.Should().Throw<ConflictException>()
-            .WithMessage("*active configuration for provider 'Stripe' already exists*");
+            .WithMessage("*Active configuration for 'Stripe' already exists*");
     }
 
     [Fact]
     public void Execute_WithDuplicateProviderButInactive_Succeeds()
     {
         var plan = CreateValidPlan();
-        // Plan already has active Stripe config
 
         var command = new AddProviderConfigurationCommand(
             Provider: "Stripe",
             ExternalProductId: "prod_new",
             ExternalPriceId: "price_new",
-            IsActive: false
-        );
+            IsActive: false);
 
         var result = _addProviderConfig.Execute(plan, command);
 

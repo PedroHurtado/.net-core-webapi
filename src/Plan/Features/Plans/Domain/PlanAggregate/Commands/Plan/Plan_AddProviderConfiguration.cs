@@ -28,9 +28,11 @@ public partial class Plan
     /// - No other active configuration for the same provider can exist.
     /// </para>
     /// </remarks>
+    /// <param name="providerConfigCreate">Command to create provider configurations.</param>
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class AddProviderConfiguration(
+        PaymentProviderConfig.Create providerConfigCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<AddProviderConfigurationCommand, Plan>
     {
@@ -44,38 +46,19 @@ public partial class Plan
         /// <exception cref="ConflictException">Thrown when an active configuration for the same provider already exists.</exception>
         public override Plan Execute(Plan plan, AddProviderConfigurationCommand command)
         {
-            // 409 - Validation: No duplicate active provider
-            if (command.IsActive)
-            {
-                ConflictGuard.ThrowIf(
-                    plan.ProviderConfigurations.Any(p => p.Provider == command.Provider && p.IsActive),
-                    $"An active configuration for provider '{command.Provider}' already exists in the plan"
-                );
-            }
+            ConflictGuard.ThrowIf(
+                command.IsActive && plan.ProviderConfigurations.Any(p => p.Provider == command.Provider && p.IsActive),
+                $"Active configuration for '{command.Provider}' already exists");
 
-            // Create using derived record to access protected constructor
-            var config = new CreatablePaymentProviderConfig(
+            var config = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
                 command.Provider,
                 command.ExternalProductId,
                 command.ExternalPriceId,
-                command.IsActive
-            );
+                command.IsActive));
 
-            // Validate the config explicitly since PlanValidator doesn't validate the collection
-            new PaymentProviderConfigValidator().ValidateOrThrow(config);
-
-            // Add to internal collection
             plan._providerConfigurations.Add(config);
 
             return planValidator.ValidateOrThrow(plan);
         }
-
-        // Helper record to access protected constructor
-        private record CreatablePaymentProviderConfig(
-            string Provider,
-            string ExternalProductId,
-            string ExternalPriceId,
-            bool IsActive
-        ) : PaymentProviderConfig(Provider, ExternalProductId, ExternalPriceId, IsActive);
     }
 }

@@ -12,10 +12,10 @@ namespace Plan.Features.Plans.Domain.PlanAggregate;
 public record UpdateFeatureCommand(
     string Code,
     string Name,
-    string Description,
+    string? Description,
     FeatureType Type,
-    int Limit,
-    string Unit
+    int? Limit = null,
+    string? Unit = null
 );
 
 public partial class Plan
