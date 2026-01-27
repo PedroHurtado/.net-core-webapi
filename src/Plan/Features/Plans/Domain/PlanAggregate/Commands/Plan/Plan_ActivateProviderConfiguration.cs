@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate;
+namespace Plans.Features.Plans.Domain.PlanAggregate;
 
 /// <summary>
 /// Command data for activating a payment provider configuration in a plan.

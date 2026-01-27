@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
+namespace Plans.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 /// <summary>
 /// Represents a feature or limit of the plan.

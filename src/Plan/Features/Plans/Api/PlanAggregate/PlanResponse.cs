@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Api.PlanAggregate;
+namespace Plans.Features.Plans.Api.PlanAggregate;
 
 public record PlanResponse(
     Guid Id,
@@ -11,7 +11,7 @@ public record PlanResponse(
     IReadOnlyCollection<FeatureResponse> Features,
     IReadOnlyCollection<ProviderConfigResponse> ProviderConfigurations)
 {
-    public static PlanResponse Map(PlanAgg plan) => new(
+    public static PlanResponse Map(Plan plan) => new(
         Id: plan.Id,
         Name: plan.Name,
         Description: plan.Description,

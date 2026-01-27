@@ -1,4 +1,4 @@
-namespace Plan.Features.Plans.Domain.PlanAggregate.ValueObjects;
+namespace Plans.Features.Plans.Domain.PlanAggregate.ValueObjects;
 
 /// <summary>
 /// Represents a currency according to ISO 4217 standard.
