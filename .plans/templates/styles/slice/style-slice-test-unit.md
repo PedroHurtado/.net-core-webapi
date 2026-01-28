@@ -128,3 +128,14 @@ public async Task Handler_ReturnsCreatedWithLocation()
 - **Validators se instancian** → `new {Type}Validator()`
 - **Repository y UnitOfWork** → Mock
 - Nomenclatura: `HandleAsync_{Scenario}_{ExpectedResult}`
+
+
+### Excepciones del dominio
+
+| Guard | Excepción | Cuándo |
+|-------|-----------|--------|
+| ValidationGuard | `ValidationException` | Validación de datos fallida |
+| ConflictGuard | `ConflictException` | Estado inválido (duplicado, ya activo, etc.) |
+| NotFoundGuard | `KeyNotFoundException` | Entidad no encontrada |
+
+Estas son las ÚNICAS excepciones que el dominio lanza. No inventes otras.
