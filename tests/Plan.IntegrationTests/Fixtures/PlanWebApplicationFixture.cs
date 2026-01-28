@@ -58,4 +58,17 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
         var dbContext = scope.ServiceProvider.GetRequiredService<PlanDbContext>();
         return await action(dbContext);
     }
+
+    public async Task<PlanResponse> CreatePlanAsync(
+        string name = "Plan Test",
+        string description = "Descripción de test",
+        decimal amount = 9.99m,
+        string currencyCode = "EUR",
+        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+    {
+        var request = new CreatePlan.Request(name, description, amount, currencyCode, billingPeriod);
+        var response = await Client.PostAsJsonAsync("/plans", request);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
+    }
 }
