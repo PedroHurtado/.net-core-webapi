@@ -65,4 +65,34 @@ public class RemovePlanFeatureTests : PlanWebApplicationFixture
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
+
+
+    [Fact]
+    public async Task Debug_ArrayChangeDetection_WithoutHttp()
+    {
+        // Crear vía HTTP
+        var plan = await CreatePlanAsync();
+        await AddFeatureToPlanAsync(plan.Id, code: "FEAT_C");
+        await AddFeatureToPlanAsync(plan.Id, code: "FEAT_D");
+
+        // Modificar directamente con DbContext (sin HTTP)
+        await ExecuteWithDbContext(async dbContext =>
+        {
+            var entity = await dbContext.Set<Plan>().FirstAsync(p => p.Id == plan.Id);
+            var featureToRemove = entity._features.First(f => f.Code == "FEAT_C");
+            entity._features.Remove(featureToRemove);
+            await dbContext.SaveChangesAsync();
+            return true;
+        });
+
+        // Verificar con otro scope
+        var result = await ExecuteWithDbContext(async dbContext =>
+        {
+            var entity = await dbContext.Set<Plan>().FirstAsync(p => p.Id == plan.Id);
+            return entity._features.ToList();
+        });
+
+        result.Should().NotContain(f => f.Code == "FEAT_C");
+        result.Should().Contain(f => f.Code == "FEAT_D");
+    }
 }

@@ -50,7 +50,7 @@ public partial class Plan : AggregateRoot<Guid>
     /// <summary>
     /// The internal collection of plan features.
     /// </summary>
-    protected HashSet<Feature> _features = [];
+    public HashSet<Feature> _features = [];
 
     /// <summary>
     /// Gets the read-only collection of features in this plan.

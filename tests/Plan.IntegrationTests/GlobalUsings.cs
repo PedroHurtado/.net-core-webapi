@@ -16,3 +16,5 @@ global using Plans.Features.Plans.Api.PlanAggregate.Queries;
 global using Plans.Features.Plans.Domain.PlanAggregate.Enums;
 global using Plans.Infrastructure;
 global using Plans.IntegrationTests.Fixtures;
+
+global using Plans.Features.Plans.Domain.PlanAggregate;
