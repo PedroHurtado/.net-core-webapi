@@ -245,7 +245,8 @@ public class UpdateMenuItemPriceOptionIntegrationTests(WebApplicationFactory<Pro
     {
         // Arrange
         var menuItem = await CreateMenuItemWithMultiplePriceOptionsAsync();
-        await Client.PutAsJsonAsync($"/menu-items/{menuItem.Id}/price-options/{PortionType.Half}", CreateValidRequest(price: 15.00m, isActive: false));
+        var deactivateResponse = await Client.PutAsJsonAsync($"/menu-items/{menuItem.Id}/price-options/{PortionType.Half}", CreateValidRequest(price: 15.00m, isActive: false));
+        deactivateResponse.EnsureSuccessStatusCode();
         var request = CreateValidRequest(price: 22.00m, isActive: false);
 
         // Act
