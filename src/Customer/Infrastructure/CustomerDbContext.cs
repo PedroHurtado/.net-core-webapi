@@ -53,7 +53,11 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
             entity.ComplexProperty(m => m.NutritionalInfo);
 
             // ArrayOf embedded: PriceOptions
-            entity.ArrayOf(m => m.PriceOptions);
+            entity.ArrayOf(m => m.PriceOptions, priceOption =>
+            {
+                priceOption.Ignore(p=>p.DisplayPrice);
+                priceOption.Ignore(p=>p.RequiresMarketPrice);
+            });
 
             // ArrayOf Reference: Allergens (references to Allergen aggregate)
             entity.ArrayOf(m => m.Allergens).AsReferences();

@@ -11,6 +11,8 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Infrastructure;
 
 global using Plans.Features.Plans.Api.PlanAggregate;
+global using Plans.Features.Plans.Api.PlanAggregate.Commands;
+global using Plans.Features.Plans.Api.PlanAggregate.Queries;
 global using Plans.Features.Plans.Domain.PlanAggregate.Enums;
 global using Plans.Infrastructure;
 global using Plans.IntegrationTests.Fixtures;

@@ -165,7 +165,11 @@ public record {ValueObject2}Response(
 
 ---
 
-## 6. Comandos
+## 6. Comandos y Slices (Orden de Implementación)
+
+> ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
+> - Las Queries (Get, List) van después de Create porque son necesarias para verificar persistencia
+> - Activate/Deactivate van al final porque dependen de Add{ValueObject}
 
 ---
 
@@ -176,21 +180,24 @@ public record {ValueObject2}Response(
 🟡[{Actor}] → 🔵(Create{AggregateName}) → 🟤[[{AggregateName}]] → 🟠<{AggregateName}Created>
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
 | {Field1} | {Type} |
 | {Field2} | {Type} |
 
-#### Inyecta
+**Inyecta**
 - `{ValueObject}.Create`
 - `IValidator<{AggregateName}>`
 
-#### Guards
+**Guards**
+
 Ninguno.
 
-#### Lógica
+**Lógica**
 ```csharp
 var {valueObject} = {valueObject}Create.Execute(new Create{ValueObject}Command(command.{Field1}, command.{Field2}));
 
@@ -204,6 +211,16 @@ var {aggregate} = new {AggregateName}(Guid.NewGuid())
 return {aggregate}Validator.ValidateOrThrow({aggregate});
 ```
 
+**Tests Unitarios Dominio**
+
+✅ Crear {aggregate} con datos válidos
+- Input: {Field1}={value1}, {Field2}={value2}
+- Resultado: {AggregateName} creado con IsActive=false
+
+❌ {Field1} vacío
+- Input: {Field1}=""
+- Resultado: ValidationException "{Field1} is required"
+
 #### Slice: POST /{aggregates}
 
 **Request**
@@ -216,17 +233,7 @@ public record Create{AggregateName}Request(
 
 **Response**: 201 Created → `{AggregateName}Response`
 
-#### Tests Unitarios (Dominio)
-
-✅ Crear {aggregate} con datos válidos
-- Input: {Field1}={value1}, {Field2}={value2}
-- Resultado: {AggregateName} creado con IsActive=false
-
-❌ {Field1} vacío
-- Input: {Field1}=""
-- Resultado: ValidationException "{Field1} is required"
-
-#### Tests Unitarios (Servicio)
+**Tests Unitarios Servicio**
 
 ✅ Llama a {AggregateName}.Create con los parámetros correctos
 - Verifica que se invoca {aggregate}Create.Execute con el command correcto
@@ -240,7 +247,7 @@ public record Create{AggregateName}Request(
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene los datos del {aggregate}
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 201 Created → {AggregateName}Response
 
@@ -248,28 +255,87 @@ public record Create{AggregateName}Request(
 
 ---
 
-### 6.2 {AggregateName}.Update
+### 6.2 Get{AggregateName}
+
+#### Event Storming
+```
+🟡[{Actor}] → 🔵(Get{AggregateName}) → 🟤[[{AggregateName}]] → 📊 {AggregateName}Response
+```
+
+#### Slice: GET /{aggregates}/{id}
+
+**Response**: 200 OK → `{AggregateName}Response`
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el {aggregate} del repositorio con el id correcto
+- Verifica que repository.Get es llamado con el id
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del {aggregate}
+
+**Tests Integración**
+
+✅ 200 OK → {AggregateName}Response
+
+❌ 404 → No encontrado
+
+---
+
+### 6.3 List{AggregateName}s
+
+#### Event Storming
+```
+🟡[{Actor}] → 🔵(List{AggregateName}s) → 🟤[[{AggregateName}]] → 📊 {AggregateName}Response[]
+```
+
+#### Slice: GET /{aggregates}
+
+**QueryParams**: `?isActive=true` (opcional)
+
+**Response**: 200 OK → `{AggregateName}Response[]`
+
+**Tests Unitarios Servicio**
+
+✅ Retorna lista de {aggregate}s mapeados correctamente
+- Verifica que el Response contiene los datos de los {aggregate}s
+
+✅ Filtra por isActive cuando se proporciona
+- Verifica que solo retorna {aggregate}s con el estado indicado
+
+**Tests Integración**
+
+✅ 200 OK → Array de {AggregateName}Response
+
+✅ 200 OK → Array vacío si no hay {aggregateName}s
+
+---
+
+### 6.4 {AggregateName}.Update
 
 #### Event Storming
 ```
 🟡[{Actor}] → 🔵(Update{AggregateName}) → 🟤[[{AggregateName}]] → 🟠<{AggregateName}Updated>
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
 | {Field1} | {Type} |
 | {Field2} | {Type} |
 
-#### Inyecta
+**Inyecta**
 - `{ValueObject}.Create`
 - `IValidator<{AggregateName}>`
 
-#### Guards
+**Guards**
+
 Ninguno.
 
-#### Lógica
+**Lógica**
 ```csharp
 var {valueObject} = {valueObject}Create.Execute(new Create{ValueObject}Command(command.{Field1}, command.{Field2}));
 
@@ -278,6 +344,17 @@ var {valueObject} = {valueObject}Create.Execute(new Create{ValueObject}Command(c
 
 return {aggregate}Validator.ValidateOrThrow({aggregate});
 ```
+
+**Tests Unitarios Dominio**
+
+✅ Actualizar {aggregate} existente
+- Precondición: {AggregateName} existe
+- Input: {Field1}={newValue}
+- Resultado: {AggregateName} actualizado
+
+❌ {Field1} vacío
+- Input: {Field1}=""
+- Resultado: ValidationException "{Field1} is required"
 
 #### Slice: PUT /{aggregates}/{id}
 
@@ -291,21 +368,10 @@ public record Update{AggregateName}Request(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
-
-✅ Actualizar {aggregate} existente
-- Precondición: {AggregateName} existe
-- Input: {Field1}={newValue}
-- Resultado: {AggregateName} actualizado
-
-❌ {Field1} vacío
-- Input: {Field1}=""
-- Resultado: ValidationException "{Field1} is required"
-
-#### Tests Unitarios (Servicio)
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a {AggregateName}.Update con los parámetros correctos
 - Verifica que se invoca {aggregate}Update.Execute con el command correcto
@@ -313,9 +379,11 @@ public record Update{AggregateName}Request(
 ✅ Guarda los cambios
 - Verifica que unitOfWork.SaveChangesAsync es llamado
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 204 No Content
+
+✅ Persistencia: PUT → GET → verificar datos actualizados
 
 ❌ 404 → {AggregateName} no encontrado
 
@@ -323,49 +391,348 @@ public record Update{AggregateName}Request(
 
 ---
 
-### 6.3 {AggregateName}.Activate
+### 6.5 {AggregateName}.Add{ValueObject1}
+
+#### Event Storming
+```
+🟡[{Actor}] → 🔵(Add{ValueObject1}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject1}Added>
+                                          │
+                                🟣{{Key}Único}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| {Key} | {Type} |
+| {Field1} | {Type} |
+| {Field2} | {Type}? |
+
+**Inyecta**
+- `{ValueObject1}.Create`
+- `IValidator<{AggregateName}>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| {Key} ya existe | 409 | ConflictGuard | "{ValueObject1} with {key} '{Key}' already exists" |
+
+**Lógica**
+```csharp
+ConflictGuard.ThrowIf(
+    {aggregate}.{Collection1}.Any(x => x.{Key} == command.{Key}),
+    $"{ValueObject1} with {key} '{command.{Key}}' already exists");
+
+var {valueObject1} = {valueObject1}Create.Execute(new Create{ValueObject1}Command(
+    command.{Key},
+    command.{Field1},
+    command.{Field2}));
+
+{aggregate}._{collection1}.Add({valueObject1});
+
+return {aggregate}Validator.ValidateOrThrow({aggregate});
+```
+
+**Tests Unitarios Dominio**
+
+✅ Añadir {valueObject1} válido
+- Precondición: {AggregateName} sin {ValueObject1} con {Key}={value}
+- Input: {Key}={value}, {Field1}={value1}
+- Resultado: {ValueObject1} añadido
+
+❌ {Key} duplicado
+- Precondición: {AggregateName} ya tiene {ValueObject1} con {Key}={value}
+- Input: {Key}={value}
+- Resultado: ConflictException "{ValueObject1} with {key} '{value}' already exists"
+
+❌ Validación de {ValueObject1} falla
+- Input: {Field1}=""
+- Resultado: ValidationException "{Field1} is required"
+
+#### Slice: POST /{aggregates}/{id}/{collection1}
+
+**Request**
+```csharp
+public record Add{ValueObject1}Request(
+    {Type} {Key},
+    {Type} {Field1},
+    {Type}? {Field2}
+);
+```
+
+**Response**: 201 Created → `{AggregateName}Response`
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.Get es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Add{ValueObject1} con los parámetros correctos
+- Verifica que se invoca add{ValueObject1}.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene el {ValueObject1} añadido
+
+**Tests Integración**
+
+✅ 201 Created → {AggregateName}Response con {ValueObject1} añadido
+
+✅ Persistencia: POST → GET → verificar {ValueObject1} añadido
+
+❌ 404 → {AggregateName} no encontrado
+
+❌ 409 → {Key} duplicado
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.6 {AggregateName}.Update{ValueObject1}
+
+#### Event Storming
+```
+🟡[{Actor}] → 🔵(Update{ValueObject1}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject1}Updated>
+                                             │
+                                   🟣{{ValueObject1}Existe}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| {Field1} | {Type} |
+| {Field2} | {Type}? |
+
+*{Key} viene en la ruta*
+
+**Inyecta**
+- `{ValueObject1}.Create`
+- `IValidator<{AggregateName}>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| {ValueObject1} no existe | 404 | NotFoundGuard | "{ValueObject1} with {key} '{Key}' not found" |
+
+**Lógica**
+```csharp
+var existing = {aggregate}.{Collection1}.FirstOrDefault(x => x.{Key} == {key});
+NotFoundGuard.ThrowIfNull(existing, $"{ValueObject1} with {key} '{{key}}' not found");
+
+var updated = {valueObject1}Create.Execute(new Create{ValueObject1}Command(
+    {key},
+    command.{Field1},
+    command.{Field2}));
+
+{aggregate}._{collection1}.Remove(existing);
+{aggregate}._{collection1}.Add(updated);
+
+return {aggregate}Validator.ValidateOrThrow({aggregate});
+```
+
+**Tests Unitarios Dominio**
+
+✅ Actualizar {valueObject1} existente
+- Precondición: {AggregateName} tiene {ValueObject1} con {Key}={value}
+- Input: {Field1}={newValue}
+- Resultado: {ValueObject1} actualizado
+
+❌ {ValueObject1} no existe
+- Precondición: {AggregateName} no tiene {ValueObject1} con {Key}={value}
+- Resultado: NotFoundException "{ValueObject1} with {key} '{value}' not found"
+
+#### Slice: PUT /{aggregates}/{id}/{collection1}/{key}
+
+**Request**
+```csharp
+public record Update{ValueObject1}Request(
+    {Type} {Field1},
+    {Type}? {Field2}
+);
+```
+
+**Response**: 204 No Content
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.Get es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Update{ValueObject1} con los parámetros correctos
+- Verifica que se invoca update{ValueObject1}.Execute con el {key} y command correctos
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+**Tests Integración**
+
+✅ 204 No Content
+
+✅ Persistencia: PUT → GET → verificar {ValueObject1} actualizado
+
+❌ 404 → {AggregateName} o {ValueObject1} no encontrado
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.7 {AggregateName}.Remove{ValueObject1}
+
+#### Event Storming
+```
+🟡[{Actor}] → 🔵(Remove{ValueObject1}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject1}Removed>
+                                             │
+                                   🟣{{ValueObject1}Existe}
+                                   🟣{NoEsElÚltimo}
+```
+
+#### Dominio
+
+**Input**
+
+*{Key} viene en la ruta*
+
+**Inyecta**
+- `IValidator<{AggregateName}>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| {ValueObject1} no existe | 404 | NotFoundGuard | "{ValueObject1} with {key} '{Key}' not found" |
+| Es el último y {AggregateName} activo | 422 | ValidationGuard | "Cannot remove last {valueObject1} from active {aggregateName}" |
+
+**Lógica**
+```csharp
+var existing = {aggregate}.{Collection1}.FirstOrDefault(x => x.{Key} == {key});
+NotFoundGuard.ThrowIfNull(existing, $"{ValueObject1} with {key} '{{key}}' not found");
+
+ValidationGuard.ThrowIf(
+    {aggregate}.IsActive && {aggregate}.{Collection1}.Count <= 1,
+    "Cannot remove last {valueObject1} from active {aggregateName}",
+    nameof({aggregate}.{Collection1}));
+
+{aggregate}._{collection1}.Remove(existing);
+
+return {aggregate}Validator.ValidateOrThrow({aggregate});
+```
+
+**Tests Unitarios Dominio**
+
+✅ Eliminar {valueObject1} (hay varios)
+- Precondición: {AggregateName} con múltiples {ValueObject1}s
+- Resultado: {ValueObject1} eliminado
+
+✅ Eliminar último {valueObject1} ({aggregateName} inactivo)
+- Precondición: {AggregateName} inactivo con 1 {ValueObject1}
+- Resultado: {ValueObject1} eliminado
+
+❌ {ValueObject1} no existe
+- Resultado: NotFoundException "{ValueObject1} with {key} '{value}' not found"
+
+❌ Último {valueObject1} en {aggregateName} activo
+- Precondición: {AggregateName} activo con 1 {ValueObject1}
+- Resultado: ValidationException "Cannot remove last {valueObject1} from active {aggregateName}"
+
+#### Slice: DELETE /{aggregates}/{id}/{collection1}/{key}
+
+**Response**: 204 No Content
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el {aggregate} del repositorio
+- Verifica que repository.Get es llamado con el id correcto
+
+✅ Llama a {AggregateName}.Remove{ValueObject1} con el {key} correcto
+- Verifica que se invoca remove{ValueObject1}.Execute con el {key}
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+**Tests Integración**
+
+✅ 204 No Content
+
+✅ Persistencia: DELETE → GET → verificar {ValueObject1} eliminado
+
+❌ 404 → {AggregateName} o {ValueObject1} no encontrado
+
+❌ 422 → Es el último en {aggregateName} activo
+
+---
+
+### 6.8 {AggregateName}.Add{ValueObject2}
+
+*(Repetir patrón 6.5 para {ValueObject2})*
+
+---
+
+### 6.9 {AggregateName}.Update{ValueObject2}
+
+*(Repetir patrón 6.6 para {ValueObject2})*
+
+---
+
+### 6.10 {AggregateName}.Remove{ValueObject2}
+
+*(Repetir patrón 6.7 para {ValueObject2})*
+
+---
+
+### 6.11 {AggregateName}.Activate
+
+> ⚠️ **Dependencias**: Requiere que existan {Collection1} y {Collection2} activos.
+> Por eso este comando va después de Add{ValueObject1} y Add{ValueObject2}.
 
 #### Event Storming
 ```
 🟡[{Actor}] → 🔵(Activate{AggregateName}) → 🟤[[{AggregateName}]] → 🟠<{AggregateName}Activated>
                                                 │
-                                      🟣{TieneRequisito1}
-                                      🟣{TieneRequisito2}
+                                      🟣{Tiene{Collection1}}
+                                      🟣{Tiene{Collection2}Activo}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
+
 Ninguno
 
-#### Inyecta
+**Inyecta**
 - `IValidator<{AggregateName}>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Ya está activo | 409 | ConflictGuard | "{AggregateName} is already active" |
-| No tiene {Requisito1} | 422 | ValidationGuard | "{AggregateName} must have at least one {requisito1}" |
-| No tiene {Requisito2} | 422 | ValidationGuard | "{AggregateName} must have at least one {requisito2}" |
+| No tiene {Collection1} | 422 | ValidationGuard | "{AggregateName} must have at least one {valueObject1}" |
+| No tiene {Collection2} activo | 422 | ValidationGuard | "{AggregateName} must have at least one active {valueObject2}" |
 
-#### Lógica
+**Lógica**
 ```csharp
 ConflictGuard.ThrowIf({aggregate}.IsActive, "{AggregateName} is already active");
-ValidationGuard.ThrowIf(!{aggregate}.{Collection1}.Any(), "{AggregateName} must have at least one {requisito1}", nameof({aggregate}.{Collection1}));
-ValidationGuard.ThrowIf(!{aggregate}.{HasRequisito2}, "{AggregateName} must have at least one {requisito2}", nameof({aggregate}.{Collection2}));
+ValidationGuard.ThrowIf(!{aggregate}.{Collection1}.Any(), "{AggregateName} must have at least one {valueObject1}", nameof({aggregate}.{Collection1}));
+ValidationGuard.ThrowIf(!{aggregate}.HasActive{ValueObject2}, "{AggregateName} must have at least one active {valueObject2}", nameof({aggregate}.{Collection2}));
 
 {aggregate}.IsActive = true;
 
 return {aggregate}Validator.ValidateOrThrow({aggregate});
 ```
 
-#### Slice: POST /{aggregates}/{id}/activate
-
-**Response**: 200 OK → `{AggregateName}Response`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Activar {aggregate} completo
-- Precondición: {AggregateName} con {Collection1} y {Collection2}, IsActive=false
+- Precondición: {AggregateName} con {Collection1} y {Collection2} activo, IsActive=false
 - Resultado: {AggregateName} con IsActive=true
 
 ❌ Ya activo
@@ -374,12 +741,20 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ❌ Sin {Collection1}
 - Precondición: {AggregateName} sin {Collection1}
-- Resultado: ValidationException "{AggregateName} must have at least one {requisito1}"
+- Resultado: ValidationException "{AggregateName} must have at least one {valueObject1}"
 
-#### Tests Unitarios (Servicio)
+❌ Sin {Collection2} activo
+- Precondición: {AggregateName} con {Collection1}, sin {Collection2} activo
+- Resultado: ValidationException "{AggregateName} must have at least one active {valueObject2}"
+
+#### Slice: POST /{aggregates}/{id}/activate
+
+**Response**: 200 OK → `{AggregateName}Response`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a {AggregateName}.Activate
 - Verifica que se invoca {aggregate}Activate.Execute
@@ -390,38 +765,43 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene IsActive=true
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 200 OK → {AggregateName}Response con IsActive=true
+
+✅ Persistencia: POST → GET → verificar IsActive=true
 
 ❌ 404 → {AggregateName} no encontrado
 
 ❌ 409 → Ya estaba activo
 
-❌ 422 → Falta requisito
+❌ 422 → Falta {Collection1} o {Collection2} activo
 
 ---
 
-### 6.4 {AggregateName}.Deactivate
+### 6.12 {AggregateName}.Deactivate
 
 #### Event Storming
 ```
 🟡[{Actor}] → 🔵(Deactivate{AggregateName}) → 🟤[[{AggregateName}]] → 🟠<{AggregateName}Deactivated>
 ```
 
-#### Input
+#### Dominio
+
+**Input**
+
 Ninguno
 
-#### Inyecta
+**Inyecta**
 - `IValidator<{AggregateName}>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Ya está inactivo | 409 | ConflictGuard | "{AggregateName} is already inactive" |
 
-#### Lógica
+**Lógica**
 ```csharp
 ConflictGuard.ThrowIf(!{aggregate}.IsActive, "{AggregateName} is already inactive");
 
@@ -430,11 +810,7 @@ ConflictGuard.ThrowIf(!{aggregate}.IsActive, "{AggregateName} is already inactiv
 return {aggregate}Validator.ValidateOrThrow({aggregate});
 ```
 
-#### Slice: POST /{aggregates}/{id}/deactivate
-
-**Response**: 200 OK → `{AggregateName}Response`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Desactivar {aggregate} activo
 - Precondición: {AggregateName} con IsActive=true
@@ -444,10 +820,14 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 - Precondición: {AggregateName} con IsActive=false
 - Resultado: ConflictException "{AggregateName} is already inactive"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /{aggregates}/{id}/deactivate
+
+**Response**: 200 OK → `{AggregateName}Response`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a {AggregateName}.Deactivate
 - Verifica que se invoca {aggregate}Deactivate.Execute
@@ -458,9 +838,11 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene IsActive=false
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 200 OK → {AggregateName}Response con IsActive=false
+
+✅ Persistencia: POST → GET → verificar IsActive=false
 
 ❌ 404 → {AggregateName} no encontrado
 
@@ -468,358 +850,26 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-### 6.5 {AggregateName}.Add{ValueObject}
+## 7. Resumen de Endpoints (Orden de Implementación)
 
-#### Event Storming
-```
-🟡[{Actor}] → 🔵(Add{ValueObject}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject}Added>
-                                          │
-                                🟣{{Key}Único}
-```
-
-#### Input
-
-| Campo | Tipo |
-|-------|------|
-| {Key} | {Type} |
-| {Field1} | {Type} |
-| {Field2} | {Type}? |
-
-#### Inyecta
-- `{ValueObject}.Create`
-- `IValidator<{AggregateName}>`
-
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| {Key} ya existe | 409 | ConflictGuard | "{ValueObject} with {key} '{Key}' already exists" |
-
-#### Lógica
-```csharp
-ConflictGuard.ThrowIf(
-    {aggregate}.{Collection}.Any(x => x.{Key} == command.{Key}),
-    $"{ValueObject} with {key} '{command.{Key}}' already exists");
-
-var {valueObject} = {valueObject}Create.Execute(new Create{ValueObject}Command(
-    command.{Key},
-    command.{Field1},
-    command.{Field2}));
-
-{aggregate}._{collection}.Add({valueObject});
-
-return {aggregate}Validator.ValidateOrThrow({aggregate});
-```
-
-#### Slice: POST /{aggregates}/{id}/{collection}
-
-**Request**
-```csharp
-public record Add{ValueObject}Request(
-    {Type} {Key},
-    {Type} {Field1},
-    {Type}? {Field2}
-);
-```
-
-**Response**: 201 Created → `{AggregateName}Response`
-
-#### Tests Unitarios (Dominio)
-
-✅ Añadir {valueObject} válido
-- Precondición: {AggregateName} sin {ValueObject} con {Key}={value}
-- Input: {Key}={value}, {Field1}={value1}
-- Resultado: {ValueObject} añadido
-
-❌ {Key} duplicado
-- Precondición: {AggregateName} ya tiene {ValueObject} con {Key}={value}
-- Input: {Key}={value}
-- Resultado: ConflictException "{ValueObject} with {key} '{value}' already exists"
-
-❌ Validación de {ValueObject} falla
-- Input: {Field1}=""
-- Resultado: ValidationException "{Field1} is required"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Llama a {AggregateName}.Add{ValueObject} con los parámetros correctos
-- Verifica que se invoca add{ValueObject}.Execute con el command correcto
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene el {ValueObject} añadido
-
-#### Tests Integración
-
-✅ 201 Created → {AggregateName}Response con {ValueObject} añadido
-
-❌ 404 → {AggregateName} no encontrado
-
-❌ 409 → {Key} duplicado
-
-❌ 422 → Validación fallida
+| # | Método | Ruta | Comando/Query | Response |
+|---|--------|------|---------------|----------|
+| 1 | POST | /{aggregates} | {AggregateName}.Create | 201 → `{AggregateName}Response` |
+| 2 | GET | /{aggregates}/{id} | Get{AggregateName} | 200 → `{AggregateName}Response` |
+| 3 | GET | /{aggregates} | List{AggregateName}s | 200 → `{AggregateName}Response[]` |
+| 4 | PUT | /{aggregates}/{id} | {AggregateName}.Update | 204 |
+| 5 | POST | /{aggregates}/{id}/{collection1} | {AggregateName}.Add{ValueObject1} | 201 → `{AggregateName}Response` |
+| 6 | PUT | /{aggregates}/{id}/{collection1}/{key} | {AggregateName}.Update{ValueObject1} | 204 |
+| 7 | DELETE | /{aggregates}/{id}/{collection1}/{key} | {AggregateName}.Remove{ValueObject1} | 204 |
+| 8 | POST | /{aggregates}/{id}/{collection2} | {AggregateName}.Add{ValueObject2} | 201 → `{AggregateName}Response` |
+| 9 | PUT | /{aggregates}/{id}/{collection2}/{key} | {AggregateName}.Update{ValueObject2} | 204 |
+| 10 | DELETE | /{aggregates}/{id}/{collection2}/{key} | {AggregateName}.Remove{ValueObject2} | 204 |
+| 11 | POST | /{aggregates}/{id}/activate | {AggregateName}.Activate | 200 → `{AggregateName}Response` |
+| 12 | POST | /{aggregates}/{id}/deactivate | {AggregateName}.Deactivate | 200 → `{AggregateName}Response` |
 
 ---
 
-### 6.6 {AggregateName}.Update{ValueObject}
-
-#### Event Storming
-```
-🟡[{Actor}] → 🔵(Update{ValueObject}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject}Updated>
-                                             │
-                                   🟣{{ValueObject}Existe}
-```
-
-#### Input
-
-| Campo | Tipo |
-|-------|------|
-| {Field1} | {Type} |
-| {Field2} | {Type}? |
-
-*{Key} viene en la ruta*
-
-#### Inyecta
-- `{ValueObject}.Create`
-- `IValidator<{AggregateName}>`
-
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| {ValueObject} no existe | 404 | NotFoundGuard | "{ValueObject} with {key} '{Key}' not found" |
-
-#### Lógica
-```csharp
-var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == {key});
-NotFoundGuard.ThrowIfNull(existing, $"{ValueObject} with {key} '{{key}}' not found");
-
-var updated = {valueObject}Create.Execute(new Create{ValueObject}Command(
-    {key},
-    command.{Field1},
-    command.{Field2}));
-
-{aggregate}._{collection}.Remove(existing);
-{aggregate}._{collection}.Add(updated);
-
-return {aggregate}Validator.ValidateOrThrow({aggregate});
-```
-
-#### Slice: PUT /{aggregates}/{id}/{collection}/{{key}}
-
-**Request**
-```csharp
-public record Update{ValueObject}Request(
-    {Type} {Field1},
-    {Type}? {Field2}
-);
-```
-
-**Response**: 204 No Content
-
-#### Tests Unitarios (Dominio)
-
-✅ Actualizar {valueObject} existente
-- Precondición: {AggregateName} tiene {ValueObject} con {Key}={value}
-- Input: {Field1}={newValue}
-- Resultado: {ValueObject} actualizado
-
-❌ {ValueObject} no existe
-- Precondición: {AggregateName} no tiene {ValueObject} con {Key}={value}
-- Resultado: NotFoundException "{ValueObject} with {key} '{value}' not found"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Llama a {AggregateName}.Update{ValueObject} con los parámetros correctos
-- Verifica que se invoca update{ValueObject}.Execute con el {key} y command correctos
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-#### Tests Integración
-
-✅ 204 No Content
-
-❌ 404 → {AggregateName} o {ValueObject} no encontrado
-
-❌ 422 → Validación fallida
-
----
-
-### 6.7 {AggregateName}.Remove{ValueObject}
-
-#### Event Storming
-```
-🟡[{Actor}] → 🔵(Remove{ValueObject}) → 🟤[[{AggregateName}]] → 🟠<{ValueObject}Removed>
-                                             │
-                                   🟣{{ValueObject}Existe}
-                                   🟣{NoEsElÚltimo}
-```
-
-#### Input
-*{Key} viene en la ruta*
-
-#### Inyecta
-- `IValidator<{AggregateName}>`
-
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| {ValueObject} no existe | 404 | NotFoundGuard | "{ValueObject} with {key} '{Key}' not found" |
-| Es el último y {AggregateName} activo | 422 | ValidationGuard | "Cannot remove last {valueObject} from active {aggregateName}" |
-
-#### Lógica
-```csharp
-var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == {key});
-NotFoundGuard.ThrowIfNull(existing, $"{ValueObject} with {key} '{{key}}' not found");
-
-ValidationGuard.ThrowIf(
-    {aggregate}.IsActive && {aggregate}.{Collection}.Count <= 1,
-    "Cannot remove last {valueObject} from active {aggregateName}",
-    nameof({aggregate}.{Collection}));
-
-{aggregate}._{collection}.Remove(existing);
-
-return {aggregate}Validator.ValidateOrThrow({aggregate});
-```
-
-#### Slice: DELETE /{aggregates}/{id}/{collection}/{{key}}
-
-**Response**: 204 No Content
-
-#### Tests Unitarios (Dominio)
-
-✅ Eliminar {valueObject} (hay varios)
-- Precondición: {AggregateName} con múltiples {ValueObject}s
-- Resultado: {ValueObject} eliminado
-
-✅ Eliminar último {valueObject} ({aggregateName} inactivo)
-- Precondición: {AggregateName} inactivo con 1 {ValueObject}
-- Resultado: {ValueObject} eliminado
-
-❌ {ValueObject} no existe
-- Resultado: NotFoundException "{ValueObject} with {key} '{value}' not found"
-
-❌ Último {valueObject} en {aggregateName} activo
-- Precondición: {AggregateName} activo con 1 {ValueObject}
-- Resultado: ValidationException "Cannot remove last {valueObject} from active {aggregateName}"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Llama a {AggregateName}.Remove{ValueObject} con el {key} correcto
-- Verifica que se invoca remove{ValueObject}.Execute con el {key}
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-#### Tests Integración
-
-✅ 204 No Content
-
-❌ 404 → {AggregateName} o {ValueObject} no encontrado
-
-❌ 422 → Es el último en {aggregateName} activo
-
----
-
-## 7. Queries
-
-### Get{AggregateName}
-
-**Slice**: GET /{aggregates}/{id}
-
-**Response**: 200 OK → `{AggregateName}Response`
-
-#### Tests Unitarios (Handler)
-
-✅ Obtiene el {aggregate} del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Lanza NotFoundException si no existe
-- Verifica que se lanza excepción cuando repository devuelve null
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene los datos del {aggregate}
-
-#### Tests Integración
-
-✅ 200 OK → {AggregateName}Response
-
-❌ 404 → No encontrado
-
----
-
-### List{AggregateName}s
-
-**Slice**: GET /{aggregates}?isActive=true
-
-**Response**: 200 OK → `{AggregateName}Response[]`
-
-#### Tests Unitarios (Handler)
-
-✅ Obtiene los {aggregate}s del repositorio
-- Verifica que repository.GetAllAsync es llamado
-
-✅ Filtra por isActive cuando se proporciona
-- Verifica que se aplica el filtro correctamente
-
-✅ Retorna array vacío si no hay resultados
-- Verifica que devuelve colección vacía, no null
-
-✅ Retorna Responses mapeados correctamente
-- Verifica que cada Response contiene los datos del {aggregate}
-
-#### Tests Integración
-
-✅ 200 OK → Array de {AggregateName}Response
-
-✅ 200 OK → Array vacío si no hay {aggregateName}s
-
----
-
-### List{AggregateName}s
-
-**Slice**: GET /{aggregates}?isActive=true
-
-**Response**: 200 OK → `{AggregateName}Response[]`
-
-#### Tests Integración
-
-✅ 200 OK → Array de {AggregateName}Response
-
-✅ 200 OK → Array vacío si no hay {aggregateName}s
-
----
-
-## 8. Resumen de Endpoints
-
-| Método | Ruta | Comando/Query | Response |
-|--------|------|---------------|----------|
-| POST | /{aggregates} | {AggregateName}.Create | 201 → `{AggregateName}Response` |
-| GET | /{aggregates} | List{AggregateName}s | 200 → `{AggregateName}Response[]` |
-| GET | /{aggregates}/{id} | Get{AggregateName} | 200 → `{AggregateName}Response` |
-| PUT | /{aggregates}/{id} | {AggregateName}.Update | 204 |
-| POST | /{aggregates}/{id}/activate | {AggregateName}.Activate | 200 → `{AggregateName}Response` |
-| POST | /{aggregates}/{id}/deactivate | {AggregateName}.Deactivate | 200 → `{AggregateName}Response` |
-| POST | /{aggregates}/{id}/{collection} | {AggregateName}.Add{ValueObject} | 201 → `{AggregateName}Response` |
-| PUT | /{aggregates}/{id}/{collection}/{{key}} | {AggregateName}.Update{ValueObject} | 204 |
-| DELETE | /{aggregates}/{id}/{collection}/{{key}} | {AggregateName}.Remove{ValueObject} | 204 |
-
----
-
-## 9. Persistencia (Firestore)
+## 8. Persistencia (Firestore)
 
 ### Colección
 
@@ -852,16 +902,6 @@ modelBuilder.Entity<{AggregateName}Agg>(entity =>
 
     // ArrayOf: {Collection2} (usa backing field _{collection2})
     entity.ArrayOf(x => x.{Collection2});
-
-    // SubCollection: {SubCollection} (colección separada en Firestore)
-    entity.SubCollection(x => x.{SubCollection}, sub =>
-    {
-        // ArrayOf embedded con Reference
-        sub.ArrayOf(s => s.{Items}, item =>
-        {
-            item.Reference(i => i.{ReferencedEntity});
-        });
-    });
 });
 ```
 
@@ -895,7 +935,7 @@ modelBuilder.Entity<{AggregateName}Agg>(entity =>
 
 ---
 
-## 10. Hot Spots ⚠️
+## 9. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|

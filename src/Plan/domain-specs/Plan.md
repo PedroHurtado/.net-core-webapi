@@ -479,7 +479,7 @@ public record ProviderConfigResponse(
 
 ---
 
-## 6. Comandos
+## 6. Comandos y Slices (Orden de Implementación)
 
 ---
 
@@ -490,7 +490,9 @@ public record ProviderConfigResponse(
 🟡[Admin] → 🔵(CreatePlan) → 🟤[[Plan]] → 🟠<PlanCreated>
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
@@ -500,14 +502,15 @@ public record ProviderConfigResponse(
 | CurrencyCode | string |
 | BillingPeriod | BillingPeriod |
 
-#### Inyecta
+**Inyecta**
 - `Money.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
+
 Ninguno.
 
-#### Lógica
+**Lógica**
 ```csharp
 var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, command.CurrencyCode));
 
@@ -523,22 +526,7 @@ var plan = new Plan(Guid.NewGuid())
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: POST /plans
-
-**Request**
-```csharp
-public record CreatePlanRequest(
-    string Name,
-    string Description,
-    decimal Amount,
-    string CurrencyCode,
-    BillingPeriod BillingPeriod
-);
-```
-
-**Response**: 201 Created → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Crear plan con datos válidos
 - Input: Name="Plan Básico", Description="Ideal para empezar", Amount=9.99, CurrencyCode="EUR", BillingPeriod=Monthly
@@ -560,7 +548,22 @@ public record CreatePlanRequest(
 - Input: CurrencyCode="XXX"
 - Resultado: ArgumentException "Currency XXX not supported"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /plans
+
+**Request**
+```csharp
+public record CreatePlanRequest(
+    string Name,
+    string Description,
+    decimal Amount,
+    string CurrencyCode,
+    BillingPeriod BillingPeriod
+);
+```
+
+**Response**: 201 Created → `PlanResponse`
+
+**Tests Unitarios Servicio**
 
 ✅ Llama a Money.Create con los parámetros correctos
 - Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
@@ -577,7 +580,7 @@ public record CreatePlanRequest(
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene los datos del plan
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 201 Created → PlanResponse con IsActive=false
 
@@ -585,14 +588,72 @@ public record CreatePlanRequest(
 
 ---
 
-### 6.2 Plan.Update
+### 6.2 GetPlan
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(GetPlan) → 🟤[[Plan]] → 📊 PlanResponse
+```
+
+#### Slice: GET /plans/{id}
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el plan del repositorio con el id correcto
+- Verifica que repository.Get es llamado con el id
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del plan
+
+**Tests Integración**
+
+✅ 200 OK → PlanResponse
+
+❌ 404 → No encontrado
+
+---
+
+### 6.3 ListPlans
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(ListPlans) → 🟤[[Plan]] → 📊 PlanResponse[]
+```
+
+#### Slice: GET /plans
+
+**QueryParams**: `?isActive=true` (opcional)
+
+**Response**: 200 OK → `PlanResponse[]`
+
+**Tests Unitarios Servicio**
+
+✅ Retorna lista de planes mapeados correctamente
+- Verifica que el Response contiene los datos de los planes
+
+✅ Filtra por isActive cuando se proporciona
+- Verifica que solo retorna planes con el estado indicado
+
+**Tests Integración**
+
+✅ 200 OK → Array de PlanResponse
+
+✅ 200 OK → Array vacío si no hay planes
+
+---
+
+### 6.4 Plan.Update
 
 #### Event Storming
 ```
 🟡[Admin] → 🔵(UpdatePlan) → 🟤[[Plan]] → 🟠<PlanUpdated>
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
@@ -602,14 +663,15 @@ public record CreatePlanRequest(
 | CurrencyCode | string |
 | BillingPeriod | BillingPeriod |
 
-#### Inyecta
+**Inyecta**
 - `Money.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
+
 Ninguno.
 
-#### Lógica
+**Lógica**
 ```csharp
 var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, command.CurrencyCode));
 
@@ -620,6 +682,17 @@ plan.BillingPeriod = command.BillingPeriod;
 
 return planValidator.ValidateOrThrow(plan);
 ```
+
+**Tests Unitarios Dominio**
+
+✅ Actualizar plan existente
+- Precondición: Plan existe
+- Input: Name="Plan Actualizado", Description="Nueva descripción", Amount=12.99, CurrencyCode="EUR", BillingPeriod=Monthly
+- Resultado: Plan actualizado
+
+❌ Name vacío
+- Input: Name=""
+- Resultado: ValidationException "Name is required"
 
 #### Slice: PUT /plans/{id}
 
@@ -636,21 +709,10 @@ public record UpdatePlanRequest(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
-
-✅ Actualizar plan existente
-- Precondición: Plan existe
-- Input: Name="Plan Actualizado", Description="Nueva descripción", Amount=12.99, CurrencyCode="EUR", BillingPeriod=Monthly
-- Resultado: Plan actualizado
-
-❌ Name vacío
-- Input: Name=""
-- Resultado: ValidationException "Name is required"
-
-#### Tests Unitarios (Servicio)
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Money.Create con los parámetros correctos
 - Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
@@ -661,162 +723,15 @@ public record UpdatePlanRequest(
 ✅ Guarda los cambios
 - Verifica que unitOfWork.SaveChangesAsync es llamado
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 204 No Content
+
+✅ Persistencia: PUT → GET → verificar datos actualizados
 
 ❌ 404 → Plan no encontrado
 
 ❌ 422 → Validación fallida
-
----
-
-### 6.3 Plan.Activate
-
-#### Event Storming
-```
-🟡[Admin] → 🔵(ActivatePlan) → 🟤[[Plan]] → 🟠<PlanActivated>
-                                    │
-                          🟣{TieneFeatures}
-                          🟣{TieneProviderActivo}
-```
-
-#### Input
-Ninguno
-
-#### Inyecta
-- `IValidator<Plan>`
-
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| Ya está activo | 409 | ConflictGuard | "Plan is already active" |
-| No tiene Features | 422 | ValidationGuard | "Plan must have at least one feature" |
-| No tiene ProviderConfig activa | 422 | ValidationGuard | "Plan must have at least one active provider configuration" |
-
-#### Lógica
-```csharp
-ConflictGuard.ThrowIf(plan.IsActive, "Plan is already active");
-ValidationGuard.ThrowIf(!plan.Features.Any(), "Plan must have at least one feature", nameof(plan.Features));
-ValidationGuard.ThrowIf(!plan.HasActiveProvider, "Plan must have at least one active provider configuration", nameof(plan.ProviderConfigurations));
-
-plan.IsActive = true;
-
-return planValidator.ValidateOrThrow(plan);
-```
-
-#### Slice: POST /plans/{id}/activate
-
-**Response**: 200 OK → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
-
-✅ Activar plan completo
-- Precondición: Plan con Features y ProviderConfig activa, IsActive=false
-- Resultado: Plan con IsActive=true
-
-❌ Plan ya activo
-- Precondición: Plan con IsActive=true
-- Resultado: ConflictException "Plan is already active"
-
-❌ Plan sin Features
-- Precondición: Plan sin Features, con ProviderConfig activa
-- Resultado: ValidationException "Plan must have at least one feature"
-
-❌ Plan sin ProviderConfig activa
-- Precondición: Plan con Features, sin ProviderConfig activa
-- Resultado: ValidationException "Plan must have at least one active provider configuration"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Llama a Plan.Activate
-- Verifica que se invoca planActivate.Execute
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene IsActive=true
-
-#### Tests Integración
-
-✅ 200 OK → PlanResponse con IsActive=true
-
-❌ 404 → Plan no encontrado
-
-❌ 409 → Ya estaba activo
-
-❌ 422 → Falta Feature o ProviderConfig
-
----
-
-### 6.4 Plan.Deactivate
-
-#### Event Storming
-```
-🟡[Admin] → 🔵(DeactivatePlan) → 🟤[[Plan]] → 🟠<PlanDeactivated>
-```
-
-#### Input
-Ninguno
-
-#### Inyecta
-- `IValidator<Plan>`
-
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| Ya está inactivo | 409 | ConflictGuard | "Plan is already inactive" |
-
-#### Lógica
-```csharp
-ConflictGuard.ThrowIf(!plan.IsActive, "Plan is already inactive");
-
-plan.IsActive = false;
-
-return planValidator.ValidateOrThrow(plan);
-```
-
-#### Slice: POST /plans/{id}/deactivate
-
-**Response**: 200 OK → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
-
-✅ Desactivar plan activo
-- Precondición: Plan con IsActive=true
-- Resultado: Plan con IsActive=false
-
-❌ Plan ya inactivo
-- Precondición: Plan con IsActive=false
-- Resultado: ConflictException "Plan is already inactive"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
-
-✅ Llama a Plan.Deactivate
-- Verifica que se invoca planDeactivate.Execute
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene IsActive=false
-
-#### Tests Integración
-
-✅ 200 OK → PlanResponse con IsActive=false
-
-❌ 404 → Plan no encontrado
-
-❌ 409 → Ya estaba inactivo
 
 ---
 
@@ -829,7 +744,9 @@ return planValidator.ValidateOrThrow(plan);
                         🟣{CodeÚnico}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
@@ -840,17 +757,17 @@ return planValidator.ValidateOrThrow(plan);
 | Limit | int? |
 | Unit | string? |
 
-#### Inyecta
+**Inyecta**
 - `Feature.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Code ya existe | 409 | ConflictGuard | "Feature with code '{Code}' already exists" |
 
-#### Lógica
+**Lógica**
 ```csharp
 ConflictGuard.ThrowIf(
     plan.Features.Any(f => f.Code == command.Code),
@@ -869,23 +786,7 @@ plan._features.Add(feature);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: POST /plans/{id}/features
-
-**Request**
-```csharp
-public record AddFeatureRequest(
-    string Code,
-    string Name,
-    string? Description,
-    FeatureType Type,
-    int? Limit,
-    string? Unit
-);
-```
-
-**Response**: 201 Created → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Añadir Feature tipo Limit
 - Precondición: Plan sin Feature RESERVATIONS_MONTHLY
@@ -909,10 +810,26 @@ public record AddFeatureRequest(
 - Input: Type=Limit, Limit=null
 - Resultado: ValidationException "Limit is required when feature type is Limit"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /plans/{id}/features
+
+**Request**
+```csharp
+public record AddFeatureRequest(
+    string Code,
+    string Name,
+    string? Description,
+    FeatureType Type,
+    int? Limit,
+    string? Unit
+);
+```
+
+**Response**: 201 Created → `PlanResponse`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.AddFeature con los parámetros correctos
 - Verifica que se invoca addFeature.Execute con el command correcto
@@ -923,9 +840,11 @@ public record AddFeatureRequest(
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene el Feature añadido
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 201 Created → PlanResponse con Feature añadido
+
+✅ Persistencia: POST → GET → verificar Feature añadido
 
 ❌ 404 → Plan no encontrado
 
@@ -944,7 +863,9 @@ public record AddFeatureRequest(
                           🟣{FeatureExiste}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
@@ -956,17 +877,17 @@ public record AddFeatureRequest(
 
 *Code viene en la ruta*
 
-#### Inyecta
+**Inyecta**
 - `Feature.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Feature no existe | 404 | NotFoundGuard | "Feature with code '{Code}' not found" |
 
-#### Lógica
+**Lógica**
 ```csharp
 var existing = plan.Features.FirstOrDefault(f => f.Code == code);
 NotFoundGuard.ThrowIfNull(existing, $"Feature with code '{code}' not found");
@@ -985,22 +906,7 @@ plan._features.Add(updated);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: PUT /plans/{id}/features/{code}
-
-**Request**
-```csharp
-public record UpdateFeatureRequest(
-    string Name,
-    string? Description,
-    FeatureType Type,
-    int? Limit,
-    string? Unit
-);
-```
-
-**Response**: 204 No Content
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Actualizar Feature existente
 - Precondición: Plan tiene Feature RESERVATIONS_MONTHLY con Limit=100
@@ -1016,10 +922,25 @@ public record UpdateFeatureRequest(
 - Precondición: Plan no tiene Feature NONEXISTENT
 - Resultado: NotFoundException "Feature with code 'NONEXISTENT' not found"
 
-#### Tests Unitarios (Servicio)
+#### Slice: PUT /plans/{id}/features/{code}
+
+**Request**
+```csharp
+public record UpdateFeatureRequest(
+    string Name,
+    string? Description,
+    FeatureType Type,
+    int? Limit,
+    string? Unit
+);
+```
+
+**Response**: 204 No Content
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.UpdateFeature con los parámetros correctos
 - Verifica que se invoca updateFeature.Execute con el code y command correctos
@@ -1027,9 +948,11 @@ public record UpdateFeatureRequest(
 ✅ Guarda los cambios
 - Verifica que unitOfWork.SaveChangesAsync es llamado
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 204 No Content
+
+✅ Persistencia: PUT → GET → verificar Feature actualizado
 
 ❌ 404 → Plan o Feature no encontrado
 
@@ -1047,20 +970,23 @@ public record UpdateFeatureRequest(
                           🟣{NoEsElÚltimo}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
+
 *Code viene en la ruta*
 
-#### Inyecta
+**Inyecta**
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Feature no existe | 404 | NotFoundGuard | "Feature with code '{Code}' not found" |
 | Es el último y Plan activo | 422 | ValidationGuard | "Cannot remove last feature from active plan" |
 
-#### Lógica
+**Lógica**
 ```csharp
 var existing = plan.Features.FirstOrDefault(f => f.Code == code);
 NotFoundGuard.ThrowIfNull(existing, $"Feature with code '{code}' not found");
@@ -1075,11 +1001,7 @@ plan._features.Remove(existing);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: DELETE /plans/{id}/features/{code}
-
-**Response**: 204 No Content
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Eliminar Feature (plan tiene varios)
 - Precondición: Plan con 3 Features
@@ -1098,10 +1020,14 @@ return planValidator.ValidateOrThrow(plan);
 - Precondición: Plan activo con 1 Feature
 - Resultado: ValidationException "Cannot remove last feature from active plan"
 
-#### Tests Unitarios (Servicio)
+#### Slice: DELETE /plans/{id}/features/{code}
+
+**Response**: 204 No Content
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.RemoveFeature con el code correcto
 - Verifica que se invoca removeFeature.Execute con el code
@@ -1109,9 +1035,11 @@ return planValidator.ValidateOrThrow(plan);
 ✅ Guarda los cambios
 - Verifica que unitOfWork.SaveChangesAsync es llamado
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 204 No Content
+
+✅ Persistencia: DELETE → GET → verificar Feature eliminado
 
 ❌ 404 → Plan o Feature no encontrado
 
@@ -1128,7 +1056,9 @@ return planValidator.ValidateOrThrow(plan);
                                🟣{NoActivoDuplicado}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo | Default |
 |-------|------|---------|
@@ -1137,17 +1067,17 @@ return planValidator.ValidateOrThrow(plan);
 | ExternalPriceId | string | |
 | IsActive | bool | true |
 
-#### Inyecta
+**Inyecta**
 - `PaymentProviderConfig.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Ya existe config activa del mismo Provider | 409 | ConflictGuard | "Active configuration for '{Provider}' already exists" |
 
-#### Lógica
+**Lógica**
 ```csharp
 ConflictGuard.ThrowIf(
     command.IsActive && plan.ProviderConfigurations.Any(c => c.Provider == command.Provider && c.IsActive),
@@ -1164,21 +1094,7 @@ plan._providerConfigurations.Add(config);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: POST /plans/{id}/provider-configurations
-
-**Request**
-```csharp
-public record AddProviderConfigRequest(
-    string Provider,
-    string ExternalProductId,
-    string ExternalPriceId,
-    bool IsActive = true
-);
-```
-
-**Response**: 201 Created → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Añadir primera config (Stripe)
 - Precondición: Plan sin ProviderConfigurations
@@ -1199,10 +1115,24 @@ public record AddProviderConfigRequest(
 - Input: Provider="Stripe", IsActive=true
 - Resultado: ConflictException "Active configuration for 'Stripe' already exists"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /plans/{id}/provider-configurations
+
+**Request**
+```csharp
+public record AddProviderConfigRequest(
+    string Provider,
+    string ExternalProductId,
+    string ExternalPriceId,
+    bool IsActive = true
+);
+```
+
+**Response**: 201 Created → `PlanResponse`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.AddProviderConfiguration con los parámetros correctos
 - Verifica que se invoca addProviderConfig.Execute con el command correcto
@@ -1213,9 +1143,11 @@ public record AddProviderConfigRequest(
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene la Config añadida
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 201 Created → PlanResponse con Config añadida
+
+✅ Persistencia: POST → GET → verificar Config añadida
 
 ❌ 404 → Plan no encontrado
 
@@ -1234,7 +1166,9 @@ public record AddProviderConfigRequest(
                                   🟣{ConfigExiste}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
 
 | Campo | Tipo |
 |-------|------|
@@ -1243,17 +1177,17 @@ public record AddProviderConfigRequest(
 
 *Provider viene en la ruta*
 
-#### Inyecta
+**Inyecta**
 - `PaymentProviderConfig.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
 
-#### Lógica
+**Lógica**
 ```csharp
 var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
 NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
@@ -1270,6 +1204,17 @@ plan._providerConfigurations.Add(updated);
 return planValidator.ValidateOrThrow(plan);
 ```
 
+**Tests Unitarios Dominio**
+
+✅ Actualizar IDs de Stripe
+- Precondición: Plan con config Stripe
+- Input: ExternalProductId="prod_new", ExternalPriceId="price_new"
+- Resultado: IDs actualizados, IsActive se mantiene
+
+❌ Config no existe
+- Precondición: Plan sin config Paddle
+- Resultado: NotFoundException "Configuration for 'Paddle' not found"
+
 #### Slice: PUT /plans/{id}/provider-configurations/{provider}
 
 **Request**
@@ -1282,21 +1227,10 @@ public record UpdateProviderConfigRequest(
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
-
-✅ Actualizar IDs de Stripe
-- Precondición: Plan con config Stripe
-- Input: ExternalProductId="prod_new", ExternalPriceId="price_new"
-- Resultado: IDs actualizados, IsActive se mantiene
-
-❌ Config no existe
-- Precondición: Plan sin config Paddle
-- Resultado: NotFoundException "Configuration for 'Paddle' not found"
-
-#### Tests Unitarios (Servicio)
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.UpdateProviderConfiguration con los parámetros correctos
 - Verifica que se invoca updateProviderConfig.Execute con el provider y command correctos
@@ -1304,9 +1238,11 @@ public record UpdateProviderConfigRequest(
 ✅ Guarda los cambios
 - Verifica que unitOfWork.SaveChangesAsync es llamado
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 204 No Content
+
+✅ Persistencia: PUT → GET → verificar Config actualizada
 
 ❌ 404 → Plan o Config no encontrada
 
@@ -1324,21 +1260,24 @@ public record UpdateProviderConfigRequest(
                                     🟣{NoActivoDuplicado}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
+
 *Provider viene en la ruta*
 
-#### Inyecta
+**Inyecta**
 - `PaymentProviderConfig.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
 | Ya existe otra config activa del mismo Provider | 409 | ConflictGuard | "Another active configuration for '{Provider}' already exists" |
 
-#### Lógica
+**Lógica**
 ```csharp
 var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
 NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
@@ -1362,11 +1301,7 @@ plan._providerConfigurations.Add(activated);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: POST /plans/{id}/provider-configurations/{provider}/activate
-
-**Response**: 200 OK → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Activar config inactiva
 - Precondición: Plan con config Stripe inactiva
@@ -1379,10 +1314,14 @@ return planValidator.ValidateOrThrow(plan);
 ❌ Config no existe
 - Resultado: NotFoundException "Configuration for 'Paddle' not found"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /plans/{id}/provider-configurations/{provider}/activate
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.ActivateProviderConfiguration con el provider correcto
 - Verifica que se invoca activateProviderConfig.Execute con el provider
@@ -1393,9 +1332,11 @@ return planValidator.ValidateOrThrow(plan);
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene la Config activada
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 200 OK → PlanResponse
+
+✅ Persistencia: POST → GET → verificar Config activada
 
 ❌ 404 → Plan o Config no encontrada
 
@@ -1413,21 +1354,24 @@ return planValidator.ValidateOrThrow(plan);
                                       🟣{NoEsLaÚnicaActiva}
 ```
 
-#### Input
+#### Dominio
+
+**Input**
+
 *Provider viene en la ruta*
 
-#### Inyecta
+**Inyecta**
 - `PaymentProviderConfig.Create`
 - `IValidator<Plan>`
 
-#### Guards
+**Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
 | Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
 | Es la única activa y Plan activo | 422 | ValidationGuard | "Cannot deactivate last provider on active plan" |
 
-#### Lógica
+**Lógica**
 ```csharp
 var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
 NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
@@ -1453,11 +1397,7 @@ plan._providerConfigurations.Add(deactivated);
 return planValidator.ValidateOrThrow(plan);
 ```
 
-#### Slice: POST /plans/{id}/provider-configurations/{provider}/deactivate
-
-**Response**: 200 OK → `PlanResponse`
-
-#### Tests Unitarios (Dominio)
+**Tests Unitarios Dominio**
 
 ✅ Desactivar config (hay otras activas)
 - Precondición: Plan con Stripe y Paddle activas
@@ -1479,10 +1419,14 @@ return planValidator.ValidateOrThrow(plan);
 - Precondición: Plan activo con solo Stripe activa
 - Resultado: ValidationException "Cannot deactivate last provider on active plan"
 
-#### Tests Unitarios (Servicio)
+#### Slice: POST /plans/{id}/provider-configurations/{provider}/deactivate
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Unitarios Servicio**
 
 ✅ Obtiene el plan del repositorio
-- Verifica que repository.GetByIdAsync es llamado con el id correcto
+- Verifica que repository.Get es llamado con el id correcto
 
 ✅ Llama a Plan.DeactivateProviderConfiguration con el provider correcto
 - Verifica que se invoca deactivateProviderConfig.Execute con el provider
@@ -1493,9 +1437,11 @@ return planValidator.ValidateOrThrow(plan);
 ✅ Retorna Response mapeado correctamente
 - Verifica que el Response contiene la Config desactivada
 
-#### Tests Integración
+**Tests Integración**
 
 ✅ 200 OK → PlanResponse
+
+✅ Persistencia: POST → GET → verificar Config desactivada
 
 ❌ 404 → Plan o Config no encontrada
 
@@ -1503,57 +1449,186 @@ return planValidator.ValidateOrThrow(plan);
 
 ---
 
-## 7. Queries
+### 6.12 Plan.Activate
 
-### GetPlan
+#### Event Storming
+```
+🟡[Admin] → 🔵(ActivatePlan) → 🟤[[Plan]] → 🟠<PlanActivated>
+                                    │
+                          🟣{TieneFeatures}
+                          🟣{TieneProviderActivo}
+```
 
-**Slice**: GET /plans/{id}
+#### Dominio
+
+**Input**
+
+Ninguno
+
+**Inyecta**
+- `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Ya está activo | 409 | ConflictGuard | "Plan is already active" |
+| No tiene Features | 422 | ValidationGuard | "Plan must have at least one feature" |
+| No tiene ProviderConfig activa | 422 | ValidationGuard | "Plan must have at least one active provider configuration" |
+
+**Lógica**
+```csharp
+ConflictGuard.ThrowIf(plan.IsActive, "Plan is already active");
+ValidationGuard.ThrowIf(!plan.Features.Any(), "Plan must have at least one feature", nameof(plan.Features));
+ValidationGuard.ThrowIf(!plan.HasActiveProvider, "Plan must have at least one active provider configuration", nameof(plan.ProviderConfigurations));
+
+plan.IsActive = true;
+
+return planValidator.ValidateOrThrow(plan);
+```
+
+**Tests Unitarios Dominio**
+
+✅ Activar plan completo
+- Precondición: Plan con Features y ProviderConfig activa, IsActive=false
+- Resultado: Plan con IsActive=true
+
+❌ Plan ya activo
+- Precondición: Plan con IsActive=true
+- Resultado: ConflictException "Plan is already active"
+
+❌ Plan sin Features
+- Precondición: Plan sin Features, con ProviderConfig activa
+- Resultado: ValidationException "Plan must have at least one feature"
+
+❌ Plan sin ProviderConfig activa
+- Precondición: Plan con Features, sin ProviderConfig activa
+- Resultado: ValidationException "Plan must have at least one active provider configuration"
+
+#### Slice: POST /plans/{id}/activate
 
 **Response**: 200 OK → `PlanResponse`
 
-#### Tests Integración
+**Tests Unitarios Servicio**
 
-✅ 200 OK → PlanResponse
+✅ Obtiene el plan del repositorio
+- Verifica que repository.Get es llamado con el id correcto
 
-❌ 404 → No encontrado
+✅ Llama a Plan.Activate
+- Verifica que se invoca planActivate.Execute
 
----
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
 
-### ListPlans
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=true
 
-**Slice**: GET /plans?isActive=true
+**Tests Integración**
 
-**Response**: 200 OK → `PlanResponse[]`
+✅ 200 OK → PlanResponse con IsActive=true
 
-#### Tests Integración
+✅ Persistencia: POST → GET → verificar IsActive=true
 
-✅ 200 OK → Array de PlanResponse
+❌ 404 → Plan no encontrado
 
-✅ 200 OK → Array vacío si no hay planes
+❌ 409 → Ya estaba activo
 
----
-
-## 8. Resumen de Endpoints
-
-| Método | Ruta | Comando/Query | Response |
-|--------|------|---------------|----------|
-| POST | /plans | Plan.Create | 201 → `PlanResponse` |
-| GET | /plans | ListPlans | 200 → `PlanResponse[]` |
-| GET | /plans/{id} | GetPlan | 200 → `PlanResponse` |
-| PUT | /plans/{id} | Plan.Update | 204 |
-| POST | /plans/{id}/activate | Plan.Activate | 200 → `PlanResponse` |
-| POST | /plans/{id}/deactivate | Plan.Deactivate | 200 → `PlanResponse` |
-| POST | /plans/{id}/features | Plan.AddFeature | 201 → `PlanResponse` |
-| PUT | /plans/{id}/features/{code} | Plan.UpdateFeature | 204 |
-| DELETE | /plans/{id}/features/{code} | Plan.RemoveFeature | 204 |
-| POST | /plans/{id}/provider-configurations | Plan.AddProviderConfiguration | 201 → `PlanResponse` |
-| PUT | /plans/{id}/provider-configurations/{provider} | Plan.UpdateProviderConfiguration | 204 |
-| POST | /plans/{id}/provider-configurations/{provider}/activate | Plan.ActivateProviderConfiguration | 200 → `PlanResponse` |
-| POST | /plans/{id}/provider-configurations/{provider}/deactivate | Plan.DeactivateProviderConfiguration | 200 → `PlanResponse` |
+❌ 422 → Falta Feature o ProviderConfig
 
 ---
 
-## 9. Persistencia (Firestore)
+### 6.13 Plan.Deactivate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(DeactivatePlan) → 🟤[[Plan]] → 🟠<PlanDeactivated>
+```
+
+#### Dominio
+
+**Input**
+
+Ninguno
+
+**Inyecta**
+- `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Ya está inactivo | 409 | ConflictGuard | "Plan is already inactive" |
+
+**Lógica**
+```csharp
+ConflictGuard.ThrowIf(!plan.IsActive, "Plan is already inactive");
+
+plan.IsActive = false;
+
+return planValidator.ValidateOrThrow(plan);
+```
+
+**Tests Unitarios Dominio**
+
+✅ Desactivar plan activo
+- Precondición: Plan con IsActive=true
+- Resultado: Plan con IsActive=false
+
+❌ Plan ya inactivo
+- Precondición: Plan con IsActive=false
+- Resultado: ConflictException "Plan is already inactive"
+
+#### Slice: POST /plans/{id}/deactivate
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Unitarios Servicio**
+
+✅ Obtiene el plan del repositorio
+- Verifica que repository.Get es llamado con el id correcto
+
+✅ Llama a Plan.Deactivate
+- Verifica que se invoca planDeactivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=false
+
+**Tests Integración**
+
+✅ 200 OK → PlanResponse con IsActive=false
+
+✅ Persistencia: POST → GET → verificar IsActive=false
+
+❌ 404 → Plan no encontrado
+
+❌ 409 → Ya estaba inactivo
+
+---
+
+## 7. Resumen de Endpoints (Orden de Implementación)
+
+| # | Método | Ruta | Comando/Query | Response |
+|---|--------|------|---------------|----------|
+| 1 | POST | /plans | Plan.Create | 201 → `PlanResponse` |
+| 2 | GET | /plans/{id} | GetPlan | 200 → `PlanResponse` |
+| 3 | GET | /plans | ListPlans | 200 → `PlanResponse[]` |
+| 4 | PUT | /plans/{id} | Plan.Update | 204 |
+| 5 | POST | /plans/{id}/features | Plan.AddFeature | 201 → `PlanResponse` |
+| 6 | PUT | /plans/{id}/features/{code} | Plan.UpdateFeature | 204 |
+| 7 | DELETE | /plans/{id}/features/{code} | Plan.RemoveFeature | 204 |
+| 8 | POST | /plans/{id}/provider-configurations | Plan.AddProviderConfiguration | 201 → `PlanResponse` |
+| 9 | PUT | /plans/{id}/provider-configurations/{provider} | Plan.UpdateProviderConfiguration | 204 |
+| 10 | POST | /plans/{id}/provider-configurations/{provider}/activate | Plan.ActivateProviderConfiguration | 200 → `PlanResponse` |
+| 11 | POST | /plans/{id}/provider-configurations/{provider}/deactivate | Plan.DeactivateProviderConfiguration | 200 → `PlanResponse` |
+| 12 | POST | /plans/{id}/activate | Plan.Activate | 200 → `PlanResponse` |
+| 13 | POST | /plans/{id}/deactivate | Plan.Deactivate | 200 → `PlanResponse` |
+
+---
+
+## 8. Persistencia (Firestore)
 
 ### Colección
 
@@ -1631,7 +1706,7 @@ modelBuilder.Entity<PlanAgg>(entity =>
 
 ---
 
-## 10. Hot Spots ⚠️
+## 9. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|
@@ -1641,5 +1716,5 @@ modelBuilder.Entity<PlanAgg>(entity =>
 
 ---
 
-**Fecha**: 2025-01-25
+**Fecha**: 2025-01-28
 **Autor**: Equipo Fudie

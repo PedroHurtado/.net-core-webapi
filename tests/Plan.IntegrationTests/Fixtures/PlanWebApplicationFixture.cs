@@ -58,4 +58,54 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
         var dbContext = scope.ServiceProvider.GetRequiredService<PlanDbContext>();
         return await action(dbContext);
     }
+
+    public async Task<PlanResponse> CreatePlanAsync(
+        string name = "Plan Test",
+        string description = "Descripción de test",
+        decimal amount = 9.99m,
+        string currencyCode = "EUR",
+        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+    {
+        var request = new CreatePlan.Request(name, description, amount, currencyCode, billingPeriod);
+        var response = await Client.PostAsJsonAsync("/plans", request);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
+    }
+
+    public async Task<PlanResponse> AddFeatureToPlanAsync(
+        Guid planId,
+        string code = "FEATURE_01",
+        string name = "Feature One",
+        string? description = "Description",
+        string type = "Boolean",
+        int? limit = null,
+        string? unit = null)
+    {
+        var request = new { Code = code, Name = name, Description = description, Type = type, Limit = limit, Unit = unit };
+        var response = await Client.PostAsJsonAsync($"/plans/{planId}/features", request);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
+    }
+
+    public async Task<PlanResponse> AddProviderConfigToPlanAsync(
+        Guid planId,
+        string provider = "Stripe",
+        string externalProductId = "prod_123",
+        string externalPriceId = "price_123",
+        bool isActive = true)
+    {
+        var request = new { Provider = provider, ExternalProductId = externalProductId, ExternalPriceId = externalPriceId, IsActive = isActive };
+        var response = await Client.PostAsJsonAsync($"/plans/{planId}/provider-configurations", request);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
+    }
+
+    public async Task<PlanResponse> CreateCompletePlanAsync(
+        string name = "Plan Completo",
+        string description = "Plan con feature y provider")
+    {
+        var plan = await CreatePlanAsync(name, description);
+        await AddFeatureToPlanAsync(plan.Id);
+        return await AddProviderConfigToPlanAsync(plan.Id);
+    }
 }
