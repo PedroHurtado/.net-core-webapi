@@ -231,8 +231,9 @@ public async Task List_ReturnsAllItems_Returns200()
 ---
 
 ## Reglas
-
+- **No `using`** → Van en `GlobalUsings.cs`
 - **Un fixture por proyecto** con helpers para crear entidades
+- **No Usar nunca DbContext** siempre a traves de los fixtures
 - **Testear status codes** → No excepciones
 - **Usar helpers del fixture** para crear datos de test
 - Nomenclatura: `{Action}_{Scenario}_Returns{StatusCode}`

@@ -122,6 +122,7 @@ public async Task Handler_ReturnsCreatedWithLocation()
 
 ## Reglas
 
+- **No `using`** → Van en `GlobalUsings.cs`
 - **No usar `Testable`** → Usar comandos reales
 - **No testear status codes** → Solo excepciones
 - **Validators se instancian** → `new {Type}Validator()`
