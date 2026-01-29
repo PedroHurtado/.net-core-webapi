@@ -21,10 +21,9 @@ Crear slice completa con tests unitarios y de integración.
 
 1. Leer las 3 guías de estilo
 2. Localizar y leer el comando de dominio: `**/{Aggregate}_{Action}.cs`
-3. Localizar y leer UN ejemplo de slice similar: `**/{Action}{Aggregate}.cs` (en carpeta Api)
-4. Crear la slice
-5. Crear tests unitarios de SERVICIO (no de dominio)
-6. Crear tests de integración (DEBE incluir test de persistencia: acción → GET → verificar)
+3. Crear la slice
+4. Crear tests unitarios de SERVICIO (no de dominio)
+5. Crear tests de integración (DEBE incluir test de persistencia: acción → GET → verificar)
 
 ## Verificación
 ```bash
