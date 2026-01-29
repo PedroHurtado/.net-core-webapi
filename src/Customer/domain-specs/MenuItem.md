@@ -1553,6 +1553,8 @@ return menuItemValidator.ValidateOrThrow(menuItem);
 - Input: AllergenId=sulfitos-guid
 - Resultado: NotFoundException "Allergen not found in this item"
 
+#### Tests Unitarios (Slice)
+
 #### Tests Integración
 
 ✅ 204 No Content
