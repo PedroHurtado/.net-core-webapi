@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B',schedule:'#0EA5E9'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-activate{background:#D1FAE5;color:#065F46}.cmd-deactivate{background:#FEE2E2;color:#991B1B}.cmd-add{background:#E0E7FF;color:#3730A3}.cmd-remove{background:#FCE7F3;color:#9D174D}.cmd-get{background:#F3F4F6;color:#374151}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+        .day-pill{@apply px-3 py-1.5 rounded-lg text-xs font-bold}
+        .day-open{@apply bg-success/10 text-success}
+        .day-closed{@apply bg-gray-100 text-gray-400}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<main>
+<!-- LIST VIEW -->
+<div id="list" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Configuración de Horarios</h1>
+        <p class="text-gray-500 text-sm mt-1">Gestiona los horarios de tu restaurante</p>
+    </div>
+    <button onclick="show('create')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2">
+        <i class="fas fa-plus"></i>Nuevo Horario
+    </button>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /schedules → ListSchedules</span>
+</div>
+
+<!-- Grid de Schedules -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- Card 1: Horario de Verano (ACTIVO) -->
+    <div class="card bg-white rounded-3xl border-2 border-success shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg relative" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success text-white text-[10px] font-bold uppercase shadow-lg">
+                <i class="fas fa-check text-[8px]"></i>ACTIVO
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 text-xl">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Horario de Verano</h3>
+                    <p class="text-xs text-gray-500">Del 15 junio al 15 sept</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <!-- Días de la semana -->
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                <span class="day-pill day-closed">L</span>
+                <span class="day-pill day-open">M</span>
+                <span class="day-pill day-open">X</span>
+                <span class="day-pill day-open">J</span>
+                <span class="day-pill day-open">V</span>
+                <span class="day-pill day-open">S</span>
+                <span class="day-pill day-open">D</span>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-500">Días abiertos</p>
+                    <p class="text-xl font-bold text-schedule">6/7</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-500">Fechas especiales</p>
+                    <p class="text-xl font-bold text-warning">3</p>
+                </div>
+            </div>
+            
+            <!-- Horario típico -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-clock text-schedule text-xs"></i>
+                <span>13:00 - 16:00 / 20:00 - 00:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Horario de Invierno (Inactivo) -->
+    <div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-70" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Inactivo
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center text-sky-500 text-xl">
+                    <i class="fas fa-snowflake"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-600">Horario de Invierno</h3>
+                    <p class="text-xs text-gray-400">Del 16 sept al 14 junio</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                <span class="day-pill day-closed">L</span>
+                <span class="day-pill day-closed">M</span>
+                <span class="day-pill day-open">X</span>
+                <span class="day-pill day-open">J</span>
+                <span class="day-pill day-open">V</span>
+                <span class="day-pill day-open">S</span>
+                <span class="day-pill day-open">D</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-400">Días abiertos</p>
+                    <p class="text-xl font-bold text-gray-400">5/7</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-400">Fechas especiales</p>
+                    <p class="text-xl font-bold text-gray-400">5</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 text-sm text-gray-400">
+                <i class="fas fa-clock text-xs"></i>
+                <span>13:00 - 16:00 / 20:00 - 23:00</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Semana Santa (Inactivo, incompleto) -->
+    <div class="card bg-white rounded-3xl border border-dashed shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-60" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-warning/10 text-warning text-[10px] font-bold uppercase">
+                <i class="fas fa-exclamation-triangle text-[8px]"></i>Incompleto
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-400 text-xl">
+                    <i class="fas fa-cross"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-500">Semana Santa</h3>
+                    <p class="text-xs text-gray-400">Horario especial</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                <span class="day-pill bg-gray-50 text-gray-300">L</span>
+                <span class="day-pill bg-gray-50 text-gray-300">M</span>
+                <span class="day-pill bg-gray-50 text-gray-300">X</span>
+                <span class="day-pill bg-gray-50 text-gray-300">J</span>
+                <span class="day-pill bg-gray-50 text-gray-300">V</span>
+                <span class="day-pill bg-gray-50 text-gray-300">S</span>
+                <span class="day-pill bg-gray-50 text-gray-300">D</span>
+            </div>
+            
+            <div class="bg-warning/10 border border-warning/20 rounded-xl p-3 text-center">
+                <p class="text-xs text-warning font-medium">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Configura al menos un día para activar
+                </p>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Info -->
+<div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
+    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+    <div>
+        <p class="text-sm text-blue-800 font-medium">Solo un horario puede estar activo</p>
+        <p class="text-xs text-blue-700 mt-1">Cuando actives un horario, el anterior se desactivará automáticamente. Esto permite preparar horarios estacionales y cambiarlos fácilmente.</p>
+    </div>
+</div>
+
+</div></div>
+
+<!-- CREATE VIEW -->
+<div id="create" class="view p-4 md:p-8"><div class="max-w-2xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Horarios</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>Nuevo</span>
+        </div>
+        <h1 class="text-2xl font-bold">Crear Horario</h1>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="show('edit');toast('Horario creado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2">
+            <i class="fas fa-save"></i>Crear
+        </button>
+    </div>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /schedules → Schedule.Create</span>
+</div>
+
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+    <div class="p-6 border-b bg-gray-50/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-schedule/10 flex items-center justify-center text-schedule">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Información del Horario</h3>
+                <p class="text-xs text-gray-500">Nombre y descripción</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="p-6 space-y-6">
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+            <input type="text" placeholder="Ej: Horario de Verano, Semana Santa..." maxlength="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            <p class="text-xs text-gray-400 mt-1">Máximo 100 caracteres</p>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label>
+            <textarea placeholder="Ej: Del 15 de junio al 15 de septiembre..." maxlength="500" rows="3" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea>
+            <p class="text-xs text-gray-400 mt-1">Máximo 500 caracteres (opcional)</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-6 flex items-start gap-3">
+    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+    <div>
+        <p class="text-sm text-blue-800 font-medium">Horario creado como borrador</p>
+        <p class="text-xs text-blue-700 mt-1">Se creará en estado <strong>inactivo</strong>. Configura los días de la semana antes de activarlo.</p>
+    </div>
+</div>
+
+</div></div>
+
+<!-- EDIT VIEW -->
+<div id="edit" class="view p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Horarios</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>Horario de Verano</span>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-bold">Horario de Verano</h1>
+            <span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase">
+                <i class="fas fa-check text-[8px]"></i>Activo
+            </span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">Del 15 de junio al 15 de septiembre</p>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">
+            <i class="fas fa-arrow-left mr-2"></i>Volver
+        </button>
+        <button id="toggleBtn" onclick="toggleStatus()" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100">
+            <i class="fas fa-pause mr-2"></i>Desactivar
+        </button>
+    </div>
+</div>
+
+<div class="mb-6 flex flex-wrap gap-2">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /schedules/{id}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Info Card -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-schedule/10 flex items-center justify-center text-schedule">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Información</h3>
+                        <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Schedule.Update</span>
+                    </div>
+                </div>
+                <button onclick="openM('mSchedule')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm">
+                    <i class="fas fa-pencil-alt mr-1"></i>Editar
+                </button>
+            </div>
+            <div class="p-6 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p>
+                    <p class="font-medium">Horario de Verano</p>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Estado</p>
+                    <p class="font-bold text-success">Activo</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Descripción</p>
+                    <p class="text-gray-600">Del 15 de junio al 15 de septiembre</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weekly Hours -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-schedule/5 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-schedule/10 flex items-center justify-center text-schedule">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Horario Semanal</h3>
+                        <p class="text-xs text-gray-500">6 días configurados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-2 bg-schedule/5 border-b flex flex-wrap gap-2">
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → SetWeeklyHours</span>
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → MarkDayAsClosed</span>
+            </div>
+            
+            <div class="divide-y">
+                <!-- Lunes - Cerrado -->
+                <div class="row p-4 flex items-center gap-4 group bg-gray-50/50">
+                    <div class="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 font-bold">
+                        L
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold text-gray-400">Lunes</h4>
+                            <span class="px-2 py-0.5 rounded bg-gray-200 text-gray-500 text-[10px] font-bold">CERRADO</span>
+                        </div>
+                        <p class="text-sm text-gray-400">Día de descanso</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Martes - Abierto -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        M
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Martes</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 16:00</span>
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>20:00 - 00:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">8h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Miércoles -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        X
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Miércoles</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 16:00</span>
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>20:00 - 00:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">8h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Jueves -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        J
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Jueves</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 16:00</span>
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>20:00 - 00:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">8h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Viernes -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        V
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Viernes</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 16:00</span>
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>20:00 - 01:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">9h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sábado -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        S
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Sábado</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 16:00</span>
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>20:00 - 01:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">9h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Domingo -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success font-bold">
+                        D
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Domingo</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ABIERTO</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-schedule text-xs mr-1"></i>13:00 - 17:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-schedule">4h</p>
+                        <p class="text-xs text-gray-400">total</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Special Dates -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-warning/5 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Fechas Especiales</h3>
+                        <p class="text-xs text-gray-500">3 configuradas</p>
+                    </div>
+                </div>
+                <button onclick="openM('mSpecialAdd')" class="px-4 py-2 rounded-xl bg-warning/10 hover:bg-warning/20 text-warning font-bold text-sm">
+                    <i class="fas fa-plus mr-1"></i>Añadir
+                </button>
+            </div>
+            <div class="px-4 py-2 bg-warning/5 border-b flex flex-wrap gap-2">
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddSpecialDate</span>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateSpecialDate</span>
+                <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveSpecialDate</span>
+            </div>
+            
+            <div class="divide-y">
+                <!-- Navidad - Cerrado -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-12 h-12 rounded-xl bg-red-50 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-red-400 uppercase">Dic</span>
+                        <span class="text-lg font-bold text-red-600">25</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Navidad</h4>
+                            <span class="px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">CERRADO</span>
+                        </div>
+                        <p class="text-sm text-gray-500">Miércoles</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mSpecialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button onclick="openM('mSpecialRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- San Valentín - Horario extendido -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-12 h-12 rounded-xl bg-pink-50 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-pink-400 uppercase">Feb</span>
+                        <span class="text-lg font-bold text-pink-600">14</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">San Valentín</h4>
+                            <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ESPECIAL</span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <span class="text-sm text-gray-600"><i class="fas fa-clock text-pink-500 text-xs mr-1"></i>19:00 - 02:00</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-pink-500">7h</p>
+                        <p class="text-xs text-gray-400">especial</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mSpecialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 15 de Agosto - Cerrado -->
+                <div class="row p-4 flex items-center gap-4 group">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-amber-400 uppercase">Ago</span>
+                        <span class="text-lg font-bold text-amber-600">15</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-bold">Asunción de la Virgen</h4>
+                            <span class="px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">CERRADO</span>
+                        </div>
+                        <p class="text-sm text-gray-500">Viernes</p>
+                    </div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button onclick="openM('mSpecialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Status Card -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-4">Estado del Horario</h3>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-gray-500">Estado</span>
+                <span id="statusText" class="font-bold text-success">Activo</span>
+            </div>
+            <div class="pt-4 border-t space-y-2">
+                <p class="text-xs font-bold text-gray-400 uppercase">Comandos</p>
+                <span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST /schedules/{id}/activate</span>
+                <span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded mt-1">POST /schedules/{id}/deactivate</span>
+            </div>
+        </div>
+        
+        <!-- Requirements -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-3">Requisitos para Activar</h3>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                        <i class="fas fa-check text-success text-xs"></i>
+                    </div>
+                    <span class="text-sm">Al menos 1 día configurado</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-3">Resumen Semanal</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Días abiertos</span>
+                    <span class="font-bold">6 de 7</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Horas totales</span>
+                    <span class="font-bold text-schedule">46h</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Configuración</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold">
+                        <i class="fas fa-check text-[8px]"></i>Completa
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Is Open Query -->
+        <div class="bg-schedule/5 border border-schedule/20 rounded-2xl p-4">
+            <h3 class="font-bold mb-3 text-sm flex items-center gap-2">
+                <i class="fas fa-question-circle text-schedule"></i>
+                ¿Está abierto ahora?
+            </h3>
+            <span class="block cmd-get text-[10px] font-bold px-2 py-1 rounded mb-3">GET /schedules/{id}/is-open</span>
+            <div class="bg-white rounded-xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                    <i class="fas fa-door-open text-success"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-success">Abierto</p>
+                    <p class="text-xs text-gray-500">Cierra a las 00:00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div></div>
+</main>
+
+<!-- MODALS -->
+
+<!-- Schedule Edit Modal -->
+<div id="mSchedule" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Editar Horario</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /schedules/{id} → Schedule.Update</span>
+            </div>
+            <button onclick="closeM('mSchedule')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label>
+                <input type="text" value="Horario de Verano" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label>
+                <textarea rows="3" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none">Del 15 de junio al 15 de septiembre</textarea>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mSchedule')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mSchedule');toast('Horario actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Hours Edit Modal -->
+<div id="mWeekly" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Configurar Martes</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Schedule.SetWeeklyHours</span>
+            </div>
+            <button onclick="closeM('mWeekly')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" id="dayClosed" class="w-5 h-5 rounded text-primary">
+                <label for="dayClosed" class="text-sm font-medium">Cerrado este día</label>
+            </div>
+            
+            <div id="timeSlotsSection">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Franjas horarias</label>
+                
+                <!-- Slot 1 -->
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex-1 grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Apertura</label>
+                            <input type="time" value="13:00" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Cierre</label>
+                            <input type="time" value="16:00" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 mt-5">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+                
+                <!-- Slot 2 -->
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex-1 grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Apertura</label>
+                            <input type="time" value="20:00" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Cierre</label>
+                            <input type="time" value="00:00" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 mt-5">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+                
+                <button class="w-full py-2 border-2 border-dashed rounded-xl text-gray-400 hover:text-primary hover:border-primary font-medium text-sm">
+                    <i class="fas fa-plus mr-1"></i>Añadir franja
+                </button>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mWeekly')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mWeekly');toast('Día actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Special Date Add Modal -->
+<div id="mSpecialAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Añadir Fecha Especial</h3>
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → Schedule.AddSpecialDate</span>
+            </div>
+            <button onclick="closeM('mSpecialAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fecha *</label>
+                <input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Motivo *</label>
+                <input type="text" placeholder="Ej: Navidad, San Valentín..." maxlength="200" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" id="specialClosed" checked class="w-5 h-5 rounded text-primary">
+                <label for="specialClosed" class="text-sm font-medium">Cerrado este día</label>
+            </div>
+            
+            <div id="specialTimeSlotsSection" class="hidden">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Horario especial</label>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex-1 grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Apertura</label>
+                            <input type="time" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Cierre</label>
+                            <input type="time" class="w-full bg-gray-50 border rounded-lg px-3 py-2 font-medium focus:border-primary outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mSpecialAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mSpecialAdd');toast('Fecha especial añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Special Date Edit Modal -->
+<div id="mSpecialEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Editar Fecha Especial</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Schedule.UpdateSpecialDate</span>
+            </div>
+            <button onclick="closeM('mSpecialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fecha</label>
+                <input type="date" value="2025-12-25" disabled class="w-full bg-gray-100 border rounded-xl px-4 py-3 font-medium text-gray-500 cursor-not-allowed">
+                <p class="text-xs text-gray-400 mt-1">La fecha no se puede modificar</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Motivo *</label>
+                <input type="text" value="Navidad" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" checked class="w-5 h-5 rounded text-primary">
+                <label class="text-sm font-medium">Cerrado este día</label>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mSpecialEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mSpecialEdit');toast('Fecha especial actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Special Date Remove Modal -->
+<div id="mSpecialRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4">
+                <i class="fas fa-trash"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">¿Eliminar Fecha Especial?</h3>
+            <p class="text-sm text-gray-500 mb-3">Se eliminará <strong>Navidad (25/12/2025)</strong></p>
+            <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → Schedule.RemoveSpecialDate</span>
+        </div>
+        <div class="p-6 border-t flex gap-3">
+            <button onclick="closeM('mSpecialRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+            <button onclick="closeM('mSpecialRm');toast('Fecha especial eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+    <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center">
+        <i class="fas fa-check"></i>
+    </div>
+    <span id="toastMsg">OK</span>
+</div>
+
+<script>
+let isActive = true;
+
+function show(v) {
+    document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+    document.getElementById(v)?.classList.add('active');
+}
+
+function openM(id) {
+    document.getElementById(id)?.classList.remove('hidden');
+}
+
+function closeM(id) {
+    document.getElementById(id)?.classList.add('hidden');
+}
+
+function toast(msg) {
+    const t = document.getElementById('toastEl');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+function toggleStatus() {
+    isActive = !isActive;
+    const b = document.getElementById('statusBadge');
+    const t = document.getElementById('statusText');
+    const btn = document.getElementById('toggleBtn');
+    
+    if (isActive) {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-check text-[8px]"></i>Activo';
+        t.className = 'font-bold text-success';
+        t.textContent = 'Activo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100';
+        btn.innerHTML = '<i class="fas fa-pause mr-2"></i>Desactivar';
+    } else {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-circle text-[6px]"></i>Inactivo';
+        t.className = 'font-bold text-gray-500';
+        t.textContent = 'Inactivo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-green-600 bg-green-50 hover:bg-green-100';
+        btn.innerHTML = '<i class="fas fa-play mr-2"></i>Activar';
+    }
+    toast(isActive ? 'Horario activado' : 'Horario desactivado');
+}
+
+// Toggle time slots visibility based on closed checkbox
+document.getElementById('specialClosed')?.addEventListener('change', function() {
+    const section = document.getElementById('specialTimeSlotsSection');
+    if (this.checked) {
+        section.classList.add('hidden');
+    } else {
+        section.classList.remove('hidden');
+    }
+});
+</script>
+</body>
+</html>

@@ -67,27 +67,7 @@ public class CustomerDbContext(DbContextOptions<CustomerDbContext> options, Guid
         // (Id as PK, collection name pluralized, etc.)
     }
 
-    public async Task<T> GetRequiredAsync<T, ID>(
-        ID id,
-        bool tracking = true,
-        CancellationToken cancellationToken = default,
-        params string[] includeProperties) where T : class, IEntity
-    {
-        var query = Set<T>().AsQueryable();
-
-        foreach (var includeProperty in includeProperties)
-        {
-            query = query.Include(includeProperty);
-        }
-
-        if (!tracking)
-        {
-            query = query.AsNoTracking();
-        }
-
-        var entity = await query.FirstOrDefaultAsync(cancellationToken);
-        return entity ?? throw new KeyNotFoundException($"{typeof(T).Name} with ID '{id}' not found.");
-    }
+    
 
     public IQueryable<T> Query<T>() where T : class, IEntity
     {

@@ -33,7 +33,7 @@ public class MenuItemResponseTests
             NutritionalInfo = nutritionalInfo
         };
         menuItem.AddPriceOptionDirect(priceOption);
-        menuItem.AddAllergen(allergen);
+        menuItem.AddAllergenDirect(allergen);
         menuItem.AddAvailableDay(DayOfWeek.Friday);
         menuItem.AddAvailableDay(DayOfWeek.Saturday);
 
@@ -147,8 +147,8 @@ public class MenuItemResponseTests
             IsAlwaysAvailable = true
         };
         menuItem.AddPriceOptionDirect(priceOption);
-        menuItem.AddAllergen(new TestableAllergen("GLUTEN") { Name = "Gluten" });
-        menuItem.AddAllergen(new TestableAllergen("LACTEOS") { Name = "Lácteos" });
+        menuItem.AddAllergenDirect(new TestableAllergen("GLUTEN") { Name = "Gluten" });
+        menuItem.AddAllergenDirect(new TestableAllergen("LACTEOS") { Name = "Lácteos" });
 
         // Act
         var response = MenuItemResponse.Map(menuItem);

@@ -21,6 +21,6 @@ public class TestableMenuItem : MenuItem
     public new string? AllergenNotes { get => base.AllergenNotes; set => base.AllergenNotes = value; }
 
     public void AddPriceOptionDirect(PriceOptionVO priceOption) => _priceOptions.Add(priceOption);
-    public void AddAllergen(Allergen allergen) => _allergens.Add(allergen);
+    public void AddAllergenDirect(Allergen allergen) => _allergens.Add(allergen);
     public void AddAvailableDay(DayOfWeek day) => _availableDays.Add(day);
 }

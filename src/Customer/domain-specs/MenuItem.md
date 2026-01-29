@@ -264,48 +264,7 @@ return nutritionalInfoValidator.ValidateOrThrow(nutritionalInfo);
 
 ---
 
-### 2.4 AllergenReference
 
-#### Estructura
-
-| Propiedad | Tipo |
-|-----------|------|
-| AllergenId | Guid |
-
-#### Validaciones
-
-| Propiedad | Regla | Mensaje |
-|-----------|-------|---------|
-| AllergenId | NotEmpty | "Allergen id is required" |
-
-#### Comando: AllergenReference.Create
-
-**Input**
-
-| Campo | Tipo |
-|-------|------|
-| AllergenId | Guid |
-
-**Inyecta**: `IValidator<AllergenReference>`
-
-**Lógica**
-```csharp
-var allergenRef = new AllergenReference(command.AllergenId);
-
-return allergenRefValidator.ValidateOrThrow(allergenRef);
-```
-
-#### Tests Unitarios
-
-✅ Referencia válida
-- Input: AllergenId=valid-guid
-- Resultado: AllergenReference creado
-
-❌ AllergenId vacío
-- Input: AllergenId=Guid.Empty
-- Resultado: ValidationException "Allergen id is required"
-
----
 
 ## 3. Aggregate: MenuItem
 
@@ -330,7 +289,7 @@ MenuItem (Aggregate Root)
 ├─ NutritionalInfo: NutritionalInfo?
 ├─ PriceOptions: IReadOnlyCollection<PriceOption>
 ├─ AvailableDays: IReadOnlyCollection<DayOfWeek>
-└─ Allergens: IReadOnlyCollection<AllergenReference>
+└─ Allergens: IReadOnlyCollection<Allergen>
 ```
 
 #### Propiedades
@@ -362,8 +321,8 @@ public IReadOnlyCollection<PriceOption> PriceOptions => _priceOptions.ToList().A
 protected HashSet<DayOfWeek> _availableDays = [];
 public IReadOnlyCollection<DayOfWeek> AvailableDays => _availableDays.ToList().AsReadOnly();
 
-protected HashSet<AllergenReference> _allergens = [];
-public IReadOnlyCollection<AllergenReference> Allergens => _allergens.ToList().AsReadOnly();
+protected HashSet<Allergen> _allergens = [];
+public IReadOnlyCollection<Allergen> Allergens => _allergens.ToList().AsReadOnly();
 ```
 
 #### Propiedades Calculadas
@@ -421,7 +380,7 @@ public record MenuItemResponse(
     NutritionalInfoResponse? NutritionalInfo,
     IReadOnlyCollection<PriceOptionResponse> PriceOptions,
     IReadOnlyCollection<DayOfWeek> AvailableDays,
-    IReadOnlyCollection<AllergenReferenceResponse> Allergens
+    IReadOnlyCollection<Allergen> Allergens
 );
 
 public record PriceOptionResponse(
@@ -450,9 +409,6 @@ public record NutritionalInfoResponse(
     int ServingSize
 );
 
-public record AllergenReferenceResponse(
-    Guid AllergenId
-);
 ```
 
 ---
@@ -1504,15 +1460,13 @@ return menuItemValidator.ValidateOrThrow(menuItem);
 
 #### Lógica
 ```csharp
-ConflictGuard.ThrowIf(
-    menuItem.Allergens.Any(a => a.AllergenId == command.AllergenId),
-    "Allergen already exists in this item");
+ ConflictGuard.ThrowIf(
+                menuItem.Allergens.Any(a => a.Id == command.Allergen.Id),
+                "Allergen already exists in this item");
 
-var allergenRef = allergenRefCreate.Execute(new CreateAllergenReferenceCommand(command.AllergenId));
+            menuItem._allergens.Add(command.Allergen);
 
-menuItem._allergens.Add(allergenRef);
-
-return menuItemValidator.ValidateOrThrow(menuItem);
+            return menuItemValidator.ValidateOrThrow(menuItem);
 ```
 
 #### Slice: POST /menu-items/{id}/allergens
@@ -1598,6 +1552,8 @@ return menuItemValidator.ValidateOrThrow(menuItem);
 - Precondición: MenuItem sin alérgeno SULFITOS
 - Input: AllergenId=sulfitos-guid
 - Resultado: NotFoundException "Allergen not found in this item"
+
+#### Tests Unitarios (Slice)
 
 #### Tests Integración
 

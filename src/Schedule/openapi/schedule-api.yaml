@@ -1,0 +1,894 @@
+openapi: 3.0.3
+info:
+  title: Schedule API
+  description: |
+    API para la gestión de horarios de restaurantes en Fudie.
+
+    ## Conceptos Clave
+
+    - **Schedule**: Representa la configuración de horarios de un restaurante
+    - **WeeklyHours**: Horarios regulares por día de la semana
+    - **SpecialDate**: Fechas con horarios especiales (festivos, eventos, vacaciones)
+    - **TimeSlot**: Franja horaria con hora de apertura y cierre
+
+    ## Comportamiento
+
+    Las fechas especiales (SpecialDates) sobrescriben los horarios semanales (WeeklyHours) para la fecha indicada.
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Schedules
+    description: Operaciones CRUD sobre schedules
+  - name: Weekly Hours
+    description: Gestión de horarios semanales
+  - name: Special Dates
+    description: Gestión de fechas especiales
+paths:
+  /schedules:
+    post:
+      tags:
+        - Schedules
+      summary: Crear un nuevo schedule
+      description: |
+        Crea un nuevo schedule para el tenant actual.
+        
+        El schedule se crea con `isActive=false`. Para activarlo, use el endpoint de activación.
+      operationId: createSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduleRequest'
+            examples:
+              summer:
+                summary: Horario de verano
+                value:
+                  name: Horario de Verano
+                  description: Del 15 de junio al 15 de septiembre
+              winter:
+                summary: Horario de invierno
+                value:
+                  name: Horario de Invierno
+                  description: null
+      responses:
+        '201':
+          description: Schedule creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+          headers:
+            Location:
+              description: URL del schedule creado
+              schema:
+                type: string
+                example: /schedules/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    get:
+      tags:
+        - Schedules
+      summary: Listar schedules
+      description: Obtiene la lista de todos los schedules del tenant actual.
+      operationId: listSchedules
+      responses:
+        '200':
+          description: Lista de schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleResponse'
+  '/schedules/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Schedules
+      summary: Obtener un schedule
+      description: Obtiene los detalles de un schedule específico.
+      operationId: getSchedule
+      responses:
+        '200':
+          description: Schedule encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    put:
+      tags:
+        - Schedules
+      summary: Actualizar un schedule
+      description: Actualiza el nombre y descripción de un schedule existente.
+      operationId: updateSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateScheduleRequest'
+      responses:
+        '204':
+          description: Schedule actualizado exitosamente
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/schedules/{id}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Schedules
+      summary: Activar un schedule
+      description: |
+        Activa un schedule. Si hay otro schedule activo, se desactiva automáticamente.
+
+        **Requisitos:**
+        - El schedule debe tener al menos un día configurado en WeeklyHours
+      operationId: activateSchedule
+      responses:
+        '200':
+          description: Schedule activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El schedule ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Schedule is already active
+        '422':
+          description: El schedule no cumple los requisitos para activarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  WeeklyHours:
+                    - Schedule must have at least one day configured
+  '/schedules/{id}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Schedules
+      summary: Desactivar un schedule
+      description: Desactiva un schedule.
+      operationId: deactivateSchedule
+      responses:
+        '200':
+          description: Schedule desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El schedule ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Schedule is already inactive
+  '/schedules/{id}/weekly-hours/{dayOfWeek}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: dayOfWeek
+        in: path
+        description: Día de la semana (0=Sunday, 1=Monday, ..., 6=Saturday)
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 6
+          example: 1
+    put:
+      tags:
+        - Weekly Hours
+      summary: Configurar horario de un día
+      description: |
+        Configura el horario para un día de la semana específico.
+
+        Si el día ya tenía horario configurado, se sobrescribe completamente.
+      operationId: setWeeklyHours
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetWeeklyHoursRequest'
+            examples:
+              singleShift:
+                summary: Turno único
+                value:
+                  isClosed: false
+                  timeSlots:
+                    - openTime: '13:00:00'
+                      closeTime: '23:00:00'
+              splitShift:
+                summary: Turno partido (comida y cena)
+                value:
+                  isClosed: false
+                  timeSlots:
+                    - openTime: '13:00:00'
+                      closeTime: '16:00:00'
+                    - openTime: '20:00:00'
+                      closeTime: '23:00:00'
+              closed:
+                summary: Día cerrado
+                value:
+                  isClosed: true
+                  timeSlots: []
+      responses:
+        '204':
+          description: Horario configurado exitosamente
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                overlapping:
+                  summary: TimeSlots solapados
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      TimeSlots:
+                        - Time slots cannot overlap
+                invalidTime:
+                  summary: Hora inválida
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      CloseTime:
+                        - Close time must be after open time
+  '/schedules/{id}/weekly-hours/{dayOfWeek}/close':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: dayOfWeek
+        in: path
+        description: Día de la semana (0=Sunday, 1=Monday, ..., 6=Saturday)
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 6
+          example: 0
+    post:
+      tags:
+        - Weekly Hours
+      summary: Marcar día como cerrado
+      description: Marca un día de la semana como cerrado, eliminando cualquier horario previo.
+      operationId: markDayAsClosed
+      responses:
+        '204':
+          description: Día marcado como cerrado
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/schedules/{id}/special-dates':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Special Dates
+      summary: Añadir fecha especial
+      description: |
+        Añade una fecha especial al schedule.
+
+        Las fechas especiales sobrescriben el horario semanal para esa fecha específica.
+      operationId: addSpecialDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSpecialDateRequest'
+            examples:
+              holiday:
+                summary: Festivo cerrado
+                value:
+                  date: '2025-12-25'
+                  isClosed: true
+                  reason: Navidad
+                  timeSlots: []
+              specialHours:
+                summary: Horario especial
+                value:
+                  date: '2025-02-14'
+                  isClosed: false
+                  reason: San Valentín
+                  timeSlots:
+                    - openTime: '19:00:00'
+                      closeTime: '23:59:00'
+              vacation:
+                summary: Vacaciones
+                value:
+                  date: '2025-08-15'
+                  isClosed: true
+                  reason: Vacaciones de verano
+                  timeSlots: []
+      responses:
+        '201':
+          description: Fecha especial añadida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleResponse'
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una fecha especial para esa fecha
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Special date for '2025-12-25' already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/schedules/{id}/special-dates/{date}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: date
+        in: path
+        description: Fecha en formato ISO (YYYY-MM-DD)
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2025-12-25'
+    put:
+      tags:
+        - Special Dates
+      summary: Actualizar fecha especial
+      description: Actualiza una fecha especial existente.
+      operationId: updateSpecialDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpecialDateRequest'
+      responses:
+        '204':
+          description: Fecha especial actualizada
+        '404':
+          description: Schedule o fecha especial no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                scheduleNotFound:
+                  summary: Schedule no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Schedule with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                dateNotFound:
+                  summary: Fecha especial no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Special date for '2025-12-25' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Special Dates
+      summary: Eliminar fecha especial
+      description: Elimina una fecha especial del schedule.
+      operationId: removeSpecialDate
+      responses:
+        '204':
+          description: Fecha especial eliminada
+        '404':
+          description: Schedule o fecha especial no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/schedules/{id}/is-open':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del schedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Schedules
+      summary: Verificar si está abierto
+      description: |
+        Verifica si el restaurante está abierto en un momento específico.
+
+        Primero verifica si hay una fecha especial para ese día; si no, usa el horario semanal.
+      operationId: isOpen
+      parameters:
+        - name: dateTime
+          in: query
+          description: Fecha y hora a consultar (ISO 8601). Si no se proporciona, usa el momento actual.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: '2025-12-25T14:30:00'
+      responses:
+        '200':
+          description: Estado de apertura
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsOpenResponse'
+              examples:
+                openRegular:
+                  summary: Abierto (horario regular)
+                  value:
+                    isOpen: true
+                    date: '2025-01-15'
+                    time: '14:30:00'
+                    isSpecialDate: false
+                    specialDateReason: null
+                closedHoliday:
+                  summary: Cerrado (festivo)
+                  value:
+                    isOpen: false
+                    date: '2025-12-25'
+                    time: '14:30:00'
+                    isSpecialDate: true
+                    specialDateReason: Navidad
+                openSpecial:
+                  summary: Abierto (horario especial)
+                  value:
+                    isOpen: true
+                    date: '2025-02-14'
+                    time: '20:00:00'
+                    isSpecialDate: true
+                    specialDateReason: San Valentín
+        '404':
+          description: Schedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    DayOfWeek:
+      type: integer
+      minimum: 0
+      maximum: 6
+      description: |
+        Día de la semana:
+        - 0: Sunday
+        - 1: Monday
+        - 2: Tuesday
+        - 3: Wednesday
+        - 4: Thursday
+        - 5: Friday
+        - 6: Saturday
+    TimeSlotRequest:
+      type: object
+      required:
+        - openTime
+        - closeTime
+      properties:
+        openTime:
+          type: string
+          format: time
+          example: '13:00:00'
+          description: Hora de apertura (HH:mm:ss)
+        closeTime:
+          type: string
+          format: time
+          example: '23:00:00'
+          description: Hora de cierre (HH:mm:ss). Debe ser posterior a openTime.
+    TimeSlotResponse:
+      type: object
+      required:
+        - openTime
+        - closeTime
+        - duration
+      properties:
+        openTime:
+          type: string
+          format: time
+          example: '13:00:00'
+          description: Hora de apertura
+        closeTime:
+          type: string
+          format: time
+          example: '23:00:00'
+          description: Hora de cierre
+        duration:
+          type: string
+          format: duration
+          example: '10:00:00'
+          description: Duración del slot
+    DayScheduleResponse:
+      type: object
+      required:
+        - dayOfWeek
+        - isClosed
+        - totalOpenHours
+        - timeSlots
+      properties:
+        dayOfWeek:
+          $ref: '#/components/schemas/DayOfWeek'
+        isClosed:
+          type: boolean
+          example: false
+          description: Indica si el día está cerrado
+        totalOpenHours:
+          type: string
+          format: duration
+          example: '10:00:00'
+          description: Total de horas abierto en el día
+        timeSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotResponse'
+    SpecialDateResponse:
+      type: object
+      required:
+        - date
+        - isClosed
+        - reason
+        - totalOpenHours
+        - timeSlots
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2025-12-25'
+        isClosed:
+          type: boolean
+          example: true
+        reason:
+          type: string
+          maxLength: 200
+          example: Navidad
+        totalOpenHours:
+          type: string
+          format: duration
+          example: '00:00:00'
+        timeSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotResponse'
+    ScheduleResponse:
+      type: object
+      required:
+        - id
+        - name
+        - isActive
+        - hasWeeklyHours
+        - hasSpecialDates
+        - isFullyConfigured
+        - weeklyHours
+        - specialDates
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          maxLength: 100
+          example: Horario de Verano
+          description: Nombre del schedule
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Del 15 de junio al 15 de septiembre
+          description: Descripción del schedule
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si este schedule está activo. Solo uno puede estar activo por tenant.
+        hasWeeklyHours:
+          type: boolean
+          example: true
+          description: Indica si tiene al menos un día configurado
+        hasSpecialDates:
+          type: boolean
+          example: true
+          description: Indica si tiene fechas especiales configuradas
+        isFullyConfigured:
+          type: boolean
+          example: true
+          description: Indica si los 7 días de la semana están configurados
+        weeklyHours:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DayScheduleResponse'
+          example:
+            '1':
+              dayOfWeek: 1
+              isClosed: false
+              totalOpenHours: '10:00:00'
+              timeSlots:
+                - openTime: '13:00:00'
+                  closeTime: '23:00:00'
+                  duration: '10:00:00'
+            '0':
+              dayOfWeek: 0
+              isClosed: true
+              totalOpenHours: '00:00:00'
+              timeSlots: []
+        specialDates:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecialDateResponse'
+    IsOpenResponse:
+      type: object
+      required:
+        - isOpen
+        - date
+        - time
+        - isSpecialDate
+      properties:
+        isOpen:
+          type: boolean
+          example: true
+          description: Indica si está abierto en ese momento
+        date:
+          type: string
+          format: date
+          example: '2025-01-15'
+        time:
+          type: string
+          format: time
+          example: '14:30:00'
+        isSpecialDate:
+          type: boolean
+          example: false
+          description: Indica si la fecha es especial
+        specialDateReason:
+          type: string
+          nullable: true
+          example: null
+          description: Razón de la fecha especial (si aplica)
+    CreateScheduleRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Horario de Verano
+          description: Nombre del schedule
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Del 15 de junio al 15 de septiembre
+          description: Descripción del schedule
+    UpdateScheduleRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Horario de Verano Actualizado
+          description: Nombre del schedule
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Nueva descripción
+          description: Descripción del schedule
+    SetWeeklyHoursRequest:
+      type: object
+      required:
+        - isClosed
+        - timeSlots
+      properties:
+        isClosed:
+          type: boolean
+          example: false
+          description: Indica si el día está cerrado
+        timeSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'
+          description: Franjas horarias (vacío si isClosed=true)
+    AddSpecialDateRequest:
+      type: object
+      required:
+        - date
+        - isClosed
+        - reason
+        - timeSlots
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2025-12-25'
+          description: Fecha especial
+        isClosed:
+          type: boolean
+          example: true
+          description: Indica si está cerrado ese día
+        reason:
+          type: string
+          maxLength: 200
+          example: Navidad
+          description: Motivo de la fecha especial
+        timeSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'
+          description: Franjas horarias (vacío si isClosed=true)
+    UpdateSpecialDateRequest:
+      type: object
+      required:
+        - isClosed
+        - reason
+        - timeSlots
+      properties:
+        isClosed:
+          type: boolean
+          example: true
+        reason:
+          type: string
+          maxLength: 200
+          example: Navidad (cerrado)
+        timeSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlotRequest'

@@ -1,309 +1,1366 @@
-# Domain Definition: Schedule
-
-## 1. Estado y Estructura
-
-### Resumen
-**Schedule** representa los **horarios de apertura y cierre físicos** de un restaurante. Define cuándo el restaurante está abierto para cualquier actividad (comida en local, takeaway, etc.), pero NO define cuándo se aceptan reservas (eso es responsabilidad de ServiceSchedule).
-
-**Responsabilidad**: Responder "¿Está abierto el restaurante en este momento?"
-
-### Propiedades (Estado)
-
-| Propiedad | Tipo | Modificador | Validaciones (FluentValidation) | Notas |
-|-----------|------|-------------|--------------------------------|-------|
-| Id | Guid | protected set | NotEmpty | Heredado de Entity |
-| RestaurantId | Guid | protected set | NotEmpty | FK al restaurante |
-| _weeklyHours | Dictionary<DayOfWeek, DaySchedule> | private | - | Backing field: horario semanal regular |
-| WeeklyHours | IReadOnlyDictionary<DayOfWeek, DaySchedule> | get only | - | Expuesto como readonly |
-| _specialDates | List<SpecialDate> | private | - | Backing field: excepciones (festivos, vacaciones) |
-| SpecialDates | IReadOnlyCollection<SpecialDate> | get only | - | Expuesto como readonly |
-
-### Value Objects Anidados
-
-#### **DaySchedule** (Value Object)
-| Propiedad | Tipo | Validaciones | Notas |
-|-----------|------|-------------|-------|
-| DayOfWeek | DayOfWeek | - | Lunes-Domingo |
-| IsClosed | bool | - | Si true, TimeSlots debe estar vacío |
-| TimeSlots | List<TimeSlot> | No vacío si IsClosed=false | Múltiples turnos posibles |
-
-#### **TimeSlot** (Value Object)
-| Propiedad | Tipo | Validaciones | Notas |
-|-----------|------|-------------|-------|
-| OpenTime | TimeOnly | NotEmpty | Hora de apertura |
-| CloseTime | TimeOnly | NotEmpty, GreaterThan(OpenTime) | Hora de cierre |
-
-**Validación adicional**: TimeSlots de un día NO pueden solaparse.
-
-#### **SpecialDate** (Value Object)
-| Propiedad | Tipo | Validaciones | Notas |
-|-----------|------|-------------|-------|
-| Date | DateOnly | NotEmpty | Fecha específica (ej: 25-Dic-2025) |
-| IsClosed | bool | - | Si true, TimeSlots debe estar vacío |
-| Reason | string | MaxLength(200) | Ej: "Navidad", "Vacaciones de verano" |
-| TimeSlots | List<TimeSlot> | No vacío si IsClosed=false | Sobrescribe horario regular |
-
-### Relaciones
-- **Restaurant** (1:1): Un Schedule pertenece a UN Restaurant
-  - Implementación: `RestaurantId` (Guid)
-  - No se carga la entidad completa (solo ID)
-
-### Invariantes / Reglas de Negocio Globales
-
-1. **RestaurantId no puede ser vacío**: Cada Schedule debe pertenecer a un restaurante
-2. **OpenTime < CloseTime**: Dentro de un TimeSlot, apertura debe ser antes del cierre
-3. **Día cerrado = Sin horarios**: Si `DaySchedule.IsClosed = true`, `TimeSlots` debe estar vacío
-4. **No solapamiento de TimeSlots**: En un mismo día, los TimeSlots no pueden solaparse
-5. **SpecialDate sobrescribe WeeklyHours**: Para una fecha específica, se usa SpecialDate si existe, sino WeeklyHours
-6. **Fechas especiales únicas**: No puede haber dos SpecialDate para la misma fecha
+# Domain Specification: Schedule
 
 ---
 
-## 2. Comportamiento y Reglas (Event Storming & Example Mapping)
+## 1. Enums
 
-### Event Storming (Textual)
-
-#### Flujo 1: Creación Inicial del Schedule
-```
-1. [Admin] -> (Crear Schedule) -> [Schedule] -> <ScheduleCreated>
-   - Input: RestaurantId
-   - Output: Schedule vacío (sin horarios definidos)
-   - Constraint: RestaurantId debe ser válido (no Guid.Empty)
-```
-
-#### Flujo 2: Configurar Horario Semanal Regular
-```
-2. [Admin] -> (Configurar Horario Semanal) -> [Schedule] -> <WeeklyHoursUpdated>
-   - Input: DayOfWeek, List<TimeSlot>
-   - Validaciones:
-     * OpenTime < CloseTime en cada TimeSlot
-     * TimeSlots no se solapan
-   - Resultado: Horario configurado para ese día
-
-3. [Admin] -> (Marcar Día Cerrado) -> [Schedule] -> <DayMarkedAsClosed>
-   - Input: DayOfWeek
-   - Resultado: DaySchedule.IsClosed = true, TimeSlots = []
-```
-
-#### Flujo 3: Gestionar Fechas Especiales
-```
-4. [Admin] -> (Agregar Fecha Especial) -> [Schedule] -> <SpecialDateAdded>
-   - Input: Date, IsClosed, Reason, TimeSlots?
-   - Constraint: Fecha no puede estar duplicada
-   - Ejemplo: "25-Dic-2025, Cerrado, 'Navidad'"
-
-5. [Admin] -> (Eliminar Fecha Especial) -> [Schedule] -> <SpecialDateRemoved>
-   - Input: Date
-   - Constraint: Fecha debe existir
-```
-
-#### Flujo 4: Consultas (No modifican estado)
-```
-6. [Cliente/Sistema] -> (¿Está Abierto?) -> [Schedule]
-   - Input: DateTime
-   - Lógica:
-     1. Buscar SpecialDate para esa fecha
-     2. Si existe: usar SpecialDate.TimeSlots
-     3. Si no: usar WeeklyHours[DayOfWeek].TimeSlots
-     4. Verificar si DateTime cae dentro de algún TimeSlot
-   - Output: bool (true/false)
-
-7. [Cliente] -> (Ver Horarios del Día) -> [Schedule]
-   - Input: DateOnly
-   - Output: List<TimeSlot> o "Cerrado"
-```
-
-#### Flujo 5: Casos de Error
-```
-8. [Admin] -> (Configurar TimeSlot Inválido) -> [Schedule] -> <Error: InvalidTimeSlot>
-   - Ejemplo: OpenTime = 15:00, CloseTime = 13:00
-   - Error: "Hora de apertura debe ser antes del cierre"
-
-9. [Admin] -> (Agregar TimeSlots Solapados) -> [Schedule] -> <Error: OverlappingTimeSlots>
-   - Ejemplo: Slot1 = 13:00-16:00, Slot2 = 15:00-18:00
-   - Error: "Los horarios no pueden solaparse"
-
-10. [Admin] -> (Marcar Día Cerrado con Horarios) -> [Schedule] -> <Error: ClosedDayCannotHaveHours>
-    - Intentar: IsClosed=true + TimeSlots=[...]
-    - Error: "Un día cerrado no puede tener horarios"
-```
+*No hay enums específicos para este agregado. Se usa `DayOfWeek` de System.*
 
 ---
 
-### Example Mapping
+## 2. Value Objects
 
-#### Story 1: Crear Schedule para un Restaurante
+### 2.1 TimeSlot
 
-**Rule**: Un Schedule debe tener un RestaurantId válido.
+#### Estructura
 
-- **Example (Success)**: 
-  - Crear Schedule con `RestaurantId = Guid.NewGuid()`
-  - Resultado: Schedule creado exitosamente
+| Propiedad | Tipo |
+|-----------|------|
+| OpenTime | TimeOnly |
+| CloseTime | TimeOnly |
 
-- **Example (Failure)**: 
-  - Crear Schedule con `RestaurantId = Guid.Empty`
-  - Error: "RestaurantId es requerido"
+#### Validaciones
 
----
+| Propiedad | Regla | Mensaje |
+|-----------|-------|---------|
+| OpenTime | NotEmpty | "Open time is required" |
+| CloseTime | NotEmpty | "Close time is required" |
+| CloseTime | GreaterThan(OpenTime) | "Close time must be after open time" |
 
-#### Story 2: Configurar Horario Regular de la Semana
+#### Propiedades Calculadas
 
-**Rule**: Los TimeSlots deben tener OpenTime < CloseTime.
+| Propiedad | Tipo | Fórmula |
+|-----------|------|---------|
+| Duration | TimeSpan | `CloseTime - OpenTime` |
 
-- **Example (Success)**: 
-  - Configurar Lunes con TimeSlot(13:00, 23:00)
-  - Resultado: Horario guardado correctamente
+#### Métodos
 
-- **Example (Failure)**: 
-  - Configurar Lunes con TimeSlot(23:00, 13:00)
-  - Error: "Hora de apertura debe ser antes del cierre"
+- `Contains(TimeOnly time)` → bool: `time >= OpenTime && time <= CloseTime`
+- `OverlapsWith(TimeSlot other)` → bool: `OpenTime < other.CloseTime && CloseTime > other.OpenTime`
 
-**Rule**: Los TimeSlots del mismo día no pueden solaparse.
+#### Comando: TimeSlot.Create
 
-- **Example (Success - Múltiples turnos SIN solapar)**: 
-  - Configurar Martes:
-    - TimeSlot1(13:00, 16:00) - Comida
-    - TimeSlot2(20:00, 23:00) - Cena
-  - Resultado: Ambos turnos configurados
+**Input**
 
-- **Example (Failure - Solapamiento)**: 
-  - Configurar Miércoles:
-    - TimeSlot1(13:00, 16:00)
-    - TimeSlot2(15:00, 18:00) ← Solapa con TimeSlot1
-  - Error: "Los horarios no pueden solaparse"
+| Campo | Tipo |
+|-------|------|
+| OpenTime | TimeOnly |
+| CloseTime | TimeOnly |
 
-**Rule**: Un día cerrado no puede tener horarios.
+**Inyecta**: `IValidator<TimeSlot>`
 
-- **Example (Success)**: 
-  - Marcar Domingo como cerrado
-  - TimeSlots = []
-  - Resultado: Domingo configurado como cerrado
-
-- **Example (Failure)**: 
-  - Intentar configurar Domingo:
-    - IsClosed = true
-    - TimeSlots = [TimeSlot(13:00, 16:00)]
-  - Error: "Un día cerrado no puede tener horarios"
-
----
-
-#### Story 3: Gestionar Fechas Especiales (Festivos, Vacaciones)
-
-**Rule**: No puede haber dos SpecialDate para la misma fecha.
-
-- **Example (Success)**: 
-  - Agregar SpecialDate(25-Dic-2025, Cerrado, "Navidad")
-  - Resultado: Fecha especial agregada
-
-- **Example (Failure - Fecha duplicada)**: 
-  - Agregar SpecialDate(25-Dic-2025, ...) cuando ya existe
-  - Error: "Ya existe un horario especial para esta fecha"
-
-**Rule**: SpecialDate sobrescribe WeeklyHours para esa fecha.
-
-- **Example (Success - Horario especial diferente)**: 
-  - WeeklyHours: Viernes 13:00-23:00
-  - SpecialDate: 14-Feb-2025 (Viernes San Valentín): 13:00-02:00
-  - Consulta: ¿Abierto 14-Feb-2025 a las 01:00?
-  - Resultado: TRUE (usa SpecialDate, no WeeklyHours)
-
-- **Example (Success - Día normalmente abierto, especial cerrado)**: 
-  - WeeklyHours: Lunes 13:00-23:00
-  - SpecialDate: 01-Ene-2025 (Lunes Año Nuevo): Cerrado
-  - Consulta: ¿Abierto 01-Ene-2025 a las 14:00?
-  - Resultado: FALSE (SpecialDate dice cerrado)
-
----
-
-#### Story 4: Consultar si el Restaurante está Abierto
-
-**Rule**: Se prioriza SpecialDate sobre WeeklyHours.
-
-- **Example (Success - Día normal)**: 
-  - WeeklyHours: Martes 13:00-23:00
-  - SpecialDates: []
-  - Consulta: ¿Abierto Martes 15-Abr-2025 a las 15:00?
-  - Resultado: TRUE (dentro del TimeSlot)
-
-- **Example (Success - Fuera de horario)**: 
-  - WeeklyHours: Martes 13:00-23:00
-  - Consulta: ¿Abierto Martes 15-Abr-2025 a las 11:00?
-  - Resultado: FALSE (antes de apertura)
-
-- **Example (Success - Día cerrado regular)**: 
-  - WeeklyHours: Domingo CERRADO
-  - Consulta: ¿Abierto Domingo 20-Abr-2025 a las 15:00?
-  - Resultado: FALSE
-
-- **Example (Edge - Múltiples turnos)**: 
-  - WeeklyHours: Viernes [13:00-16:00, 20:00-23:00]
-  - Consulta: ¿Abierto Viernes 18-Abr-2025 a las 17:00?
-  - Resultado: FALSE (entre turnos)
-
----
-
-#### Story 5: Casos Edge - Horarios que Cruzan Medianoche
-
-**Rule**: NO soportamos horarios que crucen medianoche en un solo TimeSlot.
-
-- **Example (Failure - Intento de horario cruzando medianoche)**: 
-  - Intentar: TimeSlot(22:00, 02:00)
-  - Error: "Hora de cierre debe ser posterior a hora de apertura"
-
-- **Example (Success - Alternativa con 2 días)**: 
-  - Viernes: TimeSlot(13:00, 23:59)
-  - Sábado: TimeSlot(00:00, 02:00)
-  - Consulta: ¿Abierto Viernes 23:30? → TRUE
-  - Consulta: ¿Abierto Sábado 01:00? → TRUE
-
-**Justificación**: Simplifica la lógica y evita edge cases complejos. En la práctica, se divide en 2 días.
-
----
-
-#### Story 6: Casos Edge - Restaurante 24 Horas
-
-**Rule**: Para un día abierto 24h, usar TimeSlot(00:00, 23:59).
-
-- **Example (Success - Día 24h)**: 
-  - Configurar Viernes: TimeSlot(00:00, 23:59)
-  - Consulta: ¿Abierto Viernes a las 03:00? → TRUE
-  - Consulta: ¿Abierto Viernes a las 23:45? → TRUE
-
----
-
-## 3. Invariantes Críticos (Resumen para Tests)
-
-| Invariante | Test |
-|------------|------|
-| RestaurantId no vacío | `Create_WithEmptyRestaurantId_ShouldReturnFailure()` |
-| OpenTime < CloseTime | `SetWeeklyHours_WithInvalidTimeSlot_ShouldReturnFailure()` |
-| TimeSlots no solapan | `SetWeeklyHours_WithOverlappingSlots_ShouldReturnFailure()` |
-| Día cerrado sin horarios | `MarkAsClosed_ThenAddTimeSlot_ShouldReturnFailure()` |
-| SpecialDate única | `AddSpecialDate_Duplicate_ShouldReturnFailure()` |
-| SpecialDate sobrescribe | `IsOpen_WithSpecialDate_ShouldUseSpecialDateNotWeekly()` |
-
----
-
-## 4. Comandos y Queries del Dominio
-
-### Comandos (Modifican estado)
+**Lógica**
 ```csharp
-// Factory
-public static Result<Schedule> Create(Guid restaurantId)
+var timeSlot = new TimeSlot(command.OpenTime, command.CloseTime);
 
-// Gestión semanal
-public Result SetWeeklyHours(DayOfWeek day, List<TimeSlot> slots)
-public Result MarkDayAsClosed(DayOfWeek day)
-
-// Gestión especial
-public Result AddSpecialDate(DateOnly date, bool isClosed, string reason, List<TimeSlot>? slots = null)
-public Result RemoveSpecialDate(DateOnly date)
-public Result UpdateSpecialDate(DateOnly date, bool isClosed, string reason, List<TimeSlot>? slots = null)
+return timeSlotValidator.ValidateOrThrow(timeSlot);
 ```
 
-### Queries (Solo lectura)
+#### Tests Unitarios
+
+✅ TimeSlot válido
+- Input: OpenTime=13:00, CloseTime=23:00
+- Resultado: TimeSlot creado, Duration=10h
+
+✅ TimeSlot de turno corto
+- Input: OpenTime=13:00, CloseTime=16:00
+- Resultado: TimeSlot creado, Duration=3h
+
+✅ TimeSlot 24h (máximo permitido)
+- Input: OpenTime=00:00, CloseTime=23:59
+- Resultado: TimeSlot creado
+
+✅ Contains devuelve true para hora dentro del rango
+- Input: TimeSlot(13:00, 23:00), time=15:00
+- Resultado: Contains(15:00)=true
+
+✅ Contains devuelve false para hora fuera del rango
+- Input: TimeSlot(13:00, 23:00), time=11:00
+- Resultado: Contains(11:00)=false
+
+✅ OverlapsWith detecta solapamiento
+- Input: Slot1(13:00, 16:00), Slot2(15:00, 18:00)
+- Resultado: Slot1.OverlapsWith(Slot2)=true
+
+✅ OverlapsWith detecta no solapamiento
+- Input: Slot1(13:00, 16:00), Slot2(20:00, 23:00)
+- Resultado: Slot1.OverlapsWith(Slot2)=false
+
+❌ CloseTime antes de OpenTime
+- Input: OpenTime=23:00, CloseTime=13:00
+- Resultado: ValidationException "Close time must be after open time"
+
+❌ CloseTime igual a OpenTime
+- Input: OpenTime=13:00, CloseTime=13:00
+- Resultado: ValidationException "Close time must be after open time"
+
+---
+
+### 2.2 DaySchedule
+
+#### Estructura
+
+| Propiedad | Tipo |
+|-----------|------|
+| DayOfWeek | DayOfWeek |
+| IsClosed | bool |
+| TimeSlots | IReadOnlyCollection<TimeSlot> |
+
+#### Validaciones
+
+| Propiedad | Regla | Mensaje |
+|-----------|-------|---------|
+| DayOfWeek | IsEnum | "Invalid day of week" |
+| TimeSlots | Empty when IsClosed=true | "Closed day cannot have time slots" |
+| TimeSlots | NotEmpty when IsClosed=false | "Open day must have at least one time slot" |
+| TimeSlots | NoOverlapping | "Time slots cannot overlap" |
+
+#### Propiedades Calculadas
+
+| Propiedad | Tipo | Fórmula |
+|-----------|------|---------|
+| TotalOpenHours | TimeSpan | `TimeSlots.Sum(ts => ts.Duration)` |
+
+#### Métodos
+
+- `IsOpenAt(TimeOnly time)` → bool: `!IsClosed && TimeSlots.Any(ts => ts.Contains(time))`
+
+#### Comando: DaySchedule.Create
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| DayOfWeek | DayOfWeek |
+| IsClosed | bool |
+| TimeSlots | TimeSlot[] |
+
+**Inyecta**: `IValidator<DaySchedule>`
+
+**Lógica**
 ```csharp
-public bool IsOpen(DateTime dateTime)
-public List<TimeSlot> GetHoursFor(DateOnly date)
-public bool IsSpecialDate(DateOnly date)
+var daySchedule = new DaySchedule(command.DayOfWeek, command.IsClosed, command.TimeSlots);
+
+return dayScheduleValidator.ValidateOrThrow(daySchedule);
 ```
+
+#### Tests Unitarios
+
+✅ DaySchedule abierto con un turno
+- Input: DayOfWeek=Monday, IsClosed=false, TimeSlots=[{13:00, 23:00}]
+- Resultado: DaySchedule creado
+
+✅ DaySchedule abierto con múltiples turnos (comida y cena)
+- Input: DayOfWeek=Tuesday, IsClosed=false, TimeSlots=[{13:00, 16:00}, {20:00, 23:00}]
+- Resultado: DaySchedule creado, TotalOpenHours=6h
+
+✅ DaySchedule cerrado
+- Input: DayOfWeek=Sunday, IsClosed=true, TimeSlots=[]
+- Resultado: DaySchedule creado con IsClosed=true
+
+✅ IsOpenAt devuelve true dentro de horario
+- Precondición: DaySchedule(Monday, false, [{13:00, 23:00}])
+- Input: time=15:00
+- Resultado: IsOpenAt(15:00)=true
+
+✅ IsOpenAt devuelve false fuera de horario
+- Precondición: DaySchedule(Monday, false, [{13:00, 23:00}])
+- Input: time=11:00
+- Resultado: IsOpenAt(11:00)=false
+
+✅ IsOpenAt devuelve false entre turnos
+- Precondición: DaySchedule(Monday, false, [{13:00, 16:00}, {20:00, 23:00}])
+- Input: time=18:00
+- Resultado: IsOpenAt(18:00)=false
+
+❌ Día cerrado con TimeSlots
+- Input: IsClosed=true, TimeSlots=[{13:00, 23:00}]
+- Resultado: ValidationException "Closed day cannot have time slots"
+
+❌ Día abierto sin TimeSlots
+- Input: IsClosed=false, TimeSlots=[]
+- Resultado: ValidationException "Open day must have at least one time slot"
+
+❌ TimeSlots solapados
+- Input: TimeSlots=[{13:00, 16:00}, {15:00, 18:00}]
+- Resultado: ValidationException "Time slots cannot overlap"
+
+---
+
+### 2.3 SpecialDate
+
+#### Estructura
+
+| Propiedad | Tipo |
+|-----------|------|
+| Date | DateOnly |
+| IsClosed | bool |
+| Reason | string |
+| TimeSlots | IReadOnlyCollection<TimeSlot> |
+
+#### Validaciones
+
+| Propiedad | Regla | Mensaje |
+|-----------|-------|---------|
+| Date | NotEmpty | "Date is required" |
+| Reason | NotEmpty | "Reason is required" |
+| Reason | Max(200) | "Reason cannot exceed 200 characters" |
+| TimeSlots | Empty when IsClosed=true | "Closed date cannot have time slots" |
+| TimeSlots | NotEmpty when IsClosed=false | "Open date must have at least one time slot" |
+| TimeSlots | NoOverlapping | "Time slots cannot overlap" |
+
+#### Propiedades Calculadas
+
+| Propiedad | Tipo | Fórmula |
+|-----------|------|---------|
+| TotalOpenHours | TimeSpan | `IsClosed ? TimeSpan.Zero : TimeSlots.Sum(ts => ts.Duration)` |
+
+#### Métodos
+
+- `IsOpenAt(TimeOnly time)` → bool: `!IsClosed && TimeSlots.Any(ts => ts.Contains(time))`
+
+#### Comando: SpecialDate.Create
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| Date | DateOnly |
+| IsClosed | bool |
+| Reason | string |
+| TimeSlots | TimeSlot[] |
+
+**Inyecta**: `IValidator<SpecialDate>`
+
+**Lógica**
+```csharp
+var specialDate = new SpecialDate(command.Date, command.IsClosed, command.Reason, command.TimeSlots);
+
+return specialDateValidator.ValidateOrThrow(specialDate);
+```
+
+#### Tests Unitarios
+
+✅ SpecialDate cerrado (festivo)
+- Input: Date=2025-12-25, IsClosed=true, Reason="Navidad", TimeSlots=[]
+- Resultado: SpecialDate creado
+
+✅ SpecialDate con horario especial
+- Input: Date=2025-02-14, IsClosed=false, Reason="San Valentín", TimeSlots=[{13:00, 02:00}]
+- Resultado: SpecialDate creado
+
+✅ SpecialDate de vacaciones
+- Input: Date=2025-08-15, IsClosed=true, Reason="Vacaciones de verano", TimeSlots=[]
+- Resultado: SpecialDate creado
+
+❌ Reason vacío
+- Input: Reason=""
+- Resultado: ValidationException "Reason is required"
+
+❌ Reason demasiado largo
+- Input: Reason=(201 caracteres)
+- Resultado: ValidationException "Reason cannot exceed 200 characters"
+
+❌ Fecha cerrada con TimeSlots
+- Input: IsClosed=true, TimeSlots=[{13:00, 23:00}]
+- Resultado: ValidationException "Closed date cannot have time slots"
+
+❌ Fecha abierta sin TimeSlots
+- Input: IsClosed=false, TimeSlots=[]
+- Resultado: ValidationException "Open date must have at least one time slot"
+
+---
+
+## 3. Aggregate: Schedule
+
+### Estructura
+
+```
+Schedule (Aggregate Root)
+├─ Id: Guid
+├─ TenantId: Guid
+├─ Name: string
+├─ Description: string?
+├─ IsActive: bool
+├─ WeeklyHours: IReadOnlyDictionary<DayOfWeek, DaySchedule>
+└─ SpecialDates: IReadOnlyCollection<SpecialDate>
+```
+
+#### Propiedades
+
+| Propiedad | Tipo | Modificador |
+|-----------|------|-------------|
+| Id | Guid | init |
+| TenantId | Guid | protected set |
+| Name | string | protected set |
+| Description | string? | protected set |
+| IsActive | bool | protected set |
+
+#### Colecciones
+
+```csharp
+protected Dictionary<DayOfWeek, DaySchedule> _weeklyHours = [];
+public IReadOnlyDictionary<DayOfWeek, DaySchedule> WeeklyHours => _weeklyHours.AsReadOnly();
+
+protected HashSet<SpecialDate> _specialDates = [];
+public IReadOnlyCollection<SpecialDate> SpecialDates => _specialDates.ToList().AsReadOnly();
+```
+
+#### Propiedades Calculadas
+
+| Propiedad | Tipo | Fórmula |
+|-----------|------|---------|
+| HasWeeklyHours | bool | `_weeklyHours.Any()` |
+| HasSpecialDates | bool | `_specialDates.Any()` |
+| IsFullyConfigured | bool | `_weeklyHours.Count == 7` |
+
+### Validaciones
+
+| Propiedad | Regla | Mensaje |
+|-----------|-------|---------|
+| Id | NotEmpty | "Id is required" |
+| TenantId | NotEmpty | "Tenant id is required" |
+| Name | NotEmpty | "Name is required" |
+| Name | Max(100) | "Name cannot exceed 100 characters" |
+| Description | Max(500) | "Description cannot exceed 500 characters" |
+
+---
+
+## 4. Response
+
+```csharp
+public record ScheduleResponse(
+    Guid Id,
+    string Name,
+    string? Description,
+    bool IsActive,
+    bool HasWeeklyHours,
+    bool HasSpecialDates,
+    bool IsFullyConfigured,
+    IReadOnlyDictionary<DayOfWeek, DayScheduleResponse> WeeklyHours,
+    IReadOnlyCollection<SpecialDateResponse> SpecialDates
+);
+
+public record DayScheduleResponse(
+    DayOfWeek DayOfWeek,
+    bool IsClosed,
+    TimeSpan TotalOpenHours,
+    IReadOnlyCollection<TimeSlotResponse> TimeSlots
+);
+
+public record SpecialDateResponse(
+    DateOnly Date,
+    bool IsClosed,
+    string Reason,
+    TimeSpan TotalOpenHours,
+    IReadOnlyCollection<TimeSlotResponse> TimeSlots
+);
+
+public record TimeSlotResponse(
+    TimeOnly OpenTime,
+    TimeOnly CloseTime,
+    TimeSpan Duration
+);
+
+public record IsOpenResponse(
+    bool IsOpen,
+    DateOnly Date,
+    TimeOnly Time,
+    bool IsSpecialDate,
+    string? SpecialDateReason
+);
+```
+
+---
+
+## 5. Event Storming - Leyenda
+
+| Color | Elemento | Símbolo | Descripción |
+|-------|----------|---------|-------------|
+| 🟠 Naranja | Domain Event | `<EventName>` | Algo que ocurrió (pasado) |
+| 🔵 Azul | Command | `(CommandName)` | Intención/Acción (imperativo) |
+| 🟡 Amarillo | Actor | `[ActorName]` | Usuario o sistema que inicia |
+| 🟣 Púrpura | Policy | `{PolicyName}` | Regla de negocio/Política |
+| 🟤 Marrón | Aggregate | `[[AggregateName]]` | Entidad raíz del agregado |
+| 🔴 Rojo | Hot Spot | `⚠️` | Dudas o conflictos pendientes |
+| 🟢 Verde | Read Model | `📊` | Vista/Proyección de datos |
+| ⚪ Blanco | External System | `⚡` | Sistema externo |
+
+---
+
+## 6. Comandos
+
+---
+
+### 6.1 Schedule.Create
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(CreateSchedule) → 🟤[[Schedule]] → 🟠<ScheduleCreated>
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| TenantId | Guid |
+| Name | string |
+| Description | string? |
+
+#### Inyecta
+- `IValidator<Schedule>`
+
+#### Guards
+Ninguno.
+
+#### Lógica
+```csharp
+var schedule = new Schedule(Guid.NewGuid())
+{
+    TenantId = command.TenantId,
+    Name = command.Name,
+    Description = command.Description,
+    IsActive = false
+};
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: POST /schedules
+
+**Request**
+```csharp
+public record CreateScheduleRequest(
+    string Name,
+    string? Description
+);
+```
+
+**Response**: 201 Created → `ScheduleResponse`
+
+#### Tests Unitarios (Dominio)
+
+✅ Crear schedule con datos válidos
+- Input: TenantId=valid-guid, Name="Horario de Verano", Description="Del 15 junio al 15 septiembre"
+- Resultado: Schedule creado con IsActive=false, WeeklyHours vacío, SpecialDates vacío
+
+✅ Crear schedule sin descripción
+- Input: TenantId=valid-guid, Name="Horario de Invierno", Description=null
+- Resultado: Schedule creado
+
+❌ TenantId vacío
+- Input: TenantId=Guid.Empty
+- Resultado: ValidationException "Tenant id is required"
+
+❌ Name vacío
+- Input: Name=""
+- Resultado: ValidationException "Name is required"
+
+❌ Name demasiado largo
+- Input: Name=(101 caracteres)
+- Resultado: ValidationException "Name cannot exceed 100 characters"
+
+#### Tests Unitarios (Servicio)
+
+✅ Llama a Schedule.Create con los parámetros correctos
+- Verifica que se invoca scheduleCreate.Execute con el command correcto
+
+✅ Añade el schedule al repositorio
+- Verifica que repository.Add es llamado con el schedule creado
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del schedule
+
+#### Tests Integración
+
+✅ 201 Created → ScheduleResponse con WeeklyHours vacío
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.2 GetSchedule
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(GetSchedule) → 🟤[[Schedule]] → 📊 ScheduleResponse
+```
+
+#### Slice: GET /schedules/{id}
+
+**Response**: 200 OK → `ScheduleResponse`
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio con el id correcto
+- Verifica que repository.GetByIdAsync es llamado con el id
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene los datos del schedule
+
+#### Tests Integración
+
+✅ 200 OK → ScheduleResponse
+
+❌ 404 → No encontrado
+
+---
+
+### 6.3 ListSchedules
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(ListSchedules) → 🟤[[Schedule]] → 📊 ScheduleResponse[]
+```
+
+#### Slice: GET /schedules
+
+**Response**: 200 OK → `ScheduleResponse[]`
+
+#### Tests Unitarios (Servicio)
+
+✅ Retorna lista de schedules mapeados correctamente
+- Verifica que el Response contiene los datos de los schedules
+
+#### Tests Integración
+
+✅ 200 OK → Array de ScheduleResponse
+
+✅ 200 OK → Array vacío si no hay schedules
+
+---
+
+### 6.4 Schedule.Update
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(UpdateSchedule) → 🟤[[Schedule]] → 🟠<ScheduleUpdated>
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| Name | string |
+| Description | string? |
+
+#### Inyecta
+- `IValidator<Schedule>`
+
+#### Guards
+Ninguno.
+
+#### Lógica
+```csharp
+schedule.Name = command.Name;
+schedule.Description = command.Description;
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: PUT /schedules/{id}
+
+**Request**
+```csharp
+public record UpdateScheduleRequest(
+    string Name,
+    string? Description
+);
+```
+
+**Response**: 204 No Content
+
+#### Tests Unitarios (Dominio)
+
+✅ Actualizar schedule existente
+- Precondición: Schedule existe
+- Input: Name="Horario de Verano Actualizado", Description="Nueva descripción"
+- Resultado: Schedule actualizado
+
+❌ Name vacío
+- Input: Name=""
+- Resultado: ValidationException "Name is required"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.Update con los parámetros correctos
+- Verifica que se invoca scheduleUpdate.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Schedule no encontrado
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.5 Schedule.Activate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(ActivateSchedule) → 🟤[[Schedule]] → 🟠<ScheduleActivated>
+                                        │
+                              🟣{TieneWeeklyHours}
+```
+
+#### Input
+Ninguno
+
+#### Inyecta
+- `IScheduleRepository`
+- `IValidator<Schedule>`
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Ya está activo | 409 | ConflictGuard | "Schedule is already active" |
+| No tiene WeeklyHours | 422 | ValidationGuard | "Schedule must have at least one day configured" |
+
+#### Lógica
+```csharp
+ConflictGuard.ThrowIf(schedule.IsActive, "Schedule is already active");
+ValidationGuard.ThrowIf(!schedule.HasWeeklyHours, "Schedule must have at least one day configured", nameof(schedule.WeeklyHours));
+
+// Desactivar el schedule activo actual (si existe)
+var currentActive = await scheduleRepository.GetActiveAsync();
+if (currentActive != null && currentActive.Id != schedule.Id)
+{
+    currentActive.IsActive = false;
+}
+
+schedule.IsActive = true;
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: POST /schedules/{id}/activate
+
+**Response**: 200 OK → `ScheduleResponse`
+
+#### Tests Unitarios (Dominio)
+
+✅ Activar schedule con WeeklyHours configurados
+- Precondición: Schedule con al menos un día configurado, IsActive=false
+- Resultado: Schedule con IsActive=true
+
+✅ Activar schedule desactiva el anterior
+- Precondición: Otro Schedule está activo
+- Resultado: Anterior con IsActive=false, nuevo con IsActive=true
+
+❌ Schedule ya activo
+- Precondición: Schedule con IsActive=true
+- Resultado: ConflictException "Schedule is already active"
+
+❌ Schedule sin WeeklyHours
+- Precondición: Schedule sin ningún día configurado
+- Resultado: ValidationException "Schedule must have at least one day configured"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.Activate
+- Verifica que se invoca scheduleActivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=true
+
+#### Tests Integración
+
+✅ 200 OK → ScheduleResponse con IsActive=true
+
+❌ 404 → Schedule no encontrado
+
+❌ 409 → Ya estaba activo
+
+❌ 422 → Falta WeeklyHours
+
+---
+
+### 6.6 Schedule.Deactivate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(DeactivateSchedule) → 🟤[[Schedule]] → 🟠<ScheduleDeactivated>
+```
+
+#### Input
+Ninguno
+
+#### Inyecta
+- `IValidator<Schedule>`
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Ya está inactivo | 409 | ConflictGuard | "Schedule is already inactive" |
+
+#### Lógica
+```csharp
+ConflictGuard.ThrowIf(!schedule.IsActive, "Schedule is already inactive");
+
+schedule.IsActive = false;
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: POST /schedules/{id}/deactivate
+
+**Response**: 200 OK → `ScheduleResponse`
+
+#### Tests Unitarios (Dominio)
+
+✅ Desactivar schedule activo
+- Precondición: Schedule con IsActive=true
+- Resultado: Schedule con IsActive=false
+
+❌ Schedule ya inactivo
+- Precondición: Schedule con IsActive=false
+- Resultado: ConflictException "Schedule is already inactive"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.Deactivate
+- Verifica que se invoca scheduleDeactivate.Execute
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene IsActive=false
+
+#### Tests Integración
+
+✅ 200 OK → ScheduleResponse con IsActive=false
+
+❌ 404 → Schedule no encontrado
+
+❌ 409 → Ya estaba inactivo
+
+---
+
+### 6.7 Schedule.SetWeeklyHours
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(SetWeeklyHours) → 🟤[[Schedule]] → 🟠<WeeklyHoursUpdated>
+                                      │
+                            🟣{TimeSlotsNoSolapan}
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| DayOfWeek | DayOfWeek |
+| IsClosed | bool |
+| TimeSlots | CreateTimeSlotCommand[] |
+
+#### Inyecta
+- `TimeSlot.Create`
+- `DaySchedule.Create`
+- `IValidator<Schedule>`
+
+#### Guards
+Ninguno.
+
+#### Lógica
+```csharp
+var timeSlots = command.TimeSlots
+    .Select(ts => timeSlotCreate.Execute(ts))
+    .ToList();
+
+var daySchedule = dayScheduleCreate.Execute(new CreateDayScheduleCommand(
+    command.DayOfWeek,
+    command.IsClosed,
+    timeSlots));
+
+schedule._weeklyHours[command.DayOfWeek] = daySchedule;
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: PUT /schedules/{id}/weekly-hours/{dayOfWeek}
+
+**Request**
+```csharp
+public record SetWeeklyHoursRequest(
+    bool IsClosed,
+    SetTimeSlotRequest[] TimeSlots
+);
+
+public record SetTimeSlotRequest(
+    TimeOnly OpenTime,
+    TimeOnly CloseTime
+);
+```
+
+**Response**: 204 No Content
+
+#### Tests Unitarios (Dominio)
+
+✅ Configurar día con un turno
+- Precondición: Schedule existe
+- Input: DayOfWeek=Monday, IsClosed=false, TimeSlots=[{13:00, 23:00}]
+- Resultado: WeeklyHours[Monday] configurado
+
+✅ Configurar día con múltiples turnos
+- Input: DayOfWeek=Tuesday, IsClosed=false, TimeSlots=[{13:00, 16:00}, {20:00, 23:00}]
+- Resultado: WeeklyHours[Tuesday] con 2 TimeSlots
+
+✅ Sobrescribir configuración existente
+- Precondición: Schedule con Monday configurado
+- Input: DayOfWeek=Monday, IsClosed=false, TimeSlots=[{12:00, 22:00}]
+- Resultado: WeeklyHours[Monday] actualizado
+
+❌ TimeSlots solapados
+- Input: TimeSlots=[{13:00, 16:00}, {15:00, 18:00}]
+- Resultado: ValidationException "Time slots cannot overlap"
+
+❌ CloseTime antes de OpenTime
+- Input: TimeSlots=[{23:00, 13:00}]
+- Resultado: ValidationException "Close time must be after open time"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.SetWeeklyHours con los parámetros correctos
+- Verifica que se invoca setWeeklyHours.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Schedule no encontrado
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.8 Schedule.MarkDayAsClosed
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(MarkDayAsClosed) → 🟤[[Schedule]] → 🟠<DayMarkedAsClosed>
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| DayOfWeek | DayOfWeek |
+
+#### Inyecta
+- `DaySchedule.Create`
+- `IValidator<Schedule>`
+
+#### Guards
+Ninguno.
+
+#### Lógica
+```csharp
+var daySchedule = dayScheduleCreate.Execute(new CreateDayScheduleCommand(
+    command.DayOfWeek,
+    isClosed: true,
+    timeSlots: []));
+
+schedule._weeklyHours[command.DayOfWeek] = daySchedule;
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: POST /schedules/{id}/weekly-hours/{dayOfWeek}/close
+
+**Response**: 204 No Content
+
+#### Tests Unitarios (Dominio)
+
+✅ Marcar día como cerrado
+- Precondición: Schedule existe
+- Input: DayOfWeek=Sunday
+- Resultado: WeeklyHours[Sunday].IsClosed=true, TimeSlots=[]
+
+✅ Marcar día previamente abierto como cerrado
+- Precondición: Schedule con Monday abierto [{13:00, 23:00}]
+- Input: DayOfWeek=Monday
+- Resultado: WeeklyHours[Monday].IsClosed=true, TimeSlots=[]
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.MarkDayAsClosed con los parámetros correctos
+- Verifica que se invoca markDayAsClosed.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Schedule no encontrado
+
+---
+
+### 6.9 Schedule.AddSpecialDate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(AddSpecialDate) → 🟤[[Schedule]] → 🟠<SpecialDateAdded>
+                                      │
+                            🟣{FechaÚnica}
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| Date | DateOnly |
+| IsClosed | bool |
+| Reason | string |
+| TimeSlots | CreateTimeSlotCommand[] |
+
+#### Inyecta
+- `TimeSlot.Create`
+- `SpecialDate.Create`
+- `IValidator<Schedule>`
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Fecha ya existe | 409 | ConflictGuard | "Special date for '{Date}' already exists" |
+
+#### Lógica
+```csharp
+ConflictGuard.ThrowIf(
+    schedule.SpecialDates.Any(sd => sd.Date == command.Date),
+    $"Special date for '{command.Date}' already exists");
+
+var timeSlots = command.TimeSlots
+    .Select(ts => timeSlotCreate.Execute(ts))
+    .ToList();
+
+var specialDate = specialDateCreate.Execute(new CreateSpecialDateCommand(
+    command.Date,
+    command.IsClosed,
+    command.Reason,
+    timeSlots));
+
+schedule._specialDates.Add(specialDate);
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: POST /schedules/{id}/special-dates
+
+**Request**
+```csharp
+public record AddSpecialDateRequest(
+    DateOnly Date,
+    bool IsClosed,
+    string Reason,
+    SetTimeSlotRequest[] TimeSlots
+);
+```
+
+**Response**: 201 Created → `ScheduleResponse`
+
+#### Tests Unitarios (Dominio)
+
+✅ Añadir fecha especial cerrada (festivo)
+- Precondición: Schedule sin SpecialDates
+- Input: Date=2025-12-25, IsClosed=true, Reason="Navidad", TimeSlots=[]
+- Resultado: SpecialDate añadido
+
+✅ Añadir fecha especial con horario extendido
+- Input: Date=2025-02-14, IsClosed=false, Reason="San Valentín", TimeSlots=[{13:00, 02:00}]
+- Resultado: SpecialDate añadido con horario especial
+
+✅ Añadir múltiples fechas especiales
+- Precondición: Schedule con 2025-12-25 configurado
+- Input: Date=2025-12-31, IsClosed=false, Reason="Nochevieja", TimeSlots=[{20:00, 03:00}]
+- Resultado: 2 SpecialDates en el schedule
+
+❌ Fecha duplicada
+- Precondición: Schedule ya tiene 2025-12-25
+- Input: Date=2025-12-25
+- Resultado: ConflictException "Special date for '2025-12-25' already exists"
+
+❌ Reason vacío
+- Input: Reason=""
+- Resultado: ValidationException "Reason is required"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.AddSpecialDate con los parámetros correctos
+- Verifica que se invoca addSpecialDate.Execute con el command correcto
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+✅ Retorna Response mapeado correctamente
+- Verifica que el Response contiene el SpecialDate añadido
+
+#### Tests Integración
+
+✅ 201 Created → ScheduleResponse con SpecialDate añadido
+
+❌ 404 → Schedule no encontrado
+
+❌ 409 → Fecha duplicada
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.10 Schedule.UpdateSpecialDate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(UpdateSpecialDate) → 🟤[[Schedule]] → 🟠<SpecialDateUpdated>
+                                         │
+                               🟣{SpecialDateExiste}
+```
+
+#### Input
+
+| Campo | Tipo |
+|-------|------|
+| IsClosed | bool |
+| Reason | string |
+| TimeSlots | CreateTimeSlotCommand[] |
+
+*Date viene en la ruta*
+
+#### Inyecta
+- `TimeSlot.Create`
+- `SpecialDate.Create`
+- `IValidator<Schedule>`
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| SpecialDate no existe | 404 | NotFoundGuard | "Special date for '{Date}' not found" |
+
+#### Lógica
+```csharp
+var existing = schedule.SpecialDates.FirstOrDefault(sd => sd.Date == date);
+NotFoundGuard.ThrowIfNull(existing, $"Special date for '{date}' not found");
+
+var timeSlots = command.TimeSlots
+    .Select(ts => timeSlotCreate.Execute(ts))
+    .ToList();
+
+var updated = specialDateCreate.Execute(new CreateSpecialDateCommand(
+    date,
+    command.IsClosed,
+    command.Reason,
+    timeSlots));
+
+schedule._specialDates.Remove(existing);
+schedule._specialDates.Add(updated);
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: PUT /schedules/{id}/special-dates/{date}
+
+**Request**
+```csharp
+public record UpdateSpecialDateRequest(
+    bool IsClosed,
+    string Reason,
+    SetTimeSlotRequest[] TimeSlots
+);
+```
+
+**Response**: 204 No Content
+
+#### Tests Unitarios (Dominio)
+
+✅ Actualizar fecha especial
+- Precondición: Schedule tiene 2025-12-25 cerrado
+- Input: IsClosed=false, Reason="Navidad (horario especial)", TimeSlots=[{13:00, 18:00}]
+- Resultado: SpecialDate actualizado
+
+✅ Cambiar de abierto a cerrado
+- Precondición: Schedule tiene 2025-02-14 con horario especial
+- Input: IsClosed=true, Reason="San Valentín cancelado", TimeSlots=[]
+- Resultado: SpecialDate actualizado a cerrado
+
+❌ SpecialDate no existe
+- Precondición: Schedule no tiene 2025-08-15
+- Resultado: NotFoundException "Special date for '2025-08-15' not found"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.UpdateSpecialDate con los parámetros correctos
+- Verifica que se invoca updateSpecialDate.Execute con date y command correctos
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Schedule o SpecialDate no encontrado
+
+❌ 422 → Validación fallida
+
+---
+
+### 6.11 Schedule.RemoveSpecialDate
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(RemoveSpecialDate) → 🟤[[Schedule]] → 🟠<SpecialDateRemoved>
+                                         │
+                               🟣{SpecialDateExiste}
+```
+
+#### Input
+*Date viene en la ruta*
+
+#### Inyecta
+- `IValidator<Schedule>`
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| SpecialDate no existe | 404 | NotFoundGuard | "Special date for '{Date}' not found" |
+
+#### Lógica
+```csharp
+var existing = schedule.SpecialDates.FirstOrDefault(sd => sd.Date == date);
+NotFoundGuard.ThrowIfNull(existing, $"Special date for '{date}' not found");
+
+schedule._specialDates.Remove(existing);
+
+return scheduleValidator.ValidateOrThrow(schedule);
+```
+
+#### Slice: DELETE /schedules/{id}/special-dates/{date}
+
+**Response**: 204 No Content
+
+#### Tests Unitarios (Dominio)
+
+✅ Eliminar fecha especial existente
+- Precondición: Schedule con 2025-12-25 configurado
+- Input: Date=2025-12-25
+- Resultado: SpecialDate eliminado
+
+✅ Eliminar una de varias fechas especiales
+- Precondición: Schedule con 3 SpecialDates
+- Input: Date=2025-12-25
+- Resultado: Quedan 2 SpecialDates
+
+❌ SpecialDate no existe
+- Precondición: Schedule no tiene 2025-08-15
+- Resultado: NotFoundException "Special date for '2025-08-15' not found"
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene el schedule del repositorio
+- Verifica que repository.GetByIdAsync es llamado con el id correcto
+
+✅ Llama a Schedule.RemoveSpecialDate con el date correcto
+- Verifica que se invoca removeSpecialDate.Execute con el date
+
+✅ Guarda los cambios
+- Verifica que unitOfWork.SaveChangesAsync es llamado
+
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Schedule o SpecialDate no encontrado
+
+---
+
+## 7. Queries
+
+### IsOpen
+
+**Slice**: GET /schedules/{id}/is-open?dateTime={dateTime}
+
+**Response**: 200 OK → `IsOpenResponse`
+
+#### Tests Integración
+
+✅ 200 OK → IsOpen=true (dentro de horario regular)
+
+✅ 200 OK → IsOpen=false (fuera de horario)
+
+✅ 200 OK → IsOpen=false (día cerrado)
+
+✅ 200 OK → IsOpen=false (festivo cerrado, sobrescribe semanal)
+
+✅ 200 OK → IsOpen=true (fecha especial abierta, sobrescribe semanal)
+
+✅ 200 OK → IsOpen=false (entre turnos)
+
+❌ 404 → Schedule no encontrado
+
+---
+
+## 8. Resumen de Endpoints
+
+| Método | Ruta | Comando/Query | Response |
+|--------|------|---------------|----------|
+| POST | /schedules | Schedule.Create | 201 → `ScheduleResponse` |
+| GET | /schedules/{id} | GetSchedule | 200 → `ScheduleResponse` |
+| GET | /schedules | ListSchedules | 200 → `ScheduleResponse[]` |
+| PUT | /schedules/{id} | Schedule.Update | 204 |
+| POST | /schedules/{id}/activate | Schedule.Activate | 200 → `ScheduleResponse` |
+| POST | /schedules/{id}/deactivate | Schedule.Deactivate | 200 → `ScheduleResponse` |
+| PUT | /schedules/{id}/weekly-hours/{dayOfWeek} | Schedule.SetWeeklyHours | 204 |
+| POST | /schedules/{id}/weekly-hours/{dayOfWeek}/close | Schedule.MarkDayAsClosed | 204 |
+| POST | /schedules/{id}/special-dates | Schedule.AddSpecialDate | 201 → `ScheduleResponse` |
+| PUT | /schedules/{id}/special-dates/{date} | Schedule.UpdateSpecialDate | 204 |
+| DELETE | /schedules/{id}/special-dates/{date} | Schedule.RemoveSpecialDate | 204 |
+| GET | /schedules/{id}/is-open | IsOpen | 200 → `IsOpenResponse` |
+
+---
+
+## 9. Persistencia (Firestore)
+
+### Colección
+
+`/schedules/{scheduleId}`
+
+### Configuración DbContext
+
+```csharp
+modelBuilder.Entity<ScheduleAgg>(entity =>
+{
+    entity.HasQueryFilter(s => s.TenantId == tenantId);
+
+    entity.Ignore(s => s.HasWeeklyHours);
+    entity.Ignore(s => s.HasSpecialDates);
+    entity.Ignore(s => s.IsFullyConfigured);
+
+    entity.MapOf(s => s.WeeklyHours, daySchedule =>
+    {
+        daySchedule.Ignore(ds => ds.TotalOpenHours);
+
+        daySchedule.ArrayOf(ds => ds.TimeSlots, timeSlot =>
+        {
+            timeSlot.Ignore(ts => ts.Duration);
+        });
+    });
+
+    entity.ArrayOf(s => s.SpecialDates, specialDate =>
+    {
+        specialDate.Ignore(sd => sd.TotalOpenHours);
+
+        specialDate.ArrayOf(sd => sd.TimeSlots, timeSlot =>
+        {
+            timeSlot.Ignore(ts => ts.Duration);
+        });
+    });
+});
+```
+
+### Documento Ejemplo
+
+```json
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "tenantId": "tenant-001-guid",
+  "name": "Horario de Verano",
+  "description": "Del 15 de junio al 15 de septiembre",
+  "isActive": true,
+  "weeklyHours": {
+    "Monday": {
+      "dayOfWeek": 1,
+      "isClosed": false,
+      "timeSlots": [
+        { "openTime": "13:00:00", "closeTime": "16:00:00" },
+        { "openTime": "20:00:00", "closeTime": "23:00:00" }
+      ]
+    },
+    "Tuesday": {
+      "dayOfWeek": 2,
+      "isClosed": false,
+      "timeSlots": [
+        { "openTime": "13:00:00", "closeTime": "23:00:00" }
+      ]
+    },
+    "Sunday": {
+      "dayOfWeek": 0,
+      "isClosed": true,
+      "timeSlots": []
+    }
+  },
+  "specialDates": [
+    {
+      "date": "2025-12-25",
+      "isClosed": true,
+      "reason": "Navidad",
+      "timeSlots": []
+    },
+    {
+      "date": "2025-02-14",
+      "isClosed": false,
+      "reason": "San Valentín",
+      "timeSlots": [
+        { "openTime": "13:00:00", "closeTime": "02:00:00" }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 10. Hot Spots ⚠️
+
+| # | Pregunta | Estado |
+|---|----------|--------|
+| 1 | ¿Se soportan horarios que cruzan medianoche en un solo TimeSlot? | Decidido: NO. Se divide en 2 días |
+| 2 | ¿Cómo se manejan restaurantes 24h? | Decidido: TimeSlot(00:00, 23:59) |
+| 3 | ¿Se puede eliminar un Schedule o solo dejar vacío? | Pendiente |
+| 4 | ¿Las SpecialDates tienen fecha de expiración automática? | Pendiente |
+
+---
+
+**Fecha**: 2025-01-29
+**Autor**: Equipo Fudie
