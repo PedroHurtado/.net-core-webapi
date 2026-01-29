@@ -11,7 +11,7 @@ public class AddMenuItemAllergenTests
     private readonly MenuItemAgg.Create _createMenuItem;
     private readonly MenuItemAgg.AddAllergen _addAllergen;
     private readonly Mock<AddMenuItemAllergen.IRepository> _repositoryMock;
-    private readonly Mock<AddMenuItemAllergen.IAllergenRepository> _allergenRepositoryMock;
+    private readonly Mock<IEntityLookup> _entityLookupMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly AddMenuItemAllergen.Service _service;
 
@@ -22,12 +22,12 @@ public class AddMenuItemAllergenTests
         _createMenuItem = new(_priceOptionCreate, _menuItemValidator);
         _addAllergen = new(_menuItemValidator);
         _repositoryMock = new Mock<AddMenuItemAllergen.IRepository>();
-        _allergenRepositoryMock = new Mock<AddMenuItemAllergen.IAllergenRepository>();
+        _entityLookupMock = new Mock<IEntityLookup>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _service = new AddMenuItemAllergen.Service(
             _addAllergen,
             _repositoryMock.Object,
-            _allergenRepositoryMock.Object,
+            _entityLookupMock.Object,
             _unitOfWorkMock.Object);
     }
 
@@ -73,9 +73,13 @@ public class AddMenuItemAllergenTests
         _repositoryMock.Setup(r => r.Get(menuItem.Id)).ReturnsAsync(menuItem);
     }
 
-    private void SetupAllergenRepositoryGet(Allergen allergen)
+    private void SetupEntityLookupGet(Allergen allergen)
     {
-        _allergenRepositoryMock.Setup(r => r.Get(allergen.Id)).ReturnsAsync(allergen);
+        _entityLookupMock.Setup(r => r.GetRequiredAsync<Allergen, string>(
+            allergen.Id,
+            It.IsAny<bool>(),
+            It.IsAny<CancellationToken>(),
+            It.IsAny<string[]>())).ReturnsAsync(allergen);
     }
 
     private static AddMenuItemAllergen.Request CreateValidRequest(string allergenId = "GLUTEN")
@@ -91,7 +95,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen("GLUTEN", "Gluten");
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest("GLUTEN");
 
         var response = await _service.HandleAsync(menuItem.Id, request);
@@ -108,8 +112,12 @@ public class AddMenuItemAllergenTests
         var glutenAllergen = CreateAllergen("GLUTEN", "Gluten");
         var lactoseAllergen = CreateAllergen("LACTOSE", "Lactosa");
         SetupRepositoryGet(menuItem);
-        _allergenRepositoryMock.Setup(r => r.Get("GLUTEN")).ReturnsAsync(glutenAllergen);
-        _allergenRepositoryMock.Setup(r => r.Get("LACTOSE")).ReturnsAsync(lactoseAllergen);
+        _entityLookupMock.Setup(r => r.GetRequiredAsync<Allergen, string>(
+            "GLUTEN", It.IsAny<bool>(), It.IsAny<CancellationToken>(), It.IsAny<string[]>()))
+            .ReturnsAsync(glutenAllergen);
+        _entityLookupMock.Setup(r => r.GetRequiredAsync<Allergen, string>(
+            "LACTOSE", It.IsAny<bool>(), It.IsAny<CancellationToken>(), It.IsAny<string[]>()))
+            .ReturnsAsync(lactoseAllergen);
 
         await _service.HandleAsync(menuItem.Id, CreateValidRequest("GLUTEN"));
         await _service.HandleAsync(menuItem.Id, CreateValidRequest("LACTOSE"));
@@ -125,7 +133,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen("GLUTEN", "Gluten");
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest("GLUTEN");
 
         var response = await _service.HandleAsync(menuItem.Id, request);
@@ -155,7 +163,7 @@ public class AddMenuItemAllergenTests
         var menuItem = _createMenuItem.Execute(createCommand);
         var allergen = CreateAllergen();
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest();
 
         await _service.HandleAsync(menuItem.Id, request);
@@ -173,7 +181,7 @@ public class AddMenuItemAllergenTests
         var existingOption = menuItem.PriceOptions.First();
         var allergen = CreateAllergen();
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest();
 
         await _service.HandleAsync(menuItem.Id, request);
@@ -193,7 +201,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen();
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest();
 
         await _service.HandleAsync(menuItem.Id, request);
@@ -202,17 +210,18 @@ public class AddMenuItemAllergenTests
     }
 
     [Fact]
-    public async Task HandleAsync_CallsAllergenRepositoryGet()
+    public async Task HandleAsync_CallsEntityLookupGetRequiredAsync()
     {
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen("GLUTEN");
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest("GLUTEN");
 
         await _service.HandleAsync(menuItem.Id, request);
 
-        _allergenRepositoryMock.Verify(r => r.Get("GLUTEN"), Times.Once);
+        _entityLookupMock.Verify(r => r.GetRequiredAsync<Allergen, string>(
+            "GLUTEN", It.IsAny<bool>(), It.IsAny<CancellationToken>(), It.IsAny<string[]>()), Times.Once);
     }
 
     [Fact]
@@ -221,7 +230,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen();
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         var request = CreateValidRequest();
 
         await _service.HandleAsync(menuItem.Id, request);
@@ -238,7 +247,7 @@ public class AddMenuItemAllergenTests
         _repositoryMock.Setup(r => r.Get(menuItem.Id))
             .Callback(() => callOrder.Add("Get"))
             .ReturnsAsync(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
         _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Callback(() => callOrder.Add("SaveChanges"))
             .ReturnsAsync(1);
@@ -259,7 +268,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen("GLUTEN", "Gluten");
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
 
         await _service.HandleAsync(menuItem.Id, CreateValidRequest("GLUTEN"));
 
@@ -275,7 +284,7 @@ public class AddMenuItemAllergenTests
         var menuItem = CreateMenuItem();
         var allergen = CreateAllergen("GLUTEN", "Gluten");
         SetupRepositoryGet(menuItem);
-        SetupAllergenRepositoryGet(allergen);
+        SetupEntityLookupGet(allergen);
 
         await _service.HandleAsync(menuItem.Id, CreateValidRequest("GLUTEN"));
         _unitOfWorkMock.Invocations.Clear();
@@ -307,7 +316,8 @@ public class AddMenuItemAllergenTests
     {
         var menuItem = CreateMenuItem();
         SetupRepositoryGet(menuItem);
-        _allergenRepositoryMock.Setup(r => r.Get("NON_EXISTENT"))
+        _entityLookupMock.Setup(r => r.GetRequiredAsync<Allergen, string>(
+            "NON_EXISTENT", It.IsAny<bool>(), It.IsAny<CancellationToken>(), It.IsAny<string[]>()))
             .ThrowsAsync(new KeyNotFoundException("Allergen not found"));
         var request = CreateValidRequest("NON_EXISTENT");
 

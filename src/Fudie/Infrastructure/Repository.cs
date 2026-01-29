@@ -80,19 +80,19 @@ public interface IEntityLookup
     /// Retrieves an entity by its identifier with optional tracking and navigation properties.
     /// This method is typically used for foreign key validation to ensure referenced entities exist.
     /// </summary>
-    /// <typeparam name="T">The entity type that inherits from <see cref="IEntity"/>.</typeparam>
-    /// <typeparam name="ID">The identifier type.</typeparam>
+    /// <typeparam name="T">The entity type that inherits from <see cref="IEntity{TId}"/>.</typeparam>
+    /// <typeparam name="TId">The identifier type.</typeparam>
     /// <param name="id">The entity identifier.</param>
     /// <param name="tracking">Indicates whether the entity should be tracked by the context. Default is true.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <param name="includeProperties">Navigation property names to eagerly load.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the entity.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the entity with the specified identifier is not found.</exception>
-    Task<T> GetRequiredAsync<T, ID>(
-        ID id,
+    Task<T> GetRequiredAsync<T, TId>(
+        TId id,
         bool tracking = true,
         CancellationToken cancellationToken = default,
-        params string[] includeProperties) where T : class, IEntity;
+        params string[] includeProperties) where T : class, IEntity<TId> where TId : notnull;
 
     //TODO:revisar los los metodos
     DbSet<TEntity> Set<TEntity>() where TEntity : class;

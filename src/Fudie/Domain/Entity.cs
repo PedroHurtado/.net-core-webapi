@@ -4,7 +4,12 @@ using FluentValidation;
 
 public interface IEntity;
 
-public abstract class Entity<TId>(TId id) : IEntity where TId : notnull
+public interface IEntity<TId> : IEntity where TId : notnull
+{
+    TId Id { get; }
+}
+
+public abstract class Entity<TId>(TId id) : IEntity<TId> where TId : notnull
 {
     public TId Id { get; init; } = id;
 
