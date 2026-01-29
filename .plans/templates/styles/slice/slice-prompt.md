@@ -2,6 +2,10 @@
 
 Crear slice completa con tests unitarios y de integración.
 
+## Proyecto
+
+{Proyecto}
+
 ## Guías de estilo (seguir ESTRICTAMENTE)
 
 - `.plans/templates/styles/slice/style-slice.md`
@@ -21,10 +25,9 @@ Crear slice completa con tests unitarios y de integración.
 
 1. Leer las 3 guías de estilo
 2. Localizar y leer el comando de dominio: `**/{Aggregate}_{Action}.cs`
-3. Localizar y leer UN ejemplo de slice similar: `**/{Action}{Aggregate}.cs` (en carpeta Api)
-4. Crear la slice
-5. Crear tests unitarios de SERVICIO (no de dominio)
-6. Crear tests de integración (DEBE incluir test de persistencia: acción → GET → verificar)
+3. Crear la slice
+4. Crear tests unitarios de SERVICIO (no de dominio)
+5. Crear tests de integración (DEBE incluir test de persistencia: acción → GET → verificar)
 
 ## Verificación
 ```bash
@@ -37,8 +40,8 @@ dotnet test --filter "FullyQualifiedName~[ClaseTestIntegracion]" --nologo -v q
 
 Solo del proyecto afectado:
 ```bash
-dotnet test tests/[Proyecto].UnitTests --nologo -v q
-dotnet test tests/[Proyecto].IntegrationTests --nologo -v q
+dotnet test tests/{Proyecto}.UnitTests --nologo -v q
+dotnet test tests/{Proyecto}.IntegrationTests --nologo -v q
 ```
 
 ## Entrega

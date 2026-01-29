@@ -1,0 +1,42 @@
+namespace Plans.Features.Plans.Api.PlanAggregate.Commands;
+
+public class DeactivatePlan : IFeatureModule
+{
+    public static Func<IService, Guid, Task<IResult>> Handler =>
+        async (service, id) =>
+        {
+            var response = await service.HandleAsync(id);
+            return Results.Ok(response);
+        };
+
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/plans/{id}/deactivate", Handler);
+    }
+
+    public interface IService
+    {
+        Task<PlanResponse> HandleAsync(Guid id);
+    }
+
+    [Injectable]
+    public class Service(
+        Plan.Deactivate planDeactivate,
+        IRepository repository,
+        IUnitOfWork unitOfWork
+    ) : IService
+    {
+        public async Task<PlanResponse> HandleAsync(Guid id)
+        {
+            var plan = await repository.Get(id);
+
+            planDeactivate.Execute(plan, new DeactivatePlanCommand());
+
+            await unitOfWork.SaveChangesAsync();
+
+            return PlanResponse.Map(plan);
+        }
+    }
+
+    public interface IRepository : IUpdate<Plan, Guid> { }
+}
