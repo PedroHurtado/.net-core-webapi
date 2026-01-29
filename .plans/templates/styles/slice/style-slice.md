@@ -359,4 +359,4 @@ public class {Action}{Aggregate} : IFeatureModule
 - Inyectar comandos de dominio (`{Aggregate}.Create`, `{Aggregate}.Update`)
 - IRepository define solo la interfaz, el generador crea la implementación
 - `IQuery` se inyecta directamente para listados
-- **Response compartido**: Si la especificación indica `{Aggregate}Response` (ej: `PlanResponse`), ya existe. No crear. Usar `{Aggregate}Response.Map(entity)`.
+- **Response compartido**: Si la especificación indica `{Aggregate}Response` (ej: `PlanResponse`), ya existe. No crear ni buscar. Usar `{Aggregate}Response.Map(entity)`.
