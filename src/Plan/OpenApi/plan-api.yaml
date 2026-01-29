@@ -371,6 +371,26 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateFeatureRequest'
+            examples:
+              limit:
+                summary: Feature con límite
+                value:
+                  name: Reservas mensuales
+                  description: Número máximo de reservas por mes
+                  type: Limit
+                  limit: 200
+                  unit: reservas/mes
+              boolean:
+                summary: Feature booleano
+                value:
+                  name: Soporte prioritario
+                  description: Acceso a soporte prioritario 24/7
+                  type: Boolean
+              unlimited:
+                summary: Feature ilimitado
+                value:
+                  name: Reservas ilimitadas
+                  type: Unlimited
       responses:
         '204':
           description: Característica actualizada exitosamente
