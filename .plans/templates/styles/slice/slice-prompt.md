@@ -2,6 +2,10 @@
 
 Crear slice completa con tests unitarios y de integración.
 
+## Proyecto
+
+{Proyecto}
+
 ## Guías de estilo (seguir ESTRICTAMENTE)
 
 - `.plans/templates/styles/slice/style-slice.md`
@@ -36,8 +40,8 @@ dotnet test --filter "FullyQualifiedName~[ClaseTestIntegracion]" --nologo -v q
 
 Solo del proyecto afectado:
 ```bash
-dotnet test tests/[Proyecto].UnitTests --nologo -v q
-dotnet test tests/[Proyecto].IntegrationTests --nologo -v q
+dotnet test tests/{Proyecto}.UnitTests --nologo -v q
+dotnet test tests/{Proyecto}.IntegrationTests --nologo -v q
 ```
 
 ## Entrega

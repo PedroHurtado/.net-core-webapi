@@ -1,7 +1,6 @@
 # Estilo: Slice
 
 ## Estructura General
-
 ```csharp
 namespace {Project}.Features.{Feature}.Api.{Commands|Queries}.{Aggregates};
 
@@ -45,7 +44,6 @@ public class {Action}{Aggregate} : IFeatureModule
 ## Handler como Delegate
 
 Extraer el handler permite testearlo unitariamente sin perder coverage:
-
 ```csharp
 // ✅ Handler extraído - testeable
 public static Func<IService, Request, Task<IResult>> Handler => 
@@ -68,14 +66,12 @@ public void AddRoutes(IEndpointRouteBuilder app)
 El generador crea la implementación automáticamente a partir de la interfaz.
 
 ### IAdd (Create)
-
 ```csharp
 public interface IRepository : IAdd<{Aggregate}> { }
 ```
 Genera: `void Add({Aggregate} entity)`
 
 ### IGet (Read)
-
 ```csharp
 [AsNoTracking]
 public interface IRepository : IGet<{Aggregate}, {IdType}> { }
@@ -83,21 +79,18 @@ public interface IRepository : IGet<{Aggregate}, {IdType}> { }
 Genera: `Task<{Aggregate}> Get({IdType} id)`
 
 ### IUpdate (Update)
-
 ```csharp
 public interface IRepository : IUpdate<{Aggregate}, {IdType}> { }
 ```
 Genera: `Task<{Aggregate}> Get({IdType} id)` (con tracking)
 
 ### IRemove (Delete)
-
 ```csharp
 public interface IRepository : IRemove<{Aggregate}, {IdType}> { }
 ```
 Genera: `Task<{Aggregate}> Get({IdType} id)` + `void Remove({Aggregate} entity)`
 
 ### IQuery (List/Search)
-
 ```csharp
 [Injectable]
 public class Service(IQuery query) : IService
@@ -121,7 +114,6 @@ No necesita interfaz IRepository, inyecta `IQuery` directamente.
 |----------|-----|
 | `[AsNoTracking]` | Queries de solo lectura (Get, List) |
 | `[Include<T>("Nav.Prop")]` | Eager loading de navegaciones |
-
 ```csharp
 [AsNoTracking]
 [Include<Order>("Items.Product", "Customer")]
@@ -133,7 +125,6 @@ public interface IRepository : IGet<Order, Guid> { }
 ## Slices por Acción
 
 ### Create (POST)
-
 ```csharp
 public class Create{Aggregate} : IFeatureModule
 {
@@ -176,7 +167,6 @@ public class Create{Aggregate} : IFeatureModule
 ```
 
 ### Get (GET /{id})
-
 ```csharp
 public class Get{Aggregate} : IFeatureModule
 {
@@ -210,7 +200,6 @@ public class Get{Aggregate} : IFeatureModule
 ```
 
 ### List (GET)
-
 ```csharp
 public class Get{Aggregates} : IFeatureModule
 {
@@ -243,7 +232,6 @@ public class Get{Aggregates} : IFeatureModule
 ```
 
 ### Update (PUT)
-
 ```csharp
 public class Update{Aggregate} : IFeatureModule
 {
@@ -287,7 +275,6 @@ public class Update{Aggregate} : IFeatureModule
 ```
 
 ### Delete (DELETE)
-
 ```csharp
 public class Delete{Aggregate} : IFeatureModule
 {
@@ -321,6 +308,47 @@ public class Delete{Aggregate} : IFeatureModule
 }
 ```
 
+### Action (POST /{id}/{action})
+
+Acción sobre una entidad existente sin body de request.
+```csharp
+public class {Action}{Aggregate} : IFeatureModule
+{
+    public static Func<IService, {IdType}, Task<IResult>> Handler => 
+        async (service, id) =>
+        {
+            var response = await service.HandleAsync(id);
+            return Results.Ok(response);
+        };
+
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/{route}/{id}/{action}", Handler);
+    }
+
+    [Injectable]
+    public class Service(
+        {Aggregate}.{Action} {action}{Aggregate},
+        IRepository repository,
+        IUnitOfWork unitOfWork
+    ) : IService
+    {
+        public async Task<{Aggregate}Response> HandleAsync({IdType} id)
+        {
+            var entity = await repository.Get(id);
+
+            {action}{Aggregate}.Execute(entity, new {Action}{Aggregate}Command());
+
+            await unitOfWork.SaveChangesAsync();
+
+            return {Aggregate}Response.Map(entity);
+        }
+    }
+
+    public interface IRepository : IUpdate<{Aggregate}, {IdType}> { }
+}
+```
+
 ---
 
 ## Reglas
@@ -331,3 +359,4 @@ public class Delete{Aggregate} : IFeatureModule
 - Inyectar comandos de dominio (`{Aggregate}.Create`, `{Aggregate}.Update`)
 - IRepository define solo la interfaz, el generador crea la implementación
 - `IQuery` se inyecta directamente para listados
+- **Response compartido**: Si la especificación indica `{Aggregate}Response` (ej: `PlanResponse`), ya existe. No crear. Usar `{Aggregate}Response.Map(entity)`.

@@ -1,5 +1,14 @@
 # Estilo: Test de Integración de Slice
 
+## Fixture a heredar
+
+`{Proyecto}WebApplicationFixture`
+## Fixture a heredar
+
+Heredar de `{Proyecto}WebApplicationFixture`, donde `{Proyecto}` es el indicado en la sección "Proyecto" del prompt de la tarea.
+
+---
+
 ## Alcance
 
 Testea el endpoint completo via HttpClient.
@@ -17,7 +26,6 @@ Crear un fixture por proyecto que configure:
 - HttpClient
 - DbContext contra emulador o base de datos de test
 - Métodos helper para crear entidades de test
-
 ```csharp
 public class {Project}WebApplicationFixture : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -54,7 +62,6 @@ public class {Project}WebApplicationFixture : IClassFixture<WebApplicationFactor
 ---
 
 ## Estructura de Tests
-
 ```csharp
 namespace {Project}.IntegrationTests.Features.{Feature}.Api.{Commands|Queries}.{Aggregates};
 
@@ -83,7 +90,6 @@ public class {Action}{Aggregate}Tests : {Project}WebApplicationFixture
 ## Qué testear (Status Codes)
 
 ### Create (POST)
-
 ```csharp
 [Fact]
 public async Task Create_WithValidData_Returns201()
@@ -119,7 +125,6 @@ public async Task Create_WithDuplicate_Returns409()
 ```
 
 ### Get (GET /{id})
-
 ```csharp
 [Fact]
 public async Task Get_WithExistingId_Returns200()
@@ -141,7 +146,6 @@ public async Task Get_WithNonExistingId_Returns404()
 ```
 
 ### Update (PUT)
-
 ```csharp
 [Fact]
 public async Task Update_WithValidData_Returns200()
@@ -177,7 +181,6 @@ public async Task Update_WithInvalidData_Returns422()
 ```
 
 ### Delete (DELETE)
-
 ```csharp
 [Fact]
 public async Task Delete_WithExistingId_Returns204()
@@ -199,7 +202,6 @@ public async Task Delete_WithNonExistingId_Returns404()
 ```
 
 ### List (GET)
-
 ```csharp
 [Fact]
 public async Task List_ReturnsAllItems_Returns200()
