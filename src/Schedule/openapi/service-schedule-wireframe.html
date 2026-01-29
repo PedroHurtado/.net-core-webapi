@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Reservas | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B',service:'#8B5CF6',breakfast:'#F97316',lunch:'#10B981',dinner:'#6366F1'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-activate{background:#D1FAE5;color:#065F46}.cmd-deactivate{background:#FEE2E2;color:#991B1B}.cmd-add{background:#E0E7FF;color:#3730A3}.cmd-remove{background:#FCE7F3;color:#9D174D}.cmd-get{background:#F3F4F6;color:#374151}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+        .day-pill{@apply px-2 py-1 rounded-lg text-[10px] font-bold}
+        .day-open{@apply bg-success/10 text-success}
+        .day-closed{@apply bg-gray-100 text-gray-400}
+        .service-breakfast{@apply bg-breakfast/10 text-breakfast border-breakfast/20}
+        .service-lunch{@apply bg-lunch/10 text-lunch border-lunch/20}
+        .service-dinner{@apply bg-dinner/10 text-dinner border-dinner/20}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<main>
+<!-- LIST VIEW -->
+<div id="list" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Configuración de Reservas</h1>
+        <p class="text-gray-500 text-sm mt-1">Gestiona horarios de servicio y políticas de reserva</p>
+    </div>
+    <button onclick="show('create')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2">
+        <i class="fas fa-plus"></i>Nueva Configuración
+    </button>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /service-schedules → ListServiceSchedules</span>
+</div>
+
+<!-- Grid de ServiceSchedules -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- Card 1: Horario Verano (ACTIVO) -->
+    <div class="card bg-white rounded-3xl border-2 border-success shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg relative" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success text-white text-[10px] font-bold uppercase shadow-lg">
+                <i class="fas fa-check text-[8px]"></i>ACTIVO
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 text-xl">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Horario Verano</h3>
+                    <p class="text-xs text-gray-500">Junio a Septiembre</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <!-- Servicios configurados -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-2.5 py-1 rounded-full bg-lunch/10 text-lunch text-[10px] font-bold flex items-center gap-1">
+                    <i class="fas fa-utensils"></i>Lunch
+                </span>
+                <span class="px-2.5 py-1 rounded-full bg-dinner/10 text-dinner text-[10px] font-bold flex items-center gap-1">
+                    <i class="fas fa-moon"></i>Dinner
+                </span>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-500">Servicios</p>
+                    <p class="text-xl font-bold text-service">2</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-500">Capacidad total</p>
+                    <p class="text-xl font-bold text-info">90</p>
+                </div>
+            </div>
+            
+            <!-- Policy info -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+                <i class="fas fa-clock text-service text-xs"></i>
+                <span>Reservas: 2h - 30 días antelación</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Horario Invierno (Inactivo) -->
+    <div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-70" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold uppercase">
+                <i class="fas fa-circle text-[6px]"></i>Inactivo
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-sky-50 rounded-2xl flex items-center justify-center text-sky-500 text-xl">
+                    <i class="fas fa-snowflake"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-600">Horario Invierno</h3>
+                    <p class="text-xs text-gray-400">Octubre a Mayo</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 text-[10px] font-bold flex items-center gap-1">
+                    <i class="fas fa-utensils"></i>Lunch
+                </span>
+                <span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 text-[10px] font-bold flex items-center gap-1">
+                    <i class="fas fa-moon"></i>Dinner
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-400">Servicios</p>
+                    <p class="text-xl font-bold text-gray-400">2</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3 text-center">
+                    <p class="text-xs text-gray-400">Capacidad total</p>
+                    <p class="text-xl font-bold text-gray-400">70</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 text-sm text-gray-400">
+                <i class="fas fa-clock text-xs"></i>
+                <span>Reservas: 3h - 60 días antelación</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Configuración incompleta -->
+    <div class="card bg-white rounded-3xl border border-dashed shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-60" onclick="show('edit')">
+        <div class="absolute top-4 right-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-warning/10 text-warning text-[10px] font-bold uppercase">
+                <i class="fas fa-exclamation-triangle text-[8px]"></i>Incompleto
+            </span>
+        </div>
+        <div class="p-5 border-b">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-400 text-xl">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-500">Prueba Brunch</h3>
+                    <p class="text-xs text-gray-400">Configuración de prueba</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-2.5 py-1 rounded-full bg-gray-50 text-gray-300 text-[10px] font-bold border border-dashed">
+                    Sin servicios
+                </span>
+            </div>
+            
+            <div class="bg-warning/10 border border-warning/20 rounded-xl p-3 text-center">
+                <p class="text-xs text-warning font-medium">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Añade al menos un servicio para activar
+                </p>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Info -->
+<div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
+    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+    <div>
+        <p class="text-sm text-blue-800 font-medium">Solo una configuración puede estar activa</p>
+        <p class="text-xs text-blue-700 mt-1">Cuando actives una configuración, la anterior se desactivará. Esto permite preparar configuraciones estacionales (verano/invierno) y cambiarlas fácilmente.</p>
+    </div>
+</div>
+
+</div></div>
+
+<!-- CREATE VIEW -->
+<div id="create" class="view p-4 md:p-8"><div class="max-w-3xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Configuración de Reservas</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>Nueva</span>
+        </div>
+        <h1 class="text-2xl font-bold">Nueva Configuración</h1>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="show('edit');toast('Configuración creada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2">
+            <i class="fas fa-save"></i>Crear
+        </button>
+    </div>
+</div>
+
+<div class="mb-6">
+    <span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /service-schedules → ServiceSchedule.Create</span>
+</div>
+
+<!-- Info básica -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden mb-6">
+    <div class="p-6 border-b bg-gray-50/50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-service/10 flex items-center justify-center text-service">
+                <i class="fas fa-cog"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Información General</h3>
+                <p class="text-xs text-gray-500">Nombre y descripción de la configuración</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="p-6 space-y-6">
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label>
+            <input type="text" placeholder="Ej: Horario Verano, Temporada Alta..." maxlength="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            <p class="text-xs text-gray-400 mt-1">Máximo 100 caracteres</p>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción <span class="text-primary">*</span></label>
+            <textarea placeholder="Ej: Configuración para los meses de verano con horarios extendidos..." maxlength="500" rows="3" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea>
+            <p class="text-xs text-gray-400 mt-1">Máximo 500 caracteres</p>
+        </div>
+    </div>
+</div>
+
+<!-- Políticas de reserva -->
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+    <div class="p-6 border-b bg-service/5">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-service/10 flex items-center justify-center text-service">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Políticas de Reserva</h3>
+                <p class="text-xs text-gray-500">Configuración general para todas las reservas</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="p-6 space-y-6">
+        <!-- Antelación -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Antelación mínima <span class="text-primary">*</span></label>
+                <div class="flex gap-2">
+                    <input type="number" value="2" min="0" class="flex-1 bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+                    <select class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                        <option selected>horas</option>
+                        <option>días</option>
+                    </select>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Tiempo mínimo antes de la reserva</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Antelación máxima <span class="text-primary">*</span></label>
+                <div class="flex gap-2">
+                    <input type="number" value="30" min="1" class="flex-1 bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+                    <select class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                        <option>horas</option>
+                        <option selected>días</option>
+                    </select>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Tiempo máximo para reservar con antelación</p>
+            </div>
+        </div>
+        
+        <!-- Tamaño de grupo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Comensales mínimo <span class="text-primary">*</span></label>
+                <input type="number" value="1" min="1" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Comensales máximo <span class="text-primary">*</span></label>
+                <input type="number" value="8" min="1" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+            </div>
+        </div>
+        
+        <!-- Slots y buffer -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Intervalo de slots <span class="text-primary">*</span></label>
+                <select class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <option value="15" selected>15 minutos</option>
+                    <option value="30">30 minutos</option>
+                    <option value="60">60 minutos</option>
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Reservas cada 15, 30 o 60 min</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Buffer entre reservas <span class="text-primary">*</span></label>
+                <select class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <option value="0">Sin buffer</option>
+                    <option value="15" selected>15 minutos</option>
+                    <option value="30">30 minutos</option>
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Tiempo entre reservas consecutivas</p>
+            </div>
+        </div>
+        
+        <!-- Duraciones estándar -->
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Duración estándar por servicio</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-breakfast/5 border border-breakfast/20 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-coffee text-breakfast"></i>
+                        <span class="font-bold text-sm">Breakfast</span>
+                    </div>
+                    <select class="w-full bg-white border rounded-lg px-3 py-2 text-sm font-medium">
+                        <option value="45">45 min</option>
+                        <option value="60" selected>1 hora</option>
+                        <option value="90">1h 30min</option>
+                    </select>
+                </div>
+                <div class="bg-lunch/5 border border-lunch/20 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-utensils text-lunch"></i>
+                        <span class="font-bold text-sm">Lunch</span>
+                    </div>
+                    <select class="w-full bg-white border rounded-lg px-3 py-2 text-sm font-medium">
+                        <option value="60">1 hora</option>
+                        <option value="90" selected>1h 30min</option>
+                        <option value="120">2 horas</option>
+                    </select>
+                </div>
+                <div class="bg-dinner/5 border border-dinner/20 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-moon text-dinner"></i>
+                        <span class="font-bold text-sm">Dinner</span>
+                    </div>
+                    <select class="w-full bg-white border rounded-lg px-3 py-2 text-sm font-medium">
+                        <option value="90">1h 30min</option>
+                        <option value="120" selected>2 horas</option>
+                        <option value="150">2h 30min</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-6 flex items-start gap-3">
+    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+    <div>
+        <p class="text-sm text-blue-800 font-medium">Configuración creada como borrador</p>
+        <p class="text-xs text-blue-700 mt-1">Se creará en estado <strong>inactivo</strong>. Añade al menos un servicio (Breakfast, Lunch o Dinner) antes de activarla.</p>
+    </div>
+</div>
+
+</div></div>
+
+<!-- EDIT VIEW -->
+<div id="edit" class="view p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-2 text-sm text-gray-400 mb-1">
+            <a href="#" onclick="show('list')" class="hover:text-primary">Configuración de Reservas</a>
+            <i class="fas fa-chevron-right text-xs"></i>
+            <span>Horario Verano</span>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-bold">Horario Verano</h1>
+            <span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase">
+                <i class="fas fa-check text-[8px]"></i>Activo
+            </span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">Junio a Septiembre - Horarios extendidos</p>
+    </div>
+    <div class="flex gap-3">
+        <button onclick="show('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">
+            <i class="fas fa-arrow-left mr-2"></i>Volver
+        </button>
+        <button id="toggleBtn" onclick="toggleStatus()" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100">
+            <i class="fas fa-pause mr-2"></i>Desactivar
+        </button>
+    </div>
+</div>
+
+<div class="mb-6 flex flex-wrap gap-2">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /service-schedules/{id}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Info Card -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Información y Políticas</h3>
+                        <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → ServiceSchedule.Update</span>
+                    </div>
+                </div>
+                <button onclick="openM('mSchedule')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm">
+                    <i class="fas fa-pencil-alt mr-1"></i>Editar
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p>
+                        <p class="font-medium">Horario Verano</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Estado</p>
+                        <p class="font-bold text-success">Activo</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-xs font-bold text-gray-400 uppercase mb-1">Descripción</p>
+                        <p class="text-gray-600">Junio a Septiembre - Horarios extendidos</p>
+                    </div>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-3">Políticas de Reserva</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500">Antelación</p>
+                            <p class="font-bold">2h - 30d</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500">Comensales</p>
+                            <p class="font-bold">1 - 8</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500">Slots</p>
+                            <p class="font-bold">15 min</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <p class="text-xs text-gray-500">Buffer</p>
+                            <p class="font-bold">15 min</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Services -->
+        <div class="bg-white rounded-2xl border overflow-hidden">
+            <div class="p-4 bg-service/5 border-b flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Servicios</h3>
+                        <p class="text-xs text-gray-500">2 configurados</p>
+                    </div>
+                </div>
+                <button onclick="openM('mServiceAdd')" class="px-4 py-2 rounded-xl bg-service/10 hover:bg-service/20 text-service font-bold text-sm">
+                    <i class="fas fa-plus mr-1"></i>Añadir
+                </button>
+            </div>
+            <div class="px-4 py-2 bg-service/5 border-b flex flex-wrap gap-2">
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddService</span>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateService</span>
+                <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveService</span>
+            </div>
+            
+            <div class="divide-y">
+                <!-- Lunch Service -->
+                <div class="row p-4 group">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-lunch/10 flex items-center justify-center text-lunch text-xl">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold">Lunch</h4>
+                                <span class="px-2 py-0.5 rounded bg-lunch/10 text-lunch text-[10px] font-bold">ALMUERZO</span>
+                            </div>
+                            <p class="text-sm text-gray-500">Capacidad: 40 comensales · Duración: 1h 30min</p>
+                        </div>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                            <button onclick="openM('mServiceEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="openM('mServiceRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Schedule -->
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase">Horario Semanal</p>
+                            <button onclick="openM('mDayConfig')" class="text-xs text-service font-medium hover:underline">
+                                <i class="fas fa-edit mr-1"></i>Configurar días
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2">
+                            <div class="text-center">
+                                <span class="day-pill day-closed block mb-1">L</span>
+                                <span class="text-[10px] text-gray-400">Cerrado</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">M</span>
+                                <span class="text-[10px] text-gray-600">13-16h</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">X</span>
+                                <span class="text-[10px] text-gray-600">13-16h</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">J</span>
+                                <span class="text-[10px] text-gray-600">13-16h</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">V</span>
+                                <span class="text-[10px] text-gray-600">13-17h</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">S</span>
+                                <span class="text-[10px] text-gray-600">13-17h</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">D</span>
+                                <span class="text-[10px] text-gray-600">13-16h</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Special Dates for this service -->
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="text-xs text-gray-500"><i class="fas fa-star text-warning mr-1"></i>1 fecha especial</span>
+                        <button onclick="openM('mSpecialAdd')" class="text-xs text-warning font-medium hover:underline">Ver/Añadir</button>
+                    </div>
+                </div>
+                
+                <!-- Dinner Service -->
+                <div class="row p-4 group">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-dinner/10 flex items-center justify-center text-dinner text-xl">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold">Dinner</h4>
+                                <span class="px-2 py-0.5 rounded bg-dinner/10 text-dinner text-[10px] font-bold">CENA</span>
+                            </div>
+                            <p class="text-sm text-gray-500">Capacidad: 50 comensales · Duración: 2h</p>
+                        </div>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                            <button onclick="openM('mServiceEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="openM('mServiceRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Schedule -->
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs font-bold text-gray-500 uppercase">Horario Semanal</p>
+                            <button onclick="openM('mDayConfig')" class="text-xs text-service font-medium hover:underline">
+                                <i class="fas fa-edit mr-1"></i>Configurar días
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2">
+                            <div class="text-center">
+                                <span class="day-pill day-closed block mb-1">L</span>
+                                <span class="text-[10px] text-gray-400">Cerrado</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">M</span>
+                                <span class="text-[10px] text-gray-600">20-23:30</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">X</span>
+                                <span class="text-[10px] text-gray-600">20-23:30</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">J</span>
+                                <span class="text-[10px] text-gray-600">20-23:30</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">V</span>
+                                <span class="text-[10px] text-gray-600">20-00:30</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">S</span>
+                                <span class="text-[10px] text-gray-600">20-00:30</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="day-pill day-open block mb-1">D</span>
+                                <span class="text-[10px] text-gray-600">20-23h</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Special Dates for this service -->
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="text-xs text-gray-500"><i class="fas fa-star text-warning mr-1"></i>2 fechas especiales</span>
+                        <button onclick="openM('mSpecialList')" class="text-xs text-warning font-medium hover:underline">Ver/Añadir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Status Card -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-4">Estado de la Configuración</h3>
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-gray-500">Estado</span>
+                <span id="statusText" class="font-bold text-success">Activo</span>
+            </div>
+            <div class="pt-4 border-t space-y-2">
+                <p class="text-xs font-bold text-gray-400 uppercase">Comandos</p>
+                <span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST /service-schedules/{id}/activate</span>
+                <span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded mt-1">POST /service-schedules/{id}/deactivate</span>
+            </div>
+        </div>
+        
+        <!-- Requirements -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-3">Requisitos para Activar</h3>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                        <i class="fas fa-check text-success text-xs"></i>
+                    </div>
+                    <span class="text-sm">Al menos 1 servicio configurado</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                        <i class="fas fa-check text-success text-xs"></i>
+                    </div>
+                    <span class="text-sm">Ningún otro schedule activo</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="bg-white rounded-2xl border p-4">
+            <h3 class="font-bold mb-3">Resumen</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Servicios</span>
+                    <span class="font-bold">2</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Capacidad total</span>
+                    <span class="font-bold text-info">90</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Fechas especiales</span>
+                    <span class="font-bold text-warning">3</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Can Reserve Query -->
+        <div class="bg-service/5 border border-service/20 rounded-2xl p-4">
+            <h3 class="font-bold mb-3 text-sm flex items-center gap-2">
+                <i class="fas fa-question-circle text-service"></i>
+                ¿Se puede reservar?
+            </h3>
+            <span class="block cmd-get text-[10px] font-bold px-2 py-1 rounded mb-3">GET /service-schedules/{id}/can-reserve</span>
+            <div class="space-y-2 text-xs text-gray-600">
+                <p><strong>Params:</strong></p>
+                <p>• type: Lunch | Dinner</p>
+                <p>• dateTime: 2025-02-14T13:00</p>
+                <p>• partySize: 4</p>
+            </div>
+            <div class="bg-white rounded-xl p-3 flex items-center gap-3 mt-3">
+                <div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
+                    <i class="fas fa-check text-success text-sm"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-success text-sm">Disponible</p>
+                    <p class="text-[10px] text-gray-500">canReserve: true</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div></div>
+</main>
+
+<!-- MODALS -->
+
+<!-- Schedule Edit Modal -->
+<div id="mSchedule" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Editar Configuración</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /service-schedules/{id} → ServiceSchedule.Update</span>
+            </div>
+            <button onclick="closeM('mSchedule')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label>
+                    <input type="text" value="Horario Verano" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label>
+                    <input type="text" value="Junio a Septiembre - Horarios extendidos" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                </div>
+            </div>
+            
+            <div class="border-t pt-4">
+                <p class="text-sm font-bold text-gray-700 mb-4">Políticas de Reserva</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Antelación mín.</label>
+                        <input type="text" value="2 horas" class="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Antelación máx.</label>
+                        <input type="text" value="30 días" class="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Comensales</label>
+                        <input type="text" value="1 - 8" class="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Intervalo slots</label>
+                        <select class="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm font-medium">
+                            <option selected>15 min</option>
+                            <option>30 min</option>
+                            <option>60 min</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mSchedule')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mSchedule');toast('Configuración actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Service Add Modal -->
+<div id="mServiceAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Añadir Servicio</h3>
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → ServiceSchedule.AddService</span>
+            </div>
+            <button onclick="closeM('mServiceAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Servicio *</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="serviceType" value="Breakfast" class="sr-only peer">
+                        <div class="p-4 rounded-xl border-2 peer-checked:border-breakfast peer-checked:bg-breakfast/5 text-center">
+                            <i class="fas fa-coffee text-2xl text-breakfast mb-2"></i>
+                            <p class="font-bold text-sm">Breakfast</p>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="serviceType" value="Lunch" class="sr-only peer" checked>
+                        <div class="p-4 rounded-xl border-2 peer-checked:border-lunch peer-checked:bg-lunch/5 text-center">
+                            <i class="fas fa-utensils text-2xl text-lunch mb-2"></i>
+                            <p class="font-bold text-sm">Lunch</p>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="serviceType" value="Dinner" class="sr-only peer">
+                        <div class="p-4 rounded-xl border-2 peer-checked:border-dinner peer-checked:bg-dinner/5 text-center">
+                            <i class="fas fa-moon text-2xl text-dinner mb-2"></i>
+                            <p class="font-bold text-sm">Dinner</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Capacidad máxima *</label>
+                <input type="number" value="40" min="1" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+                <p class="text-xs text-gray-400 mt-1">Número máximo de comensales por servicio</p>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                <p class="text-xs text-blue-700">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Después de crear el servicio, configura el horario semanal para cada día.
+                </p>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mServiceAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mServiceAdd');toast('Servicio añadido')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Service Edit Modal -->
+<div id="mServiceEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+        <div class="p-6 border-b flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold">Editar Lunch</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → ServiceSchedule.UpdateService</span>
+            </div>
+            <button onclick="closeM('mServiceEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Servicio</label>
+                <div class="flex items-center gap-3 p-4 bg-lunch/5 rounded-xl border border-lunch/20">
+                    <i class="fas fa-utensils text-lunch text-xl"></i>
+                    <span class="font-bold">Lunch</span>
+                    <span class="text-xs text-gray-400 ml-auto">No modificable</span>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Capacidad máxima *</label>
+                <input type="number" value="40" min="1" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none">
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3">
+            <button onclick="closeM('mServiceEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mServiceEdit');toast('Servicio actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Service Remove Modal -->
+<div id="mServiceRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4">
+                <i class="fas fa-trash"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">¿Eliminar Servicio?</h3>
+            <p class="text-sm text-gray-500 mb-3">Se eliminará <strong>Lunch</strong> y todas sus fechas especiales</p>
+            <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → ServiceSchedule.RemoveService</span>
+        </div>
+        <div class="p-6 border-t flex gap-3">
+            <button onclick="closeM('mServiceRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+            <button onclick="closeM('mServiceRm');toast('Servicio eliminado')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Day Config Modal -->
+<div id="mDayConfig" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Configurar Viernes - Lunch</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → ConfigureServiceDay</span>
+            </div>
+            <button onclick="closeM('mDayConfig')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" id="dayAvailable" checked class="w-5 h-5 rounded text-success">
+                <label for="dayAvailable" class="text-sm font-medium">Servicio disponible este día</label>
+            </div>
+            
+            <div id="dayTimeSection">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Hora inicio *</label>
+                        <input type="time" value="13:00" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Hora fin *</label>
+                        <input type="time" value="17:00" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Capacidad especial (opcional)</label>
+                    <input type="number" placeholder="Usa capacidad del servicio (40)" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <p class="text-xs text-gray-400 mt-1">Deja vacío para usar la capacidad por defecto del servicio</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mDayConfig')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mDayConfig');toast('Día configurado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Special Date Add Modal -->
+<div id="mSpecialAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Añadir Fecha Especial - Dinner</h3>
+                <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddSpecialDate</span>
+            </div>
+            <button onclick="closeM('mSpecialAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Fecha *</label>
+                <input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Motivo</label>
+                <input type="text" placeholder="Ej: San Valentín, Nochevieja..." maxlength="250" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+            </div>
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" id="specialAvailable" checked class="w-5 h-5 rounded text-success">
+                <label for="specialAvailable" class="text-sm font-medium">Servicio disponible</label>
+            </div>
+            
+            <div id="specialTimeSection">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Hora inicio</label>
+                        <input type="time" value="19:00" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Hora fin</label>
+                        <input type="time" value="01:00" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Capacidad especial</label>
+                    <input type="number" value="30" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <p class="text-xs text-gray-400 mt-1">Capacidad reducida para menú especial</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+            <button onclick="closeM('mSpecialAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+            <button onclick="closeM('mSpecialAdd');toast('Fecha especial añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Special Dates List Modal -->
+<div id="mSpecialList" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-bold">Fechas Especiales - Dinner</h3>
+                <p class="text-xs text-gray-500">2 configuradas</p>
+            </div>
+            <button onclick="closeM('mSpecialList')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="divide-y">
+            <!-- San Valentín -->
+            <div class="p-4 flex items-center gap-4 group hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-xl bg-pink-50 flex flex-col items-center justify-center">
+                    <span class="text-[10px] font-bold text-pink-400 uppercase">Feb</span>
+                    <span class="text-lg font-bold text-pink-600">14</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-bold">San Valentín</h4>
+                        <span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">ESPECIAL</span>
+                    </div>
+                    <p class="text-sm text-gray-500">19:00 - 01:00 · Cap: 30</p>
+                </div>
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                    <button class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-400">
+                        <i class="fas fa-edit text-sm"></i>
+                    </button>
+                    <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Nochevieja -->
+            <div class="p-4 flex items-center gap-4 group hover:bg-gray-50">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 flex flex-col items-center justify-center">
+                    <span class="text-[10px] font-bold text-purple-400 uppercase">Dic</span>
+                    <span class="text-lg font-bold text-purple-600">31</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-bold">Nochevieja</h4>
+                        <span class="px-2 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">CERRADO</span>
+                    </div>
+                    <p class="text-sm text-gray-500">Cena privada</p>
+                </div>
+                <div class="flex gap-1 opacity-0 group-hover:opacity-100">
+                    <button class="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-400">
+                        <i class="fas fa-edit text-sm"></i>
+                    </button>
+                    <button class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 border-t">
+            <button onclick="closeM('mSpecialList');openM('mSpecialAdd')" class="w-full py-3 border-2 border-dashed rounded-xl text-gray-400 hover:text-warning hover:border-warning font-medium">
+                <i class="fas fa-plus mr-1"></i>Añadir fecha especial
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+    <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center">
+        <i class="fas fa-check"></i>
+    </div>
+    <span id="toastMsg">OK</span>
+</div>
+
+<script>
+let isActive = true;
+
+function show(v) {
+    document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+    document.getElementById(v)?.classList.add('active');
+}
+
+function openM(id) {
+    document.getElementById(id)?.classList.remove('hidden');
+}
+
+function closeM(id) {
+    document.getElementById(id)?.classList.add('hidden');
+}
+
+function toast(msg) {
+    const t = document.getElementById('toastEl');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+function toggleStatus() {
+    isActive = !isActive;
+    const b = document.getElementById('statusBadge');
+    const t = document.getElementById('statusText');
+    const btn = document.getElementById('toggleBtn');
+    
+    if (isActive) {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-check text-[8px]"></i>Activo';
+        t.className = 'font-bold text-success';
+        t.textContent = 'Activo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100';
+        btn.innerHTML = '<i class="fas fa-pause mr-2"></i>Desactivar';
+    } else {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-circle text-[6px]"></i>Inactivo';
+        t.className = 'font-bold text-gray-500';
+        t.textContent = 'Inactivo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-green-600 bg-green-50 hover:bg-green-100';
+        btn.innerHTML = '<i class="fas fa-play mr-2"></i>Activar';
+    }
+    toast(isActive ? 'Configuración activada' : 'Configuración desactivada');
+}
+</script>
+</body>
+</html>
