@@ -37,33 +37,7 @@ public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
             // ArrayOf: ProviderConfigurations (usa backing field _providerConfigurations)
             entity.ArrayOf(p => p.ProviderConfigurations);
         });
-    }
-
-    public async Task<T> GetRequiredAsync<T, TId>(
-        TId id,
-        bool tracking = true,
-        CancellationToken cancellationToken = default,
-        params string[] includeProperties) where T : class, IEntity<TId> where TId : notnull
-    {
-        var entity = await Set<T>().FindAsync([id], cancellationToken);
-
-        if (entity is null)
-        {
-            throw new KeyNotFoundException($"{typeof(T).Name} with ID '{id}' not found.");
-        }
-
-        foreach (var includeProperty in includeProperties)
-        {
-            await Entry(entity).Navigation(includeProperty).LoadAsync(cancellationToken);
-        }
-
-        if (!tracking)
-        {
-            Entry(entity).State = EntityState.Detached;
-        }
-
-        return entity;
-    }
+    }    
 
     public IQueryable<T> Query<T>() where T : class, IEntity
     {
