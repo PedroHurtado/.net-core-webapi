@@ -309,7 +309,7 @@ public class MenuItemTests
         var menuItem = new TestableMenuItem(Guid.NewGuid());
         var allergen = _createAllergen.Execute(new CreateAllergenCommand("GLUTEN", "Gluten"));
 
-        menuItem.AddAllergen(allergen);
+        menuItem.AddAllergenDirect(allergen);
 
         menuItem.Allergens.Should().ContainSingle()
             .Which.Should().Be(allergen);

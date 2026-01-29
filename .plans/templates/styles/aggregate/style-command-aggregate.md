@@ -265,6 +265,7 @@ var feature = Feature.Create(...);        // NO (método estático)
 ## ⛔ PROHIBIDO
 
 - **NO usar `new {ValueObject}(...)`** → Usar `{vo}Create.Execute(...)`
+- **No usrar** Testable class
 - **NO crear métodos estáticos** (`New`, `From`, `Create`)
 - **NO crear factory methods** en Aggregate/Entity
 - **NO modificar estado** fuera de comandos
