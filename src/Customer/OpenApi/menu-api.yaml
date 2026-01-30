@@ -1,0 +1,1178 @@
+openapi: 3.0.3
+info:
+  title: Menu API
+  description: |
+    API para la gestión de menús de restaurantes en Fudie.
+
+    ## Conceptos Clave
+
+    - **Menu**: Carta o menú de un restaurante con categorías de productos
+    - **MenuCategory**: Agrupación de items dentro de un menú (ej: Entrantes, Carnes, Postres)
+    - **CategoryItem**: Referencia a un MenuItem dentro de una categoría, con posibles overrides de precio
+    - **DepositPolicy**: Política de fianzas para reservas asociadas al menú
+
+    ## Flujo de Activación
+
+    Un menú solo puede activarse cuando:
+    1. Tiene al menos una categoría
+    2. Al menos una categoría tiene items
+
+    ## Lógica de Fianzas
+
+    Los items con `ItemDepositOverride` se excluyen del cálculo de `DepositPolicy` del menú.
+    La fianza total es: `DepositPolicy.Calculate(itemsSinOverride) + SUM(DepositosItemsConOverride)`
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5181'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Menus
+    description: Operaciones CRUD sobre menús
+  - name: Categories
+    description: Gestión de categorías de un menú
+  - name: Category Items
+    description: Gestión de items dentro de categorías
+  - name: Deposit Policy
+    description: Configuración de políticas de fianzas
+
+paths:
+  /menus:
+    post:
+      tags:
+        - Menus
+      summary: Crear un nuevo menú
+      description: |
+        Crea un nuevo menú de restaurante. El menú se crea con `isActive=false`.
+
+        Para activarlo, primero debe tener al menos una categoría con items.
+      operationId: createMenu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMenuRequest'
+      responses:
+        '201':
+          description: Menú creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+          headers:
+            Location:
+              description: URL del menú creado
+              schema:
+                type: string
+                example: /menus/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    get:
+      tags:
+        - Menus
+      summary: Listar menús
+      description: Obtiene la lista de todos los menús, opcionalmente filtrados por estado
+      operationId: listMenus
+      parameters:
+        - name: isActive
+          in: query
+          description: Filtrar por estado activo/inactivo
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de menús
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuResponse'
+
+  '/menus/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Menus
+      summary: Obtener un menú
+      description: Obtiene los detalles de un menú específico
+      operationId: getMenu
+      responses:
+        '200':
+          description: Menú encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    put:
+      tags:
+        - Menus
+      summary: Actualizar un menú
+      description: Actualiza los datos básicos de un menú existente
+      operationId: updateMenu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuRequest'
+      responses:
+        '204':
+          description: Menú actualizado exitosamente
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  '/menus/{id}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Menus
+      summary: Activar un menú
+      description: |
+        Activa un menú para que esté disponible.
+
+        **Requisitos:**
+        - El menú debe tener al menos una categoría
+        - Al menos una categoría debe tener items
+        - El menú no debe estar ya activo
+      operationId: activateMenu
+      responses:
+        '200':
+          description: Menú activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El menú ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Menu is already active
+        '422':
+          description: El menú no cumple los requisitos para activarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                noCategories:
+                  summary: Sin categorías
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Categories:
+                        - Menu must have at least one category
+                noItems:
+                  summary: Sin items en categorías
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Categories:
+                        - Menu must have at least one category with items
+
+  '/menus/{id}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Menus
+      summary: Desactivar un menú
+      description: |
+        Desactiva un menú para que no esté disponible.
+
+        **Nota:** Las reservas existentes no se ven afectadas.
+      operationId: deactivateMenu
+      responses:
+        '200':
+          description: Menú desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El menú ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Menu is already inactive
+
+  '/menus/{id}/deposit-policy':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - Deposit Policy
+      summary: Configurar política de fianzas
+      description: |
+        Configura o actualiza la política de fianzas del menú.
+
+        **Tipos de política:**
+        - `PerPerson`: €X por persona
+        - `PercentageOfBill`: X% del total estimado
+        - `FixedAmount`: €X importe fijo
+      operationId: setDepositPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDepositPolicyRequest'
+            examples:
+              perPerson:
+                summary: Por persona
+                value:
+                  depositType: PerPerson
+                  amount: 15
+                  minimumGuestsForDeposit: 6
+              percentage:
+                summary: Porcentaje del total
+                value:
+                  depositType: PercentageOfBill
+                  amount: 0
+                  percentage: 20
+                  minimumBillForDeposit: 100
+              fixed:
+                summary: Importe fijo
+                value:
+                  depositType: FixedAmount
+                  amount: 50
+      responses:
+        '204':
+          description: Política configurada exitosamente
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                missingPercentage:
+                  summary: Porcentaje requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Percentage:
+                        - Percentage must be specified for PercentageOfBill type
+    delete:
+      tags:
+        - Deposit Policy
+      summary: Eliminar política de fianzas
+      description: Elimina la política de fianzas del menú. Operación idempotente.
+      operationId: removeDepositPolicy
+      responses:
+        '204':
+          description: Política eliminada exitosamente
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  '/menus/{id}/categories':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Categories
+      summary: Añadir una categoría
+      description: |
+        Añade una nueva categoría al menú.
+
+        El nombre debe ser único dentro del menú (case-insensitive).
+      operationId: addCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCategoryRequest'
+            example:
+              name: Entrantes
+              description: Primeros platos y aperitivos
+              displayOrder: 1
+      responses:
+        '201':
+          description: Categoría añadida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          description: Menú no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una categoría con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: A category with this name already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  '/menus/{id}/categories/{categoryId}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: categoryId
+        in: path
+        description: ID único de la categoría
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - Categories
+      summary: Actualizar una categoría
+      description: |
+        Actualiza los datos de una categoría existente.
+
+        El nombre debe ser único dentro del menú (case-insensitive).
+      operationId: updateCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '204':
+          description: Categoría actualizada exitosamente
+        '404':
+          description: Menú o categoría no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                menuNotFound:
+                  summary: Menú no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Menu with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                categoryNotFound:
+                  summary: Categoría no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Category not found
+        '409':
+          description: Ya existe otra categoría con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: A category with this name already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Categories
+      summary: Eliminar una categoría
+      description: |
+        Elimina una categoría del menú.
+
+        **Restricción:** No se puede eliminar una categoría que contiene items.
+      operationId: removeCategory
+      responses:
+        '204':
+          description: Categoría eliminada exitosamente
+        '404':
+          description: Menú o categoría no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: La categoría contiene items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  CategoryId:
+                    - Cannot remove a category that contains items
+
+  '/menus/{id}/categories/{categoryId}/items':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: categoryId
+        in: path
+        description: ID único de la categoría
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Category Items
+      summary: Añadir item a categoría
+      description: |
+        Añade un MenuItem existente a una categoría del menú.
+
+        **PriceOverrides:**
+        - Si está vacío o es null, se usan los precios del MenuItem
+        - Si tiene valores, reemplazan completamente los precios del MenuItem para este contexto
+      operationId: addItemToCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddItemToCategoryRequest'
+            examples:
+              withoutOverrides:
+                summary: Sin override de precios
+                value:
+                  menuItemId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  displayOrder: 1
+              withOverrides:
+                summary: Con override de precios
+                value:
+                  menuItemId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  displayOrder: 1
+                  priceOverrides:
+                    - portionType: Full
+                      price: 18.00
+                      isActive: true
+                    - portionType: Half
+                      price: 10.00
+                      isActive: true
+      responses:
+        '201':
+          description: Item añadido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          description: Menú, categoría o MenuItem no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                menuNotFound:
+                  summary: Menú no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Menu not found
+                categoryNotFound:
+                  summary: Categoría no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Category not found
+                menuItemNotFound:
+                  summary: MenuItem no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: MenuItem not found
+        '409':
+          description: El item ya existe en la categoría
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: This item already exists in the category
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  '/menus/{id}/categories/{categoryId}/items/{menuItemId}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del menú
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: categoryId
+        in: path
+        description: ID único de la categoría
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: menuItemId
+        in: path
+        description: ID único del MenuItem
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags:
+        - Category Items
+      summary: Actualizar item en categoría
+      description: |
+        Actualiza el DisplayOrder y/o PriceOverrides de un item en una categoría.
+
+        **PriceOverrides:**
+        - Si es null, se eliminan los overrides y se usan los precios del MenuItem
+        - Si tiene valores, reemplazan los overrides existentes
+      operationId: updateCategoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryItemRequest'
+      responses:
+        '204':
+          description: Item actualizado exitosamente
+        '404':
+          description: Menú, categoría o item no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                categoryNotFound:
+                  summary: Categoría no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Category not found
+                itemNotFound:
+                  summary: Item no encontrado en categoría
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Item not found in category
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Category Items
+      summary: Eliminar item de categoría
+      description: Elimina un item de una categoría del menú.
+      operationId: removeItemFromCategory
+      responses:
+        '204':
+          description: Item eliminado exitosamente
+        '404':
+          description: Menú, categoría o item no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                categoryNotFound:
+                  summary: Categoría no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Category not found
+                itemNotFound:
+                  summary: Item no encontrado en categoría
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Item not found in category
+
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    DepositType:
+      type: string
+      enum:
+        - PerPerson
+        - PercentageOfBill
+        - FixedAmount
+      description: |
+        Tipo de política de fianzas:
+        - PerPerson: €X por persona
+        - PercentageOfBill: X% del total estimado
+        - FixedAmount: €X importe fijo
+
+    PortionType:
+      type: string
+      enum:
+        - Small
+        - Half
+        - Full
+        - MarketPrice
+      description: |
+        Tipo de porción:
+        - Small: Porción pequeña (tapa), ~25%
+        - Half: Media ración, ~50%
+        - Full: Ración completa
+        - MarketPrice: Precio según mercado
+
+    DepositPolicyResponse:
+      type: object
+      required:
+        - depositType
+        - amount
+      properties:
+        depositType:
+          $ref: '#/components/schemas/DepositType'
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 15
+          description: Importe base de la fianza
+        percentage:
+          type: number
+          format: decimal
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 20
+          description: Porcentaje (solo para PercentageOfBill)
+        minimumBillForDeposit:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 100
+          description: Importe mínimo de cuenta para aplicar fianza
+        minimumGuestsForDeposit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 6
+          description: Número mínimo de comensales para aplicar fianza
+
+    PriceOptionResponse:
+      type: object
+      required:
+        - portionType
+        - isActive
+        - requiresMarketPrice
+        - displayPrice
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 14.00
+          description: Precio de la porción
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si esta opción de precio está activa
+        requiresMarketPrice:
+          type: boolean
+          example: false
+          description: Indica si el precio debe consultarse (precio de mercado)
+        displayPrice:
+          type: string
+          example: '14,00 €'
+          description: Precio formateado para mostrar
+
+    MenuItemSummaryResponse:
+      type: object
+      required:
+        - id
+        - name
+        - isActive
+        - isAvailable
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          maxLength: 100
+          example: Pulpo al Horno
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          example: Pulpo gallego con pimentón y aceite de oliva
+        imageUrl:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: 'https://cdn.fudie.com/images/pulpo.jpg'
+        isActive:
+          type: boolean
+          example: true
+        isAvailable:
+          type: boolean
+          example: true
+
+    CategoryItemResponse:
+      type: object
+      required:
+        - menuItem
+        - displayOrder
+        - priceOverrides
+      properties:
+        menuItem:
+          $ref: '#/components/schemas/MenuItemSummaryResponse'
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+          description: Orden de visualización dentro de la categoría
+        priceOverrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceOptionResponse'
+          description: Precios específicos para este contexto (vacío = usar precios del MenuItem)
+
+    MenuCategoryResponse:
+      type: object
+      required:
+        - id
+        - name
+        - displayOrder
+        - isActive
+        - items
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        name:
+          type: string
+          maxLength: 100
+          example: Entrantes
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Primeros platos y aperitivos
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+          description: Orden de visualización dentro del menú
+        isActive:
+          type: boolean
+          example: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryItemResponse'
+
+    MenuResponse:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - isActive
+        - displayOrder
+        - categories
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        tenantId:
+          type: string
+          format: uuid
+          example: tenant-001-guid
+        name:
+          type: string
+          maxLength: 100
+          example: Carta Principal
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Nuestra carta de toda la vida
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si el menú está disponible
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+          description: Orden de visualización
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-12-01T00:00:00Z'
+          description: Fecha de inicio de vigencia
+        effectiveUntil:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-12-31T23:59:59Z'
+          description: Fecha de fin de vigencia
+        depositPolicy:
+          $ref: '#/components/schemas/DepositPolicyResponse'
+          nullable: true
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuCategoryResponse'
+
+    CreateMenuRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Carta Principal
+          description: Nombre del menú
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Nuestra carta de toda la vida
+          description: Descripción del menú
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-12-01T00:00:00Z'
+          description: Fecha de inicio de vigencia
+        effectiveUntil:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-12-31T23:59:59Z'
+          description: Fecha de fin de vigencia
+
+    UpdateMenuRequest:
+      type: object
+      required:
+        - name
+        - displayOrder
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Carta Principal Actualizada
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Nueva descripción del menú
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+        effectiveUntil:
+          type: string
+          format: date-time
+          nullable: true
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+
+    SetDepositPolicyRequest:
+      type: object
+      required:
+        - depositType
+        - amount
+      properties:
+        depositType:
+          $ref: '#/components/schemas/DepositType'
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 15
+          description: Importe base (para PerPerson y FixedAmount)
+        percentage:
+          type: number
+          format: decimal
+          minimum: 1
+          maximum: 100
+          nullable: true
+          example: 20
+          description: Porcentaje (requerido para PercentageOfBill)
+        minimumBillForDeposit:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 100
+          description: Importe mínimo de cuenta para aplicar fianza
+        minimumGuestsForDeposit:
+          type: integer
+          minimum: 1
+          nullable: true
+          example: 6
+          description: Número mínimo de comensales para aplicar fianza
+
+    AddCategoryRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Entrantes
+          description: Nombre de la categoría (único dentro del menú)
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Primeros platos y aperitivos
+        displayOrder:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 1
+          description: Orden de visualización
+
+    UpdateCategoryRequest:
+      type: object
+      required:
+        - name
+        - displayOrder
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Entrantes Fríos
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+
+    PriceOptionData:
+      type: object
+      required:
+        - portionType
+      properties:
+        portionType:
+          $ref: '#/components/schemas/PortionType'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          example: 14.00
+          description: Precio (null para MarketPrice)
+        isActive:
+          type: boolean
+          default: true
+          example: true
+
+    AddItemToCategoryRequest:
+      type: object
+      required:
+        - menuItemId
+      properties:
+        menuItemId:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          description: ID del MenuItem a añadir
+        displayOrder:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 1
+          description: Orden de visualización dentro de la categoría
+        priceOverrides:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PriceOptionData'
+          description: Precios específicos para este contexto (null = usar precios del MenuItem)
+
+    UpdateCategoryItemRequest:
+      type: object
+      required:
+        - displayOrder
+      properties:
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 2
+          description: Nuevo orden de visualización
+        priceOverrides:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/PriceOptionData'
+          description: Nuevos precios (null = eliminar overrides y usar precios del MenuItem)
