@@ -1,8 +1,6 @@
-using Xunit.Abstractions;
-
 namespace Customer.IntegrationTests.Features.Menus.Api.MenuItemAggregate.Commands;
 
-public class AddMenuItemAllergenIntegrationTests(WebApplicationFactory<Program> factory, ITestOutputHelper output)
+public class AddMenuItemAllergenIntegrationTests(WebApplicationFactory<Program> factory)
     : CustomerWebApplicationFixture(factory)
 {
     private static AddMenuItemAllergen.Request CreateValidRequest(string allergenId)
@@ -183,11 +181,7 @@ public class AddMenuItemAllergenIntegrationTests(WebApplicationFactory<Program> 
 
         // Act
         var response = await Client.PostAsJsonAsync($"/menu-items/{menuItem.Id}/allergens", CreateValidRequest(allergen.Id));
-
-        var content = await response.Content.ReadAsStringAsync();
-        output.WriteLine($"Status: {response.StatusCode}");
-        output.WriteLine($"Body: {content}");
-
+               
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
