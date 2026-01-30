@@ -12,7 +12,7 @@
 ## Estructura
 
 ```csharp
-namespace {Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.Commands.{Aggregate};
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.Commands.{Aggregate}Tests;
 
 public class {Aggregate}{Command}Tests
 {

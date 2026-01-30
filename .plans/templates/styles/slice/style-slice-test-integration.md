@@ -63,7 +63,7 @@ public class {Project}WebApplicationFixture : IClassFixture<WebApplicationFactor
 
 ## Estructura de Tests
 ```csharp
-namespace {Project}.IntegrationTests.Features.{Feature}.Api.{Commands|Queries}.{Aggregates};
+namespace {Project}.IntegrationTests.{Feature}.Api.{Aggregate}AggregateTests.{Commands|Queries};
 
 public class {Action}{Aggregate}Tests : {Project}WebApplicationFixture
 {

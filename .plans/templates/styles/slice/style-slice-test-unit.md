@@ -13,7 +13,7 @@ Testea desde el Handler hasta el Repository (mock).
 ## Estructura
 
 ```csharp
-namespace {Project}.UnitTests.Features.{Feature}.Api.{Commands|Queries}.{Aggregates};
+namespace {Project}.UnitTests.{Feature}.Api.{Aggregate}AggregateTests.{Commands|Queries};
 
 public class {Action}{Aggregate}Tests
 {
