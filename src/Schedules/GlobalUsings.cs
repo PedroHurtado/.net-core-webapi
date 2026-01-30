@@ -20,3 +20,5 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Schedules.Infrastructure;
+
+global using Schedules.Features.Schedules.Domain.ScheduleAggregate.ValueObjects;
