@@ -30,6 +30,6 @@ public class GetMenuItem : IFeatureModule
     }
 
     [AsNoTracking]
-    [Include<Menu>("Allergens")]
+    [Include<MenuItem>("Allergens")]
     public interface IRepository : IGet<MenuItem, Guid> { }
 }
