@@ -251,7 +251,7 @@ var feature = Feature.Create(...);        // NO (método estático)
 
 ## Reglas
 
-- Archivo separado por comando: `{Aggregate}.Create.cs`, `{Aggregate}.Update.cs`, etc.
+- Archivo separado por comando: `{Aggregate}_Create.cs`, `{Aggregate}_Update.cs`, etc.
 - Record del comando **fuera** de la clase parcial
 - Clase del comando **dentro** de `partial class {Aggregate}`
 - `Create` hereda de `AbstractCreateCommand<TCommand, TResult>`

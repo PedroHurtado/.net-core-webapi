@@ -74,7 +74,7 @@ public partial record Money
 
 ## Reglas
 
-- Archivo separado: `{ValueObject}.Create.cs`
+- Archivo separado: `{ValueObject}_Create.cs`
 - Record del comando **fuera** de la clase parcial
 - Clase `Create` **dentro** de `partial record {ValueObject}`
 - Hereda de `AbstractCreateCommand<TCommand, TResult>`
