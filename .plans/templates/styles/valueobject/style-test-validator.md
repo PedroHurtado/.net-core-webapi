@@ -3,7 +3,7 @@
 ## Estructura
 
 ```csharp
-namespace {Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.ValueObjects;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
 
 public class {ValueObject}ValidatorTests
 {

@@ -3,7 +3,7 @@
 ## Estructura
 
 ```csharp
-namespace {Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.ValueObjects;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
 
 public class {ValueObject}Tests
 {
@@ -57,7 +57,7 @@ public class {ValueObject}Tests
 
 ## Reglas
 
-- Namespace: `{Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.ValueObjects`
+- Namespace: `{Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests`
 - **No `using`** → Van en `GlobalUsings.cs`
 - **No XML docs**
 - Clase: `{ValueObject}Tests`

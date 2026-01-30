@@ -3,7 +3,7 @@
 ## Estructura
 
 ```csharp
-namespace {Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.Enums;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.EnumsTests;
 
 public class {EnumName}Tests
 {
@@ -33,7 +33,7 @@ public class {EnumName}Tests
 
 ## Reglas
 
-- Namespace: `{Project}.UnitTests.Features.{Feature}.Domain.{Aggregate}Aggregate.Enums`
+- Namespace: `{Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.EnumsTests`
 - **No `using`** → Van en `GlobalUsings.cs`
 - **No XML docs**
 - Clase: `{EnumName}Tests`
