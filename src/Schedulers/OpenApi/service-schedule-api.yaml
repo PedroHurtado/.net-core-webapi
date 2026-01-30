@@ -1,0 +1,1362 @@
+openapi: 3.0.3
+info:
+  title: Service Schedule API
+  description: |
+    API para la gestión de horarios de servicio de restaurantes en Fudie.
+
+    ## Conceptos Clave
+
+    - **ServiceSchedule**: Configuración de horarios y políticas de reserva para un tenant
+    - **Service**: Tipo de servicio (Breakfast, Lunch, Dinner) con su configuración semanal
+    - **ServiceDayConfig**: Configuración de un día específico de la semana para un servicio
+    - **ServiceSpecialDate**: Excepción de horario para una fecha específica (festivos, eventos)
+    - **ReservationPolicy**: Políticas generales de reserva (antelación, tamaño de grupo, intervalos)
+
+    ## Multi-Schedule Support
+
+    Un tenant puede tener múltiples ServiceSchedules (ej: "Horario Verano", "Horario Invierno"),
+    pero solo **UNO puede estar activo** a la vez. Para activar un nuevo schedule, primero
+    debe desactivarse el actual.
+
+    ## Flujo de Activación
+
+    Un ServiceSchedule solo puede activarse cuando:
+    1. Tiene al menos un Service configurado
+    2. No existe otro ServiceSchedule activo para el mismo tenant
+
+    ## Seguridad
+
+    El `tenantId` no se expone en las URLs. Se obtiene automáticamente del contexto
+    de autenticación del usuario.
+  version: 1.0.0
+  contact:
+    name: Equipo Fudie
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+tags:
+  - name: Service Schedules
+    description: Operaciones CRUD sobre horarios de servicio
+  - name: Services
+    description: Gestión de tipos de servicio (Breakfast, Lunch, Dinner)
+  - name: Service Days
+    description: Configuración de días específicos de la semana
+  - name: Special Dates
+    description: Excepciones de horario para fechas específicas
+  - name: Availability
+    description: Consultas de disponibilidad para reservas
+paths:
+  /service-schedules:
+    post:
+      tags:
+        - Service Schedules
+      summary: Crear un nuevo horario de servicio
+      description: |
+        Crea un nuevo ServiceSchedule. Se crea con `isActive=false`.
+
+        Para activarlo, primero debe tener al menos un Service configurado
+        y no debe existir otro schedule activo.
+      operationId: createServiceSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceScheduleRequest'
+            example:
+              name: Horario Verano
+              description: Junio a Septiembre - Horarios adaptados al calor
+              minimumAdvanceTime: '02:00:00'
+              maximumAdvanceTime: '30.00:00:00'
+              slotInterval: '00:15:00'
+              bufferBetweenReservations: '00:15:00'
+              maxPartySize: 8
+              minPartySize: 1
+              standardDurations:
+                Breakfast: '01:00:00'
+                Lunch: '01:30:00'
+                Dinner: '02:00:00'
+      responses:
+        '201':
+          description: ServiceSchedule creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+          headers:
+            Location:
+              description: URL del schedule creado
+              schema:
+                type: string
+                example: /service-schedules/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                nameRequired:
+                  summary: Nombre requerido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      Name:
+                        - Name is required
+                invalidSlotInterval:
+                  summary: Intervalo de slot inválido
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                    title: One or more validation errors occurred.
+                    status: 422
+                    errors:
+                      SlotInterval:
+                        - Slot interval must be 15, 30, or 60 minutes
+    get:
+      tags:
+        - Service Schedules
+      summary: Listar horarios de servicio
+      description: Obtiene todos los ServiceSchedules del tenant, opcionalmente filtrados por estado
+      operationId: listServiceSchedules
+      parameters:
+        - name: isActive
+          in: query
+          description: Filtrar por estado activo/inactivo
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de ServiceSchedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceScheduleResponse'
+  '/service-schedules/{id}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Service Schedules
+      summary: Obtener un horario de servicio
+      description: Obtiene los detalles completos de un ServiceSchedule
+      operationId: getServiceSchedule
+      responses:
+        '200':
+          description: ServiceSchedule encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    put:
+      tags:
+        - Service Schedules
+      summary: Actualizar un horario de servicio
+      description: Actualiza nombre, descripción y políticas de reserva
+      operationId: updateServiceSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceScheduleRequest'
+      responses:
+        '204':
+          description: ServiceSchedule actualizado exitosamente
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/service-schedules/{id}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Service Schedules
+      summary: Activar un horario de servicio
+      description: |
+        Activa un ServiceSchedule para que sea el horario vigente del restaurante.
+
+        **Requisitos:**
+        - El schedule debe tener al menos un Service configurado
+        - No debe existir otro schedule activo (debe desactivarse primero)
+        - El schedule no debe estar ya activo
+      operationId: activateServiceSchedule
+      responses:
+        '200':
+          description: ServiceSchedule activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Conflicto de activación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                alreadyActive:
+                  summary: Ya está activo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                    title: Conflict
+                    status: 409
+                    detail: Service schedule is already active
+                anotherActive:
+                  summary: Otro schedule ya activo
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                    title: Conflict
+                    status: 409
+                    detail: Another service schedule is already active. Deactivate it first.
+        '422':
+          description: El schedule no cumple requisitos para activarse
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  Services:
+                    - Service schedule must have at least one service
+  '/service-schedules/{id}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Service Schedules
+      summary: Desactivar un horario de servicio
+      description: |
+        Desactiva un ServiceSchedule. Las reservas existentes no se ven afectadas.
+
+        **Nota:** Después de desactivar, no habrá ningún schedule activo hasta que
+        se active otro manualmente.
+      operationId: deactivateServiceSchedule
+      responses:
+        '200':
+          description: ServiceSchedule desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El schedule ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Service schedule is already inactive
+  '/service-schedules/{id}/services':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - Services
+      summary: Añadir un servicio
+      description: |
+        Añade un nuevo tipo de servicio (Breakfast, Lunch, Dinner) al schedule.
+
+        Cada tipo de servicio solo puede existir una vez por schedule.
+        El servicio se crea con una configuración semanal completa (7 días).
+      operationId: addService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddServiceRequest'
+            examples:
+              lunch:
+                summary: Servicio de almuerzo
+                value:
+                  type: Lunch
+                  maxCapacity: 40
+                  weeklySchedule:
+                    Monday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '16:00'
+                    Tuesday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '16:00'
+                    Wednesday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '16:00'
+                    Thursday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '16:00'
+                    Friday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '17:00'
+                    Saturday:
+                      isAvailable: true
+                      startTime: '13:00'
+                      endTime: '17:00'
+                    Sunday:
+                      isAvailable: false
+              dinner:
+                summary: Servicio de cena
+                value:
+                  type: Dinner
+                  maxCapacity: 50
+                  weeklySchedule:
+                    Monday:
+                      isAvailable: false
+                    Tuesday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '23:30'
+                    Wednesday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '23:30'
+                    Thursday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '23:30'
+                    Friday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '00:30'
+                    Saturday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '00:30'
+                    Sunday:
+                      isAvailable: true
+                      startTime: '20:00'
+                      endTime: '23:00'
+      responses:
+        '201':
+          description: Service añadido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe un servicio de este tipo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Service of type 'Lunch' already exists
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/service-schedules/{id}/services/{type}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: type
+        in: path
+        description: Tipo de servicio
+        required: true
+        schema:
+          $ref: '#/components/schemas/ServiceType'
+    put:
+      tags:
+        - Services
+      summary: Actualizar un servicio
+      description: |
+        Actualiza la configuración de un servicio existente.
+
+        **Nota:** Las fechas especiales (SpecialDates) se mantienen sin cambios.
+      operationId: updateService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceRequest'
+      responses:
+        '204':
+          description: Service actualizado exitosamente
+        '404':
+          description: ServiceSchedule o Service no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                scheduleNotFound:
+                  summary: Schedule no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Service schedule with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                serviceNotFound:
+                  summary: Service no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Service of type 'Breakfast' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Services
+      summary: Eliminar un servicio
+      description: |
+        Elimina un tipo de servicio del schedule.
+
+        **Nota:** También se eliminan todas las fechas especiales asociadas.
+      operationId: removeService
+      responses:
+        '204':
+          description: Service eliminado exitosamente
+        '404':
+          description: ServiceSchedule o Service no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/service-schedules/{id}/services/{type}/days/{day}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: type
+        in: path
+        description: Tipo de servicio
+        required: true
+        schema:
+          $ref: '#/components/schemas/ServiceType'
+      - name: day
+        in: path
+        description: Día de la semana
+        required: true
+        schema:
+          $ref: '#/components/schemas/DayOfWeek'
+    put:
+      tags:
+        - Service Days
+      summary: Configurar un día específico
+      description: |
+        Configura el horario de un día específico de la semana para un servicio.
+
+        Útil para configurar horarios especiales en ciertos días (ej: viernes con horario extendido).
+      operationId: configureServiceDay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigureServiceDayRequest'
+            examples:
+              extendedFriday:
+                summary: Viernes con horario extendido
+                value:
+                  isAvailable: true
+                  startTime: '12:00'
+                  endTime: '17:00'
+                  capacityOverride: 60
+              closedSunday:
+                summary: Cerrado los domingos
+                value:
+                  isAvailable: false
+      responses:
+        '204':
+          description: Día configurado exitosamente
+        '404':
+          description: ServiceSchedule o Service no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  StartTime:
+                    - Start time is required when service is available
+  '/service-schedules/{id}/services/{type}/special-dates':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: type
+        in: path
+        description: Tipo de servicio
+        required: true
+        schema:
+          $ref: '#/components/schemas/ServiceType'
+    post:
+      tags:
+        - Special Dates
+      summary: Añadir una fecha especial
+      description: |
+        Añade una excepción de horario para una fecha específica.
+
+        Útil para festivos, eventos especiales o cierres temporales.
+        Las fechas especiales tienen prioridad sobre la configuración semanal.
+      operationId: addSpecialDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSpecialDateRequest'
+            examples:
+              valentines:
+                summary: San Valentín - Horario especial
+                value:
+                  date: '2025-02-14'
+                  isAvailable: true
+                  startTime: '19:00'
+                  endTime: '01:00'
+                  capacityOverride: 30
+                  reason: San Valentín - Menú especial parejas
+              christmas:
+                summary: Navidad - Cerrado
+                value:
+                  date: '2025-12-25'
+                  isAvailable: false
+                  reason: Cerrado por Navidad
+      responses:
+        '201':
+          description: Fecha especial añadida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScheduleResponse'
+        '404':
+          description: ServiceSchedule o Service no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe una fecha especial para esa fecha
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Special date '2025-02-14' already exists for this service
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/service-schedules/{id}/services/{type}/special-dates/{date}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: type
+        in: path
+        description: Tipo de servicio
+        required: true
+        schema:
+          $ref: '#/components/schemas/ServiceType'
+      - name: date
+        in: path
+        description: Fecha en formato ISO (YYYY-MM-DD)
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2025-02-14'
+    put:
+      tags:
+        - Special Dates
+      summary: Actualizar una fecha especial
+      description: Actualiza la configuración de una fecha especial existente
+      operationId: updateSpecialDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpecialDateRequest'
+      responses:
+        '204':
+          description: Fecha especial actualizada exitosamente
+        '404':
+          description: ServiceSchedule, Service o SpecialDate no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                scheduleNotFound:
+                  summary: Schedule no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Service schedule with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                serviceNotFound:
+                  summary: Service no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Service of type 'Breakfast' not found
+                dateNotFound:
+                  summary: Fecha especial no encontrada
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Special date '2025-02-14' not found for this service
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Special Dates
+      summary: Eliminar una fecha especial
+      description: Elimina una excepción de horario. Se aplicará la configuración semanal normal.
+      operationId: removeSpecialDate
+      responses:
+        '204':
+          description: Fecha especial eliminada exitosamente
+        '404':
+          description: ServiceSchedule, Service o SpecialDate no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/service-schedules/{id}/can-reserve':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del ServiceSchedule
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Availability
+      summary: Verificar disponibilidad para reserva
+      description: |
+        Verifica si es posible realizar una reserva con los parámetros especificados.
+
+        Esta query es la **fuente de verdad** para validar reservas, ya que considera:
+        - Configuración del servicio para el día/fecha
+        - Políticas de antelación mínima/máxima
+        - Tamaño del grupo
+        - Intervalos de slot permitidos
+        - Fechas especiales
+
+        **Nota:** No verifica capacidad ocupada (eso es responsabilidad del aggregate Reservation).
+      operationId: canReserve
+      parameters:
+        - name: type
+          in: query
+          description: Tipo de servicio
+          required: true
+          schema:
+            $ref: '#/components/schemas/ServiceType'
+        - name: dateTime
+          in: query
+          description: Fecha y hora de la reserva (ISO 8601)
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: '2025-02-14T13:00:00'
+        - name: partySize
+          in: query
+          description: Número de comensales
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            example: 4
+      responses:
+        '200':
+          description: Resultado de la verificación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanReserveResponse'
+              examples:
+                canReserve:
+                  summary: Reserva posible
+                  value:
+                    canReserve: true
+                    reason: null
+                serviceUnavailable:
+                  summary: Servicio no disponible
+                  value:
+                    canReserve: false
+                    reason: Service is not available on this date
+                tooSoon:
+                  summary: Muy poca antelación
+                  value:
+                    canReserve: false
+                    reason: Must book at least 2 hours in advance
+                tooFar:
+                  summary: Demasiada antelación
+                  value:
+                    canReserve: false
+                    reason: Cannot book more than 30 days in advance
+                partyTooLarge:
+                  summary: Grupo demasiado grande
+                  value:
+                    canReserve: false
+                    reason: Maximum 8 guests per reservation
+                invalidSlot:
+                  summary: Slot inválido
+                  value:
+                    canReserve: false
+                    reason: 'Reservations only accepted at :00, :15, :30, :45'
+        '404':
+          description: ServiceSchedule no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+components:
+  schemas:
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    ServiceType:
+      type: string
+      enum:
+        - Breakfast
+        - Lunch
+        - Dinner
+      description: Tipo de servicio del restaurante
+    DayOfWeek:
+      type: string
+      enum:
+        - Sunday
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+      description: Día de la semana
+    ReservationPolicyResponse:
+      type: object
+      required:
+        - minimumAdvanceTime
+        - maximumAdvanceTime
+        - slotInterval
+        - bufferBetweenReservations
+        - maxPartySize
+        - minPartySize
+        - slotIntervalMinutes
+        - maxAdvanceDays
+        - standardDurations
+      properties:
+        minimumAdvanceTime:
+          type: string
+          format: duration
+          example: '02:00:00'
+          description: Tiempo mínimo de antelación para reservar
+        maximumAdvanceTime:
+          type: string
+          format: duration
+          example: '30.00:00:00'
+          description: Tiempo máximo de antelación para reservar
+        slotInterval:
+          type: string
+          format: duration
+          example: '00:15:00'
+          description: Intervalo entre slots de reserva
+        bufferBetweenReservations:
+          type: string
+          format: duration
+          example: '00:15:00'
+          description: Tiempo de buffer entre reservas
+        maxPartySize:
+          type: integer
+          minimum: 1
+          example: 8
+          description: Tamaño máximo de grupo
+        minPartySize:
+          type: integer
+          minimum: 1
+          example: 1
+          description: Tamaño mínimo de grupo
+        slotIntervalMinutes:
+          type: integer
+          example: 15
+          description: Intervalo en minutos (calculado)
+        maxAdvanceDays:
+          type: integer
+          example: 30
+          description: Días máximos de antelación (calculado)
+        standardDurations:
+          type: object
+          additionalProperties:
+            type: string
+            format: duration
+          example:
+            Breakfast: '01:00:00'
+            Lunch: '01:30:00'
+            Dinner: '02:00:00'
+          description: Duración estándar por tipo de servicio
+    ServiceDayConfigResponse:
+      type: object
+      required:
+        - isAvailable
+      properties:
+        isAvailable:
+          type: boolean
+          example: true
+          description: Si el servicio está disponible este día
+        startTime:
+          type: string
+          format: time
+          nullable: true
+          example: '13:00'
+          description: Hora de inicio (requerida si isAvailable=true)
+        endTime:
+          type: string
+          format: time
+          nullable: true
+          example: '16:00'
+          description: Hora de fin (requerida si isAvailable=true)
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 60
+          description: Capacidad específica para este día (override del MaxCapacity del servicio)
+        duration:
+          type: string
+          format: duration
+          nullable: true
+          example: '03:00:00'
+          description: Duración del servicio este día (calculada)
+    ServiceSpecialDateResponse:
+      type: object
+      required:
+        - date
+        - isAvailable
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2025-02-14'
+          description: Fecha de la excepción
+        isAvailable:
+          type: boolean
+          example: true
+          description: Si el servicio está disponible en esta fecha
+        startTime:
+          type: string
+          format: time
+          nullable: true
+          example: '19:00'
+        endTime:
+          type: string
+          format: time
+          nullable: true
+          example: '01:00'
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 30
+        reason:
+          type: string
+          nullable: true
+          maxLength: 250
+          example: San Valentín - Menú especial parejas
+          description: Motivo de la excepción
+    ServiceResponse:
+      type: object
+      required:
+        - type
+        - maxCapacity
+        - hasSpecialDates
+        - availableDaysCount
+        - weeklySchedule
+        - specialDates
+      properties:
+        type:
+          $ref: '#/components/schemas/ServiceType'
+        maxCapacity:
+          type: integer
+          minimum: 1
+          example: 40
+          description: Capacidad máxima del servicio
+        hasSpecialDates:
+          type: boolean
+          example: true
+          description: Si tiene fechas especiales configuradas
+        availableDaysCount:
+          type: integer
+          minimum: 0
+          maximum: 7
+          example: 6
+          description: Número de días disponibles en la semana
+        weeklySchedule:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceDayConfigResponse'
+          description: Configuración por día de la semana
+        specialDates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceSpecialDateResponse'
+          description: Lista de fechas especiales
+    ServiceScheduleResponse:
+      type: object
+      required:
+        - id
+        - tenantId
+        - name
+        - description
+        - isActive
+        - policy
+        - hasServices
+        - serviceCount
+        - availableServiceTypes
+        - services
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        tenantId:
+          type: string
+          format: uuid
+          example: tenant-001-guid
+        name:
+          type: string
+          maxLength: 100
+          example: Horario Verano
+        description:
+          type: string
+          maxLength: 500
+          example: Junio a Septiembre - Horarios adaptados al calor
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si este es el horario vigente
+        policy:
+          $ref: '#/components/schemas/ReservationPolicyResponse'
+        hasServices:
+          type: boolean
+          example: true
+          description: Si tiene al menos un servicio configurado
+        serviceCount:
+          type: integer
+          minimum: 0
+          example: 2
+          description: Número de servicios configurados
+        availableServiceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceType'
+          example:
+            - Lunch
+            - Dinner
+          description: Tipos de servicio disponibles
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceResponse'
+    CanReserveResponse:
+      type: object
+      required:
+        - canReserve
+      properties:
+        canReserve:
+          type: boolean
+          description: Si la reserva es posible
+        reason:
+          type: string
+          nullable: true
+          description: Motivo si no es posible reservar
+    CreateServiceScheduleRequest:
+      type: object
+      required:
+        - name
+        - description
+        - minimumAdvanceTime
+        - maximumAdvanceTime
+        - slotInterval
+        - bufferBetweenReservations
+        - maxPartySize
+        - minPartySize
+        - standardDurations
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Horario Verano
+          description: Nombre descriptivo del schedule
+        description:
+          type: string
+          maxLength: 500
+          example: Junio a Septiembre - Horarios adaptados al calor
+          description: Descripción detallada
+        minimumAdvanceTime:
+          type: string
+          format: duration
+          example: '02:00:00'
+          description: Tiempo mínimo de antelación
+        maximumAdvanceTime:
+          type: string
+          format: duration
+          example: '30.00:00:00'
+          description: Tiempo máximo de antelación
+        slotInterval:
+          type: string
+          format: duration
+          example: '00:15:00'
+          description: 'Intervalo entre slots (15, 30 o 60 minutos)'
+        bufferBetweenReservations:
+          type: string
+          format: duration
+          example: '00:15:00'
+          description: Buffer entre reservas
+        maxPartySize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 8
+          description: Tamaño máximo de grupo
+        minPartySize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 1
+          description: Tamaño mínimo de grupo
+        standardDurations:
+          type: object
+          additionalProperties:
+            type: string
+            format: duration
+          example:
+            Breakfast: '01:00:00'
+            Lunch: '01:30:00'
+            Dinner: '02:00:00'
+          description: Duración estándar por tipo de servicio
+    UpdateServiceScheduleRequest:
+      type: object
+      required:
+        - name
+        - description
+        - minimumAdvanceTime
+        - maximumAdvanceTime
+        - slotInterval
+        - bufferBetweenReservations
+        - maxPartySize
+        - minPartySize
+        - standardDurations
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          example: Horario Verano Actualizado
+        description:
+          type: string
+          maxLength: 500
+          example: Nueva descripción del horario
+        minimumAdvanceTime:
+          type: string
+          format: duration
+          example: '03:00:00'
+        maximumAdvanceTime:
+          type: string
+          format: duration
+          example: '60.00:00:00'
+        slotInterval:
+          type: string
+          format: duration
+          example: '00:30:00'
+        bufferBetweenReservations:
+          type: string
+          format: duration
+          example: '00:15:00'
+        maxPartySize:
+          type: integer
+          minimum: 1
+          example: 10
+        minPartySize:
+          type: integer
+          minimum: 1
+          example: 2
+        standardDurations:
+          type: object
+          additionalProperties:
+            type: string
+            format: duration
+    ServiceDayConfigRequest:
+      type: object
+      required:
+        - isAvailable
+      properties:
+        isAvailable:
+          type: boolean
+          description: Si el servicio está disponible
+        startTime:
+          type: string
+          format: time
+          nullable: true
+          example: '13:00'
+          description: Hora de inicio (requerida si isAvailable=true)
+        endTime:
+          type: string
+          format: time
+          nullable: true
+          example: '16:00'
+          description: Hora de fin (requerida si isAvailable=true)
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+          description: Capacidad específica (opcional)
+    AddServiceRequest:
+      type: object
+      required:
+        - type
+        - maxCapacity
+        - weeklySchedule
+      properties:
+        type:
+          $ref: '#/components/schemas/ServiceType'
+        maxCapacity:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          example: 40
+          description: Capacidad máxima del servicio
+        weeklySchedule:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceDayConfigRequest'
+          description: Configuración para cada día de la semana (7 días requeridos)
+    UpdateServiceRequest:
+      type: object
+      required:
+        - maxCapacity
+        - weeklySchedule
+      properties:
+        maxCapacity:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          example: 50
+        weeklySchedule:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceDayConfigRequest'
+    ConfigureServiceDayRequest:
+      type: object
+      required:
+        - isAvailable
+      properties:
+        isAvailable:
+          type: boolean
+        startTime:
+          type: string
+          format: time
+          nullable: true
+          example: '12:00'
+        endTime:
+          type: string
+          format: time
+          nullable: true
+          example: '17:00'
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 60
+    AddSpecialDateRequest:
+      type: object
+      required:
+        - date
+        - isAvailable
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2025-02-14'
+          description: Fecha de la excepción
+        isAvailable:
+          type: boolean
+          description: Si el servicio está disponible
+        startTime:
+          type: string
+          format: time
+          nullable: true
+          example: '19:00'
+        endTime:
+          type: string
+          format: time
+          nullable: true
+          example: '01:00'
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+          example: 30
+        reason:
+          type: string
+          nullable: true
+          maxLength: 250
+          example: San Valentín - Menú especial parejas
+    UpdateSpecialDateRequest:
+      type: object
+      required:
+        - isAvailable
+      properties:
+        isAvailable:
+          type: boolean
+        startTime:
+          type: string
+          format: time
+          nullable: true
+        endTime:
+          type: string
+          format: time
+          nullable: true
+        capacityOverride:
+          type: integer
+          nullable: true
+          minimum: 1
+        reason:
+          type: string
+          nullable: true
+          maxLength: 250
