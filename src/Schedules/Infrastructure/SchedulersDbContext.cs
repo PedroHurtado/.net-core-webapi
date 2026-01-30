@@ -1,4 +1,4 @@
-namespace Schedulers.Infrastructure;
+namespace Schedules.Infrastructure;
 
 public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, Guid tenantId) :
     DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
