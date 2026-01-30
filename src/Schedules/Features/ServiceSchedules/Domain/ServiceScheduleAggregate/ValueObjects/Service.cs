@@ -58,48 +58,6 @@ public partial record Service
         MaxCapacity = maxCapacity;
     }
 
-    /// <summary>
-    /// Gets the configuration for a specific date.
-    /// </summary>
-    /// <param name="date">The date to get configuration for.</param>
-    /// <returns>The special date configuration if it exists; otherwise, the weekly schedule configuration for that day of week.</returns>
-    /// <remarks>Special dates take precedence over the weekly schedule.</remarks>
-    public ServiceDayConfig? GetConfigForDate(DateOnly date)
-    {
-        var specialDate = _specialDates.FirstOrDefault(sd => sd.Date == date);
-        if (specialDate != null)
-        {
-            return new ServiceDayConfig(
-                specialDate.IsAvailable,
-                specialDate.StartTime,
-                specialDate.EndTime,
-                specialDate.CapacityOverride);
-        }
-
-        return _weeklySchedule.TryGetValue(date.DayOfWeek, out var config) ? config : null;
-    }
-
-    /// <summary>
-    /// Determines whether the service is available on a specific date.
-    /// </summary>
-    /// <param name="date">The date to check.</param>
-    /// <returns><c>true</c> if the service is available; otherwise, <c>false</c>.</returns>
-    public bool IsAvailableOn(DateOnly date)
-    {
-        var config = GetConfigForDate(date);
-        return config?.IsAvailable ?? false;
-    }
-
-    /// <summary>
-    /// Gets the capacity for a specific date.
-    /// </summary>
-    /// <param name="date">The date to get capacity for.</param>
-    /// <returns>The capacity override if specified in the configuration; otherwise, the maximum capacity.</returns>
-    public int GetCapacityFor(DateOnly date)
-    {
-        var config = GetConfigForDate(date);
-        return config?.CapacityOverride ?? MaxCapacity;
-    }
 }
 
 public static class ServiceValidationMessages

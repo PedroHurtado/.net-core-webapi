@@ -71,7 +71,9 @@ var config = new ServiceDayConfig(
 return configValidator.ValidateOrThrow(config);
 ```
 
-**Estáticos**: `ServiceDayConfig.Unavailable()`
+**Estáticos**:
+- `ServiceDayConfig.Unavailable()` → Crea config no disponible
+- `ServiceDayConfig.FromSpecialDate(ServiceSpecialDate specialDate)` → Crea config desde fecha especial (sin validación, datos ya validados)
 
 #### Tests Unitarios
 
@@ -222,12 +224,6 @@ public IReadOnlyCollection<ServiceSpecialDate> SpecialDates => _specialDates.ToL
 |-----------|------|---------|
 | HasSpecialDates | bool | `_specialDates.Any()` |
 | AvailableDaysCount | int | `_weeklySchedule.Count(kvp => kvp.Value.IsAvailable)` |
-
-#### Métodos
-
-- `GetConfigForDate(DateOnly date)` → ServiceDayConfig: Retorna SpecialDate si existe, sino WeeklySchedule
-- `IsAvailableOn(DateOnly date)` → bool
-- `GetCapacityFor(DateOnly date)` → int: Retorna CapacityOverride si existe, sino MaxCapacity
 
 #### Comando: Service.Create
 
@@ -457,6 +453,70 @@ public IReadOnlyCollection<Service> Services => _services.ToList().AsReadOnly();
 | Description | NotEmpty | "Description is required" |
 | Description | Max(500) | "Description cannot exceed 500 characters" |
 | Policy | NotNull | "Reservation policy is required" |
+
+### Métodos
+
+> ⚠️ **IMPORTANTE**: Estos métodos implementan la regla de negocio de **prioridad de fechas especiales**.
+> Las fechas especiales (`SpecialDate`) tienen prioridad sobre el horario semanal (`WeeklySchedule`).
+> Esta lógica pertenece al agregado, no al ValueObject `Service`, porque es una regla de negocio del dominio.
+
+#### GetServiceConfigForDate
+
+Obtiene la configuración de un servicio para una fecha específica.
+
+**Firma**: `GetServiceConfigForDate(ServiceType type, DateOnly date)` → `ServiceDayConfig?`
+
+**Lógica**:
+1. Busca el servicio por tipo
+2. Si existe `SpecialDate` para esa fecha → retorna esa configuración
+3. Si no → retorna `WeeklySchedule[date.DayOfWeek]`
+
+```csharp
+public ServiceDayConfig? GetServiceConfigForDate(ServiceType type, DateOnly date)
+{
+    var service = _services.FirstOrDefault(s => s.Type == type);
+    if (service == null) return null;
+
+    var specialDate = service.SpecialDates.FirstOrDefault(sd => sd.Date == date);
+    if (specialDate != null)
+    {
+        return ServiceDayConfig.FromSpecialDate(specialDate);
+    }
+
+    return service.WeeklySchedule.TryGetValue(date.DayOfWeek, out var config) ? config : null;
+}
+```
+
+#### IsServiceAvailableOn
+
+Determina si un servicio está disponible en una fecha específica.
+
+**Firma**: `IsServiceAvailableOn(ServiceType type, DateOnly date)` → `bool`
+
+```csharp
+public bool IsServiceAvailableOn(ServiceType type, DateOnly date)
+{
+    var config = GetServiceConfigForDate(type, date);
+    return config?.IsAvailable ?? false;
+}
+```
+
+#### GetServiceCapacityFor
+
+Obtiene la capacidad de un servicio para una fecha específica.
+
+**Firma**: `GetServiceCapacityFor(ServiceType type, DateOnly date)` → `int?`
+
+```csharp
+public int? GetServiceCapacityFor(ServiceType type, DateOnly date)
+{
+    var service = _services.FirstOrDefault(s => s.Type == type);
+    if (service == null) return null;
+
+    var config = GetServiceConfigForDate(type, date);
+    return config?.CapacityOverride ?? service.MaxCapacity;
+}
+```
 
 ---
 

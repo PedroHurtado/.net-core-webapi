@@ -61,6 +61,15 @@ public partial record ServiceDayConfig
     /// </summary>
     /// <returns>A <see cref="ServiceDayConfig"/> with <see cref="IsAvailable"/> set to <c>false</c>.</returns>
     public static ServiceDayConfig Unavailable() => new(false, null, null, null);
+
+    /// <summary>
+    /// Creates a service day configuration from a special date.
+    /// </summary>
+    /// <param name="specialDate">The special date to create the configuration from.</param>
+    /// <returns>A <see cref="ServiceDayConfig"/> with values from the special date.</returns>
+    /// <remarks>No validation is performed as the special date data is already validated.</remarks>
+    public static ServiceDayConfig FromSpecialDate(ServiceSpecialDate specialDate) =>
+        new(specialDate.IsAvailable, specialDate.StartTime, specialDate.EndTime, specialDate.CapacityOverride);
 }
 
 public static class ServiceDayConfigValidationMessages

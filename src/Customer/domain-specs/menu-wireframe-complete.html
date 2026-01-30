@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menús | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-activate{background:#D1FAE5;color:#065F46}.cmd-deactivate{background:#FEE2E2;color:#991B1B}.cmd-add{background:#E0E7FF;color:#3730A3}.cmd-remove{background:#FCE7F3;color:#9D174D}.cmd-get{background:#F3F4F6;color:#374151}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+        .deposit-person{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-color:#F59E0B}
+        .deposit-percent{background:linear-gradient(135deg,#DBEAFE,#BFDBFE);border-color:#3B82F6}
+        .deposit-fixed{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border-color:#10B981}
+        .cat-header{cursor:pointer}.cat-body{max-height:0;overflow:hidden;transition:max-height 0.3s}.cat-body.open{max-height:2000px}
+        .deposit-type-card{transition:all 0.2s}.deposit-type-card:hover{transform:scale(1.02)}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+<main>
+
+<!-- LIST VIEW -->
+<div id="list" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div><h1 class="text-2xl font-bold">Cartas y Menús</h1><p class="text-gray-500 text-sm mt-1">Gestiona tus menús, categorías y platos</p></div>
+<button onclick="show('create')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2"><i class="fas fa-plus"></i>Nuevo Menú</button>
+</div>
+<div class="mb-4"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /menus → ListMenus</span></div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Carta Principal -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg" onclick="show('edit')">
+<div class="p-5 border-b bg-gradient-to-r from-primary/5 to-orange-500/5">
+<div class="flex items-center gap-3">
+<div class="w-14 h-14 bg-gradient-to-br from-primary to-orange-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20"><i class="fas fa-utensils"></i></div>
+<div class="flex-1">
+<div class="flex items-center gap-2"><h3 class="font-bold text-lg">Carta Principal</h3><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase"><i class="fas fa-circle text-[6px]"></i>Activo</span></div>
+<p class="text-xs text-gray-500">Carta de toda la temporada</p>
+</div></div></div>
+<div class="p-5">
+<div class="grid grid-cols-3 gap-4 mb-4 text-center">
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-800">5</p><p class="text-[10px] text-gray-400 uppercase">Categorías</p></div>
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-800">32</p><p class="text-[10px] text-gray-400 uppercase">Platos</p></div>
+<div class="p-2 bg-amber-50 rounded-xl border border-amber-200"><p class="text-2xl font-bold text-amber-600">10€</p><p class="text-[10px] text-amber-500 uppercase">Fianza/pax</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700"><i class="fas fa-infinity text-xs"></i><span class="text-[10px] font-bold">SIN FECHA LÍMITE</span></div>
+</div></div></div>
+
+<!-- Card 2: Menú Navidad -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg" onclick="show('edit')">
+<div class="p-5 border-b bg-gradient-to-r from-red-50 to-green-50">
+<div class="flex items-center gap-3">
+<div class="w-14 h-14 bg-gradient-to-br from-red-500 to-green-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg"><i class="fas fa-holly-berry"></i></div>
+<div class="flex-1">
+<div class="flex items-center gap-2"><h3 class="font-bold text-lg">Menú Navidad 2025</h3><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold uppercase"><i class="fas fa-circle text-[6px]"></i>Activo</span></div>
+<p class="text-xs text-gray-500">Menú especial fiestas</p>
+</div></div></div>
+<div class="p-5">
+<div class="grid grid-cols-3 gap-4 mb-4 text-center">
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-800">3</p><p class="text-[10px] text-gray-400 uppercase">Categorías</p></div>
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-800">12</p><p class="text-[10px] text-gray-400 uppercase">Platos</p></div>
+<div class="p-2 bg-blue-50 rounded-xl border border-blue-200"><p class="text-2xl font-bold text-blue-600">20%</p><p class="text-[10px] text-blue-500 uppercase">Fianza %</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-100 text-blue-700"><i class="fas fa-calendar text-xs"></i><span class="text-[10px] font-bold">20 DIC - 6 ENE</span></div>
+</div></div></div>
+
+<!-- Card 3: Borrador -->
+<div class="card bg-white rounded-3xl border shadow-sm overflow-hidden cursor-pointer smooth hover:shadow-lg opacity-60" onclick="show('edit')">
+<div class="p-5 border-b bg-gray-50">
+<div class="flex items-center gap-3">
+<div class="w-14 h-14 bg-gray-300 rounded-2xl flex items-center justify-center text-white text-2xl"><i class="fas fa-file-alt"></i></div>
+<div class="flex-1">
+<div class="flex items-center gap-2"><h3 class="font-bold text-lg text-gray-500">Menú Verano 2026</h3><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold uppercase"><i class="fas fa-circle text-[6px]"></i>Borrador</span></div>
+<p class="text-xs text-gray-400">En preparación</p>
+</div></div></div>
+<div class="p-5">
+<div class="grid grid-cols-3 gap-4 mb-4 text-center">
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-400">2</p><p class="text-[10px] text-gray-400 uppercase">Categorías</p></div>
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-400">0</p><p class="text-[10px] text-gray-400 uppercase">Platos</p></div>
+<div class="p-2 bg-gray-50 rounded-xl"><p class="text-2xl font-bold text-gray-400">—</p><p class="text-[10px] text-gray-400 uppercase">Fianza</p></div>
+</div>
+<div class="flex items-center gap-2 pt-3 border-t text-xs text-gray-400"><i class="fas fa-exclamation-triangle"></i><span>Sin categorías con platos</span></div>
+</div></div>
+</div></div></div>
+
+<!-- CREATE VIEW -->
+<div id="create" class="view p-4 md:p-8"><div class="max-w-3xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('list')" class="hover:text-primary">Menús</a><i class="fas fa-chevron-right text-xs"></i><span>Nuevo</span></div><h1 class="text-2xl font-bold">Crear Menú</h1></div>
+<div class="flex gap-3"><button onclick="show('list')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="show('edit');toast('Menú creado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2"><i class="fas fa-save"></i>Crear</button></div>
+</div>
+<div class="mb-6"><span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /menus → Menu.Create</span></div>
+<div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+<div class="p-6 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-book-open"></i></div><div><h3 class="font-bold text-lg">Información del Menú</h3><p class="text-xs text-gray-500">Nombre, descripción y vigencia</p></div></div></div>
+<div class="p-6 space-y-6">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre <span class="text-primary">*</span></label><input type="text" placeholder="Ej: Carta Principal, Menú Navidad..." maxlength="100" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Máximo 100 caracteres</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="3" placeholder="Describe este menú..." maxlength="500" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido desde</label><input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido hasta</label><input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+</div></div>
+<div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-6 flex items-start gap-3"><i class="fas fa-info-circle text-blue-500 mt-0.5"></i><div><p class="text-sm text-blue-800 font-medium">Menú creado como borrador</p><p class="text-xs text-blue-700 mt-1">Se creará en estado <strong>inactivo</strong>. Añade categorías con platos para poder activarlo.</p></div></div>
+</div></div>
+
+<!-- EDIT VIEW -->
+<div id="edit" class="view p-4 md:p-8"><div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('list')" class="hover:text-primary">Menús</a><i class="fas fa-chevron-right text-xs"></i><span>Carta Principal</span></div>
+<div class="flex items-center gap-3 flex-wrap"><h1 class="text-2xl font-bold">Carta Principal</h1><span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase"><i class="fas fa-circle text-[6px]"></i>Activo</span></div>
+</div>
+<div class="flex gap-3">
+<button onclick="show('list')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
+<button id="toggleBtn" onclick="toggleStatus()" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100"><i class="fas fa-pause mr-2"></i>Desactivar</button>
+</div></div>
+<div class="mb-6"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /menus/{id}</span></div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-6">
+
+<!-- INFO CARD -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-edit"></i></div><div><h3 class="font-bold">Información</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Menu.Update</span></div></div>
+<button onclick="openM('mMenu')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+</div>
+<div class="p-6 grid grid-cols-2 gap-4">
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p><p class="font-medium">Carta Principal</p></div>
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Orden</p><p class="font-medium">1</p></div>
+<div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase mb-1">Descripción</p><p class="text-gray-600">Nuestra carta habitual con los platos de temporada.</p></div>
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Válido desde</p><p class="font-medium text-gray-500">Sin fecha inicio</p></div>
+<div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Válido hasta</p><p class="font-medium text-gray-500">Sin fecha fin</p></div>
+</div></div>
+
+<!-- DEPOSIT POLICY CARD -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 border-b flex items-center justify-between deposit-person rounded-t-2xl">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center text-amber-600 text-xl shadow-sm"><i class="fas fa-piggy-bank"></i></div>
+<div><h3 class="font-bold text-amber-900">Política de Fianza</h3><p class="text-xs text-amber-700">Por persona · desde 6 comensales</p></div>
+</div>
+<button onclick="show('deposit')" class="px-4 py-2 rounded-xl bg-white/80 hover:bg-white font-bold text-sm text-amber-700 shadow-sm"><i class="fas fa-cog mr-1"></i>Configurar</button>
+</div>
+<div class="p-6">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="text-center"><p class="text-3xl font-bold text-amber-600">10,00€</p><p class="text-xs text-gray-500">por persona</p></div>
+<div class="h-12 w-px bg-gray-200"></div>
+<div class="text-center"><p class="text-xl font-bold text-gray-600">≥ 6</p><p class="text-xs text-gray-500">comensales mín.</p></div>
+</div>
+<span class="px-2 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase"><i class="fas fa-user mr-1"></i>POR PERSONA</span>
+</div>
+<div class="bg-gray-50 rounded-xl p-4 border">
+<div class="flex items-center gap-2 mb-3"><i class="fas fa-calculator text-gray-400 text-sm"></i><span class="text-xs font-bold text-gray-500 uppercase">Simulador rápido</span></div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2"><label class="text-sm text-gray-600">Comensales:</label><input type="number" id="quickGuests" value="8" min="1" max="50" onchange="quickSim()" class="w-16 bg-white border rounded-lg px-2 py-1 text-center font-bold text-sm"></div>
+<div class="flex-1 text-right"><span class="text-sm text-gray-500">Fianza:</span> <span id="quickDeposit" class="text-xl font-bold text-primary">80,00€</span></div>
+</div></div>
+</div>
+<div class="px-4 py-2 bg-gray-50 border-t flex flex-wrap gap-2">
+<span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → SetDepositPolicy</span>
+<span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveDepositPolicy</span>
+</div></div>
+
+<!-- CATEGORIES -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 bg-emerald-50/50 border-b flex items-center justify-between">
+<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-layer-group"></i></div><div><h3 class="font-bold">Categorías</h3><p class="text-xs text-gray-500">5 categorías · 32 platos</p></div></div>
+<button onclick="openM('mCatAdd')" class="px-4 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold text-sm"><i class="fas fa-plus mr-1"></i>Añadir</button>
+</div>
+<div class="px-4 py-2 bg-emerald-50/30 border-b flex flex-wrap gap-2">
+<span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddCategory</span>
+<span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateCategory</span>
+<span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveCategory</span>
+</div>
+
+<!-- Category 1: Entrantes -->
+<div class="border-b">
+<div class="cat-header p-4 flex items-center gap-4 hover:bg-gray-50" onclick="toggleCat('cat1')">
+<div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-cheese"></i></div>
+<div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Entrantes</h4><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold">8 platos</span></div><p class="text-xs text-gray-500">Orden: 1</p></div>
+<div class="flex items-center gap-2">
+<button onclick="event.stopPropagation();openM('mCatEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+<button onclick="event.stopPropagation();openM('mCatRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+<i id="cat1-chevron" class="fas fa-chevron-down text-gray-400 smooth transform rotate-180"></i>
+</div></div>
+<div id="cat1-body" class="cat-body open" style="max-height:2000px">
+<div class="bg-gray-50/50 px-4 py-2 border-t flex items-center justify-between">
+<span class="text-xs text-gray-500"><i class="fas fa-utensils mr-1"></i>Platos en esta categoría</span>
+<button onclick="openM('mItemAdd')" class="text-xs text-emerald-600 font-bold hover:underline"><i class="fas fa-plus mr-1"></i>Añadir plato</button>
+</div>
+<div class="divide-y bg-white">
+<!-- Item with ItemDepositOverride -->
+<div class="row px-4 py-3 flex items-center gap-3 group">
+<div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden"><img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div>
+<div class="flex-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-medium">Jamón Ibérico 5J</span>
+<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold"><i class="fas fa-piggy-bank mr-1"></i>FIANZA: 30€</span>
+</div>
+<p class="text-xs text-gray-400">Orden: 1 · Usa precios MenuItem</p>
+</div>
+<div class="text-right"><p class="font-bold text-primary">24,00€</p><p class="text-[10px] text-gray-400">Ración</p></div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100">
+<button onclick="openM('mItemEdit')" class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-xs"></i></button>
+<button onclick="openM('mItemRm')" class="w-7 h-7 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+</div></div>
+<!-- Item normal -->
+<div class="row px-4 py-3 flex items-center gap-3 group">
+<div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden"><img src="https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div>
+<div class="flex-1"><span class="font-medium">Croquetas de Jamón</span><p class="text-xs text-gray-400">Orden: 2 · Usa precios MenuItem</p></div>
+<div class="text-right"><p class="font-bold text-primary">8,50€</p><p class="text-[10px] text-gray-400">6 uds</p></div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100">
+<button class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-xs"></i></button>
+<button class="w-7 h-7 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+</div></div>
+<!-- Item with PriceOverride -->
+<div class="row px-4 py-3 flex items-center gap-3 group">
+<div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden"><img src="https://images.unsplash.com/photo-1606851091851-e8d20b8a8f38?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div>
+<div class="flex-1">
+<div class="flex items-center gap-2"><span class="font-medium">Gambas al Ajillo</span><span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold"><i class="fas fa-tag mr-1"></i>PRECIO OVERRIDE</span></div>
+<p class="text-xs text-gray-400">Orden: 3 · Precio sobrescrito</p>
+</div>
+<div class="text-right"><p class="font-bold text-blue-600">S/M</p><p class="text-[10px] text-gray-400">Según mercado</p></div>
+<div class="flex gap-1 opacity-0 group-hover:opacity-100">
+<button class="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-xs"></i></button>
+<button class="w-7 h-7 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+</div></div>
+</div></div></div>
+
+<!-- Other categories collapsed -->
+<div class="border-b"><div class="cat-header p-4 flex items-center gap-4 hover:bg-gray-50" onclick="toggleCat('cat2')"><div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-fish"></i></div><div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Pescados</h4><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold">6 platos</span></div></div><i id="cat2-chevron" class="fas fa-chevron-down text-gray-400 smooth"></i></div><div id="cat2-body" class="cat-body"></div></div>
+<div class="border-b"><div class="cat-header p-4 flex items-center gap-4 hover:bg-gray-50" onclick="toggleCat('cat3')"><div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500"><i class="fas fa-drumstick-bite"></i></div><div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Carnes</h4><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold">10 platos</span></div></div><i id="cat3-chevron" class="fas fa-chevron-down text-gray-400 smooth"></i></div><div id="cat3-body" class="cat-body"></div></div>
+<div class="border-b"><div class="cat-header p-4 flex items-center gap-4 hover:bg-gray-50" onclick="toggleCat('cat4')"><div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500"><i class="fas fa-ice-cream"></i></div><div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Postres</h4><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold">5 platos</span></div></div><i id="cat4-chevron" class="fas fa-chevron-down text-gray-400 smooth"></i></div><div id="cat4-body" class="cat-body"></div></div>
+<div><div class="cat-header p-4 flex items-center gap-4 hover:bg-gray-50" onclick="toggleCat('cat5')"><div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500"><i class="fas fa-wine-glass-alt"></i></div><div class="flex-1"><div class="flex items-center gap-2"><h4 class="font-bold">Bebidas</h4><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px] font-bold">3 platos</span></div></div><i id="cat5-chevron" class="fas fa-chevron-down text-gray-400 smooth"></i></div><div id="cat5-body" class="cat-body"></div></div>
+</div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="space-y-4">
+<div class="bg-white rounded-2xl border p-4">
+<h3 class="font-bold mb-4">Estado del Menú</h3>
+<div class="flex justify-between items-center mb-4"><span class="text-sm text-gray-500">Estado</span><span id="statusText" class="font-bold text-success">Activo</span></div>
+<div class="pt-4 border-t space-y-2">
+<span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST /menus/{id}/activate</span>
+<span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded mt-1">POST /menus/{id}/deactivate</span>
+</div></div>
+
+<div class="bg-white rounded-2xl border p-4">
+<h3 class="font-bold mb-3">Estadísticas</h3>
+<div class="space-y-3">
+<div class="flex justify-between"><span class="text-sm text-gray-500">Categorías</span><span class="font-bold">5</span></div>
+<div class="flex justify-between"><span class="text-sm text-gray-500">Platos totales</span><span class="font-bold">32</span></div>
+<div class="flex justify-between"><span class="text-sm text-gray-500">Con fianza propia</span><span class="font-bold text-amber-600">3</span></div>
+</div></div>
+
+<div class="bg-white rounded-2xl border p-4">
+<h3 class="font-bold mb-3">Requisitos Activar</h3>
+<div class="space-y-2">
+<div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Al menos 1 categoría</span></div>
+<div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Categoría con platos</span></div>
+</div></div>
+
+<div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+<div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-amber-500"></i><span class="font-bold text-amber-800 text-sm">Hot Spots</span></div>
+<ul class="text-xs text-amber-700 space-y-1"><li>• ¿Menús comparten platos?</li><li>• ¿Override precio por menú?</li><li>• ¿Herencia de fianza?</li></ul></div>
+</div>
+</div></div></div>
+
+<!-- DEPOSIT POLICY FULL VIEW -->
+<div id="deposit" class="view p-4 md:p-8"><div class="max-w-5xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div>
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('list')" class="hover:text-primary">Menús</a><i class="fas fa-chevron-right text-xs"></i><a href="#" onclick="show('edit')" class="hover:text-primary">Carta Principal</a><i class="fas fa-chevron-right text-xs"></i><span>Fianza</span></div>
+<h1 class="text-2xl font-bold">Configurar Política de Fianza</h1>
+<p class="text-gray-500 text-sm mt-1">Define las reglas de depósito para reservas</p>
+</div>
+<div class="flex gap-3">
+<button onclick="show('edit')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button>
+<button onclick="openM('mDepositRm')" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100"><i class="fas fa-trash mr-2"></i>Eliminar</button>
+<button onclick="show('edit');toast('Fianza guardada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark"><i class="fas fa-save mr-2"></i>Guardar</button>
+</div></div>
+<div class="mb-6 flex flex-wrap gap-2">
+<span class="cmd-update text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-save text-[10px] mr-1"></i>PUT → SetDepositPolicy</span>
+<span class="cmd-remove text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-trash text-[10px] mr-1"></i>DELETE → RemoveDepositPolicy</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-6">
+
+<!-- TYPE SELECTOR -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-sliders-h"></i></div><div><h3 class="font-bold">Tipo de Fianza</h3><p class="text-xs text-gray-500">Selecciona cómo se calculará</p></div></div></div>
+<div class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<label class="cursor-pointer"><input type="radio" name="depositType" value="PerPerson" class="sr-only peer" checked onchange="updateDepositType()">
+<div class="deposit-type-card p-4 rounded-2xl border-2 deposit-person peer-checked:ring-2 peer-checked:ring-amber-500 peer-checked:ring-offset-2">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center text-amber-600 text-xl"><i class="fas fa-user"></i></div><div><p class="font-bold text-amber-900">Por Persona</p><p class="text-[10px] text-amber-700">PerPerson</p></div></div>
+<p class="text-xs text-amber-800">Importe fijo × comensales</p>
+</div></label>
+<label class="cursor-pointer"><input type="radio" name="depositType" value="PercentageOfBill" class="sr-only peer" onchange="updateDepositType()">
+<div class="deposit-type-card p-4 rounded-2xl border-2 deposit-percent peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:ring-offset-2">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center text-blue-600 text-xl"><i class="fas fa-percent"></i></div><div><p class="font-bold text-blue-900">Porcentaje</p><p class="text-[10px] text-blue-700">PercentageOfBill</p></div></div>
+<p class="text-xs text-blue-800">% del total estimado</p>
+</div></label>
+<label class="cursor-pointer"><input type="radio" name="depositType" value="FixedAmount" class="sr-only peer" onchange="updateDepositType()">
+<div class="deposit-type-card p-4 rounded-2xl border-2 deposit-fixed peer-checked:ring-2 peer-checked:ring-emerald-500 peer-checked:ring-offset-2">
+<div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-xl bg-white/80 flex items-center justify-center text-emerald-600 text-xl"><i class="fas fa-coins"></i></div><div><p class="font-bold text-emerald-900">Importe Fijo</p><p class="text-[10px] text-emerald-700">FixedAmount</p></div></div>
+<p class="text-xs text-emerald-800">Cantidad fija total</p>
+</div></label>
+</div></div></div>
+
+<!-- AMOUNT -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-euro-sign"></i></div><div><h3 class="font-bold">Importe</h3></div></div></div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div id="amountField"><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Importe <span class="text-primary">*</span></label><div class="relative"><input type="number" id="depositAmount" value="10.00" min="0.01" step="0.01" onchange="updateSim()" class="w-full bg-gray-50 border rounded-xl pl-4 pr-12 py-3 font-bold text-xl focus:border-primary outline-none"><div class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 font-bold">€</div></div><p class="text-xs text-gray-400 mt-1" id="amountHelp">Cantidad por persona</p></div>
+<div id="percentageField" class="hidden"><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Porcentaje <span class="text-primary">*</span></label><div class="relative"><input type="number" id="depositPercentage" value="20" min="1" max="100" step="1" onchange="updateSim()" class="w-full bg-gray-50 border rounded-xl pl-4 pr-12 py-3 font-bold text-xl focus:border-primary outline-none"><div class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 font-bold">%</div></div><p class="text-xs text-gray-400 mt-1">Entre 1% y 100%</p></div>
+</div></div>
+
+<!-- THRESHOLDS -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+<div class="p-4 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-filter"></i></div><div><h3 class="font-bold">Umbrales (Opcional)</h3><p class="text-xs text-gray-500">Condiciones para activar la fianza</p></div></div></div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Mínimo Comensales</label><div class="relative"><input type="number" id="minGuests" value="6" min="1" max="100" onchange="updateSim()" class="w-full bg-gray-50 border rounded-xl pl-12 pr-4 py-3 font-medium focus:border-primary outline-none"><div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i class="fas fa-users"></i></div></div><p class="text-xs text-gray-400 mt-1">Vacío = aplica siempre</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Cuenta Mínima</label><div class="relative"><input type="number" id="minBill" value="" min="0" step="0.01" onchange="updateSim()" class="w-full bg-gray-50 border rounded-xl pl-12 pr-12 py-3 font-medium focus:border-primary outline-none" placeholder="Sin mínimo"><div class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i class="fas fa-receipt"></i></div><div class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400">€</div></div></div>
+</div>
+<div class="px-6 pb-6"><div class="p-4 bg-blue-50 rounded-xl border border-blue-100"><p class="text-sm text-blue-800"><i class="fas fa-info-circle mr-2"></i>Si ambos umbrales están definidos, <strong>ambos</strong> deben cumplirse.</p></div></div>
+</div>
+</div>
+
+<!-- SIDEBAR SIMULATOR -->
+<div class="space-y-4">
+<div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-5 text-white shadow-xl">
+<div class="flex items-center gap-2 mb-4"><i class="fas fa-calculator"></i><h3 class="font-bold">Simulador</h3></div>
+<div class="space-y-4">
+<div><label class="block text-xs text-gray-400 uppercase mb-2">Comensales</label><input type="number" id="simGuests" value="8" min="1" max="100" onchange="updateSim()" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 font-bold text-xl text-white focus:border-primary outline-none"></div>
+<div id="simBillField"><label class="block text-xs text-gray-400 uppercase mb-2">Cuenta Estimada</label><div class="relative"><input type="number" id="simBill" value="300" min="0" step="10" onchange="updateSim()" class="w-full bg-white/10 border border-white/20 rounded-xl pl-4 pr-12 py-3 font-bold text-xl text-white focus:border-primary outline-none"><div class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50">€</div></div></div>
+</div>
+<div class="mt-6 pt-4 border-t border-white/20">
+<div class="flex items-center justify-between mb-2"><span class="text-gray-400 text-sm">¿Aplica?</span><span id="simApplies" class="px-3 py-1 rounded-full text-xs font-bold bg-success text-white">SÍ</span></div>
+<div class="flex items-center justify-between"><span class="text-gray-400">Fianza</span><span id="simResult" class="text-3xl font-bold text-primary">80,00€</span></div>
+</div>
+<div id="simFormula" class="mt-4 p-3 bg-white/5 rounded-xl border border-white/10"><p class="text-xs text-gray-400 font-mono">10€ × 8 = 80€</p></div>
+</div>
+
+<div class="bg-white rounded-2xl border p-4">
+<h3 class="font-bold mb-3 text-xs text-gray-400 uppercase">Validaciones</h3>
+<div class="space-y-2 text-xs">
+<div class="flex items-start gap-2"><i class="fas fa-check-circle text-success mt-0.5"></i><span>Amount > 0</span></div>
+<div class="flex items-start gap-2"><i class="fas fa-check-circle text-success mt-0.5"></i><span>Percentage 1-100</span></div>
+<div class="flex items-start gap-2"><i class="fas fa-check-circle text-success mt-0.5"></i><span>MinGuests ≥ 1</span></div>
+</div></div>
+
+<div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+<div class="flex items-center gap-2 mb-2"><i class="fas fa-lightbulb text-amber-500"></i><span class="font-bold text-amber-800 text-sm">Ejemplos</span></div>
+<ul class="text-xs text-amber-700 space-y-1"><li><strong>Grupos:</strong> 10€/pax desde 6</li><li><strong>Eventos:</strong> 20% cuenta</li><li><strong>VIP:</strong> 100€ fijos</li></ul></div>
+</div>
+</div></div></div>
+
+</main>
+
+<!-- MODALS -->
+<!-- Menu Edit -->
+<div id="mMenu" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+<div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white">
+<div><h3 class="text-lg font-bold">Editar Menú</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /menus/{id}</span></div>
+<button onclick="closeM('mMenu')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+</div>
+<div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input type="text" value="Carta Principal" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="3" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none">Nuestra carta habitual.</textarea></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div class="grid grid-cols-2 gap-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido desde</label><input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Válido hasta</label><input type="date" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+<button onclick="closeM('mMenu')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+<button onclick="closeM('mMenu');toast('Menú actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+</div></div></div>
+
+<!-- Category Add -->
+<div id="mCatAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+<div class="p-6 border-b flex items-center justify-between">
+<div><h3 class="text-lg font-bold">Añadir Categoría</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddCategory</span></div>
+<button onclick="closeM('mCatAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+</div>
+<div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input type="text" placeholder="Ej: Entrantes, Pescados..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Único dentro del menú</p></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="2" placeholder="Opcional..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="0" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3">
+<button onclick="closeM('mCatAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+<button onclick="closeM('mCatAdd');toast('Categoría añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button>
+</div></div></div>
+
+<!-- Category Edit -->
+<div id="mCatEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+<div class="p-6 border-b flex items-center justify-between">
+<div><h3 class="text-lg font-bold">Editar Categoría</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateCategory</span></div>
+<button onclick="closeM('mCatEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+</div>
+<div class="p-6 space-y-4">
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input type="text" value="Entrantes" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="2" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3">
+<button onclick="closeM('mCatEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+<button onclick="closeM('mCatEdit');toast('Categoría actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+</div></div></div>
+
+<!-- Category Remove -->
+<div id="mCatRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+<div class="p-6 text-center">
+<div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div>
+<h3 class="text-lg font-bold mb-2">¿Eliminar Categoría?</h3>
+<p class="text-sm text-gray-500 mb-3">Se eliminará <strong>Entrantes</strong></p>
+<span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveCategory</span>
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-4 text-left">
+<p class="text-xs text-amber-700"><i class="fas fa-exclamation-triangle mr-1"></i>No se puede eliminar si tiene platos.</p>
+</div>
+</div>
+<div class="p-6 border-t flex gap-3">
+<button onclick="closeM('mCatRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+<button onclick="closeM('mCatRm');toast('Categoría eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+</div></div></div>
+
+<!-- Item Add -->
+<div id="mItemAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+<div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+<div><h3 class="text-lg font-bold">Añadir Plato</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddItemToCategory</span></div>
+<button onclick="closeM('mItemAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+</div>
+<div class="p-6 space-y-4">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-2">Seleccionar MenuItem *</label>
+<div class="space-y-2 max-h-48 overflow-y-auto border rounded-xl p-2">
+<label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input type="radio" name="menuItem" class="w-4 h-4 text-primary" checked>
+<div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden"><img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div>
+<div class="flex-1"><p class="font-medium">Jamón Ibérico 5J</p><p class="text-xs text-gray-400">24€ · <span class="text-amber-600">Fianza: 30€</span></p></div>
+</label>
+<label class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer border border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+<input type="radio" name="menuItem" class="w-4 h-4 text-primary">
+<div class="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden"><img src="https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div>
+<div class="flex-1"><p class="font-medium">Croquetas de Jamón</p><p class="text-xs text-gray-400">8,50€ · 6 unidades</p></div>
+</label>
+</div>
+</div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="0" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+
+<!-- PriceOverride -->
+<div class="border rounded-xl p-4 bg-blue-50 border-blue-200">
+<div class="flex items-center gap-3 mb-3"><input type="checkbox" id="usePriceOverride" class="w-5 h-5 rounded text-blue-600" onchange="togglePriceOverride()"><label for="usePriceOverride" class="font-medium text-blue-900">Sobrescribir precios</label></div>
+<p class="text-xs text-blue-700 mb-3">Si no marcas, usa precios del MenuItem.</p>
+<div id="priceOverrideFields" class="hidden space-y-2">
+<div class="bg-white rounded-lg p-3 border border-blue-200 flex items-center justify-between"><span class="text-sm">Ración</span><input type="number" placeholder="€" class="w-20 bg-gray-50 border rounded-lg px-2 py-1.5 text-sm text-right"></div>
+<div class="bg-white rounded-lg p-3 border border-blue-200 flex items-center justify-between"><span class="text-sm">Media</span><input type="number" placeholder="€" class="w-20 bg-gray-50 border rounded-lg px-2 py-1.5 text-sm text-right"></div>
+</div></div>
+
+<!-- ItemDepositOverride -->
+<div class="border rounded-xl p-4 bg-amber-50 border-amber-200">
+<div class="flex items-center gap-3 mb-3"><input type="checkbox" id="useItemDeposit" class="w-5 h-5 rounded text-amber-600" onchange="toggleItemDeposit()"><label for="useItemDeposit" class="font-medium text-amber-900">Fianza específica (CategoryItem)</label></div>
+<p class="text-xs text-amber-700 mb-3">Sobrescribe la fianza del MenuItem.</p>
+<div id="itemDepositFields" class="hidden grid grid-cols-2 gap-3">
+<div><label class="block text-xs font-bold text-amber-700 uppercase mb-1">Importe *</label><div class="relative"><input type="number" value="30" min="0.01" max="10000" step="0.01" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 font-bold focus:border-amber-500 outline-none"><span class="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600">€</span></div></div>
+<div><label class="block text-xs font-bold text-amber-700 uppercase mb-1">Cantidad Mín.</label><input type="number" value="" min="1" max="100" placeholder="Sin mínimo" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 font-medium focus:border-amber-500 outline-none"></div>
+</div></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+<button onclick="closeM('mItemAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+<button onclick="closeM('mItemAdd');toast('Plato añadido')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Añadir</button>
+</div></div></div>
+
+<!-- Item Edit -->
+<div id="mItemEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+<div class="p-6 border-b flex items-center justify-between">
+<div><h3 class="text-lg font-bold">Editar Item</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateCategoryItem</span></div>
+<button onclick="closeM('mItemEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><div class="w-12 h-12 rounded-lg overflow-hidden"><img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=100&h=100&fit=crop" class="w-full h-full object-cover"></div><div><p class="font-bold">Jamón Ibérico 5J</p><p class="text-xs text-gray-500">MenuItem (no editable aquí)</p></div></div>
+<div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="1" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+<div class="border rounded-xl p-4 bg-blue-50 border-blue-200"><div class="flex items-center gap-3"><input type="checkbox" class="w-5 h-5 rounded text-blue-600"><label class="font-medium text-blue-900">Sobrescribir precios</label></div></div>
+<div class="border rounded-xl p-4 bg-amber-50 border-amber-200"><div class="flex items-center gap-3"><input type="checkbox" class="w-5 h-5 rounded text-amber-600" checked><label class="font-medium text-amber-900">Fianza específica: 30€</label></div></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3">
+<button onclick="closeM('mItemEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+<button onclick="closeM('mItemEdit');toast('Item actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Guardar</button>
+</div></div></div>
+
+<!-- Item Remove -->
+<div id="mItemRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+<div class="p-6 text-center">
+<div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-unlink"></i></div>
+<h3 class="text-lg font-bold mb-2">¿Quitar plato?</h3>
+<p class="text-sm text-gray-500 mb-3">Se quitará de la categoría</p>
+<span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveItemFromCategory</span>
+<div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mt-4 text-left"><p class="text-xs text-blue-700"><i class="fas fa-info-circle mr-1"></i>El MenuItem NO se elimina del sistema.</p></div>
+</div>
+<div class="p-6 border-t flex gap-3">
+<button onclick="closeM('mItemRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+<button onclick="closeM('mItemRm');toast('Plato quitado')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Quitar</button>
+</div></div></div>
+
+<!-- Deposit Remove -->
+<div id="mDepositRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+<div class="p-6 text-center">
+<div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-piggy-bank"></i></div>
+<h3 class="text-lg font-bold mb-2">¿Eliminar Fianza?</h3>
+<p class="text-sm text-gray-500 mb-3">El menú no requerirá fianza</p>
+<span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveDepositPolicy</span>
+</div>
+<div class="p-6 border-t flex gap-3">
+<button onclick="closeM('mDepositRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+<button onclick="closeM('mDepositRm');show('edit');toast('Fianza eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+</div></div></div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+<div class="w-8 h-8 rounded-full bg-success flex items-center justify-center"><i class="fas fa-check"></i></div>
+<span id="toastMsg">OK</span>
+</div>
+
+<script>
+let isActive=true;
+function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));document.getElementById(v)?.classList.add('active');window.scrollTo(0,0);}
+function openM(id){document.getElementById(id)?.classList.remove('hidden');}
+function closeM(id){document.getElementById(id)?.classList.add('hidden');}
+function toast(msg){const t=document.getElementById('toastEl');document.getElementById('toastMsg').textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2500);}
+
+function toggleStatus(){
+    isActive=!isActive;
+    const b=document.getElementById('statusBadge'),t=document.getElementById('statusText'),btn=document.getElementById('toggleBtn');
+    if(isActive){
+        b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-xs font-bold uppercase';
+        b.innerHTML='<i class="fas fa-circle text-[6px]"></i>Activo';
+        t.className='font-bold text-success';t.textContent='Activo';
+        btn.className='px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100';
+        btn.innerHTML='<i class="fas fa-pause mr-2"></i>Desactivar';
+    }else{
+        b.className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';
+        b.innerHTML='<i class="fas fa-circle text-[6px]"></i>Inactivo';
+        t.className='font-bold text-gray-500';t.textContent='Inactivo';
+        btn.className='px-4 py-2.5 rounded-full font-bold text-green-600 bg-green-50 hover:bg-green-100';
+        btn.innerHTML='<i class="fas fa-play mr-2"></i>Activar';
+    }
+    toast(isActive?'Menú activado':'Menú desactivado');
+}
+
+function toggleCat(id){
+    const body=document.getElementById(id+'-body');
+    const chevron=document.getElementById(id+'-chevron');
+    body.classList.toggle('open');
+    if(body.classList.contains('open')){body.style.maxHeight='2000px';chevron.style.transform='rotate(180deg)';}
+    else{body.style.maxHeight='0';chevron.style.transform='rotate(0)';}
+}
+
+function quickSim(){
+    const guests=parseInt(document.getElementById('quickGuests').value)||0;
+    const minGuests=6;const amount=10;
+    let deposit=0;
+    if(guests>=minGuests)deposit=amount*guests;
+    document.getElementById('quickDeposit').textContent=deposit.toFixed(2).replace('.',',')+'€';
+}
+
+function updateDepositType(){
+    const type=document.querySelector('input[name="depositType"]:checked').value;
+    const amountField=document.getElementById('amountField');
+    const percentageField=document.getElementById('percentageField');
+    const amountHelp=document.getElementById('amountHelp');
+    const simBillField=document.getElementById('simBillField');
+    
+    if(type==='PercentageOfBill'){
+        amountField.classList.add('hidden');
+        percentageField.classList.remove('hidden');
+        simBillField.classList.remove('hidden');
+    }else{
+        amountField.classList.remove('hidden');
+        percentageField.classList.add('hidden');
+        simBillField.classList.add('hidden');
+        amountHelp.textContent=type==='PerPerson'?'Cantidad por persona':'Cantidad fija total';
+    }
+    updateSim();
+}
+
+function updateSim(){
+    const type=document.querySelector('input[name="depositType"]:checked')?.value||'PerPerson';
+    const amount=parseFloat(document.getElementById('depositAmount').value)||0;
+    const percentage=parseFloat(document.getElementById('depositPercentage').value)||0;
+    const minGuests=parseInt(document.getElementById('minGuests').value)||0;
+    const minBill=parseFloat(document.getElementById('minBill').value)||0;
+    const guests=parseInt(document.getElementById('simGuests').value)||0;
+    const bill=parseFloat(document.getElementById('simBill').value)||0;
+    
+    let applies=true;
+    if(minGuests>0&&guests<minGuests)applies=false;
+    if(minBill>0&&bill<minBill)applies=false;
+    
+    let deposit=0;let formula='';
+    if(applies){
+        if(type==='PerPerson'){deposit=amount*guests;formula=amount+'€ × '+guests+' = '+deposit.toFixed(2)+'€';}
+        else if(type==='PercentageOfBill'){deposit=bill*(percentage/100);formula=bill+'€ × '+percentage+'% = '+deposit.toFixed(2)+'€';}
+        else{deposit=amount;formula='Fijo: '+deposit.toFixed(2)+'€';}
+    }else{formula='No aplica';}
+    
+    document.getElementById('simApplies').textContent=applies?'SÍ':'NO';
+    document.getElementById('simApplies').className='px-3 py-1 rounded-full text-xs font-bold '+(applies?'bg-success text-white':'bg-red-500 text-white');
+    document.getElementById('simResult').textContent=deposit.toFixed(2).replace('.',',')+'€';
+    document.getElementById('simFormula').innerHTML='<p class="text-xs text-gray-400 font-mono">'+formula+'</p>';
+}
+
+function togglePriceOverride(){
+    const fields=document.getElementById('priceOverrideFields');
+    const checkbox=document.getElementById('usePriceOverride');
+    if(checkbox.checked){fields.classList.remove('hidden');}else{fields.classList.add('hidden');}
+}
+
+function toggleItemDeposit(){
+    const fields=document.getElementById('itemDepositFields');
+    const checkbox=document.getElementById('useItemDeposit');
+    if(checkbox.checked){fields.classList.remove('hidden');}else{fields.classList.add('hidden');}
+}
+
+document.addEventListener('DOMContentLoaded',()=>{updateSim();});
+</script>
+</body>
+</html>
