@@ -9,6 +9,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+
+  <PropertyGroup>
+    <RootNamespace>ScheDules.UnitTests</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
@@ -28,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Schedulers\Schedulers.csproj" />
+    <ProjectReference Include="..\..\src\Schedules\Schedules.csproj" />
   </ItemGroup>
 
 </Project>

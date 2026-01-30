@@ -19,4 +19,4 @@ global using Microsoft.Extensions.FileProviders;
 global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
-global using Schedulers.Infrastructure;
+global using Schedules.Infrastructure;
