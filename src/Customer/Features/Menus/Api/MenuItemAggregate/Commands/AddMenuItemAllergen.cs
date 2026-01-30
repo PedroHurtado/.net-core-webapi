@@ -45,7 +45,7 @@ public class AddMenuItemAllergen : IFeatureModule
         }
     }
 
-    [Include<Menu>("Allergens")]
+    [Include<MenuItem>("Allergens")]
     public interface IRepository : IUpdate<MenuItem, Guid> { }
 
 }
