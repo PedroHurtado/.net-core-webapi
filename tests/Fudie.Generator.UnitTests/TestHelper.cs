@@ -31,6 +31,8 @@ namespace TestDomain
         public ICollection<Order> Orders { get; set; }
         public List<Payment> Payments { get; set; }
         public HashSet<Notification> Notifications { get; set; }
+        public IReadOnlyCollection<Subscription> Subscriptions { get; set; }
+        public IReadOnlyList<Preference> Preferences { get; set; }
     }
 
     public class Address
@@ -108,6 +110,20 @@ namespace TestDomain
         public Guid Id { get; set; }
         public string Message { get; set; }
         public DateTime SentDate { get; set; }
+    }
+
+    public class Subscription
+    {
+        public Guid Id { get; set; }
+        public string PlanName { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+
+    public class Preference
+    {
+        public Guid Id { get; set; }
+        public string Key { get; set; }
+        public string Value { get; set; }
     }
 }
 ";

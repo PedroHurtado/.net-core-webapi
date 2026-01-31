@@ -227,6 +227,8 @@ internal static class PathValidator
 
             if (genericDefinition == "System.Collections.Generic.ICollection<T>" ||
                 genericDefinition == "System.Collections.Generic.IEnumerable<T>" ||
+                genericDefinition == "System.Collections.Generic.IReadOnlyCollection<T>" ||
+                genericDefinition == "System.Collections.Generic.IReadOnlyList<T>" ||
                 genericDefinition == "System.Collections.Generic.List<T>" ||
                 genericDefinition == "System.Collections.Generic.HashSet<T>" ||
                 genericDefinition == "System.Collections.Generic.IList<T>")
