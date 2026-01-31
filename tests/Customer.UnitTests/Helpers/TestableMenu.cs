@@ -13,4 +13,6 @@ public class TestableMenu : Menu
     public new DateTime? EffectiveFrom { get => base.EffectiveFrom; set => base.EffectiveFrom = value; }
     public new DateTime? EffectiveUntil { get => base.EffectiveUntil; set => base.EffectiveUntil = value; }
     public new DepositPolicy? DepositPolicy { get => base.DepositPolicy; set => base.DepositPolicy = value; }
+
+    public void AddCategoryDirect(MenuCategory category) => _categories.Add(category);
 }
