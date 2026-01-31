@@ -33,7 +33,6 @@ public class AddItemToCategory : IFeatureModule
     [Injectable]
     public class Service(
         Menu.AddItemToCategory addItemToCategory,
-        PriceOption.Create createPriceOption,
         IRepository repository,
         IMenuItemRepository menuItemRepository,
         IUnitOfWork unitOfWork
@@ -44,15 +43,13 @@ public class AddItemToCategory : IFeatureModule
             var menu = await repository.Get(id);
             var menuItem = await menuItemRepository.Get(request.MenuItemId);
 
-            var priceOverrides = request.PriceOverrides?
-                .Select(p => createPriceOption.Execute(new CreatePriceOptionCommand(p.PortionType, p.Price, p.IsActive)))
-                .ToHashSet();
-
             var command = new AddItemToCategoryCommand(
                 CategoryId: categoryId,
                 MenuItem: menuItem,
                 DisplayOrder: request.DisplayOrder,
-                PriceOverrides: priceOverrides
+                PriceOverrides: request.PriceOverrides?
+                    .Select(p => new Domain.MenuAggregate.PriceOptionData(p.PortionType, p.Price, p.IsActive))
+                    .ToArray()
             );
 
             addItemToCategory.Execute(menu, command);

@@ -23,7 +23,7 @@ public class MenuDeactivateTests
         _createPriceOption = new(_priceOptionValidator);
         var createCategoryItem = new CategoryItemVO.Create(_itemValidator);
         var addItem = new MenuCategoryEntity.AddItem(createCategoryItem, _categoryValidator);
-        _addItemToCategory = new(addItem, _menuValidator);
+        _addItemToCategory = new(addItem, _createPriceOption, _menuValidator);
         _deactivate = new(_menuValidator);
         _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }

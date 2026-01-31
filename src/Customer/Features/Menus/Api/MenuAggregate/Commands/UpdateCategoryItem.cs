@@ -32,7 +32,6 @@ public class UpdateCategoryItem : IFeatureModule
     [Injectable]
     public class Service(
         Menu.UpdateCategoryItem updateCategoryItem,
-        PriceOption.Create createPriceOption,
         IRepository repository,
         IUnitOfWork unitOfWork
     ) : IService
@@ -41,15 +40,13 @@ public class UpdateCategoryItem : IFeatureModule
         {
             var menu = await repository.Get(id);
 
-            var priceOverrides = request.PriceOverrides?
-                .Select(p => createPriceOption.Execute(new CreatePriceOptionCommand(p.PortionType, p.Price, p.IsActive)))
-                .ToHashSet();
-
             var command = new UpdateCategoryItemCommand(
                 CategoryId: categoryId,
                 MenuItemId: menuItemId,
                 DisplayOrder: request.DisplayOrder,
-                PriceOverrides: priceOverrides
+                PriceOverrides: request.PriceOverrides?
+                    .Select(p => new Domain.MenuAggregate.UpdatePriceOptionData(p.PortionType, p.Price, p.IsActive))
+                    .ToArray()
             );
 
             updateCategoryItem.Execute(menu, command);

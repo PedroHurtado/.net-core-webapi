@@ -23,9 +23,9 @@ public class MenuUpdateCategoryItemTests
         _createPriceOption = new(_priceOptionValidator);
         var createCategoryItem = new CategoryItemVO.Create(_itemValidator);
         var addItem = new MenuCategoryEntity.AddItem(createCategoryItem, _categoryValidator);
-        _addItemToCategory = new(addItem, _menuValidator);
+        _addItemToCategory = new(addItem, _createPriceOption, _menuValidator);
         var updateItem = new MenuCategoryEntity.UpdateItem(createCategoryItem, _categoryValidator);
-        _updateCategoryItem = new(updateItem, _menuValidator);
+        _updateCategoryItem = new(updateItem, _createPriceOption, _menuValidator);
         _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }
 
@@ -72,9 +72,9 @@ public class MenuUpdateCategoryItemTests
     public void Execute_WithPriceOverrides_UpdatesPriceOverrides()
     {
         var menu = CreateMenuWithCategoryAndItem(out var categoryId, out var menuItem);
-        var priceOverrides = new HashSet<PriceOption>
+        var priceOverrides = new UpdatePriceOptionData[]
         {
-            _createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 25.00m))
+            new(PortionType.Full, 25.00m)
         };
         var command = new UpdateCategoryItemCommand(categoryId, menuItem.Id, DisplayOrder: 0, PriceOverrides: priceOverrides);
 
@@ -89,9 +89,9 @@ public class MenuUpdateCategoryItemTests
     public void Execute_WithNullPriceOverrides_ClearsPriceOverrides()
     {
         var menu = CreateMenuWithCategoryAndItem(out var categoryId, out var menuItem);
-        var priceOverrides = new HashSet<PriceOption>
+        var priceOverrides = new UpdatePriceOptionData[]
         {
-            _createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 25.00m))
+            new(PortionType.Full, 25.00m)
         };
         _updateCategoryItem.Execute(menu, new UpdateCategoryItemCommand(categoryId, menuItem.Id, 0, priceOverrides));
 

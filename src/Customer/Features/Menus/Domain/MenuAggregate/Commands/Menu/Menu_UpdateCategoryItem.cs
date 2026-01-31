@@ -1,17 +1,23 @@
 namespace Customer.Features.Menus.Domain.MenuAggregate;
 
+public record UpdatePriceOptionData(
+    PortionType PortionType,
+    decimal? Price,
+    bool IsActive = true
+);
+
 /// <summary>
 /// Command data for updating an item within a category.
 /// </summary>
 /// <param name="CategoryId">The unique identifier of the category.</param>
 /// <param name="MenuItemId">The unique identifier of the menu item to update.</param>
 /// <param name="DisplayOrder">The new display order within the category.</param>
-/// <param name="PriceOverrides">Optional new price overrides for this category context.</param>
+/// <param name="PriceOverrides">Optional new price overrides data for this category context.</param>
 public record UpdateCategoryItemCommand(
     Guid CategoryId,
     Guid MenuItemId,
     int DisplayOrder,
-    HashSet<PriceOption>? PriceOverrides
+    UpdatePriceOptionData[]? PriceOverrides
 );
 
 public static class UpdateCategoryItemValidationMessages
@@ -39,6 +45,7 @@ public partial class Menu
     [Injectable(ServiceLifetime.Singleton)]
     public class UpdateCategoryItem(
         MenuCategory.UpdateItem updateItem,
+        PriceOption.Create createPriceOption,
         IValidator<Menu> menuValidator
     ) : AbstractModifyCommand<UpdateCategoryItemCommand, Menu>
     {
@@ -56,10 +63,14 @@ public partial class Menu
 
             NotFoundGuard.ThrowIfNull(category, UpdateCategoryItemValidationMessages.CategoryNotFound);
 
+            var priceOverrides = command.PriceOverrides?
+                .Select(p => createPriceOption.Execute(new CreatePriceOptionCommand(p.PortionType, p.Price, p.IsActive)))
+                .ToHashSet();
+
             updateItem.Execute(category!, new UpdateItemCommand(
                 command.MenuItemId,
                 command.DisplayOrder,
-                command.PriceOverrides
+                priceOverrides
             ));
 
             return menuValidator.ValidateOrThrow(menu);

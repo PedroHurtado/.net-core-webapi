@@ -22,7 +22,7 @@ public class MenuAddItemToCategoryTests
         _createPriceOption = new(_priceOptionValidator);
         var createCategoryItem = new CategoryItemVO.Create(_itemValidator);
         var addItem = new MenuCategoryEntity.AddItem(createCategoryItem, _categoryValidator);
-        _addItemToCategory = new(addItem, _menuValidator);
+        _addItemToCategory = new(addItem, _createPriceOption, _menuValidator);
         _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }
 
@@ -70,9 +70,9 @@ public class MenuAddItemToCategoryTests
     {
         var menu = CreateMenuWithCategory(out var categoryId);
         var menuItem = CreateMenuItem();
-        var priceOverrides = new HashSet<PriceOption>
+        var priceOverrides = new PriceOptionData[]
         {
-            _createPriceOption.Execute(new CreatePriceOptionCommand(PortionType.Full, 18.99m))
+            new(PortionType.Full, 18.99m)
         };
         var command = new AddItemToCategoryCommand(categoryId, menuItem, DisplayOrder: 5, PriceOverrides: priceOverrides);
 
