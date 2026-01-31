@@ -34,14 +34,14 @@ public class AddItemToCategory : IFeatureModule
     public class Service(
         Menu.AddItemToCategory addItemToCategory,
         IRepository repository,
-        IMenuItemRepository menuItemRepository,
+        IEntityLookup entityLookup,
         IUnitOfWork unitOfWork
     ) : IService
     {
         public async Task<MenuResponse> HandleAsync(Guid id, Guid categoryId, Request request)
         {
             var menu = await repository.Get(id);
-            var menuItem = await menuItemRepository.Get(request.MenuItemId);
+            var menuItem = await entityLookup.GetRequiredAsync<MenuItem, Guid>(request.MenuItemId);
 
             var command = new AddItemToCategoryCommand(
                 CategoryId: categoryId,
@@ -62,7 +62,4 @@ public class AddItemToCategory : IFeatureModule
 
     [Include<Menu>("Categories.Items.MenuItem")]
     public interface IRepository : IUpdate<Menu, Guid> { }
-
-    [AsNoTracking]
-    public interface IMenuItemRepository : IGet<MenuItem, Guid> { }
 }
