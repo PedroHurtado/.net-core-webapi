@@ -3,21 +3,20 @@ namespace Customer.UnitTests.Features.Menus.Domain.MenuAggregate.Commands.Menu;
 public class MenuUpdateTests
 {
     private readonly MenuValidator _validator = new();
+    private readonly MenuAgg.Create _createMenu;
     private readonly MenuAgg.Update _update;
 
     public MenuUpdateTests()
     {
+        _createMenu = new(_validator);
         _update = new(_validator);
     }
 
-    private static TestableMenu CreateValidMenu() => new(Guid.NewGuid())
-    {
-        TenantId = Guid.NewGuid(),
-        Name = "Original Menu",
-        Description = "Original description",
-        IsActive = true,
-        DisplayOrder = 0
-    };
+    private MenuAgg CreateValidMenu() =>
+        _createMenu.Execute(new CreateMenuCommand(
+            Guid.NewGuid(),
+            "Original Menu",
+            Description: "Original description"));
 
     [Fact]
     public void Execute_WithValidCommand_UpdatesMenu()

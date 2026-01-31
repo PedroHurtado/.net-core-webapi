@@ -4,26 +4,22 @@ public class MenuUpdateCategoryTests
 {
     private readonly MenuValidator _menuValidator = new();
     private readonly MenuCategoryValidator _categoryValidator = new();
+    private readonly MenuAgg.Create _createMenu;
     private readonly MenuAgg.AddCategory _addCategory;
     private readonly MenuAgg.UpdateCategory _updateCategory;
 
     public MenuUpdateCategoryTests()
     {
+        _createMenu = new(_menuValidator);
         var createCategory = new MenuCategoryEntity.Create(_categoryValidator);
         var updateCategoryDetails = new MenuCategoryEntity.Update(_categoryValidator);
         _addCategory = new(createCategory, _menuValidator);
         _updateCategory = new(updateCategoryDetails, _menuValidator);
     }
 
-    private TestableMenu CreateMenuWithCategory(out Guid categoryId)
+    private MenuAgg CreateMenuWithCategory(out Guid categoryId)
     {
-        var menu = new TestableMenu(Guid.NewGuid())
-        {
-            TenantId = Guid.NewGuid(),
-            Name = "Test Menu",
-            IsActive = true,
-            DisplayOrder = 0
-        };
+        var menu = _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
         _addCategory.Execute(menu, new AddCategoryCommand("Appetizers", "Starter dishes", 1));
         categoryId = menu.Categories.First().Id;
         return menu;
