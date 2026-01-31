@@ -5,7 +5,7 @@
 Testea desde el Handler hasta el Repository (mock).
 
 - **Se testea**: Handler, Service, lógica, excepciones
-- **Se mockea**: IRepository, IUnitOfWork
+- **Se mockea**: IRepository, IUnitOfWork, IEntityLookup
 - **Se instancia real**: Comandos de dominio, Validators
 
 ---

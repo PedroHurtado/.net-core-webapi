@@ -15,6 +15,8 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Customer.Features.Menus.Api.AllergenAggregate.Commands;
 global using Customer.Features.Menus.Api.AllergenAggregate.Queries;
 global using Customer.Features.Menus.Api.MenuAggregate;
+global using Customer.Features.Menus.Api.MenuAggregate.Commands;
+global using Customer.Features.Menus.Api.MenuAggregate.Queries;
 global using Customer.Features.Menus.Api.MenuItemAggregate;
 global using Customer.Features.Menus.Api.MenuItemAggregate.Commands;
 global using Customer.Features.Menus.Api.MenuItemAggregate.Queries;
