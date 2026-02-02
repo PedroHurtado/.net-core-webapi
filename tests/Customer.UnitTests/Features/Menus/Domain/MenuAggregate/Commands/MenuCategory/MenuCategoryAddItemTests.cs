@@ -5,28 +5,38 @@ public class MenuCategoryAddItemTests
     private readonly MenuCategoryValidator _categoryValidator = new();
     private readonly CategoryItemValidator _itemValidator = new();
     private readonly PriceOptionValidator _priceOptionValidator = new();
+    private readonly MenuItemValidator _menuItemValidator = new();
+    private readonly MenuCategoryEntity.Create _createCategory;
     private readonly MenuCategoryEntity.AddItem _addItem;
+    private readonly PriceOptionVO.Create _createPriceOption;
+    private readonly MenuItemAgg.Create _createMenuItem;
 
     public MenuCategoryAddItemTests()
     {
+        _createCategory = new(_categoryValidator);
         var createCategoryItem = new CategoryItemVO.Create(_itemValidator);
         _addItem = new(createCategoryItem, _categoryValidator);
+        _createPriceOption = new(_priceOptionValidator);
+        _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }
 
-    private static TestableMenuCategory CreateValidCategory() => new(Guid.NewGuid())
-    {
-        Name = "Appetizers",
-        IsActive = true,
-        DisplayOrder = 0
-    };
+    private MenuCategoryEntity CreateValidCategory() =>
+        _createCategory.Execute(new CreateCategoryCommand("Appetizers"));
 
-    private static MenuItem CreateMenuItem() => new TestableMenuItem(Guid.NewGuid())
-    {
-        TenantId = Guid.NewGuid(),
-        Name = "Caesar Salad",
-        IsActive = true,
-        DisplayOrder = 0
-    };
+    private MenuItem CreateMenuItem(string name = "Caesar Salad") =>
+        _createMenuItem.Execute(new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: name,
+            Description: null,
+            ImageUrl: null,
+            DisplayOrder: 0,
+            IsHighRiskItem: false,
+            RequiresAdvanceOrder: false,
+            MinimumAdvanceOrderQuantity: null,
+            IsAlwaysAvailable: true,
+            AvailableDays: [],
+            AllergenNotes: null,
+            PriceOptions: [new CreatePriceOptionCommand(PortionType.Full, 12.99m)]));
 
     [Fact]
     public void Execute_WithValidCommand_AddsItem()
@@ -67,14 +77,8 @@ public class MenuCategoryAddItemTests
     public void Execute_WithMultipleItems_AddsAllItems()
     {
         var category = CreateValidCategory();
-        var menuItem1 = CreateMenuItem();
-        var menuItem2 = new TestableMenuItem(Guid.NewGuid())
-        {
-            TenantId = Guid.NewGuid(),
-            Name = "Bruschetta",
-            IsActive = true,
-            DisplayOrder = 0
-        };
+        var menuItem1 = CreateMenuItem("Caesar Salad");
+        var menuItem2 = CreateMenuItem("Bruschetta");
 
         _addItem.Execute(category, new AddItemCommand(menuItem1));
         var result = _addItem.Execute(category, new AddItemCommand(menuItem2));

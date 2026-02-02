@@ -4,21 +4,18 @@ public class MenuAddCategoryTests
 {
     private readonly MenuValidator _menuValidator = new();
     private readonly MenuCategoryValidator _categoryValidator = new();
+    private readonly MenuAgg.Create _createMenu;
     private readonly MenuAgg.AddCategory _addCategory;
 
     public MenuAddCategoryTests()
     {
+        _createMenu = new(_menuValidator);
         var createCategory = new MenuCategoryEntity.Create(_categoryValidator);
         _addCategory = new(createCategory, _menuValidator);
     }
 
-    private static TestableMenu CreateValidMenu() => new(Guid.NewGuid())
-    {
-        TenantId = Guid.NewGuid(),
-        Name = "Test Menu",
-        IsActive = true,
-        DisplayOrder = 0
-    };
+    private MenuAgg CreateValidMenu() =>
+        _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
 
     [Fact]
     public void Execute_WithValidCommand_AddsCategory()

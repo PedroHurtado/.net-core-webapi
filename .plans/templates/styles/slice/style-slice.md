@@ -106,6 +106,40 @@ public class Service(IQuery query) : IService
 ```
 No necesita interfaz IRepository, inyecta `IQuery` directamente.
 
+### IEntityLookup (Lookup de entidades secundarias)
+
+Cuando necesitas obtener una entidad de otro agregado (ej: MenuItem dentro de una slice de Menu), usa `IEntityLookup` en lugar de definir un segundo repositorio.
+
+```csharp
+[Injectable]
+public class Service(
+    IRepository repository,
+    IEntityLookup entityLookup,
+    IUnitOfWork unitOfWork
+) : IService
+{
+    public async Task<Response> HandleAsync(Guid id, Request request)
+    {
+        var menu = await repository.Get(id);
+        var menuItem = await entityLookup.GetRequiredAsync<MenuItem, Guid>(request.MenuItemId, tracking: false);
+
+        // ...
+    }
+}
+
+public interface IRepository : IUpdate<Menu, Guid> { }
+```
+
+**Cuándo usar IEntityLookup:**
+- Necesitas una entidad de otro agregado como referencia
+- No necesitas definir un segundo `IRepository`
+- Evita duplicar interfaces de repositorio en la slice
+
+**Parámetros de GetRequiredAsync:**
+- `id`: Identificador de la entidad
+- `tracking`: `false` para solo lectura, `true` si la entidad se modificará
+- `includeProperties`: Navegaciones opcionales a cargar
+
 ---
 
 ## Repository Attributes

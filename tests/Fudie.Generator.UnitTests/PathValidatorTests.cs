@@ -335,6 +335,36 @@ public class PathValidatorTests
         result.SegmentDetails[0].ElementType!.Name.Should().Be("Notification");
     }
 
+    [Fact]
+    public void ValidatePath_WithIReadOnlyCollectionProperty_ShouldDetectAsCollection()
+    {
+        // Arrange
+        var path = "Subscriptions"; // IReadOnlyCollection<Subscription>
+
+        // Act
+        var result = PathValidator.ValidatePath(path, _testData.customerSymbol, _testData.compilation);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.SegmentDetails[0].IsCollection.Should().BeTrue();
+        result.SegmentDetails[0].ElementType!.Name.Should().Be("Subscription");
+    }
+
+    [Fact]
+    public void ValidatePath_WithIReadOnlyListProperty_ShouldDetectAsCollection()
+    {
+        // Arrange
+        var path = "Preferences"; // IReadOnlyList<Preference>
+
+        // Act
+        var result = PathValidator.ValidatePath(path, _testData.customerSymbol, _testData.compilation);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.SegmentDetails[0].IsCollection.Should().BeTrue();
+        result.SegmentDetails[0].ElementType!.Name.Should().Be("Preference");
+    }
+
     #endregion
 
     #region OriginalPath Preservation

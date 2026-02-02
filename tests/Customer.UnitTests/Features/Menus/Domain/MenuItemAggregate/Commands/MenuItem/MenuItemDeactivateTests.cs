@@ -4,48 +4,52 @@ public class MenuItemDeactivateTests
 {
     private readonly MenuItemValidator _validator = new();
     private readonly PriceOptionValidator _priceOptionValidator = new();
-    private readonly PriceOptionVO.Create _priceOptionCreate;
+    private readonly PriceOptionVO.Create _createPriceOption;
+    private readonly MenuItemAgg.Create _createMenuItem;
+    private readonly MenuItemAgg.Activate _activate;
     private readonly MenuItemAgg.Deactivate _deactivate;
 
     public MenuItemDeactivateTests()
     {
-        _priceOptionCreate = new(_priceOptionValidator);
+        _createPriceOption = new(_priceOptionValidator);
+        _createMenuItem = new(_createPriceOption, _validator);
+        _activate = new(_validator);
         _deactivate = new(_validator);
     }
 
-    private TestableMenuItem CreateActiveMenuItem(string name = "Active MenuItem")
+    private MenuItemAgg CreateActiveMenuItem(string name = "Active MenuItem")
     {
-        var menuItem = new TestableMenuItem(Guid.NewGuid())
-        {
-            TenantId = Guid.NewGuid(),
-            Name = name,
-            IsActive = true,
-            IsAvailable = true,
-            IsAlwaysAvailable = true
-        };
-
-        var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m));
-        menuItem.AddPriceOptionDirect(priceOption);
-
+        var menuItem = _createMenuItem.Execute(new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: name,
+            Description: null,
+            ImageUrl: null,
+            DisplayOrder: 0,
+            IsHighRiskItem: false,
+            RequiresAdvanceOrder: false,
+            MinimumAdvanceOrderQuantity: null,
+            IsAlwaysAvailable: true,
+            AvailableDays: [],
+            AllergenNotes: null,
+            PriceOptions: [new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true)]));
+        _activate.Execute(menuItem, new ActivateMenuItemCommand());
         return menuItem;
     }
 
-    private TestableMenuItem CreateInactiveMenuItem(string name = "Inactive MenuItem")
-    {
-        var menuItem = new TestableMenuItem(Guid.NewGuid())
-        {
-            TenantId = Guid.NewGuid(),
-            Name = name,
-            IsActive = false,
-            IsAvailable = true,
-            IsAlwaysAvailable = true
-        };
-
-        var priceOption = _priceOptionCreate.Execute(new CreatePriceOptionCommand(PortionType.Full, 10.99m));
-        menuItem.AddPriceOptionDirect(priceOption);
-
-        return menuItem;
-    }
+    private MenuItemAgg CreateInactiveMenuItem(string name = "Inactive MenuItem") =>
+        _createMenuItem.Execute(new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: name,
+            Description: null,
+            ImageUrl: null,
+            DisplayOrder: 0,
+            IsHighRiskItem: false,
+            RequiresAdvanceOrder: false,
+            MinimumAdvanceOrderQuantity: null,
+            IsAlwaysAvailable: true,
+            AvailableDays: [],
+            AllergenNotes: null,
+            PriceOptions: [new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true)]));
 
     #region Success Tests
 
@@ -77,10 +81,20 @@ public class MenuItemDeactivateTests
     [Fact]
     public void Execute_PreservesOtherProperties()
     {
-        var menuItem = CreateActiveMenuItem();
-        menuItem.Description = "Test Description";
-        menuItem.ImageUrl = "https://example.com/image.jpg";
-        menuItem.DisplayOrder = 5;
+        var menuItem = _createMenuItem.Execute(new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: "Test Item",
+            Description: "Test Description",
+            ImageUrl: "https://example.com/image.jpg",
+            DisplayOrder: 5,
+            IsHighRiskItem: false,
+            RequiresAdvanceOrder: false,
+            MinimumAdvanceOrderQuantity: null,
+            IsAlwaysAvailable: true,
+            AvailableDays: [],
+            AllergenNotes: null,
+            PriceOptions: [new CreatePriceOptionCommand(PortionType.Full, 10.99m, IsActive: true)]));
+        _activate.Execute(menuItem, new ActivateMenuItemCommand());
         var command = new DeactivateMenuItemCommand();
 
         var result = _deactivate.Execute(menuItem, command);

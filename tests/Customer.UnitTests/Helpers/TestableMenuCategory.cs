@@ -9,4 +9,6 @@ public class TestableMenuCategory : MenuCategory
     public new string? Description { get => base.Description; set => base.Description = value; }
     public new int DisplayOrder { get => base.DisplayOrder; set => base.DisplayOrder = value; }
     public new bool IsActive { get => base.IsActive; set => base.IsActive = value; }
+
+    public void AddItemDirect(CategoryItem item) => _items.Add(item);
 }

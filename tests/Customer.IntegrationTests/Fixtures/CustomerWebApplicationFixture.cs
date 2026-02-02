@@ -114,4 +114,79 @@ public class CustomerWebApplicationFixture : IClassFixture<WebApplicationFactory
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<MenuItemResponse>(JsonOptions))!;
     }
+
+    public async Task<MenuResponse> CreateMenuAsync(
+        string name = "Test Menu",
+        string? description = null,
+        DateTime? effectiveFrom = null,
+        DateTime? effectiveUntil = null)
+    {
+        var request = new CreateMenu.Request(
+            Name: name,
+            Description: description,
+            EffectiveFrom: effectiveFrom,
+            EffectiveUntil: effectiveUntil
+        );
+
+        var response = await Client.PostAsJsonAsync("/menus", request);
+
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<MenuResponse>(JsonOptions))!;
+    }
+
+    public async Task<MenuResponse> CreateMenuWithCategoryAsync(
+        string menuName = "Test Menu",
+        string categoryName = "Test Category")
+    {
+        var menu = await CreateMenuAsync(name: menuName);
+
+        var categoryRequest = new AddMenuCategory.Request(
+            Name: categoryName,
+            Description: null,
+            DisplayOrder: 0
+        );
+
+        var response = await Client.PostAsJsonAsync($"/menus/{menu.Id}/categories", categoryRequest);
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<MenuResponse>(JsonOptions))!;
+    }
+
+    public async Task<MenuResponse> CreateMenuWithCategoryAndItemAsync(
+        string menuName = "Test Menu",
+        string categoryName = "Test Category",
+        string menuItemName = "Test Item")
+    {
+        var menuItem = await CreateMenuItemAsync(name: menuItemName);
+        var menu = await CreateMenuWithCategoryAsync(menuName: menuName, categoryName: categoryName);
+
+        var categoryId = menu.Categories.First().Id;
+        var addItemRequest = new AddItemToCategory.Request(
+            MenuItemId: menuItem.Id,
+            DisplayOrder: 0,
+            PriceOverrides: null
+        );
+
+        var response = await Client.PostAsJsonAsync($"/menus/{menu.Id}/categories/{categoryId}/items", addItemRequest);
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<MenuResponse>(JsonOptions))!;
+    }
+
+    public async Task<MenuResponse> CreateActiveMenuAsync(
+        string menuName = "Test Menu",
+        string categoryName = "Test Category",
+        string menuItemName = "Test Item")
+    {
+        var menu = await CreateMenuWithCategoryAndItemAsync(
+            menuName: menuName,
+            categoryName: categoryName,
+            menuItemName: menuItemName
+        );
+
+        var response = await Client.PostAsync($"/menus/{menu.Id}/activate", null);
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<MenuResponse>(JsonOptions))!;
+    }
 }
