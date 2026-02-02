@@ -22,21 +22,24 @@ public class RemoveMenuCategory : IFeatureModule
     public class Service(
         Menu.RemoveCategory removeCategory,
         IRepository repository,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork        
     ) : IService
     {
         public async Task HandleAsync(Guid id, Guid categoryId)
         {
             var menu = await repository.Get(id);
 
+           
             var command = new RemoveCategoryCommand(CategoryId: categoryId);
 
             removeCategory.Execute(menu, command);
+
+           
 
             await unitOfWork.SaveChangesAsync();
         }
     }
 
-    [Include<Menu>("Categories.Items")]
+    [Include<Menu>("Categories.Items.MenuItem")]
     public interface IRepository : IUpdate<Menu, Guid> { }
 }
