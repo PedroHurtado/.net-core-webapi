@@ -1,6 +1,8 @@
 global using FluentAssertions;
 global using FluentValidation;
 
+global using Fudie.Domain;
+
 global using Schedules.Features.Schedules.Domain.ScheduleAggregate;
 global using Schedules.Features.Schedules.Domain.ScheduleAggregate.ValueObjects;
 

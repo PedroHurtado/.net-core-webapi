@@ -270,3 +270,14 @@ var feature = Feature.Create(...);        // NO (método estático)
 - **NO crear factory methods** en Aggregate/Entity
 - **NO modificar estado** fuera de comandos
 - **NO acceder a backing fields** fuera de comandos
+
+
+### Excepciones del dominio
+
+| Guard | Excepción | Cuándo |
+|-------|-----------|--------|
+| ValidationGuard | `ValidationException` | Validación de datos fallida |
+| ConflictGuard | `ConflictException` | Estado inválido (duplicado, ya activo, etc.) |
+| NotFoundGuard | `KeyNotFoundException` | Entidad no encontrada |
+
+Estas son las ÚNICAS excepciones que el dominio lanza. No inventes otras.
