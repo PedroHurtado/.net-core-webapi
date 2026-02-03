@@ -42,7 +42,6 @@ public class CreateMenuTests
 
         response.Should().NotBeNull();
         response.Name.Should().Be("Menú Degustación");
-        response.TenantId.Should().Be(_tenantId);
     }
 
     [Fact]
@@ -66,13 +65,13 @@ public class CreateMenuTests
     }
 
     [Fact]
-    public async Task HandleAsync_CreatesMenuAsActive()
+    public async Task HandleAsync_CreatesMenuAsInactive()
     {
         var request = CreateValidRequest();
 
         var response = await _service.HandleAsync(request);
 
-        response.IsActive.Should().BeTrue();
+        response.IsActive.Should().BeFalse();
     }
 
     [Fact]
@@ -225,10 +224,9 @@ public class CreateMenuTests
         var serviceMock = new Mock<CreateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: Guid.NewGuid(),
-            TenantId: _tenantId,
             Name: "Menú Degustación",
             Description: null,
-            IsActive: true,
+            IsActive: false,
             DisplayOrder: 0,
             EffectiveFrom: null,
             EffectiveUntil: null,
@@ -253,10 +251,9 @@ public class CreateMenuTests
         var serviceMock = new Mock<CreateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: Guid.NewGuid(),
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
-            IsActive: true,
+            IsActive: false,
             DisplayOrder: 0,
             EffectiveFrom: null,
             EffectiveUntil: null,

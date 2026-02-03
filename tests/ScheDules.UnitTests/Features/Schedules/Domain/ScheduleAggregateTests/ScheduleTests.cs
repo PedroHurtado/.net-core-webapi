@@ -107,7 +107,7 @@ public class ScheduleTests
         var specialDate = new TestableSpecialDate(new DateOnly(2025, 12, 25), true, "Navidad", []);
 
         // Act
-        schedule.AddSpecialDate(specialDate);
+        schedule.SetSpecialDate(specialDate);
 
         // Assert
         schedule.HasSpecialDates.Should().BeTrue();
@@ -188,7 +188,7 @@ public class ScheduleTests
         var specialDate = new TestableSpecialDate(new DateOnly(2025, 12, 25), true, "Navidad", []);
 
         // Act
-        schedule.AddSpecialDate(specialDate);
+        schedule.SetSpecialDate(specialDate);
 
         // Assert
         schedule.SpecialDates.Should().BeAssignableTo<IReadOnlyCollection<SpecialDate>>();
@@ -222,8 +222,8 @@ public class ScheduleTests
         var newYear = new TestableSpecialDate(new DateOnly(2025, 1, 1), true, "Año Nuevo", []);
 
         // Act
-        schedule.AddSpecialDate(christmas);
-        schedule.AddSpecialDate(newYear);
+        schedule.SetSpecialDate(christmas);
+        schedule.SetSpecialDate(newYear);
 
         // Assert
         schedule.SpecialDates.Should().HaveCount(2);

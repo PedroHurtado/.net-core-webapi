@@ -351,7 +351,7 @@ public class AddMenuItemAllergenTests
         var request = CreateValidRequest();
         var serviceMock = new Mock<AddMenuItemAllergen.IService>();
         var response = new MenuItemResponse(
-            menuItemId, _tenantId, "Test", null, null, 0, true, true, false, false, null,
+            menuItemId, "Test", null, null, 0, true, true, false, false, null,
             true, null, true, true, false, null, null, [], [], []);
 
         serviceMock.Setup(s => s.HandleAsync(menuItemId, request)).ReturnsAsync(response);
@@ -370,7 +370,7 @@ public class AddMenuItemAllergenTests
         var request = CreateValidRequest();
         var serviceMock = new Mock<AddMenuItemAllergen.IService>();
         var response = new MenuItemResponse(
-            menuItemId, _tenantId, "Test", null, null, 0, true, true, false, false, null,
+            menuItemId, "Test", null, null, 0, true, true, false, false, null,
             true, null, true, true, false, null, null, [], [], []);
 
         serviceMock.Setup(s => s.HandleAsync(It.IsAny<Guid>(), It.IsAny<AddMenuItemAllergen.Request>()))

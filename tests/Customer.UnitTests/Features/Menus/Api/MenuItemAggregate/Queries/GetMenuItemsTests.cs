@@ -249,7 +249,7 @@ public class GetMenuItemsTests
         var serviceMock = new Mock<GetMenuItems.IService>();
         var expectedResponse = new List<MenuItemResponse>
         {
-            new(Guid.NewGuid(), _tenantId, "Test", null, null, 0, true, true, false, false, null,
+            new(Guid.NewGuid(), "Test", null, null, 0, true, true, false, false, null,
                 true, null, true, true, false, null, null, [], [], [])
         };
 

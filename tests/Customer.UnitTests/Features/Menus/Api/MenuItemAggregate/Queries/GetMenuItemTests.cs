@@ -87,7 +87,6 @@ public class GetMenuItemTests
         var response = await _service.HandleAsync(menuItem.Id);
 
         response.Id.Should().Be(menuItem.Id);
-        response.TenantId.Should().Be(_tenantId);
         response.Name.Should().Be("Jamón Ibérico");
         response.Description.Should().Be("Jamón de bellota 100%");
         response.ImageUrl.Should().Be("https://example.com/jamon.jpg");
@@ -231,7 +230,6 @@ public class GetMenuItemTests
         var serviceMock = new Mock<GetMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test Item",
             Description: null,
             ImageUrl: null,
@@ -269,7 +267,6 @@ public class GetMenuItemTests
         var serviceMock = new Mock<GetMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             ImageUrl: null,

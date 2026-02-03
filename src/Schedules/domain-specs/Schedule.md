@@ -615,7 +615,9 @@ public record UpdateScheduleRequest(
 ```
 
 #### Input
-Ninguno
+| Campo | Tipo |
+|-------|------|
+| CurrentActive | ScheDule? |
 
 #### Inyecta
 - `IScheduleRepository`
@@ -633,9 +635,7 @@ Ninguno
 ConflictGuard.ThrowIf(schedule.IsActive, "Schedule is already active");
 ValidationGuard.ThrowIf(!schedule.HasWeeklyHours, "Schedule must have at least one day configured", nameof(schedule.WeeklyHours));
 
-// Desactivar el schedule activo actual (si existe)
-var currentActive = await scheduleRepository.GetActiveAsync();
-if (currentActive != null && currentActive.Id != schedule.Id)
+if (currentActive is not null)
 {
     currentActive.IsActive = false;
 }

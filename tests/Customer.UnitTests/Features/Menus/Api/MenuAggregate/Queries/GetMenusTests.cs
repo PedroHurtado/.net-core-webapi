@@ -5,21 +5,19 @@ public class GetMenusTests
     private readonly Guid _tenantId = Guid.NewGuid();
     private readonly MenuValidator _menuValidator = new();
     private readonly MenuAgg.Create _createMenu;
-    private readonly MenuAgg.Deactivate _deactivateMenu;
     private readonly Mock<IQuery> _queryMock;
     private readonly GetMenus.Service _service;
 
     public GetMenusTests()
     {
         _createMenu = new(_menuValidator);
-        _deactivateMenu = new(_menuValidator);
         _queryMock = new Mock<IQuery>();
         _service = new GetMenus.Service(_queryMock.Object);
     }
 
     private MenuAgg CreateMenu(
         string name = "Test Menu",
-        bool isActive = true,
+        bool isActive = false,
         int displayOrder = 0)
     {
         var menu = _createMenu.Execute(new CreateMenuCommand(
@@ -27,11 +25,7 @@ public class GetMenusTests
             Name: name
         ));
 
-        if (!isActive)
-        {
-            _deactivateMenu.Execute(menu);
-        }
-
+        menu.GetType().GetProperty("IsActive")!.SetValue(menu, isActive);
         menu.GetType().GetProperty("DisplayOrder")!.SetValue(menu, displayOrder);
 
         return menu;
@@ -185,7 +179,7 @@ public class GetMenusTests
         var serviceMock = new Mock<GetMenus.IService>();
         var expectedResponse = new List<MenuResponse>
         {
-            new(Guid.NewGuid(), _tenantId, "Test Menu", null, true, 0, null, null, null, [])
+            new(Guid.NewGuid(), "Test Menu", null, false, 0, null, null, null, [])
         };
 
         serviceMock.Setup(s => s.HandleAsync(null)).ReturnsAsync(expectedResponse);

@@ -11,6 +11,7 @@ public class MenuDeactivateTests
     private readonly MenuAgg.Create _createMenu;
     private readonly MenuAgg.AddCategory _addCategory;
     private readonly MenuAgg.AddItemToCategory _addItemToCategory;
+    private readonly MenuAgg.Activate _activate;
     private readonly MenuAgg.Deactivate _deactivate;
     private readonly PriceOptionVO.Create _createPriceOption;
     private readonly MenuItemAgg.Create _createMenuItem;
@@ -24,6 +25,7 @@ public class MenuDeactivateTests
         var createCategoryItem = new CategoryItemVO.Create(_itemValidator);
         var addItem = new MenuCategoryEntity.AddItem(createCategoryItem, _categoryValidator);
         _addItemToCategory = new(addItem, _createPriceOption, _menuValidator);
+        _activate = new(_menuValidator);
         _deactivate = new(_menuValidator);
         _createMenuItem = new(_createPriceOption, _menuItemValidator);
     }
@@ -46,21 +48,22 @@ public class MenuDeactivateTests
         ));
     }
 
-    private MenuAgg CreateMenuWithCategoryAndItem()
+    private MenuAgg CreateActiveMenuWithCategoryAndItem()
     {
         var menu = _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
         _addCategory.Execute(menu, new AddCategoryCommand("Appetizers"));
         var categoryId = menu.Categories.First().Id;
         var menuItem = CreateMenuItem();
         _addItemToCategory.Execute(menu, new AddItemToCategoryCommand(categoryId, menuItem));
+        _activate.Execute(menu);
         return menu;
     }
 
     [Fact]
     public void Execute_WhenActive_DeactivatesMenu()
     {
-        var menu = CreateMenuWithCategoryAndItem();
-        menu.IsActive.Should().BeTrue(); // Menu.Create sets IsActive = true by default
+        var menu = CreateActiveMenuWithCategoryAndItem();
+        menu.IsActive.Should().BeTrue();
 
         var result = _deactivate.Execute(menu);
 
@@ -72,7 +75,12 @@ public class MenuDeactivateTests
     {
         var menu = _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
         _addCategory.Execute(menu, new AddCategoryCommand("Appetizers"));
-        // Category is empty, but menu is active
+        var menuItem = CreateMenuItem();
+        var categoryId = menu.Categories.First().Id;
+        _addItemToCategory.Execute(menu, new AddItemToCategoryCommand(categoryId, menuItem));
+        _activate.Execute(menu);
+        // Now remove the item to have an empty category but active menu - actually we can't remove items
+        // So we test with a menu that has items but we just verify deactivation works
 
         var result = _deactivate.Execute(menu);
 
@@ -82,10 +90,10 @@ public class MenuDeactivateTests
     [Fact]
     public void Execute_WhenAlreadyInactive_ThrowsConflictException()
     {
-        var menu = CreateMenuWithCategoryAndItem();
-        _deactivate.Execute(menu); // First deactivation
+        var menu = _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
+        // Menu is already inactive by default
 
-        var act = () => _deactivate.Execute(menu); // Second deactivation
+        var act = () => _deactivate.Execute(menu);
 
         act.Should().Throw<ConflictException>()
             .WithMessage(DeactivateValidationMessages.MenuAlreadyInactive);
@@ -94,7 +102,7 @@ public class MenuDeactivateTests
     [Fact]
     public void Execute_PreservesMenuData()
     {
-        var menu = CreateMenuWithCategoryAndItem();
+        var menu = CreateActiveMenuWithCategoryAndItem();
         var originalName = menu.Name;
         var originalCategoriesCount = menu.Categories.Count;
 
@@ -107,13 +115,12 @@ public class MenuDeactivateTests
     [Fact]
     public void Execute_AllowsReactivation()
     {
-        var menu = CreateMenuWithCategoryAndItem();
-        var activate = new MenuAgg.Activate(_menuValidator);
+        var menu = CreateActiveMenuWithCategoryAndItem();
 
         _deactivate.Execute(menu);
         menu.IsActive.Should().BeFalse();
 
-        activate.Execute(menu);
+        _activate.Execute(menu);
         menu.IsActive.Should().BeTrue();
     }
 }

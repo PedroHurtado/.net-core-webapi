@@ -85,7 +85,6 @@ public class DeactivateMenuItemTests
         var response = await _service.HandleAsync(menuItem.Id);
 
         response.Id.Should().Be(menuItem.Id);
-        response.TenantId.Should().Be(_tenantId);
         response.Name.Should().Be("Jamón Ibérico");
         response.Description.Should().Be("Jamón de bellota 100%");
         response.IsActive.Should().BeFalse();
@@ -218,7 +217,6 @@ public class DeactivateMenuItemTests
         var serviceMock = new Mock<DeactivateMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test Item",
             Description: null,
             ImageUrl: null,
@@ -257,7 +255,6 @@ public class DeactivateMenuItemTests
         var serviceMock = new Mock<DeactivateMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             ImageUrl: null,
