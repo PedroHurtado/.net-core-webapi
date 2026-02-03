@@ -42,7 +42,6 @@ public class MenuItemResponseTests
 
         // Assert
         response.Id.Should().Be(menuItem.Id);
-        response.TenantId.Should().Be(menuItem.TenantId);
         response.Name.Should().Be("Pulpo al Horno");
         response.Description.Should().Be("Pulpo gallego con pimentón");
         response.ImageUrl.Should().Be("https://example.com/pulpo.jpg");

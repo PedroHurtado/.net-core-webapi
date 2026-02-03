@@ -4,16 +4,30 @@ public class DeactivateMenuTests
 {
     private readonly Guid _tenantId = Guid.NewGuid();
     private readonly MenuValidator _menuValidator = new();
+    private readonly MenuCategoryValidator _categoryValidator = new();
+    private readonly CategoryItemValidator _categoryItemValidator = new();
+    private readonly PriceOptionValidator _priceOptionValidator = new();
     private readonly MenuAgg.Create _createMenu;
+    private readonly MenuAgg.Activate _activateMenu;
     private readonly MenuAgg.Deactivate _deactivateMenu;
+    private readonly MenuAgg.AddCategory _addCategory;
+    private readonly MenuAgg.AddItemToCategory _addItemToCategory;
     private readonly Mock<DeactivateMenu.IRepository> _repositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly DeactivateMenu.Service _service;
 
     public DeactivateMenuTests()
     {
+        var createCategory = new MenuCategoryEntity.Create(_categoryValidator);
+        var createCategoryItem = new CategoryItemVO.Create(_categoryItemValidator);
+        var addItem = new MenuCategoryEntity.AddItem(createCategoryItem, _categoryValidator);
+        var createPriceOption = new PriceOptionVO.Create(_priceOptionValidator);
+
         _createMenu = new(_menuValidator);
+        _activateMenu = new(_menuValidator);
         _deactivateMenu = new(_menuValidator);
+        _addCategory = new(createCategory, _menuValidator);
+        _addItemToCategory = new(addItem, createPriceOption, _menuValidator);
 
         _repositoryMock = new Mock<DeactivateMenu.IRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
@@ -22,20 +36,47 @@ public class DeactivateMenuTests
 
     private MenuAgg CreateActiveMenu()
     {
-        return _createMenu.Execute(new CreateMenuCommand(
+        var menu = _createMenu.Execute(new CreateMenuCommand(
             TenantId: _tenantId,
             Name: "Active Menu"
         ));
+        _addCategory.Execute(menu, new AddCategoryCommand("Category"));
+        var menuItem = CreateMenuItem();
+        var categoryId = menu.Categories.First().Id;
+        _addItemToCategory.Execute(menu, new AddItemToCategoryCommand(categoryId, menuItem));
+        _activateMenu.Execute(menu);
+        return menu;
     }
 
     private MenuAgg CreateInactiveMenu()
     {
-        var menu = _createMenu.Execute(new CreateMenuCommand(
+        return _createMenu.Execute(new CreateMenuCommand(
             TenantId: _tenantId,
             Name: "Inactive Menu"
         ));
-        _deactivateMenu.Execute(menu);
-        return menu;
+    }
+
+    private static MenuItemAgg CreateMenuItem()
+    {
+        var validator = new MenuItemValidator();
+        var priceOptionValidator = new PriceOptionValidator();
+        var createPriceOption = new PriceOptionVO.Create(priceOptionValidator);
+        var create = new MenuItemAgg.Create(createPriceOption, validator);
+
+        return create.Execute(new CreateMenuItemCommand(
+            TenantId: Guid.NewGuid(),
+            Name: "Test Item",
+            Description: null,
+            ImageUrl: null,
+            DisplayOrder: 0,
+            IsHighRiskItem: false,
+            RequiresAdvanceOrder: false,
+            MinimumAdvanceOrderQuantity: null,
+            IsAlwaysAvailable: true,
+            AvailableDays: [],
+            AllergenNotes: null,
+            PriceOptions: [new CreatePriceOptionCommand(PortionType.Full, 10.00m)]
+        ));
     }
 
     #region HandleAsync Success Tests
@@ -145,7 +186,6 @@ public class DeactivateMenuTests
         var serviceMock = new Mock<DeactivateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test Menu",
             Description: null,
             IsActive: false,
@@ -172,7 +212,6 @@ public class DeactivateMenuTests
         var serviceMock = new Mock<DeactivateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             IsActive: false,

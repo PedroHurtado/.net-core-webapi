@@ -2,7 +2,6 @@ namespace Customer.Features.Menus.Api.MenuAggregate;
 
 public record MenuResponse(
     Guid Id,
-    Guid TenantId,
     string Name,
     string? Description,
     bool IsActive,
@@ -14,7 +13,6 @@ public record MenuResponse(
 {
     public static MenuResponse Map(Menu menu) => new(
         Id: menu.Id,
-        TenantId: menu.TenantId,
         Name: menu.Name,
         Description: menu.Description,
         IsActive: menu.IsActive,

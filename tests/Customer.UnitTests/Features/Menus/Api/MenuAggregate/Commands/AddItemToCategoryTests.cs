@@ -298,10 +298,9 @@ public class AddItemToCategoryTests
         var serviceMock = new Mock<AddItemToCategory.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test Menu",
             Description: null,
-            IsActive: true,
+            IsActive: false,
             DisplayOrder: 0,
             EffectiveFrom: null,
             EffectiveUntil: null,
@@ -328,10 +327,9 @@ public class AddItemToCategoryTests
         var serviceMock = new Mock<AddItemToCategory.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
-            IsActive: true,
+            IsActive: false,
             DisplayOrder: 0,
             EffectiveFrom: null,
             EffectiveUntil: null,

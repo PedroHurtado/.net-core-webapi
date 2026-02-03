@@ -28,7 +28,6 @@ public class MenuResponseTests
         var response = MenuResponse.Map(menu);
 
         response.Id.Should().Be(menuId);
-        response.TenantId.Should().Be(tenantId);
         response.Name.Should().Be("Lunch Menu");
         response.Description.Should().Be("Daily specials");
         response.IsActive.Should().BeTrue();

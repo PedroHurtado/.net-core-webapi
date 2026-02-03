@@ -9,7 +9,6 @@ public class ActivateMenuTests
     private readonly PriceOptionValidator _priceOptionValidator = new();
     private readonly MenuAgg.Create _createMenu;
     private readonly MenuAgg.Activate _activateMenu;
-    private readonly MenuAgg.Deactivate _deactivateMenu;
     private readonly MenuAgg.AddCategory _addCategory;
     private readonly MenuAgg.AddItemToCategory _addItemToCategory;
     private readonly Mock<ActivateMenu.IRepository> _repositoryMock;
@@ -25,7 +24,6 @@ public class ActivateMenuTests
 
         _createMenu = new(_menuValidator);
         _activateMenu = new(_menuValidator);
-        _deactivateMenu = new(_menuValidator);
         _addCategory = new(createCategory, _menuValidator);
         _addItemToCategory = new(addItem, createPriceOption, _menuValidator);
 
@@ -41,8 +39,6 @@ public class ActivateMenuTests
             Name: "Test Menu"
         ));
 
-        _deactivateMenu.Execute(menu);
-
         _addCategory.Execute(menu, new AddCategoryCommand("Entrantes"));
 
         var menuItem = CreateMenuItem();
@@ -54,14 +50,10 @@ public class ActivateMenuTests
 
     private MenuAgg CreateInactiveMenuWithoutCategories()
     {
-        var menu = _createMenu.Execute(new CreateMenuCommand(
+        return _createMenu.Execute(new CreateMenuCommand(
             TenantId: _tenantId,
             Name: "Empty Menu"
         ));
-
-        _deactivateMenu.Execute(menu);
-
-        return menu;
     }
 
     private MenuAgg CreateInactiveMenuWithEmptyCategory()
@@ -71,7 +63,6 @@ public class ActivateMenuTests
             Name: "Menu with Empty Category"
         ));
 
-        _deactivateMenu.Execute(menu);
         _addCategory.Execute(menu, new AddCategoryCommand("Empty Category"));
 
         return menu;
@@ -238,7 +229,6 @@ public class ActivateMenuTests
         var serviceMock = new Mock<ActivateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test Menu",
             Description: null,
             IsActive: true,
@@ -265,7 +255,6 @@ public class ActivateMenuTests
         var serviceMock = new Mock<ActivateMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             IsActive: true,

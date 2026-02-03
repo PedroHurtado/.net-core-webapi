@@ -59,7 +59,6 @@ public class CreateMenuItemTests
 
         response.Should().NotBeNull();
         response.Name.Should().Be("Pulpo al Horno");
-        response.TenantId.Should().Be(_tenantId);
     }
 
     [Fact]
@@ -336,7 +335,6 @@ public class CreateMenuItemTests
         var serviceMock = new Mock<CreateMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: Guid.NewGuid(),
-            TenantId: _tenantId,
             Name: "Pulpo al Horno",
             Description: null,
             ImageUrl: null,
@@ -375,7 +373,6 @@ public class CreateMenuItemTests
         var serviceMock = new Mock<CreateMenuItem.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: Guid.NewGuid(),
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             ImageUrl: null,

@@ -61,7 +61,6 @@ public class GetMenuTests
         var response = await _service.HandleAsync(menu.Id);
 
         response.Id.Should().Be(menu.Id);
-        response.TenantId.Should().Be(_tenantId);
         response.Name.Should().Be("Menú Navideño");
         response.Description.Should().Be("Menú especial para las fiestas");
         response.EffectiveFrom.Should().Be(effectiveFrom);
@@ -94,7 +93,7 @@ public class GetMenuTests
 
         var response = await _service.HandleAsync(menu.Id);
 
-        response.IsActive.Should().BeTrue();
+        response.IsActive.Should().BeFalse();
         response.DisplayOrder.Should().Be(0);
         response.Categories.Should().BeEmpty();
         response.DepositPolicy.Should().BeNull();
@@ -167,7 +166,6 @@ public class GetMenuTests
         var serviceMock = new Mock<GetMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test Menu",
             Description: null,
             IsActive: true,
@@ -194,7 +192,6 @@ public class GetMenuTests
         var serviceMock = new Mock<GetMenu.IService>();
         var expectedResponse = new MenuResponse(
             Id: menuId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             IsActive: true,

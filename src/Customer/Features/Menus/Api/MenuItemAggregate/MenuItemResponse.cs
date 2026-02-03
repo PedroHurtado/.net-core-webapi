@@ -2,7 +2,6 @@ namespace Customer.Features.Menus.Api.MenuItemAggregate;
 
 public record MenuItemResponse(
     Guid Id,
-    Guid TenantId,
     string Name,
     string? Description,
     string? ImageUrl,
@@ -25,7 +24,6 @@ public record MenuItemResponse(
 {
     public static MenuItemResponse Map(MenuItem menuItem) => new(
         Id: menuItem.Id,
-        TenantId: menuItem.TenantId,
         Name: menuItem.Name,
         Description: menuItem.Description,
         ImageUrl: menuItem.ImageUrl,

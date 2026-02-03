@@ -89,7 +89,6 @@ public class MarkMenuItemAsAvailableTests
         var response = await _service.HandleAsync(menuItem.Id);
 
         response.Id.Should().Be(menuItem.Id);
-        response.TenantId.Should().Be(_tenantId);
         response.Name.Should().Be("Jamón Ibérico");
         response.Description.Should().Be("Jamón de bellota 100%");
         response.IsAvailable.Should().BeTrue();
@@ -233,7 +232,6 @@ public class MarkMenuItemAsAvailableTests
         var serviceMock = new Mock<MarkMenuItemAsAvailable.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test Item",
             Description: null,
             ImageUrl: null,
@@ -272,7 +270,6 @@ public class MarkMenuItemAsAvailableTests
         var serviceMock = new Mock<MarkMenuItemAsAvailable.IService>();
         var expectedResponse = new MenuItemResponse(
             Id: menuItemId,
-            TenantId: _tenantId,
             Name: "Test",
             Description: null,
             ImageUrl: null,

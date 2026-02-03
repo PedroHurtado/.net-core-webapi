@@ -60,11 +60,7 @@ public class MenuActivateTests
     public void Execute_WithCategoriesAndItems_ActivatesMenu()
     {
         var menu = CreateMenuWithCategoryAndItem();
-        menu.IsActive.Should().BeTrue(); // Menu.Create sets IsActive = true by default
-
-        // First deactivate to test activation
-        var deactivate = new MenuAgg.Deactivate(_menuValidator);
-        deactivate.Execute(menu);
+        menu.IsActive.Should().BeFalse(); // Menu.Create sets IsActive = false by default
 
         var result = _activate.Execute(menu);
 
@@ -81,10 +77,6 @@ public class MenuActivateTests
         var menuItem = CreateMenuItem();
         _addItemToCategory.Execute(menu, new AddItemToCategoryCommand(categoryId, menuItem));
 
-        // Deactivate first
-        var deactivate = new MenuAgg.Deactivate(_menuValidator);
-        deactivate.Execute(menu);
-
         var result = _activate.Execute(menu);
 
         result.IsActive.Should().BeTrue();
@@ -94,9 +86,9 @@ public class MenuActivateTests
     public void Execute_WhenAlreadyActive_ThrowsConflictException()
     {
         var menu = CreateMenuWithCategoryAndItem();
-        // Menu is already active by default
+        _activate.Execute(menu); // First activate the menu
 
-        var act = () => _activate.Execute(menu);
+        var act = () => _activate.Execute(menu); // Try to activate again
 
         act.Should().Throw<ConflictException>()
             .WithMessage(ActivateValidationMessages.MenuAlreadyActive);
@@ -106,10 +98,6 @@ public class MenuActivateTests
     public void Execute_WithNoCategories_ThrowsValidationException()
     {
         var menu = _createMenu.Execute(new CreateMenuCommand(Guid.NewGuid(), "Test Menu"));
-
-        // Deactivate first
-        var deactivate = new MenuAgg.Deactivate(_menuValidator);
-        deactivate.Execute(menu);
 
         var act = () => _activate.Execute(menu);
 
@@ -124,10 +112,6 @@ public class MenuActivateTests
         _addCategory.Execute(menu, new AddCategoryCommand("Appetizers"));
         _addCategory.Execute(menu, new AddCategoryCommand("Desserts"));
         // Both categories are empty
-
-        // Deactivate first
-        var deactivate = new MenuAgg.Deactivate(_menuValidator);
-        deactivate.Execute(menu);
 
         var act = () => _activate.Execute(menu);
 

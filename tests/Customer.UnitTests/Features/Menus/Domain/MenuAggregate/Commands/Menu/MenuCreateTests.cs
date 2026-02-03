@@ -23,7 +23,7 @@ public class MenuCreateTests
         result.TenantId.Should().Be(tenantId);
         result.Name.Should().Be("Lunch Menu");
         result.Description.Should().BeNull();
-        result.IsActive.Should().BeTrue();
+        result.IsActive.Should().BeFalse();
         result.DisplayOrder.Should().Be(0);
         result.EffectiveFrom.Should().BeNull();
         result.EffectiveUntil.Should().BeNull();
