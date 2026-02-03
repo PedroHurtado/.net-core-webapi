@@ -26,5 +26,6 @@ global using Schedules.Features.Schedules.Domain.ScheduleAggregate.ValueObjects;
 
 global using Schedules.Features.Schedules.Api.ScheduleAggregate;
 
+global using Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate;
 global using Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate.Enums;
 global using Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate.ValueObjects;
