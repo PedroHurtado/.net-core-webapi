@@ -1041,7 +1041,6 @@ components:
       type: object
       required:
         - id
-        - tenantId
         - name
         - description
         - isActive
@@ -1055,10 +1054,6 @@ components:
           type: string
           format: uuid
           example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
-        tenantId:
-          type: string
-          format: uuid
-          example: tenant-001-guid
         name:
           type: string
           maxLength: 100
