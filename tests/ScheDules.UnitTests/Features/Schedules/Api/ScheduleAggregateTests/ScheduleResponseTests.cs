@@ -1,4 +1,4 @@
-namespace Schedules.UnitTests.Features.Schedules.Api.ScheduleAggregate;
+namespace Schedules.UnitTests.Features.Schedules.Api.ScheduleAggregateTests;
 
 public class ScheduleResponseTests
 {
@@ -75,7 +75,7 @@ public class ScheduleResponseTests
             true,
             "Christmas",
             new List<TimeSlot>().AsReadOnly());
-        schedule.AddSpecialDate(specialDate);
+        schedule.SetSpecialDate(specialDate);
 
         var response = ScheduleResponse.Map(schedule);
 

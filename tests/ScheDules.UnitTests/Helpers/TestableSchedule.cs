@@ -10,5 +10,5 @@ public class TestableSchedule : Schedule
     public void SetIsActive(bool isActive) => IsActive = isActive;
 
     public void AddWeeklyHours(DayOfWeek day, DaySchedule schedule) => _weeklyHours[day] = schedule;
-    public void AddSpecialDate(SpecialDate specialDate) => _specialDates.Add(specialDate);
+    public void SetSpecialDate(SpecialDate specialDate) => _specialDates.Add(specialDate);
 }
