@@ -16,7 +16,7 @@ public partial class Schedule
             var existing = schedule.SpecialDates.FirstOrDefault(sd => sd.Date == command.Date);
             NotFoundGuard.ThrowIfNull(existing, $"Special date for '{command.Date}' not found");
 
-            schedule._specialDates.Remove(existing);
+            schedule._specialDates.Remove(existing!);
 
             return scheduleValidator.ValidateOrThrow(schedule);
         }

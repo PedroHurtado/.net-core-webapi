@@ -26,7 +26,7 @@ public partial class Schedule
                 command.Reason,
                 command.TimeSlots));
 
-            schedule._specialDates.Remove(existing);
+            schedule._specialDates.Remove(existing!);
             schedule._specialDates.Add(updated);
 
             return scheduleValidator.ValidateOrThrow(schedule);
