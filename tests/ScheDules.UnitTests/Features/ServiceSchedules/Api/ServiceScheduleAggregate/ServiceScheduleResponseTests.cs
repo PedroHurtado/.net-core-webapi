@@ -51,7 +51,7 @@ public class ServiceScheduleResponseTests
             true,
             new TimeOnly(13, 0),
             new TimeOnly(16, 0));
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var response = ServiceScheduleResponse.Map(schedule);
 

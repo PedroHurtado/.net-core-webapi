@@ -22,6 +22,8 @@ builder.Services.AddDbContext<SchedulersDbContext>((sp, options) =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddSingleton(TimeProvider.System);
+
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Singleton);
 builder.Services.AddInjectables();
 
