@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -29,6 +29,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.IntegrationTests", "tests\Customer.IntegrationTests\Customer.IntegrationTests.csproj", "{F41C59B0-B10C-482B-BA8E-4FB90146BC1C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plan.IntegrationTests", "tests\Plan.IntegrationTests\Plan.IntegrationTests.csproj", "{D9265D65-E91C-48D3-B949-AAC2368A44D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schedules.IntegrationTests", "tests\Schedules.IntegrationTests\Schedules.IntegrationTests.csproj", "{946E4391-7466-40DF-8D70-340E1499A4C7}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
@@ -190,6 +192,18 @@ Global
 		{D9265D65-E91C-48D3-B949-AAC2368A44D1}.Release|x64.Build.0 = Release|Any CPU
 		{D9265D65-E91C-48D3-B949-AAC2368A44D1}.Release|x86.ActiveCfg = Release|Any CPU
 		{D9265D65-E91C-48D3-B949-AAC2368A44D1}.Release|x86.Build.0 = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Debug|x86.Build.0 = Debug|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|x64.Build.0 = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|x86.ActiveCfg = Release|Any CPU
+		{946E4391-7466-40DF-8D70-340E1499A4C7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{33A4980E-0BC7-4799-ABA1-5A409960493B} = {6D389B04-8258-4988-A41A-C10B7DFD4E79}
@@ -204,5 +218,6 @@ Global
 		{5A19BAC1-4EF1-4FB4-BEEB-F46620560387} = {F69ADE3C-9C9E-4B05-A95B-B7008A3DF839}
 		{F41C59B0-B10C-482B-BA8E-4FB90146BC1C} = {F69ADE3C-9C9E-4B05-A95B-B7008A3DF839}
 		{D9265D65-E91C-48D3-B949-AAC2368A44D1} = {F69ADE3C-9C9E-4B05-A95B-B7008A3DF839}
+		{946E4391-7466-40DF-8D70-340E1499A4C7} = {F69ADE3C-9C9E-4B05-A95B-B7008A3DF839}
 	EndGlobalSection
 EndGlobal
