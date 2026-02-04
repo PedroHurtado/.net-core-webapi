@@ -10,7 +10,7 @@ public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
         modelBuilder.Entity<Schedule>(entity =>
         {
@@ -19,17 +19,16 @@ public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, 
             entity.Ignore(s => s.HasWeeklyHours);
             entity.Ignore(s => s.HasSpecialDates);
             entity.Ignore(s => s.IsFullyConfigured);
+            
+            entity.MapOf(s => s.WeeklyHours, daySchedule =>
+            {
+                daySchedule.Ignore(ds => ds.TotalOpenHours);
 
-            // TODO: Implementar MapOf en Fudie.Firestore
-            // entity.MapOf(s => s.WeeklyHours, daySchedule =>
-            // {
-            //     daySchedule.Ignore(ds => ds.TotalOpenHours);
-            //
-            //     daySchedule.ArrayOf(ds => ds.TimeSlots, timeSlot =>
-            //     {
-            //         timeSlot.Ignore(ts => ts.Duration);
-            //     });
-            // });
+                daySchedule.ArrayOf(ds => ds.TimeSlots, timeSlot =>
+                {
+                    timeSlot.Ignore(ts => ts.Duration);
+                });
+            });
 
             entity.ArrayOf(s => s.SpecialDates, specialDate =>
             {

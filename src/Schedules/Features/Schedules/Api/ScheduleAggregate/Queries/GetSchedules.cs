@@ -23,10 +23,11 @@ public class GetSchedules : IFeatureModule
     {
         public async Task<List<ScheduleResponse>> HandleAsync()
         {
-            return await query.Query<Schedule>()
-                .OrderBy(s => s.Name)
-                .Select(s => ScheduleResponse.Map(s))
+            var schedules =  await query.Query<Schedule>()
+                .OrderBy(s => s.Name)                
                 .ToListAsync();
+
+             return [.. schedules.Select(ScheduleResponse.Map)];
         }
     }
 }
