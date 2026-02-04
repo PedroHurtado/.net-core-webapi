@@ -58,7 +58,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
 
         // Act
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         // Assert
         schedule.Services.Should().BeAssignableTo<IReadOnlyCollection<Service>>();
@@ -75,9 +75,9 @@ public class ServiceScheduleTests
         var dinner = new TestableService(ServiceType.Dinner, 40);
 
         // Act
-        schedule.AddService(breakfast);
-        schedule.AddService(lunch);
-        schedule.AddService(dinner);
+        schedule.AddServiceDirectly(breakfast);
+        schedule.AddServiceDirectly(lunch);
+        schedule.AddServiceDirectly(dinner);
 
         // Assert
         schedule.Services.Should().HaveCount(3);
@@ -98,7 +98,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
 
         // Act
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         // Assert
         schedule.HasServices.Should().BeTrue();
@@ -123,8 +123,8 @@ public class ServiceScheduleTests
         var lunch = new TestableService(ServiceType.Lunch, 50);
 
         // Act
-        schedule.AddService(breakfast);
-        schedule.AddService(lunch);
+        schedule.AddServiceDirectly(breakfast);
+        schedule.AddServiceDirectly(lunch);
 
         // Assert
         schedule.ServiceCount.Should().Be(2);
@@ -139,8 +139,8 @@ public class ServiceScheduleTests
         var dinner = new TestableService(ServiceType.Dinner, 40);
 
         // Act
-        schedule.AddService(breakfast);
-        schedule.AddService(dinner);
+        schedule.AddServiceDirectly(breakfast);
+        schedule.AddServiceDirectly(dinner);
 
         // Assert
         schedule.AvailableServiceTypes.Should().HaveCount(2);
@@ -174,7 +174,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(true, new TimeOnly(12, 0), new TimeOnly(15, 0), null);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var monday = new DateOnly(2025, 1, 13); // Monday
 
@@ -208,7 +208,7 @@ public class ServiceScheduleTests
             "Extended hours");
         service.SpecialDatesInternal.Add(specialDateConfig);
         
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         // Act
         var config = schedule.GetServiceConfigForDate(ServiceType.Lunch, specialDate);
@@ -229,7 +229,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(true, new TimeOnly(12, 0), new TimeOnly(15, 0), null);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var tuesday = new DateOnly(2025, 1, 14); // Tuesday
 
@@ -266,7 +266,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(true, new TimeOnly(12, 0), new TimeOnly(15, 0), null);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var monday = new DateOnly(2025, 1, 13); // Monday
 
@@ -285,7 +285,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(false, null, null, null);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var monday = new DateOnly(2025, 1, 13); // Monday
 
@@ -322,7 +322,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(true, new TimeOnly(12, 0), new TimeOnly(15, 0), null);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var monday = new DateOnly(2025, 1, 13); // Monday
 
@@ -341,7 +341,7 @@ public class ServiceScheduleTests
         var service = new TestableService(ServiceType.Lunch, 50);
         var weeklyConfig = new TestableServiceDayConfig(true, new TimeOnly(12, 0), new TimeOnly(15, 0), 75);
         service.WeeklyScheduleInternal[DayOfWeek.Monday] = weeklyConfig;
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         var monday = new DateOnly(2025, 1, 13); // Monday
 
@@ -372,7 +372,7 @@ public class ServiceScheduleTests
             "Extended capacity");
         service.SpecialDatesInternal.Add(specialDateConfig);
         
-        schedule.AddService(service);
+        schedule.AddServiceDirectly(service);
 
         // Act
         var capacity = schedule.GetServiceCapacityFor(ServiceType.Lunch, specialDate);

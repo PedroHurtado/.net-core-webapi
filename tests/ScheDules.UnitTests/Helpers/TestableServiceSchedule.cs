@@ -16,7 +16,7 @@ public class TestableServiceSchedule : ServiceSchedule
         set => _services = value;
     }
 
-    public void AddService(Service service)
+    public void AddServiceDirectly(Service service)
     {
         _services.Add(service);
     }
