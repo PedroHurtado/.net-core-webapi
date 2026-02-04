@@ -19,8 +19,7 @@ public class ServiceSchedule_ConfigureServiceDayTests
         var serviceCreate = new Service.Create(serviceDayConfigCreate, _serviceValidator);
         _addService = new ServiceSchedule.AddService(serviceCreate, _scheduleValidator);
 
-        var serviceConfigureDay = new Service.ConfigureDay(_serviceValidator);
-        _configureServiceDay = new ServiceSchedule.ConfigureServiceDay(serviceDayConfigCreate, serviceConfigureDay, _scheduleValidator);
+        _configureServiceDay = new ServiceSchedule.ConfigureServiceDay(serviceCreate, _scheduleValidator);
     }
 
     private ServiceSchedule CreateSchedule() => _create.Execute(new CreateServiceScheduleCommand(

@@ -22,10 +22,18 @@ public static class DomainCommandsExtension
 
         foreach (var type in types)
         {
-            if (IsSubclassOfGeneric(type, typeof(AbstractValidator<>)) ||
-                IsSubclassOfGeneric(type, typeof(AbstractCreateCommand<,>)) ||
-                IsSubclassOfGeneric(type, typeof(AbstractModifyCommand<>)) ||
-                IsSubclassOfGeneric(type, typeof(AbstractModifyCommand<,>)))
+            if (IsSubclassOfGeneric(type, typeof(AbstractValidator<>)))
+            {
+                services.AddSingleton(type);
+                var validatorInterface = GetValidatorInterface(type);
+                if (validatorInterface is not null)
+                {
+                    services.AddSingleton(validatorInterface, sp => sp.GetRequiredService(type));
+                }
+            }
+            else if (IsSubclassOfGeneric(type, typeof(AbstractCreateCommand<,>)) ||
+                     IsSubclassOfGeneric(type, typeof(AbstractModifyCommand<>)) ||
+                     IsSubclassOfGeneric(type, typeof(AbstractModifyCommand<,>)))
             {
                 services.AddSingleton(type);
             }
@@ -46,5 +54,12 @@ public static class DomainCommandsExtension
             current = current.BaseType;
         }
         return false;
+    }
+
+    private static Type? GetValidatorInterface(Type validatorType)
+    {
+        return validatorType
+            .GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IValidator<>));
     }
 }

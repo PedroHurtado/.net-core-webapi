@@ -22,11 +22,8 @@ public class ServiceSchedule_RemoveSpecialDateTests
         _addService = new ServiceSchedule.AddService(serviceCreate, _scheduleValidator);
 
         var specialDateCreate = new ServiceSpecialDate.Create(_specialDateValidator);
-        var serviceAddSpecialDate = new Service.AddSpecialDate(_serviceValidator);
-        _addSpecialDate = new ServiceSchedule.AddSpecialDate(specialDateCreate, serviceAddSpecialDate, _scheduleValidator);
-
-        var serviceRemoveSpecialDate = new Service.RemoveSpecialDate(_serviceValidator);
-        _removeSpecialDate = new ServiceSchedule.RemoveSpecialDate(serviceRemoveSpecialDate, _scheduleValidator);
+        _addSpecialDate = new ServiceSchedule.AddSpecialDate(serviceCreate, specialDateCreate, _scheduleValidator);
+        _removeSpecialDate = new ServiceSchedule.RemoveSpecialDate(serviceCreate, _scheduleValidator);
     }
 
     private ServiceSchedule CreateSchedule() => _create.Execute(new CreateServiceScheduleCommand(

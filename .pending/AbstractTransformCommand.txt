@@ -1,0 +1,12 @@
+public abstract class AbstractTransformCommand<TCommand, TValueObject>
+    where TCommand : class
+    where TValueObject : class
+{
+    public abstract TValueObject Execute(TValueObject current, TCommand command);
+}
+
+public abstract class AbstractTransformCommand<TValueObject>
+    where TValueObject : class
+{
+    public abstract TValueObject Execute(TValueObject current);
+}

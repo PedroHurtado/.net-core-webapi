@@ -10,7 +10,6 @@ public class AddServiceScheduleSpecialDateTests
     private readonly ServiceDayConfig.Create _createServiceDayConfig;
     private readonly Service.Create _createService;
     private readonly ServiceSpecialDate.Create _createServiceSpecialDate;
-    private readonly Service.AddSpecialDate _serviceAddSpecialDate;
     private readonly ReservationPolicy.Create _createReservationPolicy;
     private readonly ServiceSchedule.Create _createServiceSchedule;
     private readonly ServiceSchedule.AddService _addService;
@@ -24,11 +23,10 @@ public class AddServiceScheduleSpecialDateTests
         _createServiceDayConfig = new(_serviceDayConfigValidator);
         _createService = new(_createServiceDayConfig, _serviceValidator);
         _createServiceSpecialDate = new(_serviceSpecialDateValidator);
-        _serviceAddSpecialDate = new(_serviceValidator);
         _createReservationPolicy = new(_reservationPolicyValidator);
         _createServiceSchedule = new(_createReservationPolicy, _serviceScheduleValidator);
         _addService = new(_createService, _serviceScheduleValidator);
-        _addSpecialDate = new(_createServiceSpecialDate, _serviceAddSpecialDate, _serviceScheduleValidator);
+        _addSpecialDate = new(_createService, _createServiceSpecialDate, _serviceScheduleValidator);
         _repositoryMock = new Mock<AddServiceScheduleSpecialDate.IRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _service = new AddServiceScheduleSpecialDate.Service(

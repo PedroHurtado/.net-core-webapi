@@ -11,7 +11,6 @@ public partial class ServiceSchedule
     [Injectable(ServiceLifetime.Singleton)]
     public class UpdateService(
         Service.Create serviceCreate,
-        Service.AddSpecialDate serviceAddSpecialDate,
         IValidator<ServiceSchedule> serviceScheduleValidator
     ) : AbstractModifyCommand<UpdateServiceCommand, ServiceSchedule>
     {
@@ -23,12 +22,8 @@ public partial class ServiceSchedule
             var updated = serviceCreate.Execute(new CreateServiceCommand(
                 command.Type,
                 command.MaxCapacity,
-                command.WeeklySchedule));
-
-            foreach (var specialDate in existing!.SpecialDates)
-            {
-                serviceAddSpecialDate.Execute(updated, new AddServiceSpecialDateCommand(specialDate));
-            }
+                command.WeeklySchedule,
+                existing!.SpecialDates));
 
             schedule._services.Remove(existing);
             schedule._services.Add(updated);
