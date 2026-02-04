@@ -1,5 +1,3 @@
-using Schedules.Infrastructure;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
