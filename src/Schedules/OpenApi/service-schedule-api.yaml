@@ -180,6 +180,19 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateServiceScheduleRequest'
+            example:
+              name: Horario Verano Actualizado
+              description: Nueva descripción del horario
+              minimumAdvanceTime: '03:00:00'
+              maximumAdvanceTime: '60.00:00:00'
+              slotInterval: '00:30:00'
+              bufferBetweenReservations: '00:15:00'
+              maxPartySize: 10
+              minPartySize: 2
+              standardDurations:
+                Breakfast: '01:00:00'
+                Lunch: '01:30:00'
+                Dinner: '02:00:00'
       responses:
         '204':
           description: ServiceSchedule actualizado exitosamente
