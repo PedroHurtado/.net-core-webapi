@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F69ADE3C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fudie", "src\Fudie\Fudie.csproj", "{33A4980E-0BC7-4799-ABA1-5A409960493B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer", "src\Customer\Customer.csproj", "{408A426F-A902-4B4E-A1FC-3DD6E8873984}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menus", "src\Menus\Menus.csproj", "{408A426F-A902-4B4E-A1FC-3DD6E8873984}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheDules", "src\ScheDules\ScheDules.csproj", "{833ED53C-34F4-4E8E-BBB7-4D1DD6A15D4D}"
 EndProject
@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheDules.UnitTests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fudie.UnitTests", "tests\Fudie.UnitTests\Fudie.UnitTests.csproj", "{B1FC1C0E-2C49-40B2-BA7A-FDEEC5BF3729}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.UnitTests", "tests\Customer.UnitTests\Customer.UnitTests.csproj", "{3B22ADDB-EA63-47F5-A8B0-794288FA9472}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menus.UnitTests", "tests\Menus.UnitTests\Menus.UnitTests.csproj", "{3B22ADDB-EA63-47F5-A8B0-794288FA9472}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fudie.Generator", "src\Fudie.Generator\Fudie.Generator.csproj", "{0740F160-92B2-494E-8288-E6AA371EB57E}"
 EndProject
@@ -26,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plan", "src\Plan\Plan.cspro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plan.UnitTests", "tests\Plan.UnitTests\Plan.UnitTests.csproj", "{5A19BAC1-4EF1-4FB4-BEEB-F46620560387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Customer.IntegrationTests", "tests\Customer.IntegrationTests\Customer.IntegrationTests.csproj", "{F41C59B0-B10C-482B-BA8E-4FB90146BC1C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menus.IntegrationTests", "tests\Menus.IntegrationTests\Menus.IntegrationTests.csproj", "{F41C59B0-B10C-482B-BA8E-4FB90146BC1C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plan.IntegrationTests", "tests\Plan.IntegrationTests\Plan.IntegrationTests.csproj", "{D9265D65-E91C-48D3-B949-AAC2368A44D1}"
 EndProject
