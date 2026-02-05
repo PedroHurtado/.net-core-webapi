@@ -21,8 +21,7 @@ public class ServiceSchedule_AddSpecialDateTests
         _addService = new ServiceSchedule.AddService(serviceCreate, _scheduleValidator);
 
         var specialDateCreate = new ServiceSpecialDate.Create(_specialDateValidator);
-        var serviceAddSpecialDate = new Service.AddSpecialDate(_serviceValidator);
-        _addSpecialDate = new ServiceSchedule.AddSpecialDate(specialDateCreate, serviceAddSpecialDate, _scheduleValidator);
+        _addSpecialDate = new ServiceSchedule.AddSpecialDate(serviceCreate, specialDateCreate, _scheduleValidator);
     }
 
     private ServiceSchedule CreateSchedule() => _create.Execute(new CreateServiceScheduleCommand(

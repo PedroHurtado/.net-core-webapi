@@ -19,13 +19,11 @@ public class ServiceSchedule_UpdateServiceTests
 
         var serviceDayConfigCreate = new ServiceDayConfig.Create(_dayConfigValidator);
         var serviceCreate = new Service.Create(serviceDayConfigCreate, _serviceValidator);
-        var serviceAddSpecialDate = new Service.AddSpecialDate(_serviceValidator);
+        var specialDateCreate = new ServiceSpecialDate.Create(_specialDateValidator);
 
         _addService = new ServiceSchedule.AddService(serviceCreate, _scheduleValidator);
-        _updateService = new ServiceSchedule.UpdateService(serviceCreate, serviceAddSpecialDate, _scheduleValidator);
-
-        var specialDateCreate = new ServiceSpecialDate.Create(_specialDateValidator);
-        _addSpecialDate = new ServiceSchedule.AddSpecialDate(specialDateCreate, serviceAddSpecialDate, _scheduleValidator);
+        _updateService = new ServiceSchedule.UpdateService(serviceCreate, _scheduleValidator);
+        _addSpecialDate = new ServiceSchedule.AddSpecialDate(serviceCreate, specialDateCreate, _scheduleValidator);
     }
 
     private ServiceSchedule CreateSchedule() => _create.Execute(new CreateServiceScheduleCommand(

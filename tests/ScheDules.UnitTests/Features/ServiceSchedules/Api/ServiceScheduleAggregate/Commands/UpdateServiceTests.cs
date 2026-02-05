@@ -5,12 +5,9 @@ public class UpdateServiceTests
     private readonly ServiceScheduleValidator _serviceScheduleValidator = new();
     private readonly ServiceValidator _serviceValidator = new();
     private readonly ServiceDayConfigValidator _serviceDayConfigValidator = new();
-    private readonly ServiceSpecialDateValidator _serviceSpecialDateValidator = new();
     private readonly ReservationPolicyValidator _reservationPolicyValidator = new();
     private readonly ServiceDayConfig.Create _createServiceDayConfig;
-    private readonly ServiceSpecialDate.Create _createServiceSpecialDate;
     private readonly Service.Create _createService;
-    private readonly Service.AddSpecialDate _serviceAddSpecialDate;
     private readonly ReservationPolicy.Create _createReservationPolicy;
     private readonly ServiceSchedule.Create _createServiceSchedule;
     private readonly ServiceSchedule.AddService _addService;
@@ -22,13 +19,11 @@ public class UpdateServiceTests
     public UpdateServiceTests()
     {
         _createServiceDayConfig = new(_serviceDayConfigValidator);
-        _createServiceSpecialDate = new(_serviceSpecialDateValidator);
         _createService = new(_createServiceDayConfig, _serviceValidator);
-        _serviceAddSpecialDate = new(_serviceValidator);
         _createReservationPolicy = new(_reservationPolicyValidator);
         _createServiceSchedule = new(_createReservationPolicy, _serviceScheduleValidator);
         _addService = new(_createService, _serviceScheduleValidator);
-        _updateService = new(_createService, _serviceAddSpecialDate, _serviceScheduleValidator);
+        _updateService = new(_createService, _serviceScheduleValidator);
         _repositoryMock = new Mock<UpdateService.IRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _service = new UpdateService.Service(

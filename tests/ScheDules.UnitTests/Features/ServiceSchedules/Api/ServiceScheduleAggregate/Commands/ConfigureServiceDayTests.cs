@@ -8,7 +8,6 @@ public class ConfigureServiceDayTests
     private readonly ReservationPolicyValidator _reservationPolicyValidator = new();
     private readonly ServiceDayConfig.Create _createServiceDayConfig;
     private readonly Service.Create _createService;
-    private readonly Service.ConfigureDay _serviceConfigureDay;
     private readonly ReservationPolicy.Create _createReservationPolicy;
     private readonly ServiceSchedule.Create _createServiceSchedule;
     private readonly ServiceSchedule.AddService _addService;
@@ -21,11 +20,10 @@ public class ConfigureServiceDayTests
     {
         _createServiceDayConfig = new(_serviceDayConfigValidator);
         _createService = new(_createServiceDayConfig, _serviceValidator);
-        _serviceConfigureDay = new(_serviceValidator);
         _createReservationPolicy = new(_reservationPolicyValidator);
         _createServiceSchedule = new(_createReservationPolicy, _serviceScheduleValidator);
         _addService = new(_createService, _serviceScheduleValidator);
-        _configureServiceDay = new(_createServiceDayConfig, _serviceConfigureDay, _serviceScheduleValidator);
+        _configureServiceDay = new(_createService, _serviceScheduleValidator);
         _repositoryMock = new Mock<ConfigureServiceDay.IRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _service = new ConfigureServiceDay.Service(

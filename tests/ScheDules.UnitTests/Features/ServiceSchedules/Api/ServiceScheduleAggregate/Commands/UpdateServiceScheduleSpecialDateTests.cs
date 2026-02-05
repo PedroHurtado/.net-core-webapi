@@ -1,45 +1,16 @@
 namespace Schedules.UnitTests.Features.ServiceSchedules.Api.ServiceScheduleAggregateTests.Commands;
 
-public class UpdateServiceScheduleSpecialDateTests
+public class UpdateServiceScheduleSpecialDateTests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
-    private readonly ServiceScheduleValidator _serviceScheduleValidator = new();
-    private readonly ServiceValidator _serviceValidator = new();
-    private readonly ServiceDayConfigValidator _serviceDayConfigValidator = new();
-    private readonly ServiceSpecialDateValidator _serviceSpecialDateValidator = new();
-    private readonly ReservationPolicyValidator _reservationPolicyValidator = new();
-    private readonly ServiceDayConfig.Create _createServiceDayConfig;
-    private readonly Service.Create _createService;
-    private readonly ServiceSpecialDate.Create _createServiceSpecialDate;
-    private readonly Service.AddSpecialDate _serviceAddSpecialDate;
-    private readonly Service.UpdateSpecialDate _serviceUpdateSpecialDate;
-    private readonly ReservationPolicy.Create _createReservationPolicy;
-    private readonly ServiceSchedule.Create _createServiceSchedule;
-    private readonly ServiceSchedule.AddService _addService;
-    private readonly ServiceSchedule.AddSpecialDate _addSpecialDate;
-    private readonly ServiceSchedule.UpdateSpecialDate _updateSpecialDate;
-    private readonly Mock<UpdateServiceScheduleSpecialDate.IRepository> _repositoryMock;
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly UpdateServiceScheduleSpecialDate.Service _service;
+    private readonly ServiceSchedule.Create _createServiceSchedule = fixture.Get<ServiceSchedule.Create>();
+    private readonly ServiceSchedule.AddService _addService = fixture.Get<ServiceSchedule.AddService>();
+    private readonly ServiceSchedule.AddSpecialDate _addSpecialDate = fixture.Get<ServiceSchedule.AddSpecialDate>();
+    private readonly ServiceSchedule.UpdateSpecialDate _updateSpecialDate = fixture.Get<ServiceSchedule.UpdateSpecialDate>();
+    private readonly Mock<UpdateServiceScheduleSpecialDate.IRepository> _repositoryMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
 
-    public UpdateServiceScheduleSpecialDateTests()
-    {
-        _createServiceDayConfig = new(_serviceDayConfigValidator);
-        _createService = new(_createServiceDayConfig, _serviceValidator);
-        _createServiceSpecialDate = new(_serviceSpecialDateValidator);
-        _serviceAddSpecialDate = new(_serviceValidator);
-        _serviceUpdateSpecialDate = new(_serviceValidator);
-        _createReservationPolicy = new(_reservationPolicyValidator);
-        _createServiceSchedule = new(_createReservationPolicy, _serviceScheduleValidator);
-        _addService = new(_createService, _serviceScheduleValidator);
-        _addSpecialDate = new(_createServiceSpecialDate, _serviceAddSpecialDate, _serviceScheduleValidator);
-        _updateSpecialDate = new(_createServiceSpecialDate, _serviceUpdateSpecialDate, _serviceScheduleValidator);
-        _repositoryMock = new Mock<UpdateServiceScheduleSpecialDate.IRepository>();
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _service = new UpdateServiceScheduleSpecialDate.Service(
-            _updateSpecialDate,
-            _repositoryMock.Object,
-            _unitOfWorkMock.Object);
-    }
+    private UpdateServiceScheduleSpecialDate.Service CreateService() =>
+        new(_updateSpecialDate, _repositoryMock.Object, _unitOfWorkMock.Object);
 
     private static UpdateServiceScheduleSpecialDate.Request CreateValidRequest(
         bool isAvailable = true,
@@ -111,11 +82,12 @@ public class UpdateServiceScheduleSpecialDateTests
         var existingSchedule = CreateScheduleWithServiceAndSpecialDate(ServiceType.Lunch, targetDate);
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = CreateValidRequest(startTime: new TimeOnly(11, 0), endTime: new TimeOnly(16, 0));
+        var service = CreateService();
 
-        await _service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
+        await service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
-        var service = existingSchedule.Services.First(s => s.Type == ServiceType.Lunch);
-        var updatedSpecialDate = service.SpecialDates.First(sd => sd.Date == targetDate);
+        var svc = existingSchedule.Services.First(s => s.Type == ServiceType.Lunch);
+        var updatedSpecialDate = svc.SpecialDates.First(sd => sd.Date == targetDate);
         updatedSpecialDate.StartTime.Should().Be(new TimeOnly(11, 0));
         updatedSpecialDate.EndTime.Should().Be(new TimeOnly(16, 0));
     }
@@ -128,8 +100,9 @@ public class UpdateServiceScheduleSpecialDateTests
         var existingSchedule = CreateScheduleWithServiceAndSpecialDate(ServiceType.Lunch, targetDate);
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = CreateValidRequest();
+        var service = CreateService();
 
-        await _service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
+        await service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -144,8 +117,9 @@ public class UpdateServiceScheduleSpecialDateTests
         var scheduleId = Guid.NewGuid();
         _repositoryMock.Setup(r => r.Get(scheduleId)).ThrowsAsync(new KeyNotFoundException());
         var request = CreateValidRequest();
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today), request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today), request);
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -157,8 +131,9 @@ public class UpdateServiceScheduleSpecialDateTests
         var existingSchedule = CreateSchedule();
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = CreateValidRequest();
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today), request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today), request);
 
         await act.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("*not found*");
@@ -171,8 +146,9 @@ public class UpdateServiceScheduleSpecialDateTests
         var existingSchedule = CreateScheduleWithService(ServiceType.Lunch);
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = CreateValidRequest();
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today.AddDays(99)), request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, DateOnly.FromDateTime(DateTime.Today.AddDays(99)), request);
 
         await act.Should().ThrowAsync<KeyNotFoundException>()
             .WithMessage("*not found*");
@@ -195,8 +171,9 @@ public class UpdateServiceScheduleSpecialDateTests
             EndTime: new TimeOnly(15, 0),
             CapacityOverride: null,
             Reason: null);
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage($"*{ServiceSpecialDateValidationMessages.StartTimeRequired}*");
@@ -215,8 +192,9 @@ public class UpdateServiceScheduleSpecialDateTests
             EndTime: new TimeOnly(12, 0),
             CapacityOverride: null,
             Reason: null);
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime}*");
@@ -230,8 +208,9 @@ public class UpdateServiceScheduleSpecialDateTests
         var existingSchedule = CreateScheduleWithServiceAndSpecialDate(ServiceType.Lunch, targetDate);
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = CreateValidRequest(reason: new string('a', 201));
+        var service = CreateService();
 
-        var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
+        var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage($"*{ServiceSpecialDateValidationMessages.ReasonMaxLength}*");

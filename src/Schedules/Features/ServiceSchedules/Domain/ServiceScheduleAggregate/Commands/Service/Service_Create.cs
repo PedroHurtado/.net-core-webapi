@@ -3,7 +3,8 @@ namespace Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate.Va
 public record CreateServiceCommand(
     ServiceType Type,
     int MaxCapacity,
-    Dictionary<DayOfWeek, CreateServiceDayConfigCommand> WeeklySchedule
+    Dictionary<DayOfWeek, CreateServiceDayConfigCommand> WeeklySchedule,
+    IEnumerable<ServiceSpecialDate>? SpecialDates = null
 );
 
 public partial record Service
@@ -22,6 +23,14 @@ public partial record Service
             {
                 var config = serviceDayConfigCreate.Execute(configCommand);
                 service._weeklySchedule[day] = config;
+            }
+
+            if (command.SpecialDates is not null)
+            {
+                foreach (var specialDate in command.SpecialDates)
+                {
+                    service._specialDates.Add(specialDate);
+                }
             }
 
             return serviceValidator.ValidateOrThrow(service);
