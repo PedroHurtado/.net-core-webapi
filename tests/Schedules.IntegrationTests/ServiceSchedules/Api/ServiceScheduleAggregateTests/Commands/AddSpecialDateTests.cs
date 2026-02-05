@@ -33,7 +33,7 @@ public class AddSpecialDateTests(WebApplicationFactory<Program> factory) : Sched
             Date: new DateOnly(2025, 2, 14),
             IsAvailable: true,
             StartTime: new TimeOnly(19, 0),
-            EndTime: new TimeOnly(2, 0),
+            EndTime: new TimeOnly(23, 30),
             CapacityOverride: 70,
             Reason: "San Valentin");
 

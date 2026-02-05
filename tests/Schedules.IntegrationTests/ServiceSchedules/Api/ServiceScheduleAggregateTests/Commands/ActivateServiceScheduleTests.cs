@@ -82,7 +82,7 @@ public class ActivateServiceScheduleTests(WebApplicationFactory<Program> factory
     }
 
     [Fact]
-    public async Task Activate_WhenAnotherScheduleIsActive_Returns409()
+    public async Task Activate_WhenAnotherScheduleIsActive_DeactivatesPreviousAndReturns200()
     {
         var createRequest1 = new CreateServiceSchedule.Request(
             Name: "Horario 1",
@@ -135,7 +135,14 @@ public class ActivateServiceScheduleTests(WebApplicationFactory<Program> factory
 
         var response = await Client.PostAsync($"/service-schedules/{created2.Id}/activate", null);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var activated = await response.Content.ReadFromJsonAsync<ServiceScheduleResponse>(JsonOptions);
+        activated!.IsActive.Should().BeTrue();
+
+        var previousResponse = await Client.GetAsync($"/service-schedules/{created1!.Id}");
+        var previous = await previousResponse.Content.ReadFromJsonAsync<ServiceScheduleResponse>(JsonOptions);
+        previous!.IsActive.Should().BeFalse();
     }
 
     [Fact]

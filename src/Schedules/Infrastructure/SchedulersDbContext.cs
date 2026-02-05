@@ -62,7 +62,7 @@ public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, 
                 policy.Ignore(p => p.MaxAdvanceDays);
                 
                 policy.Ignore(p=>p.StandardDurations);
-                //policy.MapOf(p => p.StandardDurations);
+                policy.MapOf(p => p.StandardDurations);
             });
 
             

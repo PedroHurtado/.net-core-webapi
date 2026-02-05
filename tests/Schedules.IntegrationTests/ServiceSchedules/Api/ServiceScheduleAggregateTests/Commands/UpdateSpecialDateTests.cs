@@ -44,7 +44,7 @@ public class UpdateSpecialDateTests(WebApplicationFactory<Program> factory) : Sc
         var updateSpecialDateRequest = new UpdateServiceScheduleSpecialDate.Request(
             IsAvailable: true,
             StartTime: new TimeOnly(18, 0),
-            EndTime: new TimeOnly(3, 0),
+            EndTime: new TimeOnly(23, 30),
             CapacityOverride: 80,
             Reason: "San Valentin - Horario extendido");
 
