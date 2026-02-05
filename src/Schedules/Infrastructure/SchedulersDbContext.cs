@@ -1,3 +1,5 @@
+using Fudie.Firestore.EntityFrameworkCore.Extensions;
+
 namespace Schedules.Infrastructure;
 
 public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, Guid tenantId) :
@@ -47,35 +49,33 @@ public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, 
         modelBuilder.Entity<ServiceSchedule>(entity =>
         {
             entity.HasQueryFilter(s => s.TenantId == tenantId);
-
-            // Ignore computed properties
+            
             entity.Ignore(s => s.HasServices);
             entity.Ignore(s => s.ServiceCount);
             entity.Ignore(s => s.AvailableServiceTypes);
 
-            // ComplexType: Policy
+            
             entity.ComplexProperty(s => s.Policy, policy =>
             {
-                // Ignore computed properties
+            
                 policy.Ignore(p => p.SlotIntervalMinutes);
                 policy.Ignore(p => p.MaxAdvanceDays);
-
-                // TODO: MapOf not supported in ComplexPropertyBuilder - pending Fudie.Firestore provider enhancement
-                // policy.MapOf(p => p.StandardDurations);
+                
+                policy.Ignore(p=>p.StandardDurations);
+                //policy.MapOf(p => p.StandardDurations);
             });
 
-            // ArrayOf: Services
+            
             entity.ArrayOf(s => s.Services, service =>
             {
-                // Ignore computed properties
+            
                 service.Ignore(srv => srv.HasSpecialDates);
                 service.Ignore(srv => srv.AvailableDaysCount);
-
-                // TODO: MapOf not supported in ArrayOfElementBuilder - pending Fudie.Firestore provider enhancement
-                // service.MapOf(srv => srv.WeeklySchedule, dayConfig =>
-                // {
-                //     dayConfig.Ignore(dc => dc.Duration);
-                // });
+            
+                service.MapOf(srv => srv.WeeklySchedule, dayConfig =>
+                {
+                     dayConfig.Ignore(dc => dc.Duration);
+                });
 
                 // ArrayOf: SpecialDates
                 service.ArrayOf(srv => srv.SpecialDates);

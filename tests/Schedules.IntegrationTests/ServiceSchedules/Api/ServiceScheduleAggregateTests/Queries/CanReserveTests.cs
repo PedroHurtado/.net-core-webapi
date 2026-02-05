@@ -44,7 +44,7 @@ public class CanReserveTests(WebApplicationFactory<Program> factory) : Schedules
         var reservationTime = new DateTime(futureDate.Year, futureDate.Month, futureDate.Day, 13, 30, 0);
 
         var response = await Client.GetAsync(
-            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={reservationTime:O}&partySize=4");
+            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={Uri.EscapeDataString(reservationTime.ToString("o"))}&partySize=4");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -90,7 +90,7 @@ public class CanReserveTests(WebApplicationFactory<Program> factory) : Schedules
         var reservationTime = new DateTime(futureDate.Year, futureDate.Month, futureDate.Day, 13, 30, 0);
 
         var response = await Client.GetAsync(
-            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={reservationTime:O}&partySize=4");
+            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={Uri.EscapeDataString(reservationTime.ToString("o"))}&partySize=4");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -138,7 +138,7 @@ public class CanReserveTests(WebApplicationFactory<Program> factory) : Schedules
         var reservationTime = new DateTime(futureDate.Year, futureDate.Month, futureDate.Day, 13, 30, 0);
 
         var response = await Client.GetAsync(
-            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={reservationTime:O}&partySize=10");
+            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={Uri.EscapeDataString(reservationTime.ToString("o"))}&partySize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -186,7 +186,7 @@ public class CanReserveTests(WebApplicationFactory<Program> factory) : Schedules
         var reservationTime = new DateTime(futureDate.Year, futureDate.Month, futureDate.Day, 13, 17, 0);
 
         var response = await Client.GetAsync(
-            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={reservationTime:O}&partySize=4");
+            $"/service-schedules/{created.Id}/can-reserve?type={ServiceType.Lunch}&dateTime={Uri.EscapeDataString(reservationTime.ToString("o"))}&partySize=4");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -203,7 +203,7 @@ public class CanReserveTests(WebApplicationFactory<Program> factory) : Schedules
         var reservationTime = DateTime.UtcNow.AddDays(7);
 
         var response = await Client.GetAsync(
-            $"/service-schedules/{nonExistingId}/can-reserve?type={ServiceType.Lunch}&dateTime={reservationTime:O}&partySize=4");
+            $"/service-schedules/{nonExistingId}/can-reserve?type={ServiceType.Lunch}&dateTime={Uri.EscapeDataString(reservationTime.ToString("o"))}&partySize=4");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
