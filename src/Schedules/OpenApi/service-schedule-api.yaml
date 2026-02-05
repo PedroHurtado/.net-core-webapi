@@ -332,6 +332,40 @@ paths:
             schema:
               $ref: '#/components/schemas/AddServiceRequest'
             examples:
+              breakfast:
+                summary: Servicio de desayuno
+                value:
+                  type: Breakfast
+                  maxCapacity: 30
+                  weeklySchedule:
+                    Monday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Tuesday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Wednesday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Thursday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Friday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Saturday:
+                      isAvailable: true
+                      startTime: '09:00'
+                      endTime: '12:00'
+                    Sunday:
+                      isAvailable: true
+                      startTime: '09:00'
+                      endTime: '12:00'
               lunch:
                 summary: Servicio de almuerzo
                 value:
