@@ -28,9 +28,9 @@ Registra todos los comandos y validators del assembly. Resuelve automáticamente
 ## Test de Comando Create
 
 ```csharp
-namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.CommandsTests;
 
-public class {ValueObject}CreateTests(DomainFixture fixture)
+public class {ValueObject}CreateTests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
     private readonly {ValueObject}.Create _create = fixture.Get<{ValueObject}.Create>();
 
@@ -63,9 +63,9 @@ public class {ValueObject}CreateTests(DomainFixture fixture)
 ## Test de Comando Transform con Comando
 
 ```csharp
-namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.CommandsTests;
 
-public class {ValueObject}{Action}Tests(DomainFixture fixture)
+public class {ValueObject}{Action}Tests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
     private readonly {ValueObject}.{Action} _{action} = fixture.Get<{ValueObject}.{Action}>();
 
@@ -121,9 +121,9 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
 ## Test de Comando Transform sin Comando
 
 ```csharp
-namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
+namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.CommandsTests;
 
-public class {ValueObject}{Action}Tests(DomainFixture fixture)
+public class {ValueObject}{Action}Tests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
     private readonly {ValueObject}.{Action} _{action} = fixture.Get<{ValueObject}.{Action}>();
 
@@ -143,7 +143,9 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
 
 ## Reglas
 
-- Namespace: `{Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests`
+- Archivo: `{ValueObject}_{Action}Tests.cs` (espejo del comando + sufijo `Tests`)
+- Namespace: `{Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.CommandsTests`
+- Clase: `{ValueObject}{Action}Tests` para Create, `{ValueObject}{Action}Tests` para Transform
 - **No `using`** → Van en `GlobalUsings.cs`
 - **No XML docs**
 - **Siempre usar `DomainFixture`** para resolver comandos y validators
@@ -151,7 +153,6 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
 - **NO montar el grafo de dependencias a mano**
 - Crear instancias de VOs directamente con `new` (constructor público)
 - **NO usar `Testable`** para Value Objects
-- Clase: `{ValueObject}CreateTests` para Create, `{ValueObject}{Action}Tests` para Transform
 - Nomenclatura de tests:
   - `Execute_WithValidCommand_Returns{ValueObject}`
   - `Execute_With{InvalidCase}_ThrowsValidationException`
