@@ -188,8 +188,8 @@ public class UpdateServiceScheduleSpecialDateTests(DomainFixture fixture) : ICla
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = new UpdateServiceScheduleSpecialDate.Request(
             IsAvailable: true,
-            StartTime: new TimeOnly(15, 0),
-            EndTime: new TimeOnly(12, 0),
+            StartTime: new TimeOnly(13, 0),
+            EndTime: new TimeOnly(13, 0),
             CapacityOverride: null,
             Reason: null);
         var service = CreateService();
@@ -197,7 +197,7 @@ public class UpdateServiceScheduleSpecialDateTests(DomainFixture fixture) : ICla
         var act = () => service.HandleAsync(scheduleId, ServiceType.Lunch, targetDate, request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     [Fact]

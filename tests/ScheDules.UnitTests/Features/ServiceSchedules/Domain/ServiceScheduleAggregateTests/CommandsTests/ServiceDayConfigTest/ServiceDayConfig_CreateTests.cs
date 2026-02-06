@@ -67,15 +67,29 @@ public class ServiceDayConfig_CreateTests
     }
 
     [Fact]
-    public void Execute_EndTimeBeforeStartTime_ThrowsValidationException()
+    public void Execute_EndTimeBeforeStartTime_OvernightRange_ReturnsServiceDayConfig()
+    {
+        var result = _command.Execute(new CreateServiceDayConfigCommand(
+            true,
+            new TimeOnly(20, 0),
+            new TimeOnly(0, 30)));
+
+        result.IsAvailable.Should().BeTrue();
+        result.StartTime.Should().Be(new TimeOnly(20, 0));
+        result.EndTime.Should().Be(new TimeOnly(0, 30));
+        result.Duration.Should().Be(TimeSpan.FromHours(4) + TimeSpan.FromMinutes(30));
+    }
+
+    [Fact]
+    public void Execute_EndTimeEqualToStartTime_ThrowsValidationException()
     {
         var act = () => _command.Execute(new CreateServiceDayConfigCommand(
             true,
-            new TimeOnly(16, 0),
+            new TimeOnly(13, 0),
             new TimeOnly(13, 0)));
 
         act.Should().Throw<ValidationException>()
-            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     [Fact]

@@ -221,14 +221,14 @@ public class AddServiceTests
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var weeklySchedule = new Dictionary<DayOfWeek, AddService.ServiceDayConfigInput>
         {
-            { DayOfWeek.Monday, new AddService.ServiceDayConfigInput(true, new TimeOnly(15, 0), new TimeOnly(12, 0), null) }
+            { DayOfWeek.Monday, new AddService.ServiceDayConfigInput(true, new TimeOnly(13, 0), new TimeOnly(13, 0), null) }
         };
         var request = CreateValidRequest(weeklySchedule: weeklySchedule);
 
         var act = () => _service.HandleAsync(scheduleId, request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     #endregion

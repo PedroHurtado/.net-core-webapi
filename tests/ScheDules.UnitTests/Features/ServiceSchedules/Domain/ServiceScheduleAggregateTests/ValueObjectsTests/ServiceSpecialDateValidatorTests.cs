@@ -180,20 +180,19 @@ public class ServiceSpecialDateValidatorTests
     }
 
     [Fact]
-    public void EndTime_WhenBeforeStartTime_ReturnsError()
+    public void EndTime_WhenBeforeStartTime_OvernightRange_ReturnsSuccess()
     {
         var specialDate = new TestableServiceSpecialDate(
             new DateOnly(2025, 2, 14),
             true,
-            new TimeOnly(23, 0),
-            new TimeOnly(19, 0),
+            new TimeOnly(20, 0),
+            new TimeOnly(0, 30),
             null,
             null);
 
         var result = _validator.Validate(specialDate);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime);
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
@@ -210,7 +209,7 @@ public class ServiceSpecialDateValidatorTests
         var result = _validator.Validate(specialDate);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime);
+        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceSpecialDateValidationMessages.EndTimeMustBeDifferentFromStartTime);
     }
 
     [Fact]

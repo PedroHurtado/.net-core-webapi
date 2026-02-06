@@ -229,15 +229,15 @@ public class AddServiceScheduleSpecialDateTests
         var request = new AddServiceScheduleSpecialDate.Request(
             Date: DateOnly.FromDateTime(DateTime.Today.AddDays(30)),
             IsAvailable: true,
-            StartTime: new TimeOnly(15, 0),
-            EndTime: new TimeOnly(12, 0),
+            StartTime: new TimeOnly(13, 0),
+            EndTime: new TimeOnly(13, 0),
             CapacityOverride: null,
             Reason: null);
 
         var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     [Fact]

@@ -157,7 +157,7 @@ public class ServiceSchedule_ConfigureServiceDayTests
     }
 
     [Fact]
-    public void Execute_WithEndTimeBeforeStartTime_ThrowsValidationException()
+    public void Execute_WithEndTimeEqualToStartTime_ThrowsValidationException()
     {
         var schedule = CreateScheduleWithLunch();
 
@@ -165,10 +165,10 @@ public class ServiceSchedule_ConfigureServiceDayTests
             ServiceType.Lunch,
             DayOfWeek.Friday,
             true,
-            new TimeOnly(16, 0),
+            new TimeOnly(13, 0),
             new TimeOnly(13, 0)));
 
         act.Should().Throw<ValidationException>()
-            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 }

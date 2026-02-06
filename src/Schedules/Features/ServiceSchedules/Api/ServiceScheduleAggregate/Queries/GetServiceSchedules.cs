@@ -30,8 +30,8 @@ public class GetServiceSchedules : IFeatureModule
                 queryable = queryable.Where(s => s.IsActive == isActive.Value);
             }
 
-             var serviceSchedules =  await query.Query<ServiceSchedule>()
-                .OrderBy(s => s.Name)                
+             var serviceSchedules = await queryable
+                .OrderBy(s => s.Name)
                 .ToListAsync();
 
              return [.. serviceSchedules.Select(ServiceScheduleResponse.Map)];

@@ -11,7 +11,7 @@ public class SchedulesWebApplicationFixture : IClassFixture<WebApplicationFactor
     public static JsonSerializerOptions JsonOptions { get; } = new()
     {
         PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter() }
+        Converters = { new JsonStringEnumConverter(), new TimeOnlyJsonConverter() }
     };
 
     public SchedulesWebApplicationFixture(WebApplicationFactory<Program> factory)

@@ -12,7 +12,7 @@ public class {ValueObject}ValidatorTests
     [Fact]
     public void Validate_WithValid{ValueObject}_ReturnsSuccess()
     {
-        var vo = new Testable{ValueObject}(...valid...);
+        var vo = new {ValueObject}(...valid...);
 
         var result = _validator.Validate(vo);
 
@@ -24,7 +24,7 @@ public class {ValueObject}ValidatorTests
     [Fact]
     public void {Property}_WhenEmpty_ReturnsError()
     {
-        var vo = new Testable{ValueObject}("", ...);
+        var vo = new {ValueObject}("", ...);
 
         var result = _validator.Validate(vo);
 
@@ -37,7 +37,7 @@ public class {ValueObject}ValidatorTests
     [InlineData({invalidValue2})]
     public void {Property}_When{Condition}_ReturnsError({Type} value)
     {
-        var vo = new Testable{ValueObject}(value, ...);
+        var vo = new {ValueObject}(value, ...);
 
         var result = _validator.Validate(vo);
 
@@ -50,7 +50,7 @@ public class {ValueObject}ValidatorTests
     [InlineData({validValue2})]
     public void {Property}_WhenValid_ReturnsSuccess({Type} value)
     {
-        var vo = new Testable{ValueObject}(value, ...);
+        var vo = new {ValueObject}(value, ...);
 
         var result = _validator.Validate(vo);
 
@@ -74,6 +74,6 @@ public class {ValueObject}ValidatorTests
   - `{Property}_WhenEmpty_ReturnsError`
   - `{Property}_When{Condition}_ReturnsError`
   - `{Property}_WhenValid_ReturnsSuccess`
-- Usar `Testable{Type}` para crear instancias
+- Crear instancias directamente con `new {ValueObject}(...)` (constructor público)
 - Verificar mensajes con `{Type}ValidationMessages.{Property}{Rule}`
 - Usar FluentAssertions

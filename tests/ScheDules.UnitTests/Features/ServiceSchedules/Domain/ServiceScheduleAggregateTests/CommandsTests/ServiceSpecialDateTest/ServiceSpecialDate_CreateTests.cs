@@ -109,16 +109,16 @@ public class ServiceSpecialDate_CreateTests
     }
 
     [Fact]
-    public void Execute_EndTimeBeforeStartTime_ThrowsValidationException()
+    public void Execute_EndTimeEqualToStartTime_ThrowsValidationException()
     {
         var act = () => _command.Execute(new CreateServiceSpecialDateCommand(
             new DateOnly(2025, 2, 14),
             true,
-            new TimeOnly(16, 0),
+            new TimeOnly(13, 0),
             new TimeOnly(13, 0)));
 
         act.Should().Throw<ValidationException>()
-            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceSpecialDateValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     [Fact]

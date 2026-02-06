@@ -180,6 +180,19 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateServiceScheduleRequest'
+            example:
+              name: Horario Verano Actualizado
+              description: Nueva descripción del horario
+              minimumAdvanceTime: '03:00:00'
+              maximumAdvanceTime: '60.00:00:00'
+              slotInterval: '00:30:00'
+              bufferBetweenReservations: '00:15:00'
+              maxPartySize: 10
+              minPartySize: 2
+              standardDurations:
+                Breakfast: '01:00:00'
+                Lunch: '01:30:00'
+                Dinner: '02:00:00'
       responses:
         '204':
           description: ServiceSchedule actualizado exitosamente
@@ -332,6 +345,40 @@ paths:
             schema:
               $ref: '#/components/schemas/AddServiceRequest'
             examples:
+              breakfast:
+                summary: Servicio de desayuno
+                value:
+                  type: Breakfast
+                  maxCapacity: 30
+                  weeklySchedule:
+                    Monday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Tuesday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Wednesday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Thursday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Friday:
+                      isAvailable: true
+                      startTime: '08:00'
+                      endTime: '11:00'
+                    Saturday:
+                      isAvailable: true
+                      startTime: '09:00'
+                      endTime: '12:00'
+                    Sunday:
+                      isAvailable: true
+                      startTime: '09:00'
+                      endTime: '12:00'
               lunch:
                 summary: Servicio de almuerzo
                 value:
