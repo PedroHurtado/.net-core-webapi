@@ -60,20 +60,19 @@ public class {ValueObject}CreateTests(DomainFixture fixture)
 
 ---
 
-## Test de Comando Transform
+## Test de Comando Transform con Comando
 
 ```csharp
 namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueObjectsTests;
 
 public class {ValueObject}{Action}Tests(DomainFixture fixture)
 {
-    private readonly {ValueObject}.Create _create = fixture.Get<{ValueObject}.Create>();
     private readonly {ValueObject}.{Action} _{action} = fixture.Get<{ValueObject}.{Action}>();
 
     [Fact]
     public void Execute_WithValidCommand_ReturnsTransformed{ValueObject}()
     {
-        var original = _create.Execute(new Create{ValueObject}Command({validParam1}, {validParam2}));
+        var original = new {ValueObject}({validParam1}, {validParam2});
         var command = new {Action}{ValueObject}Command({newValue});
 
         var result = _{action}.Execute(original, command);
@@ -84,7 +83,7 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
     [Fact]
     public void Execute_PreservesUnchangedProperties()
     {
-        var original = _create.Execute(new Create{ValueObject}Command({validParam1}, {validParam2}));
+        var original = new {ValueObject}({validParam1}, {validParam2});
         var command = new {Action}{ValueObject}Command({newValue});
 
         var result = _{action}.Execute(original, command);
@@ -95,7 +94,7 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
     [Fact]
     public void Execute_WithInvalidValue_ThrowsValidationException()
     {
-        var original = _create.Execute(new Create{ValueObject}Command({validParam1}, {validParam2}));
+        var original = new {ValueObject}({validParam1}, {validParam2});
         var command = new {Action}{ValueObject}Command({invalidValue});
 
         var act = () => _{action}.Execute(original, command);
@@ -107,7 +106,7 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
     [Fact]
     public void Execute_ReturnsNewInstance()
     {
-        var original = _create.Execute(new Create{ValueObject}Command({validParam1}, {validParam2}));
+        var original = new {ValueObject}({validParam1}, {validParam2});
         var command = new {Action}{ValueObject}Command({newValue});
 
         var result = _{action}.Execute(original, command);
@@ -126,13 +125,12 @@ namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.ValueOb
 
 public class {ValueObject}{Action}Tests(DomainFixture fixture)
 {
-    private readonly {ValueObject}.Create _create = fixture.Get<{ValueObject}.Create>();
     private readonly {ValueObject}.{Action} _{action} = fixture.Get<{ValueObject}.{Action}>();
 
     [Fact]
     public void Execute_ReturnsTransformed{ValueObject}()
     {
-        var original = _create.Execute(new Create{ValueObject}Command({validParam1}, {validParam2}));
+        var original = new {ValueObject}({validParam1}, {validParam2});
 
         var result = _{action}.Execute(original);
 
@@ -151,7 +149,8 @@ public class {ValueObject}{Action}Tests(DomainFixture fixture)
 - **Siempre usar `DomainFixture`** para resolver comandos y validators
 - **NO hacer `new` de validators** ni de comandos manualmente
 - **NO montar el grafo de dependencias a mano**
-- Crear instancias de VOs en tests **a través del comando Create** resuelto por la fixture
+- Crear instancias de VOs directamente con `new` (constructor público)
+- **NO usar `Testable`** para Value Objects
 - Clase: `{ValueObject}CreateTests` para Create, `{ValueObject}{Action}Tests` para Transform
 - Nomenclatura de tests:
   - `Execute_WithValidCommand_Returns{ValueObject}`

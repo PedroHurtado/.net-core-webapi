@@ -6,16 +6,66 @@ Testea desde el Handler hasta el Repository (mock).
 
 - **Se testea**: Handler, Service, lógica, excepciones
 - **Se mockea**: IRepository, IUnitOfWork, IEntityLookup
-- **Se instancia real**: Comandos de dominio, Validators
+- **Se instancia real**: Comandos de dominio y Validators (resueltos por `DomainFixture`)
 
 ---
 
-## Estructura
+## Slice de Creación
+
+No necesita `Testable` porque no hay estado previo.
 
 ```csharp
-namespace {Project}.UnitTests.{Feature}.Api.{Aggregate}AggregateTests.{Commands|Queries};
+namespace {Project}.UnitTests.{Feature}.Api.{Aggregate}AggregateTests.Commands;
 
-public class {Action}{Aggregate}Tests
+public class Create{Aggregate}Tests(DomainFixture fixture)
+{
+    private readonly Mock<Create{Aggregate}.IRepository> _repository = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Create{Aggregate}.Service _service;
+
+    public Create{Aggregate}Tests()
+    {
+        _service = new Create{Aggregate}.Service(
+            fixture.Get<{Aggregate}.Create>(),
+            _repository.Object,
+            _unitOfWork.Object);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithValidRequest_ReturnsResponse()
+    {
+        var request = new Create{Aggregate}.Request({validParam1}, {validParam2});
+
+        var response = await _service.HandleAsync(request);
+
+        response.{Property}.Should().Be({expected});
+        _repository.Verify(r => r.Add(It.IsAny<{Aggregate}>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithInvalidData_ThrowsValidationException()
+    {
+        var request = new Create{Aggregate}.Request({invalidParam1}, {invalidParam2});
+
+        var act = () => _service.HandleAsync(request);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage($"*{{{Aggregate}ValidationMessages.{Property}{Rule}}}*");
+    }
+}
+```
+
+---
+
+## Slice que opera sobre estado existente
+
+Usa `Testable{Aggregate}` para preparar el estado que devuelve el repository mock.
+
+```csharp
+namespace {Project}.UnitTests.{Feature}.Api.{Aggregate}AggregateTests.Commands;
+
+public class {Action}{Aggregate}Tests(DomainFixture fixture)
 {
     private readonly Mock<{Action}{Aggregate}.IRepository> _repository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
@@ -23,75 +73,76 @@ public class {Action}{Aggregate}Tests
 
     public {Action}{Aggregate}Tests()
     {
-        var validator = new {Aggregate}Validator();
-        var create = new {Aggregate}.Create(validator);
-        
         _service = new {Action}{Aggregate}.Service(
-            create,
+            fixture.Get<{Aggregate}.{Action}>(),
             _repository.Object,
-            _unitOfWork.Object
-        );
+            _unitOfWork.Object);
     }
 
     [Fact]
-    public async Task HandleAsync_{Scenario}_{ExpectedResult}()
+    public async Task HandleAsync_WithValidRequest_{ExpectedResult}()
     {
-        // Arrange
-        var request = new {Action}{Aggregate}.Request(...);
+        var aggregateId = Guid.NewGuid();
+        var existing = new Testable{Aggregate}(aggregateId)
+            .With{Property}({value})
+            .With{Item}(new {ValueObject}({param1}, {param2}));
 
-        // Act
-        var response = await _service.HandleAsync(request);
+        _repository.Setup(r => r.Get(aggregateId)).ReturnsAsync(existing);
 
-        // Assert
+        var request = new {Action}{Aggregate}.Request({newValue});
+
+        var response = await _service.HandleAsync(aggregateId, request);
+
         response.{Property}.Should().Be({expected});
-        _repository.Verify(r => r.Add(It.IsAny<{Aggregate}>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(default), Times.Once);
     }
-}
-```
 
----
+    [Fact]
+    public async Task HandleAsync_WithInvalidData_ThrowsValidationException()
+    {
+        var aggregateId = Guid.NewGuid();
+        var existing = new Testable{Aggregate}(aggregateId)
+            .With{Property}({value});
 
-## Qué testear
+        _repository.Setup(r => r.Get(aggregateId)).ReturnsAsync(existing);
 
-### Casos exitosos
-- Retorna Response con datos correctos
-- Llama a repository (Add/Get/Remove)
-- Llama a SaveChangesAsync
+        var request = new {Action}{Aggregate}.Request({invalidValue});
 
-### Excepciones (NO status codes)
+        var act = () => _service.HandleAsync(aggregateId, request);
 
-```csharp
-[Fact]
-public async Task HandleAsync_WithInvalidData_ThrowsValidationException()
-{
-    var request = new CreateAllergen.Request("", "Name"); // Code vacío
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage($"*{{{Aggregate}ValidationMessages.{Property}{Rule}}}*");
+    }
 
-    var act = () => _service.HandleAsync(request);
+    [Fact]
+    public async Task HandleAsync_WhenNotFound_ThrowsKeyNotFoundException()
+    {
+        var aggregateId = Guid.NewGuid();
+        _repository.Setup(r => r.Get(aggregateId))
+            .ThrowsAsync(new KeyNotFoundException());
 
-    await act.Should().ThrowAsync<ValidationException>()
-        .WithMessage("*Code*required*");
-}
+        var request = new {Action}{Aggregate}.Request({value});
 
-[Fact]
-public async Task HandleAsync_WithDuplicate_ThrowsConflictException()
-{
-    // Arrange: setup que causa conflicto
+        var act = () => _service.HandleAsync(aggregateId, request);
 
-    var act = () => _service.HandleAsync(request);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
 
-    await act.Should().ThrowAsync<ConflictException>();
-}
+    [Fact]
+    public async Task HandleAsync_When{ConflictCondition}_ThrowsConflictException()
+    {
+        var aggregateId = Guid.NewGuid();
+        var existing = new Testable{Aggregate}(aggregateId)
+            .With{Property}({conflictingValue});
 
-[Fact]
-public async Task HandleAsync_WithNotFound_ThrowsKeyNotFoundException()
-{
-    _repository.Setup(r => r.Get(It.IsAny<string>()))
-        .ThrowsAsync(new KeyNotFoundException());
+        _repository.Setup(r => r.Get(aggregateId)).ReturnsAsync(existing);
 
-    var act = () => _service.HandleAsync("non-existent-id", request);
+        var request = new {Action}{Aggregate}.Request({value});
 
-    await act.Should().ThrowAsync<KeyNotFoundException>();
+        var act = () => _service.HandleAsync(aggregateId, request);
+
+        await act.Should().ThrowAsync<ConflictException>();
+    }
 }
 ```
 
@@ -105,16 +156,16 @@ Si extrajiste el Handler como delegate:
 [Fact]
 public async Task Handler_ReturnsCreatedWithLocation()
 {
-    var mockService = new Mock<CreateAllergen.IService>();
-    mockService.Setup(s => s.HandleAsync(It.IsAny<CreateAllergen.Request>()))
-        .ReturnsAsync(new CreateAllergen.Response("123", ...));
+    var mockService = new Mock<Create{Aggregate}.IService>();
+    mockService.Setup(s => s.HandleAsync(It.IsAny<Create{Aggregate}.Request>()))
+        .ReturnsAsync(new Create{Aggregate}.Response("123", ...));
 
-    var request = new CreateAllergen.Request(...);
+    var request = new Create{Aggregate}.Request(...);
 
-    var result = await CreateAllergen.Handler(mockService.Object, request);
+    var result = await Create{Aggregate}.Handler(mockService.Object, request);
 
-    var created = result.Should().BeOfType<Created<CreateAllergen.Response>>().Subject;
-    created.Location.Should().Be("/allergens/123");
+    var created = result.Should().BeOfType<Created<Create{Aggregate}.Response>>().Subject;
+    created.Location.Should().Be("/{aggregates}/123");
 }
 ```
 
@@ -123,14 +174,18 @@ public async Task Handler_ReturnsCreatedWithLocation()
 ## Reglas
 
 - **No `using`** → Van en `GlobalUsings.cs`
-- **No usar `Testable`** → Usar comandos reales
+- **No XML docs**
+- **Siempre usar `DomainFixture`** para resolver comandos y validators
+- **NO hacer `new` de validators** ni de comandos manualmente
+- **NO montar el grafo de dependencias a mano**
+- **Usar `Testable{Aggregate}`** para preparar estado en slices que operan sobre estado existente
 - **No testear status codes** → Solo excepciones
-- **Validators se instancian** → `new {Type}Validator()`
 - **Repository y UnitOfWork** → Mock
 - Nomenclatura: `HandleAsync_{Scenario}_{ExpectedResult}`
 
+---
 
-### Excepciones del dominio
+## Excepciones del dominio
 
 | Guard | Excepción | Cuándo |
 |-------|-----------|--------|
@@ -139,3 +194,11 @@ public async Task Handler_ReturnsCreatedWithLocation()
 | NotFoundGuard | `KeyNotFoundException` | Entidad no encontrada |
 
 Estas son las ÚNICAS excepciones que el dominio lanza. No inventes otras.
+
+---
+
+## ⛔ PROHIBIDO
+
+- **NO encadenar comandos** para crear estado previo en el Arrange
+- **NO hacer `new {Aggregate}(...)`** directamente → Siempre `Testable{Aggregate}`
+- **NO hacer `new` de validators o comandos** → `DomainFixture`
