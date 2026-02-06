@@ -1,4 +1,4 @@
-# Estilo: Comandos de Value Object
+# Estilo: Comandos Create de Value Object
 
 ## Guards Disponibles
 
@@ -52,13 +52,12 @@ public partial record Money
 {
     [Injectable(ServiceLifetime.Singleton)]
     public class Create(
-        Currency.Create currencyCreate,  // Inyectar comando del VO hijo
+        Currency.Create currencyCreate,
         IValidator<Money> moneyValidator
     ) : AbstractCreateCommand<CreateMoneyCommand, Money>
     {
         public override Money Execute(CreateMoneyCommand command)
         {
-            // Usar comando, NO new Currency(...)
             var currency = currencyCreate.Execute(new CreateCurrencyCommand(
                 command.CurrencyCode));
 
@@ -86,7 +85,5 @@ public partial record Money
 
 ## ⛔ PROHIBIDO
 
-- **NO usar `new {ValueObject}(...)`** fuera del comando Create
-- **NO crear métodos estáticos** (`New`, `From`, `Create`)
-- **NO crear factory methods**
-- **NO hacer constructor `public`**
+- **NO crear métodos estáticos** (`New`, `From`, `Create`) como factory methods
+- **NO crear factory methods** fuera del patrón de comandos
