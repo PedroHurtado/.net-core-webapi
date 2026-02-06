@@ -76,7 +76,7 @@ public static class ServiceSpecialDateValidationMessages
     public const string DateRequired = "Date is required";
     public const string StartTimeRequired = "Start time is required when service is available";
     public const string EndTimeRequired = "End time is required when service is available";
-    public const string EndTimeMustBeAfterStartTime = "End time must be after start time";
+    public const string EndTimeMustBeDifferentFromStartTime = "End time must be different from start time";
     public const string StartTimeMustBeEmpty = "Start time must be empty when service is not available";
     public const string EndTimeMustBeEmpty = "End time must be empty when service is not available";
     public const string CapacityOverrideMustBeGreaterThanZero = "Capacity override must be greater than 0";
@@ -110,11 +110,11 @@ public class ServiceSpecialDateValidator : AbstractValidator<ServiceSpecialDate>
             .When(x => x.IsAvailable)
             .WithMessage(ServiceSpecialDateValidationMessages.EndTimeRequired);
 
-        // When available, end time must be after start time
+        // When available, end time must be different from start time (overnight ranges like 20:00-00:30 are valid)
         RuleFor(x => x.EndTime)
-            .GreaterThan(x => x.StartTime)
+            .Must((x, endTime) => endTime != x.StartTime)
             .When(x => x.IsAvailable && x.StartTime.HasValue && x.EndTime.HasValue)
-            .WithMessage(ServiceSpecialDateValidationMessages.EndTimeMustBeAfterStartTime);
+            .WithMessage(ServiceSpecialDateValidationMessages.EndTimeMustBeDifferentFromStartTime);
 
         // When not available, start time must be null
         RuleFor(x => x.StartTime)

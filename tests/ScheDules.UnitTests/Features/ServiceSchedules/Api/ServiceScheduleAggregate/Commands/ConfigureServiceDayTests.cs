@@ -183,14 +183,14 @@ public class ConfigureServiceDayTests
         _repositoryMock.Setup(r => r.Get(scheduleId)).ReturnsAsync(existingSchedule);
         var request = new ConfigureServiceDay.Request(
             IsAvailable: true,
-            StartTime: new TimeOnly(15, 0),
-            EndTime: new TimeOnly(12, 0),
+            StartTime: new TimeOnly(13, 0),
+            EndTime: new TimeOnly(13, 0),
             CapacityOverride: null);
 
         var act = () => _service.HandleAsync(scheduleId, ServiceType.Lunch, DayOfWeek.Friday, request);
 
         await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime}*");
+            .WithMessage($"*{ServiceDayConfigValidationMessages.EndTimeMustBeDifferentFromStartTime}*");
     }
 
     [Fact]

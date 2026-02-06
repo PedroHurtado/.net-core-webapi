@@ -95,14 +95,13 @@ public class ServiceDayConfigValidatorTests
     }
 
     [Fact]
-    public void EndTime_WhenBeforeStartTime_ReturnsError()
+    public void EndTime_WhenBeforeStartTime_OvernightRange_ReturnsSuccess()
     {
-        var config = new TestableServiceDayConfig(true, new TimeOnly(16, 0), new TimeOnly(13, 0), null);
+        var config = new TestableServiceDayConfig(true, new TimeOnly(20, 0), new TimeOnly(0, 30), null);
 
         var result = _validator.Validate(config);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime);
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
@@ -113,7 +112,7 @@ public class ServiceDayConfigValidatorTests
         var result = _validator.Validate(config);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceDayConfigValidationMessages.EndTimeMustBeAfterStartTime);
+        result.Errors.Should().Contain(e => e.ErrorMessage == ServiceDayConfigValidationMessages.EndTimeMustBeDifferentFromStartTime);
     }
 
     [Fact]
