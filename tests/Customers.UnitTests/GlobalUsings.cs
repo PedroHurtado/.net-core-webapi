@@ -4,6 +4,7 @@ global using FluentValidation;
 global using Microsoft.Extensions.DependencyInjection;
 global using System.Linq.Expressions;
 
+global using Fudie.Domain;
 global using Fudie.DependencyInjection;
 
 global using Customers.Infrastructure;
