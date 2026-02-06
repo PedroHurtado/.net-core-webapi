@@ -1,4 +1,4 @@
-namespace Customers.UnitTests.Customers.Domain.CustomerAggregateTests.ValueObjectsTests;
+namespace Customers.UnitTests.Features.Customers.Domain.CustomerAggregateTests.ValueObjectsTests;
 
 public class GeoPointTests
 {
