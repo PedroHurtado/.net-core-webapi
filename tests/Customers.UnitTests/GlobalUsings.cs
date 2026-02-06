@@ -10,5 +10,6 @@ global using Fudie.DependencyInjection;
 global using Fudie.Infrastructure;
 
 global using Customers.Infrastructure;
+global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;
 
 global using Customers.UnitTests.Helpers;
