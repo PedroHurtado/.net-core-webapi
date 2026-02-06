@@ -7,6 +7,7 @@ global using System.Linq.Expressions;
 global using Fudie.DependencyInjection;
 
 global using Customers.Infrastructure;
+global using Customers.Features.Customers.Domain.CustomerAggregate;
 global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;
 
 global using Customers.UnitTests.Helpers;

@@ -13,12 +13,13 @@ public class {Aggregate}Tests
         // Arrange
         var id = Guid.NewGuid();
         var aggregate = new Testable{Aggregate}(id);
-        var valueObject = new Testable{ValueObject}(...);
+        var valueObject = new {ValueObject}(...);
 
         // Act
-        aggregate.Set{Property1}({value1});
-        aggregate.Set{Property2}({value2});
-        aggregate.Add{Item}(valueObject);
+        aggregate
+            .With{Property1}({value1})
+            .With{Property2}({value2})
+            .With{Item}(valueObject);
 
         // Assert
         aggregate.Id.Should().Be(id);
@@ -32,10 +33,10 @@ public class {Aggregate}Tests
     {
         // Arrange
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
-        var item = new Testable{Item}(...condition true...);
+        var item = new {Item}(...condition true...);
 
         // Act
-        aggregate.Add{Item}(item);
+        aggregate.With{Item}(item);
 
         // Assert
         aggregate.{ComputedProperty}.Should().BeTrue();
@@ -46,10 +47,10 @@ public class {Aggregate}Tests
     {
         // Arrange
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
-        var item = new Testable{Item}(...condition false...);
+        var item = new {Item}(...condition false...);
 
         // Act
-        aggregate.Add{Item}(item);
+        aggregate.With{Item}(item);
 
         // Assert
         aggregate.{ComputedProperty}.Should().BeFalse();
@@ -60,10 +61,10 @@ public class {Aggregate}Tests
     {
         // Arrange
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
-        var item = new Testable{Item}(...);
+        var item = new {Item}(...);
 
         // Act
-        aggregate.Add{Item}(item);
+        aggregate.With{Item}(item);
 
         // Assert
         aggregate.{Collection}.Should().BeAssignableTo<IReadOnlyCollection<{ItemType}>>();
@@ -75,12 +76,12 @@ public class {Aggregate}Tests
     {
         // Arrange
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
-        var item1 = new Testable{Item}(...);
-        var item2 = new Testable{Item}(...);
+        var item1 = new {Item}(...);
+        var item2 = new {Item}(...);
 
         // Act
-        aggregate.Add{Item}(item1);
-        aggregate.Add{Item}(item2);
+        aggregate.With{Item}(item1);
+        aggregate.With{Item}(item2);
 
         // Assert
         aggregate.{Collection}.Should().HaveCount(2);
@@ -97,7 +98,7 @@ public class {Aggregate}Tests
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
 
         // Act
-        aggregate.Set{EnumProperty}(value);
+        aggregate.With{EnumProperty}(value);
 
         // Assert
         aggregate.{EnumProperty}.Should().Be(value);
@@ -112,7 +113,7 @@ public class {Aggregate}Tests
         var aggregate = new Testable{Aggregate}(Guid.NewGuid());
 
         // Act
-        aggregate.Set{BoolProperty}(value);
+        aggregate.With{BoolProperty}(value);
 
         // Assert
         aggregate.{BoolProperty}.Should().Be(value);
@@ -126,7 +127,8 @@ public class {Aggregate}Tests
 - **No `using`** → Van en `GlobalUsings.cs`
 - **No XML docs**
 - Clase: `{Aggregate}Tests`
-- Usar `Testable{Aggregate}` y `Testable{ValueObject}` para crear instancias
+- Usar `Testable{Aggregate}` para aggregates/entities (tienen setters protegidos, necesitan wrapper con métodos `With`)
+- Usar directamente `new {ValueObject}(...)` para Value Objects (son positional records con constructor público)
 - Patrón AAA: `// Arrange`, `// Act`, `// Assert`
 - Tests obligatorios:
   - `{Aggregate}_WithValidData_ShouldHaveCorrectProperties`
