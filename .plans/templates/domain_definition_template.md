@@ -21,12 +21,14 @@ public enum {EnumName}
 
 ### 2.1 {ValueObjectName}
 
-#### Estructura
+#### Estructura (Positional Record)
 
-| Propiedad | Tipo |
-|-----------|------|
-| {Property1} | {Type} |
-| {Property2} | {Type} |
+```csharp
+public partial record {ValueObjectName}(
+    {Type} {Property1},
+    {Type} {Property2}
+);
+```
 
 #### Invariantes (Validator)
 
@@ -40,15 +42,13 @@ public enum {EnumName}
 | {Property2} | NotNull when {Condition} | "{Property2} is required when {Condition}" |
 | {Property2} | Null when !{Condition} | "{Property2} only applies when {Condition}" |
 
-#### Propiedades Calculadas
+#### Propiedades Calculadas *(opcional)*
+
+> Solo métodos query (devuelven datos derivados, sin efectos secundarios). **NO incluir métodos command.**
 
 | Propiedad | Tipo | Fórmula |
 |-----------|------|---------|
 | {Property} | {Type} | `{Formula}` |
-
-#### Métodos
-
-- `{MethodName}({params})` → {ReturnType}
 
 #### Comando: {ValueObjectName}.Create
 
@@ -70,9 +70,28 @@ var {instance} = new {ValueObjectName}(
 return {instance}Validator.ValidateOrThrow({instance});
 ```
 
-**Estáticos** *(opcional)*: `{ValueObjectName}.{Static1}`, `{ValueObjectName}.{Static2}`
+#### Comando: {ValueObjectName}.{Action} *(Transform, si aplica)*
+
+> Usa `AbstractTransformCommand` para crear una nueva instancia a partir de la existente con `with`.
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| {Field1} | {Type} |
+
+**Inyecta**: `IValidator<{ValueObjectName}>`
+
+**Lógica**
+```csharp
+var updated = current with { {Property} = command.{Field1} };
+
+return {valueObject}Validator.ValidateOrThrow(updated);
+```
 
 #### Tests Unitarios
+
+**Create:**
 
 ✅ {Caso válido}
 - Input: {Field1}={value1}, {Field2}={value2}
@@ -85,6 +104,18 @@ return {instance}Validator.ValidateOrThrow({instance});
 ❌ {Caso inválido - regla 2}
 - Input: {Property2}=-1
 - Resultado: ValidationException "{Property2} must be greater than zero"
+
+**Transform** *(si aplica)*:
+
+✅ {Caso válido de transformación}
+- Estado inicial: `new {ValueObjectName}({validParam1}, {validParam2})`
+- Input: {Field1}={newValue}
+- Resultado: Nueva instancia con {Property}={newValue}, resto sin cambios
+
+❌ {Caso inválido de transformación}
+- Estado inicial: `new {ValueObjectName}({validParam1}, {validParam2})`
+- Input: {Field1}={invalidValue}
+- Resultado: ValidationException "{mensaje}"
 
 ---
 
@@ -161,6 +192,9 @@ return entityValidator.ValidateOrThrow(entity);
 ```
 
 #### Tests Unitarios
+
+> Usar `Testable{EntityName}` para preparar estado previo en tests que no son Create.
+> Usar `DomainFixture` para resolver comandos y validators.
 
 ✅ Crear {EntityName} válido
 - Input: {Field1}={value1}
@@ -284,6 +318,10 @@ public record {ValueObject2}Response(
 > ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
 > - Las Queries (Get, List) van después de Create porque son necesarias para verificar persistencia
 > - Activate/Deactivate van al final porque dependen de Add{Entity}/Add{ValueObject}
+
+> **Tests de dominio**: Usar `Testable{AggregateName}` para preparar estado previo. Usar `DomainFixture` para resolver comandos y validators. **NO encadenar comandos** para crear estado.
+>
+> **Tests de slice**: Usar `Testable{AggregateName}` para el estado que devuelve el repository mock. Usar `DomainFixture` para resolver el comando que la slice inyecta. Mock de `IRepository` e `IUnitOfWork`.
 
 ---
 
@@ -458,6 +496,8 @@ public record Update{AggregateName}Request(
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` con propiedades iniciales.
+
 ✅ Actualizar {aggregate} existente
 - Precondición: {AggregateName} existe
 - Input: {Field1}={newValue}
@@ -524,6 +564,8 @@ public record Set{ValueObject}Request(
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` sin/con {ValueObject}.
+
 ✅ Configurar {valueObject} válido
 - Input: {Field1}={value1}
 - Resultado: {ValueObject} configurado
@@ -572,6 +614,8 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 **Response**: 204 No Content
 
 #### Tests Unitarios (Dominio)
+
+> Estado previo: `Testable{AggregateName}` con/sin {ValueObject}.
 
 ✅ Eliminar {valueObject} existente
 - Precondición: {AggregateName} con {ValueObject} configurado
@@ -647,6 +691,8 @@ public record Add{Entity1}Request(
 **Response**: 201 Created → `{AggregateName}Response`
 
 #### Tests Unitarios (Dominio)
+
+> Estado previo: `Testable{AggregateName}` con/sin {Entity1}s.
 
 ✅ Añadir {entity1} válido
 - Precondición: {AggregateName} sin {Entity1} con {Key}={value}
@@ -739,6 +785,8 @@ public record Update{Entity1}Request(
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` con {Entity1}s preparados.
+
 ✅ Actualizar {entity1} existente
 - Precondición: {AggregateName} tiene {Entity1} con Id=X
 - Input: {Entity1}Id=X, {Key}={newValue}
@@ -751,7 +799,7 @@ public record Update{Entity1}Request(
 
 ❌ {Entity1} no existe
 - Input: {Entity1}Id=inexistente
-- Resultado: NotFoundException "{Entity1} not found"
+- Resultado: KeyNotFoundException "{Entity1} not found"
 
 ❌ {Key} duplicado con otra entidad
 - Precondición: {AggregateName} tiene "{Key}1" y "{Key}2"
@@ -818,12 +866,14 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` con {Entity1} con/sin items.
+
 ✅ Eliminar {entity1} vacío
 - Precondición: {Entity1} sin items
 - Resultado: {Entity1} eliminado
 
 ❌ {Entity1} no existe
-- Resultado: NotFoundException "{Entity1} not found"
+- Resultado: KeyNotFoundException "{Entity1} not found"
 
 ❌ {Entity1} con items
 - Precondición: {Entity1} tiene items
@@ -899,16 +949,18 @@ public record Add{ChildItem}Request(
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` con {Entity1} preparado.
+
 ✅ Añadir item a {entity1}
 - Precondición: {Entity1} existe, {ChildItemRef} existe
 - Input: {Entity1}Id=X, {ChildItemRef}Id=Y
 - Resultado: {ChildItem} añadido
 
 ❌ {Entity1} no existe
-- Resultado: NotFoundException "{Entity1} not found"
+- Resultado: KeyNotFoundException "{Entity1} not found"
 
 ❌ {ChildItemRef} no existe
-- Resultado: NotFoundException "{ChildItemRef} not found"
+- Resultado: KeyNotFoundException "{ChildItemRef} not found"
 
 ❌ {ChildItem} duplicado
 - Precondición: {ChildItem} ya está en la {entity1}
@@ -991,6 +1043,8 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 #### Tests Unitarios (Dominio)
 
+> Estado previo: `Testable{AggregateName}` con diferentes configuraciones de {Collection1}.
+
 ✅ Activar {aggregate} con {collection1} e items
 - Precondición: {AggregateName} con IsActive=false, tiene {entity1} con items
 - Resultado: {AggregateName} con IsActive=true
@@ -1053,6 +1107,8 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 **Response**: 200 OK → `{AggregateName}Response`
 
 #### Tests Unitarios (Dominio)
+
+> Estado previo: `Testable{AggregateName}` con IsActive=true/false.
 
 ✅ Desactivar {aggregate} activo
 - Precondición: {AggregateName} con IsActive=true
