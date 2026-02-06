@@ -124,8 +124,13 @@ public partial class {Aggregate}
 
 ## Comando Update{Item} (Colecciones)
 
+> **La key va dentro del command record.** Solo existen 2 overloads de `AbstractModifyCommand`:
+> - `AbstractModifyCommand<TEntity>` → `Execute(TEntity entity)`
+> - `AbstractModifyCommand<TCommand, TEntity>` → `Execute(TEntity entity, TCommand command)`
+
 ```csharp
 public record Update{Item}Command(
+    {KeyType} {Key},
     {Type} {Param1}
 );
 
@@ -135,20 +140,20 @@ public partial class {Aggregate}
     public class Update{Item}(
         {Item}.Create {item}Create,
         IValidator<{Aggregate}> {aggregate}Validator
-    ) : AbstractModifyCommand<Update{Item}Command, {Aggregate}, {KeyType}>
+    ) : AbstractModifyCommand<Update{Item}Command, {Aggregate}>
     {
-        public override {Aggregate} Execute({Aggregate} {aggregate}, Update{Item}Command command, {KeyType} {key})
+        public override {Aggregate} Execute({Aggregate} {aggregate}, Update{Item}Command command)
         {
             // 404 - No existe
-            var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == {key});
-            NotFoundGuard.ThrowIfNull(existing, $"{Item} with {key} '{{key}}' not found");
+            var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == command.{Key});
+            NotFoundGuard.ThrowIfNull(existing, $"{Item} with {key} '{command.{Key}}' not found");
 
             // Crear nuevo (inmutable)
             var updated = {item}Create.Execute(new Create{Item}Command(
-                {key},
+                command.{Key},
                 command.{Param1}));
 
-            {aggregate}._{collection}.Remove(existing);
+            {aggregate}._{collection}.Remove(existing!);
             {aggregate}._{collection}.Add(updated);
 
             return {aggregate}Validator.ValidateOrThrow({aggregate});
@@ -161,19 +166,23 @@ public partial class {Aggregate}
 
 ## Comando Remove{Item} (Colecciones)
 
+> **La key va dentro del command record** (misma regla que Update{Item}).
+
 ```csharp
+public record Remove{Item}Command({KeyType} {Key});
+
 public partial class {Aggregate}
 {
     [Injectable(ServiceLifetime.Singleton)]
     public class Remove{Item}(
         IValidator<{Aggregate}> {aggregate}Validator
-    ) : AbstractModifyCommand<{Aggregate}, {KeyType}>
+    ) : AbstractModifyCommand<Remove{Item}Command, {Aggregate}>
     {
-        public override {Aggregate} Execute({Aggregate} {aggregate}, {KeyType} {key})
+        public override {Aggregate} Execute({Aggregate} {aggregate}, Remove{Item}Command command)
         {
             // 404 - No existe
-            var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == {key});
-            NotFoundGuard.ThrowIfNull(existing, $"{Item} with {key} '{{key}}' not found");
+            var existing = {aggregate}.{Collection}.FirstOrDefault(x => x.{Key} == command.{Key});
+            NotFoundGuard.ThrowIfNull(existing, $"{Item} with {key} '{command.{Key}}' not found");
 
             // 422 - Último en aggregate activo
             ValidationGuard.ThrowIf(
@@ -181,7 +190,7 @@ public partial class {Aggregate}
                 "Cannot remove last {item} from active {aggregate}",
                 nameof({aggregate}.{Collection}));
 
-            {aggregate}._{collection}.Remove(existing);
+            {aggregate}._{collection}.Remove(existing!);
 
             return {aggregate}Validator.ValidateOrThrow({aggregate});
         }
@@ -281,3 +290,18 @@ var feature = Feature.Create(...);        // NO (método estático)
 | NotFoundGuard | `KeyNotFoundException` | Entidad no encontrada |
 
 Estas son las ÚNICAS excepciones que el dominio lanza. No inventes otras.
+
+---
+
+### Null-forgiving después de Guards
+
+El compilador no reconoce que `NotFoundGuard.ThrowIfNull` garantiza no-null. Usar `existing!` en todos los accesos posteriores al guard:
+
+```csharp
+var existing = aggregate.Collection.FirstOrDefault(x => x.Key == command.Key);
+NotFoundGuard.ThrowIfNull(existing, "not found");
+
+// A partir de aquí: existing! (null-forgiving operator)
+var url = existing!.Url;
+aggregate._collection.Remove(existing!);
+```

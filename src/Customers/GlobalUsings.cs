@@ -23,3 +23,5 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Customers.Infrastructure;
+global using Customers.Features.Customers.Domain.CustomerAggregate;
+global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;
