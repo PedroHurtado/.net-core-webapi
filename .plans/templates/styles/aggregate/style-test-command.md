@@ -15,7 +15,7 @@ El Create no necesita `Testable` porque no hay estado previo.
 ```csharp
 namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.Commands.{Aggregate}Tests;
 
-public class {Aggregate}CreateTests(DomainFixture fixture)
+public class {Aggregate}CreateTests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
     private readonly {Aggregate}.Create _create = fixture.Get<{Aggregate}.Create>();
 
@@ -50,7 +50,7 @@ public class {Aggregate}CreateTests(DomainFixture fixture)
 ```csharp
 namespace {Project}.UnitTests.{Feature}.Domain.{Aggregate}AggregateTests.Commands.{Aggregate}Tests;
 
-public class {Aggregate}{Command}Tests(DomainFixture fixture)
+public class {Aggregate}{Command}Tests(DomainFixture fixture) : IClassFixture<DomainFixture>
 {
     private readonly {Aggregate}.{Command} _{command} = fixture.Get<{Aggregate}.{Command}>();
 
@@ -127,7 +127,9 @@ public void Execute_When{ConflictCondition}_ThrowsConflictException()
 - **No XML docs**
 - **Siempre usar `DomainFixture`** para resolver el comando bajo test
 - **Siempre usar `Testable{Aggregate}`** para preparar estado en Arrange
+- **Siempre implementar `IClassFixture<DomainFixture>`** en la clase de test
 - **NO encadenar comandos** para crear estado previo
+- **NO re-testear validación de VOs** → Eso ya está cubierto por los tests de cada validador de VO. Los tests de comandos se centran en: guards, mutaciones de estado y lógica de negocio propia del comando
 - **UN solo comando** en el Act
 - Clase: `{Aggregate}{Command}Tests`
 - Nomenclatura de tests:
