@@ -56,12 +56,9 @@ public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, 
 
             
             entity.ComplexProperty(s => s.Policy, policy =>
-            {
-            
+            {            
                 policy.Ignore(p => p.SlotIntervalMinutes);
-                policy.Ignore(p => p.MaxAdvanceDays);
-                
-                policy.Ignore(p=>p.StandardDurations);
+                policy.Ignore(p => p.MaxAdvanceDays);             
                 policy.MapOf(p => p.StandardDurations);
             });
 
