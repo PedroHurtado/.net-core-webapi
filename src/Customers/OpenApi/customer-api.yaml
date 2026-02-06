@@ -1,0 +1,1024 @@
+openapi: 3.0.3
+info:
+  title: Fudie Customer API
+  description: |
+    API de administración del agregado Customer.
+
+    Todos los endpoints usan `/customer` (singular) sin identificador en la URL.
+    El tenantId se obtiene exclusivamente del JWT interno.
+    Los sub-recursos mantienen sus identificadores propios en la ruta ({imageId}, {platform}, {code}).
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+tags:
+  - name: Customer
+    description: Operaciones sobre el agregado Customer
+  - name: Address
+    description: Dirección física del customere
+  - name: ContactInfo
+    description: Información de contacto
+  - name: BillingInfo
+    description: Datos de facturación
+  - name: PriceRange
+    description: Rango de precios
+  - name: Images
+    description: Galería de imágenes
+  - name: SocialLinks
+    description: Enlaces a redes sociales
+  - name: SupportedCultures
+    description: Idiomas soportados
+  - name: Lifecycle
+    description: Activación y desactivación
+
+paths:
+  /customer:
+    post:
+      tags: [Customer]
+      operationId: createCustomer
+      summary: Crear customere
+      description: |
+        Crea un nuevo customere. Se invoca tras completar el flujo de pago.
+        El customere se crea con IsActive=false.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Customere creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '409':
+          description: Slug duplicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    get:
+      tags: [Customer]
+      operationId: getCustomer
+      summary: Obtener customere
+      description: Devuelve el customere del tenant autenticado.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    put:
+      tags: [Customer]
+      operationId: updateCustomer
+      summary: Actualizar customere
+      description: Actualiza los datos generales del customere incluyendo las colecciones de strings (cuisineTypes, serviceAmenities, dietaryOptions) que se reemplazan completamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Slug duplicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/address:
+    put:
+      tags: [Address]
+      operationId: updateAddress
+      summary: Actualizar dirección
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAddressRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/contact-info:
+    put:
+      tags: [ContactInfo]
+      operationId: updateContactInfo
+      summary: Actualizar información de contacto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContactInfoRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/billing-info:
+    put:
+      tags: [BillingInfo]
+      operationId: updateBillingInfo
+      summary: Actualizar datos de facturación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBillingInfoRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/price-range:
+    put:
+      tags: [PriceRange]
+      operationId: setPriceRange
+      summary: Configurar rango de precios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPriceRangeRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    delete:
+      tags: [PriceRange]
+      operationId: removePriceRange
+      summary: Eliminar rango de precios
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/images:
+    post:
+      tags: [Images]
+      operationId: addImage
+      summary: Añadir imagen
+      description: |
+        Si la nueva imagen se marca como cover, la imagen cover anterior pierde ese estado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddImageRequest'
+      responses:
+        '201':
+          description: Imagen añadida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: URL duplicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/images/{imageId}:
+    parameters:
+      - $ref: '#/components/parameters/imageId'
+
+    put:
+      tags: [Images]
+      operationId: updateImage
+      summary: Actualizar imagen
+      description: |
+        Actualiza metadatos de la imagen (altText, displayOrder, isCover). La URL no se modifica.
+        Si se marca como cover, la imagen cover anterior pierde ese estado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateImageRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer o imagen no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    delete:
+      tags: [Images]
+      operationId: removeImage
+      summary: Eliminar imagen
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: Customer o imagen no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/social-links:
+    post:
+      tags: [SocialLinks]
+      operationId: addSocialLink
+      summary: Añadir enlace social
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSocialLinkRequest'
+      responses:
+        '201':
+          description: Enlace añadido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Platform duplicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/social-links/{platform}:
+    parameters:
+      - $ref: '#/components/parameters/platform'
+
+    put:
+      tags: [SocialLinks]
+      operationId: updateSocialLink
+      summary: Actualizar enlace social
+      description: Actualiza la URL del enlace. La platform no se modifica.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSocialLinkRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '404':
+          description: Customer o social link no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    delete:
+      tags: [SocialLinks]
+      operationId: removeSocialLink
+      summary: Eliminar enlace social
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: Customer o social link no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/supported-cultures:
+    post:
+      tags: [SupportedCultures]
+      operationId: addSupportedCulture
+      summary: Añadir idioma soportado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSupportedCultureRequest'
+      responses:
+        '201':
+          description: Cultura añadida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Cultura duplicada o es la default
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/supported-cultures/{code}:
+    parameters:
+      - $ref: '#/components/parameters/cultureCode'
+
+    delete:
+      tags: [SupportedCultures]
+      operationId: removeSupportedCulture
+      summary: Eliminar idioma soportado
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: Customer o cultura no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/activate:
+    post:
+      tags: [Lifecycle]
+      operationId: activateCustomer
+      summary: Activar customere
+      description: |
+        Requiere perfil completo (logo, al menos una imagen, descripción y cuisineTypes).
+      responses:
+        '200':
+          description: Customere activado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya estaba activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Perfil incompleto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /customer/deactivate:
+    post:
+      tags: [Lifecycle]
+      operationId: deactivateCustomer
+      summary: Desactivar customere
+      responses:
+        '200':
+          description: Customere desactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya estaba inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+components:
+  parameters:
+    imageId:
+      name: imageId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    platform:
+      name: platform
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 50
+      example: Facebook
+
+    cultureCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z]{2}-[A-Z]{2}$'
+      example: en-GB
+
+  schemas:
+    # ──────────────────────────────────────────────
+    # Requests
+    # ──────────────────────────────────────────────
+
+    CreateCustomerRequest:
+      type: object
+      required: [name, slug, establishmentType, defaultCulture, timeZoneId, address, contactInfo, billingInfo]
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        slug:
+          type: string
+          maxLength: 150
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+        establishmentType:
+          type: string
+          maxLength: 100
+        defaultCulture:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+          example: es-ES
+        timeZoneId:
+          type: string
+          maxLength: 100
+          example: Europe/Madrid
+        address:
+          $ref: '#/components/schemas/CreateAddressRequest'
+        contactInfo:
+          $ref: '#/components/schemas/CreateContactInfoRequest'
+        billingInfo:
+          $ref: '#/components/schemas/CreateBillingInfoRequest'
+
+    CreateAddressRequest:
+      type: object
+      required: [street, city, postalCode, region, country, location]
+      properties:
+        street:
+          type: string
+          maxLength: 200
+        city:
+          type: string
+          maxLength: 100
+        postalCode:
+          type: string
+          maxLength: 20
+        region:
+          type: string
+          maxLength: 100
+        country:
+          type: string
+          maxLength: 100
+        location:
+          $ref: '#/components/schemas/GeoPointRequest'
+
+    CreateContactInfoRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 150
+          nullable: true
+        websiteUrl:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+
+    CreateBillingInfoRequest:
+      type: object
+      required: [businessName, taxId, billingAddress]
+      properties:
+        businessName:
+          type: string
+          maxLength: 200
+        taxId:
+          type: string
+          maxLength: 50
+        billingAddress:
+          $ref: '#/components/schemas/CreateAddressRequest'
+
+    UpdateCustomerRequest:
+      type: object
+      required: [name, slug, establishmentType, defaultCulture, timeZoneId, cuisineTypes, serviceAmenities, dietaryOptions]
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        slug:
+          type: string
+          maxLength: 150
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+        logoUrl:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        establishmentType:
+          type: string
+          maxLength: 100
+        defaultCulture:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+        timeZoneId:
+          type: string
+          maxLength: 100
+        cuisineTypes:
+          type: array
+          items:
+            type: string
+        serviceAmenities:
+          type: array
+          items:
+            type: string
+        dietaryOptions:
+          type: array
+          items:
+            type: string
+
+    UpdateAddressRequest:
+      type: object
+      required: [street, city, postalCode, region, country, location]
+      properties:
+        street:
+          type: string
+          maxLength: 200
+        city:
+          type: string
+          maxLength: 100
+        postalCode:
+          type: string
+          maxLength: 20
+        region:
+          type: string
+          maxLength: 100
+        country:
+          type: string
+          maxLength: 100
+        location:
+          $ref: '#/components/schemas/GeoPointRequest'
+
+    UpdateContactInfoRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 150
+          nullable: true
+        websiteUrl:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+
+    UpdateBillingInfoRequest:
+      type: object
+      required: [businessName, taxId, billingAddress]
+      properties:
+        businessName:
+          type: string
+          maxLength: 200
+        taxId:
+          type: string
+          maxLength: 50
+        billingAddress:
+          $ref: '#/components/schemas/CreateAddressRequest'
+
+    SetPriceRangeRequest:
+      type: object
+      required: [minPrice, maxPrice]
+      properties:
+        minPrice:
+          type: number
+          format: double
+          minimum: 0
+        maxPrice:
+          type: number
+          format: double
+          minimum: 0
+
+    AddImageRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 500
+        altText:
+          type: string
+          maxLength: 200
+          nullable: true
+        displayOrder:
+          type: integer
+          minimum: 0
+          default: 0
+        isCover:
+          type: boolean
+          default: false
+
+    UpdateImageRequest:
+      type: object
+      required: [displayOrder, isCover]
+      properties:
+        altText:
+          type: string
+          maxLength: 200
+          nullable: true
+        displayOrder:
+          type: integer
+          minimum: 0
+        isCover:
+          type: boolean
+
+    AddSocialLinkRequest:
+      type: object
+      required: [platform, url]
+      properties:
+        platform:
+          type: string
+          maxLength: 50
+        url:
+          type: string
+          format: uri
+          maxLength: 500
+
+    UpdateSocialLinkRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          maxLength: 500
+
+    AddSupportedCultureRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+          example: en-GB
+
+    GeoPointRequest:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+
+    # ──────────────────────────────────────────────
+    # Responses
+    # ──────────────────────────────────────────────
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        establishmentType:
+          type: string
+        defaultCulture:
+          type: string
+        timeZoneId:
+          type: string
+        isActive:
+          type: boolean
+        hasPriceRange:
+          type: boolean
+        hasLogo:
+          type: boolean
+        hasImages:
+          type: boolean
+        isProfileComplete:
+          type: boolean
+        address:
+          $ref: '#/components/schemas/AddressResponse'
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfoResponse'
+        billingInfo:
+          $ref: '#/components/schemas/BillingInfoResponse'
+        priceRange:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PriceRangeResponse'
+        coverImage:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CustomerImageResponse'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerImageResponse'
+        cuisineTypes:
+          type: array
+          items:
+            type: string
+        serviceAmenities:
+          type: array
+          items:
+            type: string
+        dietaryOptions:
+          type: array
+          items:
+            type: string
+        supportedCultures:
+          type: array
+          items:
+            $ref: '#/components/schemas/CultureCodeResponse'
+        socialLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialLinkResponse'
+
+    AddressResponse:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        region:
+          type: string
+        country:
+          type: string
+        location:
+          $ref: '#/components/schemas/GeoPointResponse'
+        fullAddress:
+          type: string
+
+    GeoPointResponse:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+
+    ContactInfoResponse:
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+          nullable: true
+        websiteUrl:
+          type: string
+          nullable: true
+
+    BillingInfoResponse:
+      type: object
+      properties:
+        businessName:
+          type: string
+        taxId:
+          type: string
+        billingAddress:
+          $ref: '#/components/schemas/AddressResponse'
+
+    PriceRangeResponse:
+      type: object
+      properties:
+        minPrice:
+          type: number
+          format: double
+        maxPrice:
+          type: number
+          format: double
+
+    CustomerImageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        altText:
+          type: string
+          nullable: true
+        displayOrder:
+          type: integer
+        isCover:
+          type: boolean
+
+    CultureCodeResponse:
+      type: object
+      properties:
+        code:
+          type: string
+
+    SocialLinkResponse:
+      type: object
+      properties:
+        platform:
+          type: string
+        url:
+          type: string
+
+    # ──────────────────────────────────────────────
+    # Errors
+    # ──────────────────────────────────────────────
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
