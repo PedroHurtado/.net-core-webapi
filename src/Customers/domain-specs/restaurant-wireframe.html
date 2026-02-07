@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Restaurante | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',warning:'#F59E0B',service:'#8B5CF6'}}}}</script>
+    <style>
+        .cmd-update{background:#DBEAFE;color:#1E40AF}
+        .cmd-activate{background:#D1FAE5;color:#065F46}
+        .cmd-deactivate{background:#FEE2E2;color:#991B1B}
+        .cmd-add{background:#E0E7FF;color:#3730A3}
+        .cmd-remove{background:#FCE7F3;color:#9D174D}
+        .cmd-get{background:#F3F4F6;color:#374151}
+        .cmd-delete{background:#FEE2E2;color:#991B1B}
+        .card:hover{transform:translateY(-2px)}
+        .row:hover{background:#f9fafb}
+        .smooth{transition:all .3s}
+        .fade-in{animation:fadeIn .4s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .checklist-ok{color:#10B981}.checklist-fail{color:#EF4444}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+<main class="p-4 md:p-8">
+<div class="max-w-6xl mx-auto fade-in">
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-bold">El Bar del Juanjo</h1>
+            <span id="statusBadge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase"><i class="fas fa-check text-[8px]"></i>Activo</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1 font-mono">el-bar-del-juanjo · Bar · es-ES · Europe/Madrid</p>
+    </div>
+    <div class="flex gap-3">
+        <button id="toggleBtn" onclick="toggleStatus()" class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100 smooth"><i class="fas fa-pause mr-2"></i>Desactivar</button>
+    </div>
+</div>
+
+<!-- Endpoint badge -->
+<div class="mb-6 flex flex-wrap gap-2">
+    <span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /restaurant</span>
+    <span class="text-xs text-gray-400 flex items-center gap-1"><i class="fas fa-info-circle"></i> El restaurante se creó automáticamente con tu suscripción</span>
+</div>
+
+<!-- ═══════════ GRID LAYOUT ═══════════ -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 space-y-6">
+
+<!-- ── Info Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service"><i class="fas fa-store"></i></div>
+            <div>
+                <h3 class="font-bold">Información General</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant → Restaurant.Update</span>
+            </div>
+        </div>
+        <button onclick="openM('mUpdate')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm smooth"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p><p class="font-medium">El Bar del Juanjo</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Slug</p><p class="font-medium font-mono text-sm">el-bar-del-juanjo</p></div>
+            <div class="col-span-2"><p class="text-xs font-bold text-gray-400 uppercase mb-1">Descripción</p><p class="text-gray-600 text-sm">Bar escondido en un pequeño rincón de la cuenca del Mula donde encontramos tapas típicas y elaboraciones con toques creativos.</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Tipo</p><p class="font-medium">Bar</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Logo</p><p class="text-sm text-info truncate">https://cdn.fudie.com/.../logo.jpg</p></div>
+        </div>
+        <div class="border-t pt-4">
+            <p class="text-xs font-bold text-gray-400 uppercase mb-3">Colecciones</p>
+            <div class="space-y-3">
+                <div><p class="text-xs text-gray-500 mb-1">Tipos de cocina</p><div class="flex flex-wrap gap-1"><span class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold">Española</span><span class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold">Mediterránea</span><span class="px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[11px] font-bold">Murciana</span></div></div>
+                <div><p class="text-xs text-gray-500 mb-1">Amenidades</p><div class="flex flex-wrap gap-1"><span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold">Terraza</span><span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold">Acepta mascotas</span><span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold">Accesible</span><span class="px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 text-[11px] font-bold">Niños bienvenidos</span></div></div>
+                <div><p class="text-xs text-gray-500 mb-1">Opciones dietéticas</p><div class="flex flex-wrap gap-1"><span class="px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold">Celíacos</span><span class="px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold">Veganas</span></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Address Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+                <h3 class="font-bold">Dirección</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/address</span>
+            </div>
+        </div>
+        <button onclick="openM('mAddress')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm smooth"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+    </div>
+    <div class="p-6">
+        <p class="font-medium mb-1">Ctra. Murcia, 23, 30193 La Puebla de Mula, Murcia, España</p>
+        <p class="text-xs text-gray-400 font-mono">38.0389, -1.4917</p>
+    </div>
+</div>
+
+<!-- ── Contact Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success"><i class="fas fa-phone-alt"></i></div>
+            <div>
+                <h3 class="font-bold">Contacto</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/contact-info</span>
+            </div>
+        </div>
+        <button onclick="openM('mContact')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm smooth"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-3 gap-4">
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Teléfono</p><p class="font-medium">639079481</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Email</p><p class="text-sm text-gray-400 italic">No definido</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Web</p><p class="text-sm text-info truncate">https://facebook.com/elbardeljuanjo</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Billing Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center text-warning"><i class="fas fa-file-invoice"></i></div>
+            <div>
+                <h3 class="font-bold">Facturación</h3>
+                <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/billing-info</span>
+            </div>
+        </div>
+        <button onclick="openM('mBilling')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm smooth"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-2 gap-4 mb-3">
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Razón Social</p><p class="font-medium">Bar Juanjo SL</p></div>
+            <div><p class="text-xs font-bold text-gray-400 uppercase mb-1">CIF</p><p class="font-medium font-mono">B12345678</p></div>
+        </div>
+        <div class="border-t pt-3">
+            <p class="text-xs font-bold text-gray-400 uppercase mb-1">Dirección Fiscal</p>
+            <p class="text-sm text-gray-600">Ctra. Murcia, 23, 30193 La Puebla de Mula, Murcia, España</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Price Range Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-gray-50/50 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-euro-sign"></i></div>
+            <div>
+                <h3 class="font-bold">Rango de Precios</h3>
+                <div class="flex gap-1 mt-0.5">
+                    <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → SetPriceRange</span>
+                    <span class="cmd-delete text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemovePriceRange</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="openM('mPrice')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-sm smooth"><i class="fas fa-pencil-alt mr-1"></i>Editar</button>
+            <button onclick="openM('mPriceRm')" class="px-3 py-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 smooth"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>
+    <div class="p-6 flex items-center gap-3">
+        <div class="bg-emerald-50 rounded-xl px-4 py-3 text-center"><p class="text-xs text-gray-500">Mínimo</p><p class="text-xl font-bold text-emerald-600">10€</p></div>
+        <i class="fas fa-arrow-right text-gray-300"></i>
+        <div class="bg-emerald-50 rounded-xl px-4 py-3 text-center"><p class="text-xs text-gray-500">Máximo</p><p class="text-xl font-bold text-emerald-600">30€</p></div>
+    </div>
+</div>
+
+<!-- ── Images Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-service/5 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service"><i class="fas fa-images"></i></div>
+            <div><h3 class="font-bold">Imágenes</h3><p class="text-xs text-gray-500">3 imágenes</p></div>
+        </div>
+        <button onclick="openM('mImageAdd')" class="px-4 py-2 rounded-xl bg-service/10 hover:bg-service/20 text-service font-bold text-sm smooth"><i class="fas fa-plus mr-1"></i>Añadir</button>
+    </div>
+    <div class="px-4 py-2 bg-service/5 border-b flex flex-wrap gap-2">
+        <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddImage</span>
+        <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateImage</span>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveImage</span>
+    </div>
+    <div class="divide-y">
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-image text-2xl"></i></div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2"><h4 class="font-bold text-sm">Fachada del Bar del Juanjo</h4><span class="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold">COVER</span></div>
+                <p class="text-xs text-gray-400 truncate">https://cdn.fudie.com/.../fachada.jpg</p>
+                <p class="text-xs text-gray-500">Orden: 0</p>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mImageEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mImageRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-image text-2xl"></i></div>
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-sm">Interior del restaurante</h4>
+                <p class="text-xs text-gray-400 truncate">https://cdn.fudie.com/.../interior.jpg</p>
+                <p class="text-xs text-gray-500">Orden: 1</p>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mImageEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mImageRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-image text-2xl"></i></div>
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-sm">Terraza exterior</h4>
+                <p class="text-xs text-gray-400 truncate">https://cdn.fudie.com/.../terraza.jpg</p>
+                <p class="text-xs text-gray-500">Orden: 2</p>
+            </div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mImageEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mImageRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Social Links Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-service/5 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service"><i class="fas fa-share-alt"></i></div>
+            <div><h3 class="font-bold">Redes Sociales</h3><p class="text-xs text-gray-500">3 enlaces</p></div>
+        </div>
+        <button onclick="openM('mSocialAdd')" class="px-4 py-2 rounded-xl bg-service/10 hover:bg-service/20 text-service font-bold text-sm smooth"><i class="fas fa-plus mr-1"></i>Añadir</button>
+    </div>
+    <div class="px-4 py-2 bg-service/5 border-b flex flex-wrap gap-2">
+        <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddSocialLink</span>
+        <span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → UpdateSocialLink</span>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveSocialLink</span>
+    </div>
+    <div class="divide-y">
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><i class="fab fa-facebook-f"></i></div>
+            <div class="flex-1 min-w-0"><h4 class="font-bold text-sm">Facebook</h4><p class="text-xs text-info truncate">https://facebook.com/elbardeljuanjo</p></div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mSocialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mSocialRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600"><i class="fab fa-tripadvisor"></i></div>
+            <div class="flex-1 min-w-0"><h4 class="font-bold text-sm">TripAdvisor</h4><p class="text-xs text-info truncate">https://tripadvisor.es/Restaurant_Review-g1087583</p></div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mSocialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mSocialRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+        <div class="row p-4 flex items-center gap-4 group">
+            <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-500"><i class="fab fa-google"></i></div>
+            <div class="flex-1 min-w-0"><h4 class="font-bold text-sm">Google</h4><p class="text-xs text-info truncate">https://maps.google.com/?cid=...</p></div>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 smooth">
+                <button onclick="openM('mSocialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-edit text-sm"></i></button>
+                <button onclick="openM('mSocialRm')" class="w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Supported Cultures Card ── -->
+<div class="bg-white rounded-2xl border overflow-hidden">
+    <div class="p-4 bg-service/5 border-b flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-service/10 flex items-center justify-center text-service"><i class="fas fa-language"></i></div>
+            <div><h3 class="font-bold">Idiomas Soportados</h3><p class="text-xs text-gray-500">Default: es-ES · 1 adicional</p></div>
+        </div>
+        <button onclick="openM('mCultureAdd')" class="px-4 py-2 rounded-xl bg-service/10 hover:bg-service/20 text-service font-bold text-sm smooth"><i class="fas fa-plus mr-1"></i>Añadir</button>
+    </div>
+    <div class="px-4 py-2 bg-service/5 border-b flex flex-wrap gap-2">
+        <span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST → AddSupportedCulture</span>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE → RemoveSupportedCulture</span>
+    </div>
+    <div class="p-4 flex flex-wrap gap-3">
+        <div class="flex items-center gap-2 px-4 py-2.5 bg-service/5 border border-service/20 rounded-xl">
+            <span class="text-lg">🇪🇸</span><span class="font-bold text-sm">es-ES</span>
+            <span class="px-2 py-0.5 rounded bg-service/10 text-service text-[10px] font-bold">DEFAULT</span>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border rounded-xl group">
+            <span class="text-lg">🇬🇧</span><span class="font-bold text-sm">en-GB</span>
+            <button onclick="openM('mCultureRm')" class="w-6 h-6 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 ml-1 smooth"><i class="fas fa-times text-xs"></i></button>
+        </div>
+    </div>
+</div>
+
+</div><!-- end main col -->
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<div class="space-y-4">
+
+<!-- Estado -->
+<div class="bg-white rounded-2xl border p-4">
+    <h3 class="font-bold mb-4">Estado</h3>
+    <div class="flex justify-between items-center mb-4">
+        <span class="text-sm text-gray-500">Estado</span>
+        <span id="statusText" class="font-bold text-success">Activo</span>
+    </div>
+    <div class="pt-4 border-t space-y-2">
+        <p class="text-xs font-bold text-gray-400 uppercase">Comandos</p>
+        <span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST /restaurant/activate</span>
+        <span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded mt-1">POST /restaurant/deactivate</span>
+    </div>
+</div>
+
+<!-- Requisitos -->
+<div class="bg-white rounded-2xl border p-4">
+    <h3 class="font-bold mb-3">Requisitos para Activar</h3>
+    <p class="text-xs text-gray-500 mb-3">IsProfileComplete = true</p>
+    <div class="space-y-2">
+        <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Logo definido</span></div>
+        <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Al menos 1 imagen</span></div>
+        <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Descripción definida</span></div>
+        <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center"><i class="fas fa-check text-success text-xs"></i></div><span class="text-sm">Al menos 1 tipo de cocina</span></div>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="bg-white rounded-2xl border p-4">
+    <h3 class="font-bold mb-3">Resumen</h3>
+    <div class="space-y-3">
+        <div class="flex justify-between"><span class="text-sm text-gray-500">Imágenes</span><span class="font-bold">3</span></div>
+        <div class="flex justify-between"><span class="text-sm text-gray-500">Redes sociales</span><span class="font-bold">3</span></div>
+        <div class="flex justify-between"><span class="text-sm text-gray-500">Idiomas</span><span class="font-bold">1 + default</span></div>
+        <div class="flex justify-between"><span class="text-sm text-gray-500">Precios</span><span class="font-bold text-emerald-600">10€ - 30€</span></div>
+    </div>
+</div>
+
+<!-- Flujo de creación -->
+<div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+    <h3 class="font-bold mb-2 text-sm flex items-center gap-2"><i class="fas fa-bolt text-amber-500"></i>Flujo de Creación</h3>
+    <p class="text-xs text-gray-600 leading-relaxed">El restaurante se crea automáticamente con <code class="bg-amber-100 px-1 rounded text-[10px]">Restaurant.Create</code> al completar la compra de la suscripción. Se inicializa con los datos de facturación del pago y con <code class="bg-amber-100 px-1 rounded text-[10px]">IsActive = false</code>.</p>
+    <div class="mt-3 pt-3 border-t border-amber-200">
+        <p class="text-[10px] font-mono text-amber-700">🟡[System] → 🔵(CreateRestaurant) → 🟤[[Restaurant]]</p>
+        <p class="text-[10px] font-mono text-amber-700 mt-1">⚡{PaymentCompleted} → IsActive=false</p>
+    </div>
+</div>
+
+<!-- Endpoints -->
+<div class="bg-service/5 border border-service/20 rounded-2xl p-4">
+    <h3 class="font-bold mb-3 text-sm flex items-center gap-2"><i class="fas fa-sitemap text-service"></i>Endpoints</h3>
+    <div class="space-y-1.5 text-[10px] font-mono">
+        <p class="text-gray-400">POST /restaurant <span class="text-[9px] italic">(solo sistema)</span></p>
+        <p class="text-gray-600">GET /restaurant</p>
+        <p class="text-gray-600">PUT /restaurant</p>
+        <p class="text-gray-500">PUT /restaurant/address</p>
+        <p class="text-gray-500">PUT /restaurant/contact-info</p>
+        <p class="text-gray-500">PUT /restaurant/billing-info</p>
+        <p class="text-gray-500">PUT|DEL /restaurant/price-range</p>
+        <p class="text-gray-500">POST|PUT|DEL /restaurant/images</p>
+        <p class="text-gray-500">POST|PUT|DEL /restaurant/social-links</p>
+        <p class="text-gray-500">POST|DEL /restaurant/supported-cultures</p>
+        <p class="text-gray-500">POST /restaurant/activate</p>
+        <p class="text-gray-500">POST /restaurant/deactivate</p>
+    </div>
+</div>
+
+</div><!-- end sidebar -->
+
+</div><!-- end grid -->
+</div><!-- end max-w -->
+</main>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Update General -->
+<div id="mUpdate" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+        <div><h3 class="text-lg font-bold">Editar Restaurante</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant → Restaurant.Update</span></div>
+        <button onclick="closeM('mUpdate')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input value="El Bar del Juanjo" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Slug *</label><input value="el-bar-del-juanjo" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium font-mono text-sm focus:border-primary outline-none"></div>
+        </div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="2" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none">Bar escondido en un pequeño rincón de la cuenca del Mula...</textarea></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Logo URL</label><input value="https://cdn.fudie.com/.../logo.jpg" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium text-sm focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo *</label><input value="Bar" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Idioma *</label><input value="es-ES" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium font-mono focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Zona horaria *</label><input value="Europe/Madrid" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium font-mono focus:border-primary outline-none"></div>
+        </div>
+        <div class="border-t pt-4">
+            <p class="text-sm font-bold text-gray-700 mb-3">Colecciones (reemplazo completo)</p>
+            <div class="space-y-3">
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipos de cocina</label><input value="Española, Mediterránea, Murciana" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Separar por comas</p></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Amenidades</label><input value="Terraza, Acepta mascotas, Accesible, Niños bienvenidos" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Opciones dietéticas</label><input value="Opciones para celíacos, Opciones veganas" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            </div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+        <button onclick="closeM('mUpdate')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mUpdate');toast('Restaurante actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Address -->
+<div id="mAddress" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+        <div><h3 class="text-lg font-bold">Editar Dirección</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/address</span></div>
+        <button onclick="closeM('mAddress')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Calle *</label><input value="Ctra. Murcia, 23" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Ciudad *</label><input value="La Puebla de Mula" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">C. Postal *</label><input value="30193" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Región *</label><input value="Murcia" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">País *</label><input value="España" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Latitud *</label><input type="number" step="any" value="38.0389" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Longitud *</label><input type="number" step="any" value="-1.4917" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+        <button onclick="closeM('mAddress')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mAddress');toast('Dirección actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Contact -->
+<div id="mContact" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Editar Contacto</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/contact-info</span></div>
+        <button onclick="closeM('mContact')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Teléfono *</label><input value="639079481" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email</label><input type="email" placeholder="juanjo@example.com" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Website</label><input value="https://facebook.com/elbardeljuanjo" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mContact')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mContact');toast('Contacto actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Billing -->
+<div id="mBilling" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+        <div><h3 class="text-lg font-bold">Editar Facturación</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/billing-info</span></div>
+        <button onclick="closeM('mBilling')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Razón Social *</label><input value="Bar Juanjo SL" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">CIF *</label><input value="B12345678" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium font-mono focus:border-primary outline-none"></div>
+        </div>
+        <div class="border-t pt-4">
+            <p class="text-xs font-bold text-gray-500 uppercase mb-3">Dirección Fiscal</p>
+            <div class="space-y-3">
+                <input value="Ctra. Murcia, 23" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                <div class="grid grid-cols-2 gap-3">
+                    <input value="La Puebla de Mula" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <input value="30193" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input value="Murcia" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <input value="España" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" step="any" value="38.0389" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                    <input type="number" step="any" value="-1.4917" class="bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3 sticky bottom-0 bg-white">
+        <button onclick="closeM('mBilling')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mBilling');toast('Facturación actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Price -->
+<div id="mPrice" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Rango de Precios</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/price-range</span></div>
+        <button onclick="closeM('mPrice')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Mínimo € *</label><input type="number" value="10" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none"></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Máximo € *</label><input type="number" value="30" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-bold text-lg focus:border-primary outline-none"></div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mPrice')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mPrice');toast('Precios actualizados')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Price Remove -->
+<div id="mPriceRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 text-center">
+        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div>
+        <h3 class="text-lg font-bold mb-2">¿Eliminar Rango de Precios?</h3>
+        <p class="text-sm text-gray-500 mb-3">Se eliminará la información de precios</p>
+        <span class="cmd-delete text-[10px] font-bold px-2 py-0.5 rounded">DELETE /restaurant/price-range</span>
+    </div>
+    <div class="p-6 border-t flex gap-3">
+        <button onclick="closeM('mPriceRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+        <button onclick="closeM('mPriceRm');toast('Precios eliminados')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+    </div>
+</div></div>
+
+<!-- Image Add -->
+<div id="mImageAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Añadir Imagen</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST /restaurant/images</span></div>
+        <button onclick="closeM('mImageAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL *</label><input type="url" placeholder="https://cdn.fudie.com/..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Texto alternativo</label><input placeholder="Descripción de la imagen" maxlength="200" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="0" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div class="flex items-end pb-1"><label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-5 h-5 rounded text-primary"><span class="font-medium text-sm">Cover</span></label></div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mImageAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mImageAdd');toast('Imagen añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Añadir</button>
+    </div>
+</div></div>
+
+<!-- Image Edit -->
+<div id="mImageEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Editar Imagen</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/images/{imageId}</span></div>
+        <button onclick="closeM('mImageEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div class="p-3 bg-gray-50 rounded-xl"><p class="text-xs text-gray-500">URL (no modificable)</p><p class="text-sm font-mono text-gray-600 truncate">https://cdn.fudie.com/.../fachada.jpg</p></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Texto alternativo</label><input value="Fachada del Bar del Juanjo" maxlength="200" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Orden</label><input type="number" value="0" min="0" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+            <div class="flex items-end pb-1"><label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-5 h-5 rounded text-primary"><span class="font-medium text-sm">Cover</span></label></div>
+        </div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mImageEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mImageEdit');toast('Imagen actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Image Remove -->
+<div id="mImageRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 text-center">
+        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div>
+        <h3 class="text-lg font-bold mb-2">¿Eliminar Imagen?</h3>
+        <p class="text-sm text-gray-500 mb-3">Se eliminará de la galería</p>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE /restaurant/images/{imageId}</span>
+    </div>
+    <div class="p-6 border-t flex gap-3">
+        <button onclick="closeM('mImageRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+        <button onclick="closeM('mImageRm');toast('Imagen eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+    </div>
+</div></div>
+
+<!-- Social Add -->
+<div id="mSocialAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Añadir Red Social</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST /restaurant/social-links</span></div>
+        <button onclick="closeM('mSocialAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Plataforma *</label><input placeholder="Instagram, Facebook, TripAdvisor..." maxlength="50" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL *</label><input type="url" placeholder="https://..." maxlength="500" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mSocialAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mSocialAdd');toast('Red social añadida')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Añadir</button>
+    </div>
+</div></div>
+
+<!-- Social Edit -->
+<div id="mSocialEdit" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Editar Red Social</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT /restaurant/social-links/{platform}</span></div>
+        <button onclick="closeM('mSocialEdit')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div class="p-3 bg-gray-50 rounded-xl flex items-center gap-3"><i class="fab fa-facebook-f text-blue-600"></i><span class="font-bold">Facebook</span><span class="text-xs text-gray-400 ml-auto">No modificable</span></div>
+        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">URL *</label><input value="https://facebook.com/elbardeljuanjo" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mSocialEdit')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mSocialEdit');toast('Red social actualizada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Guardar</button>
+    </div>
+</div></div>
+
+<!-- Social Remove -->
+<div id="mSocialRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 text-center">
+        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div>
+        <h3 class="text-lg font-bold mb-2">¿Eliminar Red Social?</h3>
+        <p class="text-sm text-gray-500 mb-3">Se eliminará <strong>Facebook</strong></p>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE /restaurant/social-links/{platform}</span>
+    </div>
+    <div class="p-6 border-t flex gap-3">
+        <button onclick="closeM('mSocialRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+        <button onclick="closeM('mSocialRm');toast('Red social eliminada')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+    </div>
+</div></div>
+
+<!-- Culture Add -->
+<div id="mCultureAdd" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 border-b flex items-center justify-between">
+        <div><h3 class="text-lg font-bold">Añadir Idioma</h3><span class="cmd-add text-[10px] font-bold px-2 py-0.5 rounded">POST /restaurant/supported-cultures</span></div>
+        <button onclick="closeM('mCultureAdd')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-6">
+        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Código *</label>
+        <input placeholder="fr-FR, de-DE, pt-PT..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium font-mono focus:border-primary outline-none">
+        <p class="text-xs text-gray-400 mt-1">Formato xx-XX. No puede ser el default (es-ES)</p>
+    </div>
+    <div class="p-6 border-t flex justify-end gap-3">
+        <button onclick="closeM('mCultureAdd')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button>
+        <button onclick="closeM('mCultureAdd');toast('Idioma añadido')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark smooth">Añadir</button>
+    </div>
+</div></div>
+
+<!-- Culture Remove -->
+<div id="mCultureRm" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-sm w-full shadow-2xl">
+    <div class="p-6 text-center">
+        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-2xl mx-auto mb-4"><i class="fas fa-trash"></i></div>
+        <h3 class="text-lg font-bold mb-2">¿Eliminar Idioma?</h3>
+        <p class="text-sm text-gray-500 mb-3">Se eliminará <strong>en-GB</strong></p>
+        <span class="cmd-remove text-[10px] font-bold px-2 py-0.5 rounded">DELETE /restaurant/supported-cultures/{code}</span>
+    </div>
+    <div class="p-6 border-t flex gap-3">
+        <button onclick="closeM('mCultureRm')" class="flex-1 px-6 py-2.5 rounded-full font-bold text-gray-500 bg-gray-100 hover:bg-gray-200">Cancelar</button>
+        <button onclick="closeM('mCultureRm');toast('Idioma eliminado')" class="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-full font-bold hover:bg-red-700">Eliminar</button>
+    </div>
+</div></div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50">
+    <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center"><i class="fas fa-check"></i></div>
+    <span id="toastMsg">OK</span>
+</div>
+
+<script>
+let isActive = true;
+
+function openM(id) { document.getElementById(id)?.classList.remove('hidden'); }
+function closeM(id) { document.getElementById(id)?.classList.add('hidden'); }
+function toast(msg) {
+    const t = document.getElementById('toastEl');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+function toggleStatus() {
+    isActive = !isActive;
+    const b = document.getElementById('statusBadge');
+    const t = document.getElementById('statusText');
+    const btn = document.getElementById('toggleBtn');
+
+    if (isActive) {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success text-white text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-check text-[8px]"></i>Activo';
+        t.className = 'font-bold text-success';
+        t.textContent = 'Activo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100 smooth';
+        btn.innerHTML = '<i class="fas fa-pause mr-2"></i>Desactivar';
+    } else {
+        b.className = 'inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-200 text-gray-500 text-xs font-bold uppercase';
+        b.innerHTML = '<i class="fas fa-circle text-[6px]"></i>Inactivo';
+        t.className = 'font-bold text-gray-500';
+        t.textContent = 'Inactivo';
+        btn.className = 'px-4 py-2.5 rounded-full font-bold text-green-600 bg-green-50 hover:bg-green-100 smooth';
+        btn.innerHTML = '<i class="fas fa-play mr-2"></i>Activar';
+    }
+    toast(isActive ? 'Restaurante activado' : 'Restaurante desactivado');
+}
+</script>
+</body>
+</html>
