@@ -11,4 +11,6 @@ global using Customers.Infrastructure;
 global using Customers.Features.Customers.Domain.CustomerAggregate;
 global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;
 
+global using Customers.Features.Customers.Api.CustomerAggregate;
+
 global using Customers.UnitTests.Helpers;
