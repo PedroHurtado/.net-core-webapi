@@ -8,6 +8,7 @@ public class CustomerCreateTests(DomainFixture fixture) : IClassFixture<DomainFi
     public void Execute_WithValidCommand_ReturnsCustomer()
     {
         var command = new CreateCustomerCommand(
+            Guid.NewGuid(),
             "El Bar del Juanjo",
             "el-bar-del-juanjo",
             "Bar de tapas",
