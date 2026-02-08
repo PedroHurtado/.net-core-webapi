@@ -39,7 +39,6 @@ public class CustomerResponseTests
 
         var response = CustomerResponse.Map(customer);
 
-        response.Id.Should().Be(customer.Id);
         response.Name.Should().Be("El Bar del Juanjo");
         response.Slug.Should().Be("el-bar-del-juanjo");
         response.Description.Should().Be("Bar de tapas");

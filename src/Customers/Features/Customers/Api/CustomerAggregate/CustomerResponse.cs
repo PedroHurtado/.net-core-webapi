@@ -1,7 +1,6 @@
 namespace Customers.Features.Customers.Api.CustomerAggregate;
 
 public record CustomerResponse(
-    Guid Id,
     string Name,
     string Slug,
     string? Description,
@@ -27,7 +26,6 @@ public record CustomerResponse(
     IReadOnlyCollection<SocialLinkResponse> SocialLinks)
 {
     public static CustomerResponse Map(Customer customer) => new(
-        Id: customer.Id,
         Name: customer.Name,
         Slug: customer.Slug,
         Description: customer.Description,
