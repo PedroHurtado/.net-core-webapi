@@ -14,6 +14,7 @@ global using Customers.Features.Customers.Api.CustomerAggregate.Queries;
 global using Customers.Features.Customers.Domain.CustomerAggregate;
 global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;
 global using Customers.IntegrationTests.Fixtures;
+global using Customers.IntegrationTests.Helpers;
 global using Fudie;
 global using Fudie.Domain;
 global using Fudie.Infrastructure;
