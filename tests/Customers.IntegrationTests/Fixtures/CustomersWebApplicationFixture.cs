@@ -4,7 +4,7 @@ public class CustomersWebApplicationFixture : IClassFixture<WebApplicationFactor
 {
     private const string EmulatorHost = "127.0.0.1:8080";
 
-    private readonly WebApplicationFactory<Program> _factory;
+    protected readonly WebApplicationFactory<Program> _factory;
 
     public HttpClient Client { get; }
 
