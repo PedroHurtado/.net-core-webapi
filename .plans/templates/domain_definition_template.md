@@ -1128,7 +1128,42 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-## 8. Resumen de Endpoints (Orden de Implementación)
+## 8. Descripciones de Permisos
+
+> Las descripciones son **responsabilidad de producto**. Se definen en español durante la sesión de diseño. Claude Code genera el archivo de descripciones del microservicio con el español como base y traduce automáticamente al resto de idiomas necesarios.
+>
+> Deben ser claras, concisas y comprensibles para alguien sin conocimientos técnicos — es lo que el administrador del restaurante ve cuando configura roles.
+
+### Scopes atómicos
+
+| Scope (nombre de clase) | Descripción (es) |
+|--------------------------|-------------------|
+| `Create{AggregateName}` | {Descripción legible para el Owner} |
+| `Get{AggregateName}` | {Descripción legible para el Owner} |
+| `List{AggregateName}s` | {Descripción legible para el Owner} |
+| `Update{AggregateName}` | {Descripción legible para el Owner} |
+| `Set{ValueObject}` | {Descripción legible para el Owner} |
+| `Remove{ValueObject}` | {Descripción legible para el Owner} |
+| `Add{Entity1}` | {Descripción legible para el Owner} |
+| `Update{Entity1}` | {Descripción legible para el Owner} |
+| `Remove{Entity1}` | {Descripción legible para el Owner} |
+| `Add{ChildItem}To{Entity1}` | {Descripción legible para el Owner} |
+| `Update{ChildItem}In{Entity1}` | {Descripción legible para el Owner} |
+| `Remove{ChildItem}From{Entity1}` | {Descripción legible para el Owner} |
+| `Activate{AggregateName}` | {Descripción legible para el Owner} |
+| `Deactivate{AggregateName}` | {Descripción legible para el Owner} |
+
+### Agrupaciones custom *(si aplica)*
+
+| Agrupación | Descripción (es) | Scopes que incluye |
+|------------|-------------------|-------------------|
+| `{dominio}:{aspecto}` | {Descripción legible para el Owner} | {Lista de scopes atómicos} |
+
+> Las agrupaciones automáticas (`{dominio}:read` y `{dominio}:write`) no se definen aquí — se generan por reflexión a partir del verbo HTTP.
+
+---
+
+## 9. Resumen de Endpoints (Orden de Implementación)
 
 | # | Método | Ruta | Comando/Query | Response |
 |---|--------|------|---------------|----------|
@@ -1149,7 +1184,7 @@ return {aggregate}Validator.ValidateOrThrow({aggregate});
 
 ---
 
-## 9. Persistencia (Firestore)
+## 10. Persistencia (Firestore)
 
 ### Colección
 
@@ -1222,7 +1257,7 @@ modelBuilder.Entity<{AggregateName}>(entity =>
 
 ---
 
-## 10. Hot Spots ⚠️
+## 11. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|
