@@ -1076,9 +1076,22 @@ components:
           description: Número de días disponibles en la semana
         weeklySchedule:
           type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ServiceDayConfigResponse'
           description: Configuración por día de la semana
+          properties:
+            Sunday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Monday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Tuesday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Wednesday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Thursday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Friday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
+            Saturday:
+              $ref: '#/components/schemas/ServiceDayConfigResponse'
         specialDates:
           type: array
           items:
@@ -1305,9 +1318,23 @@ components:
           description: Capacidad máxima del servicio
         weeklySchedule:
           type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ServiceDayConfigRequest'
           description: Configuración para cada día de la semana (7 días requeridos)
+          required: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+          properties:
+            Sunday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Monday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Tuesday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Wednesday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Thursday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Friday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Saturday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
     UpdateServiceRequest:
       type: object
       required:
@@ -1321,8 +1348,22 @@ components:
           example: 50
         weeklySchedule:
           type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ServiceDayConfigRequest'
+          required: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+          properties:
+            Sunday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Monday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Tuesday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Wednesday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Thursday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Friday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
+            Saturday:
+              $ref: '#/components/schemas/ServiceDayConfigRequest'
     ConfigureServiceDayRequest:
       type: object
       required:

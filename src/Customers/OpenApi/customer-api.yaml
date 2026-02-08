@@ -58,7 +58,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomerResponse'
+                $ref: '#/components/schemas/CreateCustomerResponse'
         '409':
           description: Slug duplicado
           content:
@@ -595,7 +595,7 @@ components:
 
     CreateAddressRequest:
       type: object
-      required: [street, city, postalCode, region, country, location]
+      required: [street, city, postalCode, region, country, latitude, longitude]
       properties:
         street:
           type: string
@@ -612,8 +612,16 @@ components:
         country:
           type: string
           maxLength: 100
-        location:
-          $ref: '#/components/schemas/GeoPointRequest'
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
 
     CreateContactInfoRequest:
       type: object
@@ -690,7 +698,7 @@ components:
 
     UpdateAddressRequest:
       type: object
-      required: [street, city, postalCode, region, country, location]
+      required: [street, city, postalCode, region, country, latitude, longitude]
       properties:
         street:
           type: string
@@ -707,8 +715,16 @@ components:
         country:
           type: string
           maxLength: 100
-        location:
-          $ref: '#/components/schemas/GeoPointRequest'
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
 
     UpdateContactInfoRequest:
       type: object
@@ -818,31 +834,22 @@ components:
           pattern: '^[a-z]{2}-[A-Z]{2}$'
           example: en-GB
 
-    GeoPointRequest:
-      type: object
-      required: [latitude, longitude]
-      properties:
-        latitude:
-          type: number
-          format: double
-          minimum: -90
-          maximum: 90
-        longitude:
-          type: number
-          format: double
-          minimum: -180
-          maximum: 180
-
     # ──────────────────────────────────────────────
     # Responses
     # ──────────────────────────────────────────────
 
-    CustomerResponse:
+    CreateCustomerResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
+        name:
+          type: string
+
+    CustomerResponse:
+      type: object
+      properties:
         name:
           type: string
         slug:

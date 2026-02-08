@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fudie Platform — Arquitectura</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #242836;
+            --border: #2e3345;
+            --text: #e4e7ef;
+            --text2: #8b90a3;
+            --accent: #FF4F5A;
+            --accent2: #ff6b74;
+            --blue: #5b9cf6;
+            --green: #34d399;
+            --amber: #fbbf24;
+            --purple: #a78bfa;
+            --cyan: #22d3ee;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Plus Jakarta Sans', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 3rem; }
+        .header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+        .header h1 span { color: var(--accent); }
+        .header p { color: var(--text2); font-size: 0.9rem; }
+
+        /* Tabs */
+        .tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+        .tab { padding: 0.6rem 1.2rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+            background: var(--surface); border: 1px solid var(--border); color: var(--text2); transition: all .2s; }
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        /* Panels */
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeUp .4s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Service cards */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; }
+        .svc { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: all .25s; }
+        .svc:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,79,90,.08); }
+        .svc-header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
+        .svc-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .svc-header h3 { font-size: 1rem; font-weight: 700; }
+        .svc-header .tech { font-family: var(--mono); font-size: 0.65rem; color: var(--text2); margin-top: 2px; }
+        .svc-body { padding: 1.25rem; }
+        .svc-body p { font-size: 0.82rem; color: var(--text2); line-height: 1.6; margin-bottom: 0.75rem; }
+
+        /* Collections / DB */
+        .db-tag { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem; border-radius: 6px;
+            font-family: var(--mono); font-size: 0.65rem; font-weight: 500; margin: 0.15rem; }
+
+        /* Flow diagram */
+        .flow { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
+        .flow-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); margin-bottom: 1.5rem; }
+        .flow-steps { display: flex; flex-direction: column; gap: 0; }
+        .step { display: flex; align-items: flex-start; gap: 1rem; position: relative; padding-bottom: 1.5rem; }
+        .step:last-child { padding-bottom: 0; }
+        .step:not(:last-child)::after { content: ''; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: var(--border); }
+        .step-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800; flex-shrink: 0; position: relative; z-index: 1; }
+        .step-content { flex: 1; padding-top: 0.35rem; }
+        .step-content h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .step-content p { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+        .step-content code { font-family: var(--mono); font-size: 0.7rem; background: var(--surface2); padding: 0.15rem 0.45rem; border-radius: 4px; color: var(--cyan); }
+
+        /* JWT display */
+        .jwt-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin: 0.75rem 0; font-family: var(--mono); font-size: 0.72rem; }
+        .jwt-box .claim { display: flex; gap: 0.75rem; padding: 0.3rem 0; }
+        .jwt-box .claim-key { color: var(--purple); min-width: 80px; }
+        .jwt-box .claim-val { color: var(--green); }
+        .jwt-box .claim-val.empty { color: var(--text2); font-style: italic; }
+        .jwt-label { font-size: 0.7rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+
+        /* Endpoint list */
+        .endpoints { margin-top: 0.5rem; }
+        .ep { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; font-family: var(--mono); font-size: 0.7rem; }
+        .ep-method { font-weight: 700; min-width: 40px; text-align: center; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.6rem; }
+        .ep-method.get { background: rgba(91,156,246,.15); color: var(--blue); }
+        .ep-method.post { background: rgba(52,211,153,.15); color: var(--green); }
+        .ep-method.put { background: rgba(251,191,36,.15); color: var(--amber); }
+        .ep-method.del { background: rgba(255,79,90,.15); color: var(--accent); }
+        .ep-path { color: var(--text2); }
+        .ep-desc { color: var(--text2); font-family: var(--sans); font-size: 0.7rem; margin-left: auto; }
+
+        /* Color utils */
+        .bg-accent { background: rgba(255,79,90,.12); }
+        .bg-blue { background: rgba(91,156,246,.12); }
+        .bg-green { background: rgba(52,211,153,.12); }
+        .bg-amber { background: rgba(251,191,36,.12); }
+        .bg-purple { background: rgba(167,139,250,.12); }
+        .bg-cyan { background: rgba(34,211,238,.12); }
+        .text-accent { color: var(--accent); }
+        .text-blue { color: var(--blue); }
+        .text-green { color: var(--green); }
+        .text-amber { color: var(--amber); }
+        .text-purple { color: var(--purple); }
+        .text-cyan { color: var(--cyan); }
+
+        /* Conditional box */
+        .cond-box { background: var(--surface2); border-left: 3px solid; border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; margin: 0.75rem 0; }
+        .cond-box.if-one { border-color: var(--green); }
+        .cond-box.if-many { border-color: var(--amber); }
+        .cond-box h5 { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .cond-box p { font-size: 0.75rem; color: var(--text2); }
+
+        /* Divider */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+        /* Section title */
+        .section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .services-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.5rem; }
+            .container { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1><span>Fudie</span> Platform Architecture</h1>
+        <p>Microservicios · Multi-tenant · JWT dual · Firestore</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="showPanel('overview')">Visión General</div>
+        <div class="tab" onclick="showPanel('auth-flow')">Flujo Auth</div>
+        <div class="tab" onclick="showPanel('purchase-flow')">Flujo Compra</div>
+        <div class="tab" onclick="showPanel('tenant-switch')">Cambio Tenant</div>
+        <div class="tab" onclick="showPanel('jwt')">JWT</div>
+        <div class="tab" onclick="showPanel('endpoints')">Endpoints</div>
+    </div>
+
+    <!-- ═══════════ OVERVIEW ═══════════ -->
+    <div id="overview" class="panel active">
+
+        <div class="section-title">Microservicios</div>
+        <div class="services-grid">
+
+            <!-- Subscription Service -->
+            <div class="svc">
+                <div class="svc-header">
+                    <div class="svc-icon bg-amber text-amber">💳</div>
+                    <div><h3>Subscription Service</h3><p class="tech">Orquestador · Stripe Webhooks</p></div>
+                </div>
+                <div class="svc-body">
+                    <p>Gestiona el ciclo de vida de suscripciones. Recibe webhooks de Stripe y orquesta la creación del restaurante y la membership. Es el punto de entrada para nuevos clientes.</p>
+                    <div>
+                        <span class="db-tag bg-amber text-amber">subscriptions</span>
+                        <span class="db-tag bg-amber text-amber">payment_intents</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auth Service -->
+            <div class="svc">
+                <div class="svc-header">
+                    <div class="svc-icon bg-green text-green">🔐</div>
+                    <div><h3>Auth Service</h3><p class="tech">Google OAuth · JWT · Memberships</p></div>
+                </div>
+                <div class="svc-body">
+                    <p>Autenticación con Google OAuth. Gestiona las memberships (userId + restaurantId + role) y la generación de JWTs. Decide si devolver JWT con tenant o mostrar selector.</p>
+                    <div>
+                        <span class="db-tag bg-green text-green">users</span>
+                        <span class="db-tag bg-green text-green">memberships</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restaurant Service -->
+            <div class="svc">
+                <div class="svc-header">
+                    <div class="svc-icon bg-accent text-accent">🍽️</div>
+                    <div><h3>Restaurant Service</h3><p class="tech">.NET 8 · EF Core · Firestore</p></div>
+                </div>
+                <div class="svc-body">
+                    <p>Dominio del restaurante (tenant). Gestiona toda la configuración: datos generales, dirección, contacto, facturación, imágenes, redes sociales, idiomas. Vertical Slice + CQRS.</p>
+                    <div>
+                        <span class="db-tag bg-accent text-accent">restaurants/{id}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future services -->
+            <div class="svc" style="border-style: dashed; opacity: 0.5;">
+                <div class="svc-header">
+                    <div class="svc-icon bg-purple text-purple">📋</div>
+                    <div><h3>Reservations, Menus, Policies...</h3><p class="tech">Futuros microservicios</p></div>
+                </div>
+                <div class="svc-body">
+                    <p>Cada bounded context del dominio Fudie será un microservicio independiente. Todos consumen el JWT con tenantId + role para operar dentro del contexto del restaurante.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="divider">
+
+        <div class="section-title">Principios clave</div>
+        <div class="services-grid">
+            <div class="svc">
+                <div class="svc-body">
+                    <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">🏢 Restaurant = Tenant</p>
+                    <p>Cada restaurante es un tenant aislado. Solo puede existir uno por suscripción. Se crea automáticamente en el flujo de compra, nunca por el usuario.</p>
+                </div>
+            </div>
+            <div class="svc">
+                <div class="svc-body">
+                    <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">🎫 Un solo JWT, tres estados</p>
+                    <p>Siempre un token activo. Con solo userId → selector. Con userId + tenantId + role → dentro del restaurante. Se reemplaza, nunca se apilan.</p>
+                </div>
+            </div>
+            <div class="svc">
+                <div class="svc-body">
+                    <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">🔒 Nada expuesto en URLs</p>
+                    <p>El userId, tenantId y role viajan exclusivamente en claims del JWT. Las consultas de memberships son opacas — el backend lee el token, no recibe IDs por ruta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ AUTH FLOW ═══════════ -->
+    <div id="auth-flow" class="panel">
+
+        <div class="flow">
+            <div class="flow-title">Flujo de Login</div>
+            <div class="flow-steps">
+                <div class="step">
+                    <div class="step-dot bg-blue text-blue">1</div>
+                    <div class="step-content">
+                        <h4>Google OAuth</h4>
+                        <p>El usuario se autentica con Google. Se obtiene el <code>userId</code> verificado.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-green text-green">2</div>
+                    <div class="step-content">
+                        <h4>Consulta Memberships</h4>
+                        <p>Auth Service busca memberships por <code>userId</code> en su colección interna. Resultado: lista de <code>{restaurantId, restaurantName, role}</code>.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-amber text-amber">3</div>
+                    <div class="step-content">
+                        <h4>Decisión</h4>
+
+                        <div class="cond-box if-one">
+                            <h5 class="text-green">1 membership →</h5>
+                            <p>JWT directo con <code>userId</code> + <code>tenantId</code> + <code>role</code>. Redirect al dashboard.</p>
+                        </div>
+                        <div class="cond-box if-many">
+                            <h5 class="text-amber">N memberships →</h5>
+                            <p>JWT solo con <code>userId</code>. Se muestra el selector de tenant.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-accent text-accent">4</div>
+                    <div class="step-content">
+                        <h4>Entra al Restaurante</h4>
+                        <p>Con JWT completo (<code>userId</code> + <code>tenantId</code> + <code>role</code>), toda la API del restaurante está disponible.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ PURCHASE FLOW ═══════════ -->
+    <div id="purchase-flow" class="panel">
+
+        <div class="flow">
+            <div class="flow-title">Flujo de Compra de Suscripción</div>
+            <div class="flow-steps">
+                <div class="step">
+                    <div class="step-dot bg-blue text-blue">1</div>
+                    <div class="step-content">
+                        <h4>Checkout</h4>
+                        <p>El usuario inicia la compra. Se guardan <code>userId</code> + datos fiscales en la colección de suscripciones pendientes.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-amber text-amber">2</div>
+                    <div class="step-content">
+                        <h4>Stripe Webhook → OK</h4>
+                        <p>Stripe confirma el pago. El Subscription Service tiene <code>userId</code> y datos fiscales disponibles para orquestar.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-accent text-accent">3</div>
+                    <div class="step-content">
+                        <h4 class="text-accent">POST /restaurant</h4>
+                        <p>Se crea el restaurante con datos fiscales. JWT del usuario (solo <code>userId</code>). Devuelve <code>restaurantId</code>. Se crea con <code>IsActive = false</code>.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-green text-green">4</div>
+                    <div class="step-content">
+                        <h4 class="text-green">Crear Membership</h4>
+                        <p>Auth Service registra la membership: <code>userId</code> + <code>restaurantId</code> + <code>role: Owner</code>.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-purple text-purple">5</div>
+                    <div class="step-content">
+                        <h4>JWT Final</h4>
+                        <p>Se genera JWT con <code>userId</code> + <code>tenantId</code> + <code>role: Owner</code>. Redirect al dashboard del restaurante.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="svc" style="border-color: var(--amber);">
+            <div class="svc-body">
+                <p style="color: var(--amber); font-weight: 700; font-size: 0.82rem; margin-bottom: 0.5rem;">⚡ El POST /restaurant es el único endpoint que acepta JWT sin tenantId</p>
+                <p>Es el momento de creación del tenant. A partir de aquí, todo el resto de la API exige JWT completo con tenantId + role.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TENANT SWITCH ═══════════ -->
+    <div id="tenant-switch" class="panel">
+
+        <div class="flow">
+            <div class="flow-title">Cambio de Tenant (sin re-login)</div>
+            <div class="flow-steps">
+                <div class="step">
+                    <div class="step-dot bg-blue text-blue">1</div>
+                    <div class="step-content">
+                        <h4>Usuario dentro de un restaurante</h4>
+                        <p>JWT activo con <code>userId</code> + <code>tenantId: rest-001</code> + <code>role: Owner</code>. Está revisando reservas.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-amber text-amber">2</div>
+                    <div class="step-content">
+                        <h4>Quiere cambiar de restaurante</h4>
+                        <p>En la UI (dropdown, menú lateral) selecciona otro restaurante de su lista.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-green text-green">3</div>
+                    <div class="step-content">
+                        <h4>POST /auth/tenant-token</h4>
+                        <p>Envía <code>{restaurantId: rest-002}</code>. Auth Service valida que el <code>userId</code> del JWT tiene membership activa en ese restaurante.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-dot bg-accent text-accent">4</div>
+                    <div class="step-content">
+                        <h4>Nuevo JWT</h4>
+                        <p>Se reemplaza el JWT anterior. Ahora: <code>userId</code> + <code>tenantId: rest-002</code> + <code>role: Manager</code>. Redirect al dashboard del nuevo restaurante.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="svc" style="border-color: var(--green);">
+            <div class="svc-body">
+                <p style="color: var(--green); font-weight: 700; font-size: 0.82rem; margin-bottom: 0.5rem;">🔒 Seguridad del cambio</p>
+                <p>El endpoint <code>/auth/tenant-token</code> valida internamente que el <code>userId</code> tenga membership activa en el <code>restaurantId</code> solicitado. Si alguien intenta fabricar un cambio a un tenant sin membership → rebota.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ JWT ═══════════ -->
+    <div id="jwt" class="panel">
+
+        <div class="section-title">Estados del JWT</div>
+
+        <div class="services-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem;">
+            <div class="svc">
+                <div class="svc-header">
+                    <div class="svc-icon bg-amber text-amber">🔑</div>
+                    <div><h3>JWT sin Tenant</h3><p class="tech">Post-login · N memberships</p></div>
+                </div>
+                <div class="svc-body">
+                    <div class="jwt-box">
+                        <div class="jwt-label">Claims</div>
+                        <div class="claim"><span class="claim-key">userId</span><span class="claim-val">"usr-a1b2c3"</span></div>
+                        <div class="claim"><span class="claim-key">tenantId</span><span class="claim-val empty">—</span></div>
+                        <div class="claim"><span class="claim-key">role</span><span class="claim-val empty">—</span></div>
+                    </div>
+                    <p>Solo permite acceder al selector de tenant y al <code>POST /restaurant</code> (creación post-compra).</p>
+                </div>
+            </div>
+
+            <div class="svc" style="border-color: var(--green);">
+                <div class="svc-header">
+                    <div class="svc-icon bg-green text-green">🔑</div>
+                    <div><h3>JWT con Tenant</h3><p class="tech">Dentro del restaurante</p></div>
+                </div>
+                <div class="svc-body">
+                    <div class="jwt-box">
+                        <div class="jwt-label">Claims</div>
+                        <div class="claim"><span class="claim-key">userId</span><span class="claim-val">"usr-a1b2c3"</span></div>
+                        <div class="claim"><span class="claim-key">tenantId</span><span class="claim-val">"rest-x7y8z9"</span></div>
+                        <div class="claim"><span class="claim-key">role</span><span class="claim-val">"Owner"</span></div>
+                    </div>
+                    <p>Acceso completo a la API del restaurante. Todos los endpoints leen <code>tenantId</code> y <code>role</code> del token.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="svc">
+            <div class="svc-body">
+                <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">Regla de oro</p>
+                <p>Siempre un solo JWT activo. Si tiene <code>tenantId</code> + <code>role</code> → estás dentro de un restaurante. Si solo tiene <code>userId</code> → toca elegir tenant. El JWT se reemplaza en cada cambio de contexto, nunca se apilan.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ ENDPOINTS ═══════════ -->
+    <div id="endpoints" class="panel">
+
+        <div class="section-title">Auth Service</div>
+        <div class="svc" style="margin-bottom: 1.5rem;">
+            <div class="svc-body">
+                <div class="endpoints">
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/auth/google</span><span class="ep-desc">Login con Google → JWT (userId) o JWT (userId+tenant+role)</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/auth/tenant-token</span><span class="ep-desc">Selección/cambio de tenant → JWT (userId+tenant+role)</span></div>
+                    <div class="ep"><span class="ep-method get">GET</span><span class="ep-path">/auth/memberships</span><span class="ep-desc">Lista restaurantes del usuario (lee userId del JWT)</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/auth/memberships</span><span class="ep-desc">Crear membership (llamado por Subscription Service)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Subscription Service</div>
+        <div class="svc" style="margin-bottom: 1.5rem;">
+            <div class="svc-body">
+                <div class="endpoints">
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/subscriptions/checkout</span><span class="ep-desc">Iniciar compra → guarda datos + redirige a Stripe</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/subscriptions/webhook</span><span class="ep-desc">Stripe webhook → orquesta creación restaurant + membership</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Restaurant Service <span style="font-size: 0.6rem; color: var(--accent);">(requiere JWT con tenantId + role)</span></div>
+        <div class="svc">
+            <div class="svc-body">
+                <div class="endpoints">
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant</span><span class="ep-desc">Crear (solo sistema, JWT sin tenant)</span></div>
+                    <div class="ep"><span class="ep-method get">GET</span><span class="ep-path">/restaurant</span><span class="ep-desc">Obtener datos del restaurante</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant</span><span class="ep-desc">Actualizar info general</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/address</span><span class="ep-desc">Actualizar dirección</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/contact-info</span><span class="ep-desc">Actualizar contacto</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/billing-info</span><span class="ep-desc">Actualizar facturación</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/price-range</span><span class="ep-desc">Establecer rango de precios</span></div>
+                    <div class="ep"><span class="ep-method del">DEL</span><span class="ep-path">/restaurant/price-range</span><span class="ep-desc">Eliminar rango de precios</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant/images</span><span class="ep-desc">Añadir imagen</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/images/{imageId}</span><span class="ep-desc">Editar imagen</span></div>
+                    <div class="ep"><span class="ep-method del">DEL</span><span class="ep-path">/restaurant/images/{imageId}</span><span class="ep-desc">Eliminar imagen</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant/social-links</span><span class="ep-desc">Añadir red social</span></div>
+                    <div class="ep"><span class="ep-method put">PUT</span><span class="ep-path">/restaurant/social-links/{platform}</span><span class="ep-desc">Editar red social</span></div>
+                    <div class="ep"><span class="ep-method del">DEL</span><span class="ep-path">/restaurant/social-links/{platform}</span><span class="ep-desc">Eliminar red social</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant/supported-cultures</span><span class="ep-desc">Añadir idioma</span></div>
+                    <div class="ep"><span class="ep-method del">DEL</span><span class="ep-path">/restaurant/supported-cultures/{code}</span><span class="ep-desc">Eliminar idioma</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant/activate</span><span class="ep-desc">Activar restaurante</span></div>
+                    <div class="ep"><span class="ep-method post">POST</span><span class="ep-path">/restaurant/deactivate</span><span class="ep-desc">Desactivar restaurante</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

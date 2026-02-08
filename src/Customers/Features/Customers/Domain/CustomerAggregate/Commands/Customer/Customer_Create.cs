@@ -1,6 +1,7 @@
 namespace Customers.Features.Customers.Domain.CustomerAggregate;
 
 public record CreateCustomerCommand(
+    Guid Id,
     string Name,
     string Slug,
     string? Description,
@@ -28,7 +29,7 @@ public partial class Customer
             var contactInfo = contactInfoCreate.Execute(command.ContactInfo);
             var billingInfo = billingInfoCreate.Execute(command.BillingInfo);
 
-            var customer = new Customer(Guid.NewGuid())
+            var customer = new Customer(command.Id)
             {
                 Name = command.Name,
                 Slug = command.Slug,
