@@ -1,5 +1,6 @@
 namespace Auth.Infrastructure.Google;
 
+[Injectable]
 public class GoogleOAuthUrlBuilder(IGoogleOAuthSettings googleOAuthSettings) : IGoogleOAuthUrlBuilder
 {
     public GoogleOAuthUrl Build()
