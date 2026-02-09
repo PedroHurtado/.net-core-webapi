@@ -1,0 +1,406 @@
+openapi: 3.0.3
+info:
+  title: Fudie Auth API
+  description: |
+    API de autenticación y gestión de usuarios de Fudie.
+
+    Los endpoints de `/auth` gestionan autenticación (login, logout, sesión).
+    Los endpoints de `/users` gestionan el agregado User.
+
+    El flujo de Google OAuth (POST /auth/login/google y GET /auth/login/google) no forma parte de esta especificación — son navegación del navegador, no endpoints de API.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+tags:
+  - name: Auth
+    description: Autenticación (login, logout, sesión)
+  - name: Users
+    description: Gestión de usuarios
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: loginWithPassword
+      summary: Login con email y contraseña
+      description: |
+        Exclusivo para superadministradores de Fudie con AuthProvider.Local.
+        Devuelve cookie de sesión `fudie_session`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginWithPasswordRequest'
+      responses:
+        '200':
+          description: Login exitoso. Cookie `fudie_session` seteada.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: fudie_session={guid}; Path=/; Expires={date}; Secure; HttpOnly; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Cerrar sesión
+      description: Elimina la sesión de Firestore y la cookie del navegador.
+      responses:
+        '204':
+          description: Sesión cerrada. Cookie eliminada.
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getCurrentUser
+      summary: Obtener usuario autenticado
+      description: |
+        Devuelve los datos del usuario asociado a la sesión actual.
+        No requiere permiso específico, solo estar autenticado.
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Obtener usuario por ID
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+    put:
+      tags: [Users]
+      operationId: updateUser
+      summary: Actualizar usuario
+      description: |
+        Actualiza nombre y teléfono. El email no se modifica — viene del proveedor OAuth o fue definido por script.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '204':
+          description: Actualizado
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /users/{id}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+
+    post:
+      tags: [Users]
+      operationId: deactivateUser
+      summary: Desactivar usuario
+      description: |
+        Desactiva el usuario y elimina todas sus sesiones activas.
+      responses:
+        '200':
+          description: Usuario desactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya está inactivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /users/{id}/activate:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+
+    post:
+      tags: [Users]
+      operationId: activateUser
+      summary: Activar usuario
+      description: Reactiva un usuario previamente desactivado.
+      responses:
+        '200':
+          description: Usuario activado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /users/{id}/change-password:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+
+    post:
+      tags: [Users]
+      operationId: changePassword
+      summary: Cambiar contraseña
+      description: |
+        Exclusivo para usuarios con AuthProvider.Local (superadmin).
+        Invalida todas las sesiones del usuario excepto la actual.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Contraseña cambiada
+        '401':
+          description: No autenticado o contraseña actual incorrecta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El usuario no es de tipo Local
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+components:
+  parameters:
+    userId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    # ──────────────────────────────────────────────
+    # Requests
+    # ──────────────────────────────────────────────
+
+    LoginWithPasswordRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 200
+        password:
+          type: string
+          format: password
+
+    UpdateUserRequest:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 20
+
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+
+    # ──────────────────────────────────────────────
+    # Responses
+    # ──────────────────────────────────────────────
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        providerId:
+          type: string
+        provider:
+          type: string
+          enum: [Google, Local]
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+
+    # ──────────────────────────────────────────────
+    # Errors
+    # ──────────────────────────────────────────────
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
