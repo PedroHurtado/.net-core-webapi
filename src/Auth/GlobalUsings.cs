@@ -23,3 +23,7 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Auth.Infrastructure;
+
+global using Auth.Features.Users.Domain.UserAggregate;
+global using Auth.Features.Users.Domain.UserAggregate.Enums;
+global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;

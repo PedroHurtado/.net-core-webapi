@@ -11,4 +11,8 @@ global using Fudie.Infrastructure;
 
 global using Auth.Infrastructure;
 
+global using Auth.Features.Users.Domain.UserAggregate;
+global using Auth.Features.Users.Domain.UserAggregate.Enums;
+global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
+
 global using Auth.UnitTests.Helpers;
