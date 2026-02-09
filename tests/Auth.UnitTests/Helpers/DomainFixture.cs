@@ -9,6 +9,8 @@ public class DomainFixture
         var services = new ServiceCollection();
         var assembly = typeof(AuthDbContext).Assembly;
         services.AddDomainCommands(assembly);
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddSingleton(TimeProvider.System);
         ServiceProvider = services.BuildServiceProvider();
     }
 

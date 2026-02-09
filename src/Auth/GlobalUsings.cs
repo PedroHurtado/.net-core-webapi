@@ -23,3 +23,16 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Auth.Infrastructure;
+global using Auth.Infrastructure.Google;
+
+global using System.Security.Cryptography;
+global using System.Security.Cryptography.X509Certificates;
+global using System.Text;
+global using Microsoft.AspNetCore.WebUtilities;
+global using Microsoft.IdentityModel.JsonWebTokens;
+global using Microsoft.IdentityModel.Tokens;
+global using Refit;
+
+global using Auth.Features.Users.Domain.UserAggregate;
+global using Auth.Features.Users.Domain.UserAggregate.Enums;
+global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;

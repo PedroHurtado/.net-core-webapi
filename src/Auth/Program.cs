@@ -27,6 +27,25 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Singleton);
 builder.Services.AddInjectables();
 
+builder.Services
+    .AddRefitClient<IGoogleOAuthApi>(new RefitSettings
+    {
+        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        })
+    })
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://oauth2.googleapis.com"));
+
+builder.Services
+    .AddRefitClient<IGoogleCertsApi>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://www.googleapis.com"));
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IGoogleOAuthSettings, DevGoogleOAuthSettings>();
+}
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -52,6 +71,10 @@ if (app.Environment.IsDevelopment())
     });
 
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+    app.MapGet("/dev", () => Results.Content(DevLoginPage.Html, "text/html"))
+        .AllowAnonymous()
+        .ExcludeFromDescription();
 }
 
 app.MapFeatures();
@@ -61,3 +84,17 @@ app.UseHttpsRedirection();
 app.Run();
 
 public partial class Program { }
+
+public static class DevLoginPage
+{
+    public const string Html = """
+        <!DOCTYPE html>
+        <html>
+        <body>
+            <form method="POST" action="/auth/login/google">
+                <button type="submit">Entrar con Google</button>
+            </form>
+        </body>
+        </html>
+        """;
+}
