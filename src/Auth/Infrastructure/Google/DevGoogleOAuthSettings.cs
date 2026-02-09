@@ -15,7 +15,8 @@ public class DevGoogleOAuthSettings(IConfiguration configuration) : IGoogleOAuth
             ClientSecret: web.GetProperty("client_secret").GetString()!,
             RedirectUri: web.GetProperty("redirect_uris")[0].GetString()!,
             AuthUri: web.GetProperty("auth_uri").GetString()!,
-            TokenUri: web.GetProperty("token_uri").GetString()!
+            TokenUri: web.GetProperty("token_uri").GetString()!,
+            CertsUri: web.GetProperty("auth_provider_x509_cert_url").GetString()!
         );
     }
 }

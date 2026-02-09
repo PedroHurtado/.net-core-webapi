@@ -5,7 +5,8 @@ public record GoogleOAuthSettings(
     string ClientSecret,
     string RedirectUri,
     string AuthUri,
-    string TokenUri
+    string TokenUri,
+    string CertsUri
 );
 
 public interface IGoogleOAuthSettings
