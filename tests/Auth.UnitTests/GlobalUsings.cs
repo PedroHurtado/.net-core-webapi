@@ -9,7 +9,10 @@ global using Fudie.Domain;
 global using Fudie.DependencyInjection;
 global using Fudie.Infrastructure;
 
+global using Microsoft.Extensions.Configuration;
+
 global using Auth.Infrastructure;
+global using Auth.Infrastructure.Google;
 
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
