@@ -2,7 +2,7 @@ namespace Auth.UnitTests.Infrastructure.Google;
 
 public class GoogleIdTokenValidatorTests
 {
-    private static (string idToken, string certPem) CreateSignedToken(
+    private static (string idToken, SecurityKey signingKey) CreateSignedToken(
         string sub = "google|123",
         string email = "pedro@test.com",
         string name = "Pedro",
@@ -12,12 +12,6 @@ public class GoogleIdTokenValidatorTests
         RSA? signingKey = null)
     {
         var rsa = signingKey ?? RSA.Create(2048);
-        var certRequest = new CertificateRequest(
-            "cn=test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        var cert = certRequest.CreateSelfSigned(
-            DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddYears(1));
-        var pem = cert.ExportCertificatePem();
-
         var securityKey = new RsaSecurityKey(rsa);
         var handler = new JsonWebTokenHandler();
 
@@ -41,10 +35,12 @@ public class GoogleIdTokenValidatorTests
         };
 
         var idToken = handler.CreateToken(tokenDescriptor);
-        return (idToken, pem);
+        return (idToken, securityKey);
     }
 
-    private static GoogleIdTokenValidator CreateValidator(string certPem, string clientId = "test-client-id")
+    private static GoogleIdTokenValidator CreateValidator(
+        IList<SecurityKey> keys,
+        string clientId = "test-client-id")
     {
         var settings = new GoogleOAuthSettings(
             ClientId: clientId,
@@ -57,20 +53,17 @@ public class GoogleIdTokenValidatorTests
         var mockSettings = new Mock<IGoogleOAuthSettings>();
         mockSettings.Setup(s => s.Get()).Returns(settings);
 
-        var certsJson = JsonSerializer.Serialize(
-            new Dictionary<string, string> { ["kid1"] = certPem });
+        var mockCertProvider = new Mock<IGoogleCertificateProvider>();
+        mockCertProvider.Setup(p => p.GetSigningKeysAsync()).ReturnsAsync(keys);
 
-        var mockHandler = new FakeHttpMessageHandler(certsJson);
-        var httpClient = new HttpClient(mockHandler);
-
-        return new GoogleIdTokenValidator(mockSettings.Object, httpClient);
+        return new GoogleIdTokenValidator(mockSettings.Object, mockCertProvider.Object);
     }
 
     [Fact]
     public async Task ValidateAsync_WithValidToken_ReturnsClaims()
     {
-        var (idToken, certPem) = CreateSignedToken();
-        var validator = CreateValidator(certPem);
+        var (idToken, signingKey) = CreateSignedToken();
+        var validator = CreateValidator([signingKey]);
 
         var result = await validator.ValidateAsync(idToken);
 
@@ -85,24 +78,12 @@ public class GoogleIdTokenValidatorTests
     {
         var differentRsa = RSA.Create(2048);
         var (idToken, _) = CreateSignedToken();
-        var (_, certPem) = CreateSignedToken(signingKey: differentRsa);
+        var (_, wrongKey) = CreateSignedToken(signingKey: differentRsa);
 
-        var validator = CreateValidator(certPem);
+        var validator = CreateValidator([wrongKey]);
 
         var act = () => validator.ValidateAsync(idToken);
 
         await act.Should().ThrowAsync<SecurityTokenValidationException>();
-    }
-
-    private class FakeHttpMessageHandler(string responseContent) : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(responseContent)
-            });
-        }
     }
 }

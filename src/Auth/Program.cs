@@ -27,6 +27,20 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Singleton);
 builder.Services.AddInjectables();
 
+builder.Services
+    .AddRefitClient<IGoogleOAuthApi>(new RefitSettings
+    {
+        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        })
+    })
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://oauth2.googleapis.com"));
+
+builder.Services
+    .AddRefitClient<IGoogleCertsApi>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://www.googleapis.com"));
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IGoogleOAuthSettings, DevGoogleOAuthSettings>();
