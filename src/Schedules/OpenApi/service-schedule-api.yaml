@@ -733,6 +733,20 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateSpecialDateRequest'
+            examples:
+              valentines:
+                summary: San Valentín - Horario especial
+                value:
+                  isAvailable: true
+                  startTime: '19:00'
+                  endTime: '01:00'
+                  capacityOverride: 30
+                  reason: San Valentín - Menú especial parejas
+              christmas:
+                summary: Navidad - Cerrado
+                value:
+                  isAvailable: false
+                  reason: Cerrado por Navidad
       responses:
         '204':
           description: Fecha especial actualizada exitosamente
