@@ -44,6 +44,7 @@ builder.Services
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IGoogleOAuthSettings, DevGoogleOAuthSettings>();
+    builder.Services.AddSingleton<IJwtKeyProvider, DevJwtKeyProvider>();
 }
 
 var app = builder.Build();

@@ -24,6 +24,7 @@ global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Auth.Infrastructure;
 global using Auth.Infrastructure.Google;
+global using Auth.Infrastructure.Jwt;
 
 global using System.Security.Cryptography;
 global using System.Security.Cryptography.X509Certificates;
