@@ -10,15 +10,24 @@ public static class AsyncQueryableExtensions
 
 internal class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
 {
-    public TestAsyncEnumerable(IEnumerable<T> enumerable) : base(enumerable) { }
-    public TestAsyncEnumerable(Expression expression) : base(expression) { }
+    private readonly IQueryProvider _innerProvider;
+
+    public TestAsyncEnumerable(IEnumerable<T> enumerable) : base(enumerable)
+    {
+        _innerProvider = ((IQueryable)new EnumerableQuery<T>(enumerable)).Provider;
+    }
+
+    public TestAsyncEnumerable(Expression expression) : base(expression)
+    {
+        _innerProvider = ((IQueryable)new EnumerableQuery<T>(expression)).Provider;
+    }
 
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         return new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
     }
 
-    IQueryProvider IQueryable.Provider => new TestAsyncQueryProvider<T>(this);
+    IQueryProvider IQueryable.Provider => new TestAsyncQueryProvider<T>(_innerProvider);
 }
 
 internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
@@ -38,11 +47,11 @@ internal class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
     }
 }
 
-internal class TestAsyncQueryProvider<T> : IQueryProvider
+internal class TestAsyncQueryProvider<T> : IAsyncQueryProvider
 {
-    private readonly IQueryable<T> _source;
+    private readonly IQueryProvider _inner;
 
-    public TestAsyncQueryProvider(IQueryable<T> source) => _source = source;
+    public TestAsyncQueryProvider(IQueryProvider inner) => _inner = inner;
 
     public IQueryable CreateQuery(Expression expression)
         => new TestAsyncEnumerable<T>(expression);
@@ -51,8 +60,25 @@ internal class TestAsyncQueryProvider<T> : IQueryProvider
         => new TestAsyncEnumerable<TElement>(expression);
 
     public object? Execute(Expression expression)
-        => _source.Provider.Execute(expression);
+        => _inner.Execute(expression);
 
     public TResult Execute<TResult>(Expression expression)
-        => _source.Provider.Execute<TResult>(expression);
+        => _inner.Execute<TResult>(expression);
+
+    public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
+    {
+        var resultType = typeof(TResult).GetGenericArguments()[0];
+
+        var executeMethod = typeof(IQueryProvider)
+            .GetMethods()
+            .First(m => m.Name == nameof(Execute) && m.IsGenericMethod)
+            .MakeGenericMethod(resultType);
+
+        var result = executeMethod.Invoke(_inner, [expression]);
+
+        return (TResult)typeof(Task)
+            .GetMethod(nameof(Task.FromResult))!
+            .MakeGenericMethod(resultType)
+            .Invoke(null, [result])!;
+    }
 }
