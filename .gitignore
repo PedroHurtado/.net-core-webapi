@@ -438,3 +438,6 @@ Thumbs.db
 # Claude Code temp files
 tmpclaude-*
 style-entity-temp/
+
+# git-crypt key (NEVER commit this)
+git-crypt-key
