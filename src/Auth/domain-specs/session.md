@@ -750,7 +750,7 @@ Ninguno.
 
 Ninguno.
 
-#### Slice: GET /auth/.well-known/jwks.json
+#### Slice: GET /auth/jwks
 
 > Endpoint **público**. `.AllowAnonymous()`.
 
@@ -818,7 +818,7 @@ No aplica.
 | 1 | PUT | /auth/sessions/{id}/tenant | Session.SetTenantContext | 204 |
 | 2 | DELETE | /auth/sessions/{id}/tenant | Session.ClearTenantContext | 204 |
 | 3 | POST | /auth/resolve | ResolveAuth | 200 → `{ "token": "..." }` |
-| 4 | GET | /auth/.well-known/jwks.json | GetJwks | 200 → JWKS |
+| 4 | GET | /auth/jwks | GetJwks | 200 → JWKS |
 
 > Los comandos Session.Create, Session.Refresh y Session.Destroy no tienen endpoint propio — se ejecutan internamente desde las slices de login/logout del agregado User y desde operaciones del sistema (invalidación por cambio de permisos).
 >
