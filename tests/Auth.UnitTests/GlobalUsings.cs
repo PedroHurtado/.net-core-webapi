@@ -19,6 +19,9 @@ global using Microsoft.IdentityModel.Tokens;
 
 global using Auth.Infrastructure;
 global using Auth.Infrastructure.Google;
+global using Auth.Infrastructure.Jwt;
+
+global using Auth.Features.Sessions.Api.Queries;
 
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 
