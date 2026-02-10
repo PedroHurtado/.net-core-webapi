@@ -20,6 +20,8 @@ global using Microsoft.IdentityModel.Tokens;
 global using Auth.Infrastructure;
 global using Auth.Infrastructure.Google;
 
+global using Auth.Features.Sessions.Domain.SessionAggregate;
+
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
 global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
