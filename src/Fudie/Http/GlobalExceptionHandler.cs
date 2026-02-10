@@ -25,6 +25,13 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         switch (exception)
         {
+            case UnauthorizedException:
+                problemDetails.Status = StatusCodes.Status401Unauthorized;
+                problemDetails.Title = "Unauthorized";
+                problemDetails.Detail = exception.Message;
+                problemDetails.Type = "https://tools.ietf.org/html/rfc7235#section-3.1";
+                break;
+
             case KeyNotFoundException:
                 problemDetails.Status = StatusCodes.Status404NotFound;
                 problemDetails.Title = "Resource Not Found";
