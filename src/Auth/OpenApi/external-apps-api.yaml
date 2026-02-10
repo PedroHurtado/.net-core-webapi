@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: Fudie – ExternalApps API
+  description: Gestión de aplicaciones externas del tenant
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+paths:
+
+  /external-apps:
+    post:
+      operationId: CreateExternalApp
+      summary: Conectar una nueva aplicación externa
+      description: Crear es invitar al desarrollador. Nace con InvitationStatus=Pending, UserId=null y sin API Key.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExternalAppRequest'
+      responses:
+        '201':
+          description: External app creada (invitación enviada)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAppResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      operationId: ListExternalApps
+      summary: Listar aplicaciones externas del tenant
+      description: El tenantId se obtiene del JWT.
+      responses:
+        '200':
+          description: Lista de aplicaciones externas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalAppResponse'
+
+  /external-apps/{id}:
+    get:
+      operationId: GetExternalApp
+      summary: Obtener detalle de una aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: Detalle de la aplicación externa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAppResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      operationId: UpdateExternalApp
+      summary: Modificar el nombre de una aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExternalAppRequest'
+      responses:
+        '204':
+          description: External app actualizada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      operationId: DeleteExternalApp
+      summary: Eliminar una aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '204':
+          description: External app eliminada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /external-apps/{id}/accept:
+    post:
+      operationId: AcceptExternalAppInvitation
+      summary: Aceptar invitación de aplicación externa
+      description: Endpoint público. El UserId se obtiene del Google OAuth. Genera la API Key.
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: Invitación aceptada. API Key generada (se muestra una sola vez).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /external-apps/{id}/cancel-invitation:
+    post:
+      operationId: CancelExternalAppInvitation
+      summary: Cancelar invitación pendiente de aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: Invitación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAppResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /external-apps/{id}/resend-invitation:
+    post:
+      operationId: ResendExternalAppInvitation
+      summary: Reenviar invitación pendiente de aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: Invitación reenviada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /external-apps/{id}/permissions:
+    put:
+      operationId: UpdateExternalAppPermissions
+      summary: Configurar permisos de una aplicación externa
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExternalAppPermissionsRequest'
+      responses:
+        '204':
+          description: Permisos actualizados
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /external-apps/{id}/rotate-api-key:
+    post:
+      operationId: RotateApiKey
+      summary: Rotar API Key
+      description: Solo el desarrollador puede ejecutar este endpoint. La key anterior queda inválida inmediatamente.
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: API Key rotada (se muestra una sola vez).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /external-apps/{id}/deactivate:
+    post:
+      operationId: DeactivateExternalApp
+      summary: Desactivar una aplicación externa
+      description: La API Key queda inválida. Las requests con esa key son rechazadas.
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: External app desactivada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAppResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /external-apps/{id}/reactivate:
+    post:
+      operationId: ReactivateExternalApp
+      summary: Reactivar una aplicación externa
+      description: La API Key vuelve a ser válida. No se genera nueva key.
+      parameters:
+        - $ref: '#/components/parameters/ExternalAppId'
+      responses:
+        '200':
+          description: External app reactivada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAppResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+
+  parameters:
+    ExternalAppId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateExternalAppRequest:
+      type: object
+      required: [name, invitationEmail]
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        invitationEmail:
+          type: string
+          format: email
+          maxLength: 254
+
+    UpdateExternalAppRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 150
+
+    UpdateExternalAppPermissionsRequest:
+      type: object
+      required: [groups, additionalScopes, excludedScopes]
+      properties:
+        groups:
+          type: array
+          items:
+            type: string
+        additionalScopes:
+          type: array
+          items:
+            type: string
+        excludedScopes:
+          type: array
+          items:
+            type: string
+
+    ExternalAppResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          nullable: true
+        name:
+          type: string
+        isActive:
+          type: boolean
+        invitationEmail:
+          type: string
+        invitationStatus:
+          type: string
+          enum: [Pending, Accepted, Cancelled]
+        apiKeyPrefix:
+          type: string
+          nullable: true
+        apiKeyExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        groups:
+          type: array
+          items:
+            type: string
+        additionalScopes:
+          type: array
+          items:
+            type: string
+        excludedScopes:
+          type: array
+          items:
+            type: string
+
+    ApiKeyResponse:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          description: API Key en claro. Se muestra una sola vez.
+        prefix:
+          type: string
+          description: Primeros 8 caracteres de la key.
+        message:
+          type: string
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    Conflict:
+      description: Conflicto de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'

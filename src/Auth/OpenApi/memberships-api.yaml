@@ -1,0 +1,289 @@
+openapi: 3.0.3
+info:
+  title: Fudie – Memberships API
+  description: Gestión de miembros humanos del tenant
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+paths:
+
+  /memberships:
+    post:
+      operationId: CreateMembership
+      summary: Invitar a un nuevo miembro
+      description: Crear es invitar. Nace con InvitationStatus=Pending y UserId=null.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMembershipRequest'
+      responses:
+        '201':
+          description: Membership creado (invitación enviada)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      operationId: ListMemberships
+      summary: Listar miembros del tenant
+      description: El tenantId se obtiene del JWT.
+      responses:
+        '200':
+          description: Lista de memberships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipResponse'
+
+  /memberships/{id}:
+    get:
+      operationId: GetMembership
+      summary: Obtener detalle de un miembro
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Detalle del membership
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      operationId: DeleteMembership
+      summary: Eliminar un miembro
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '204':
+          description: Membership eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/accept:
+    post:
+      operationId: AcceptInvitation
+      summary: Aceptar invitación
+      description: Endpoint público. El UserId se obtiene del Google OAuth.
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Invitación aceptada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/cancel-invitation:
+    post:
+      operationId: CancelInvitation
+      summary: Cancelar invitación pendiente
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Invitación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/resend-invitation:
+    post:
+      operationId: ResendInvitation
+      summary: Reenviar invitación pendiente
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Invitación reenviada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/role:
+    put:
+      operationId: ChangeRole
+      summary: Cambiar el rol de un miembro
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeRoleRequest'
+      responses:
+        '204':
+          description: Rol cambiado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/deactivate:
+    post:
+      operationId: DeactivateMembership
+      summary: Desactivar un miembro
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Membership desactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /memberships/{id}/reactivate:
+    post:
+      operationId: ReactivateMembership
+      summary: Reactivar un miembro
+      parameters:
+        - $ref: '#/components/parameters/MembershipId'
+      responses:
+        '200':
+          description: Membership reactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+
+  parameters:
+    MembershipId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateMembershipRequest:
+      type: object
+      required: [invitationEmail, roleId]
+      properties:
+        invitationEmail:
+          type: string
+          format: email
+          maxLength: 254
+        roleId:
+          type: string
+          format: uuid
+
+    ChangeRoleRequest:
+      type: object
+      required: [roleId]
+      properties:
+        roleId:
+          type: string
+          format: uuid
+
+    MembershipResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          nullable: true
+        roleId:
+          type: string
+          format: uuid
+        isActive:
+          type: boolean
+        invitationEmail:
+          type: string
+        invitationStatus:
+          type: string
+          enum: [Pending, Accepted, Cancelled]
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    Conflict:
+      description: Conflicto de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
