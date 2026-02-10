@@ -34,6 +34,8 @@ global using Microsoft.IdentityModel.JsonWebTokens;
 global using Microsoft.IdentityModel.Tokens;
 global using Refit;
 
+global using Auth.Features.Sessions.Domain.SessionAggregate;
+
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
 global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
