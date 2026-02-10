@@ -34,8 +34,8 @@ Cuando cambian los permisos de un rol, se destruyen las sesiones afectadas. El u
 
 ```
 Session (Aggregate Root)
-├─ Id: Guid                              ← valor de la cookie (GUID v4 criptográfico)
-├─ UserId: string                        ← providerId del User
+├─ Id: Guid                              ← valor de la cookie (GUID v7 criptográfico)
+├─ UserId: Guid                          ← Id del agregado User
 ├─ TenantId: Guid?                       ← null hasta crear/seleccionar tenant
 ├─ RoleId: Guid?                         ← null hasta tener Membership
 ├─ Groups: string[]                      ← agrupaciones del rol (denormalizadas)
@@ -52,7 +52,7 @@ Session (Aggregate Root)
 | Propiedad | Tipo | Modificador |
 |-----------|------|-------------|
 | Id | Guid | init |
-| UserId | string | protected set |
+| UserId | Guid | protected set |
 | TenantId | Guid? | protected set |
 | RoleId | Guid? | protected set |
 | Groups | string[] | protected set |
@@ -72,8 +72,8 @@ Session (Aggregate Root)
 
 **Notas:**
 
-- `Id` se genera con aleatoriedad criptográfica. Es el valor que viaja en la cookie `fudie_session`. No contiene información — es un puntero opaco al documento de Firestore.
-- `UserId` es el `ProviderId` del agregado User. Identifica al usuario independientemente del proveedor de autenticación.
+- `Id` se genera con `Guid.CreateVersion7()` — componente temporal + aleatoriedad criptográfica. Es el valor que viaja en la cookie `fudie_session`. No contiene información — es un puntero opaco al documento de Firestore.
+- `UserId` es el `Id` del agregado User de Fudie. Cuando se crea la sesión, el usuario ya existe en el sistema.
 - `TenantId` es nullable. Es null en dos escenarios: (1) usuario recién autenticado que aún no ha creado/seleccionado tenant, (2) usuarios de plataforma Fudie que operan sin tenant.
 - `RoleId` es nullable. Es null cuando no hay tenant activo. Siempre tiene valor cuando `TenantId` tiene valor.
 - `Groups`, `AdditionalScopes`, `ExcludedScopes` están denormalizados desde el rol para evitar una lectura extra a Firestore por request. Se copian al crear la sesión o al establecer el contexto de tenant. Son arrays vacíos cuando no hay tenant activo.
@@ -100,7 +100,7 @@ Session (Aggregate Root)
 ```csharp
 public record SessionResponse(
     Guid Id,
-    string UserId,
+    Guid UserId,
     Guid? TenantId,
     Guid? RoleId,
     string[] Groups,
@@ -135,9 +135,16 @@ public record SessionResponse(
 
 ## 7. Comandos
 
-> ⚠️ **IMPORTANTE**: La Session es un agregado de infraestructura del servicio de Auth. No tiene endpoints REST propios — los comandos se ejecutan internamente desde las slices de autenticación (LoginWithGoogle, LoginWithPassword, Logout) y desde operaciones del sistema (invalidación por cambio de permisos).
->
+> ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
+> - Las Queries (Get, List) van después de Create porque son necesarias para verificar persistencia
+> - SetTenantContext y ClearTenantContext van después de Create porque dependen de que la sesión exista
+> - Refresh va después de SetTenantContext porque se ejecuta en cada request autenticada
+> - Destroy va al final porque es la operación terminal
+> - ResolveAuth y GetJwks son slices del servicio de Auth que consumen los comandos de dominio
+
 > **Tests de dominio**: Usar `TestableSession` para preparar estado previo. Usar `DomainFixture` para resolver comandos y validators. **NO encadenar comandos** para crear estado.
+>
+> **Tests de slice**: Usar `TestableSession` para el estado que devuelve el repository mock. Usar `DomainFixture` para resolver el comando que la slice inyecta. Mock de `IRepository` e `IUnitOfWork`.
 
 ---
 
@@ -152,7 +159,7 @@ public record SessionResponse(
 
 | Campo | Tipo | Default |
 |-------|------|---------|
-| UserId | string | |
+| UserId | Guid | |
 
 #### Inyecta
 - `IValidator<Session>`
@@ -186,11 +193,12 @@ return sessionValidator.ValidateOrThrow(session);
 - Se crea sin contexto de tenant. El usuario acaba de autenticarse y aún no ha seleccionado en qué tenant va a trabajar.
 - `Guid.CreateVersion7()` genera un GUID v7 con componente temporal + aleatoriedad criptográfica.
 - La cookie `fudie_session` se configura en la slice de login, no aquí. El comando de dominio solo crea el agregado.
+- Este comando no tiene slice propia — se ejecuta internamente desde las slices de login (LoginWithGoogle, LoginWithPassword) del agregado User.
 
 #### Tests Unitarios (Dominio)
 
 ✅ Crear sesión con datos válidos
-- Input: UserId="google-oauth2|123456789"
+- Input: UserId="user-001-guid"
 - Resultado: Session creada con TenantId=null, RoleId=null, Groups=[], IsOwner=false, ExpiresAt=CreatedAt+30días
 
 ❌ UserId vacío
@@ -199,7 +207,85 @@ return sessionValidator.ValidateOrThrow(session);
 
 ---
 
-### 7.2 Session.SetTenantContext
+### 7.2 GetSessionById
+
+#### Event Storming
+```
+🟡[Auth Service] → 🔵(GetSessionById) → 🟤[[Session]] → 📊 Session
+```
+
+#### Query interna
+
+No es un endpoint REST. Es una operación interna del servicio de Auth que se ejecuta en cada request autenticada (consumida por ResolveAuth — sección 7.9).
+
+```csharp
+var session = await sessionRepository.GetByIdAsync(sessionId);
+// sessionId viene del valor de la cookie fudie_session
+```
+
+**Notas:**
+- Si el documento no existe en Firestore → 401 Unauthorized.
+- Si la sesión está expirada → se elimina el documento y se devuelve 401.
+
+#### Tests Unitarios (Servicio)
+
+✅ Obtiene sesión existente por Id
+- Verifica que repository.GetByIdAsync es llamado con el sessionId de la cookie
+
+✅ Retorna null cuando no existe
+- Verifica que se devuelve null y se responde 401
+
+---
+
+### 7.3 ListSessionsByRoleAndTenant
+
+#### Event Storming
+```
+🟡[Auth Service] → 🔵(ListSessionsByRoleAndTenant) → 🟤[[Session]] → 📊 Session[]
+```
+
+#### Query interna
+
+Se ejecuta cuando cambian los permisos de un rol. Busca todas las sesiones activas con ese `RoleId` y `TenantId` para destruirlas.
+
+```csharp
+var sessions = await sessionRepository.ListByRoleAndTenantAsync(roleId, tenantId);
+```
+
+#### Tests Unitarios (Servicio)
+
+✅ Retorna sesiones que coinciden con RoleId y TenantId
+- Verifica que filtra correctamente
+
+✅ Retorna lista vacía si no hay sesiones con ese rol
+- Verifica que no falla
+
+---
+
+### 7.4 ListSessionsByUserId
+
+#### Event Storming
+```
+🟡[Auth Service] → 🔵(ListSessionsByUserId) → 🟤[[Session]] → 📊 Session[]
+```
+
+#### Query interna
+
+Se ejecuta cuando se desactiva o elimina una Membership. Busca todas las sesiones del usuario para destruir las del tenant afectado.
+
+```csharp
+var sessions = await sessionRepository.ListByUserIdAsync(userId);
+```
+
+#### Tests Unitarios (Servicio)
+
+✅ Retorna sesiones del usuario
+
+✅ Retorna lista vacía si el usuario no tiene sesiones activas
+
+---
+
+### 7.5 Session.SetTenantContext
 
 #### Event Storming
 ```
@@ -238,10 +324,18 @@ session.IsOwner = command.IsOwner;
 return sessionValidator.ValidateOrThrow(session);
 ```
 
-**Notas:**
-- Este comando se ejecuta cuando el usuario selecciona un tenant (al crear un tenant nuevo, al seleccionar uno existente, o automáticamente si solo tiene uno).
-- Los datos de permisos se copian directamente del rol de la Membership. No se consulta el catálogo de permisos — el Auth no lo conoce, solo copia lo que tiene el rol.
-- Si `IsOwner` es `true`, los arrays de permisos se ignoran al construir el JWT — el Owner tiene bypass total.
+#### Slice: PUT /auth/sessions/{id}/tenant
+
+**Request**
+```csharp
+public record SetTenantContextRequest(
+    Guid TenantId
+);
+```
+
+> La slice recibe solo el `TenantId`. Internamente carga la Membership (userId + tenantId), obtiene el rol, y extrae Groups/AdditionalScopes/ExcludedScopes/IsOwner para pasarlos al comando de dominio.
+
+**Response**: 204 No Content
 
 #### Tests Unitarios (Dominio)
 
@@ -266,9 +360,19 @@ return sessionValidator.ValidateOrThrow(session);
 - Input: TenantId=valid, RoleId=null
 - Resultado: ValidationException "RoleId is required when TenantId is set"
 
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Session no encontrada
+
+❌ 404 → Membership no encontrada para ese tenant
+
+❌ 422 → Validación fallida
+
 ---
 
-### 7.3 Session.ClearTenantContext
+### 7.6 Session.ClearTenantContext
 
 #### Event Storming
 ```
@@ -298,6 +402,10 @@ session.IsOwner = false;
 return sessionValidator.ValidateOrThrow(session);
 ```
 
+#### Slice: DELETE /auth/sessions/{id}/tenant
+
+**Response**: 204 No Content
+
 **Notas:**
 - Se usa cuando el usuario quiere volver al estado "sin tenant" para seleccionar otro, o cuando se desactiva su Membership del tenant actual.
 
@@ -313,9 +421,15 @@ return sessionValidator.ValidateOrThrow(session);
 - Precondición: Session con TenantId=null
 - Resultado: Sin cambios
 
+#### Tests Integración
+
+✅ 204 No Content
+
+❌ 404 → Session no encontrada
+
 ---
 
-### 7.4 Session.Refresh
+### 7.7 Session.Refresh
 
 #### Event Storming
 ```
@@ -347,7 +461,7 @@ return sessionValidator.ValidateOrThrow(session);
 ```
 
 **Notas:**
-- Se ejecuta en cada request válida. El middleware del servicio de Auth carga la sesión, ejecuta Refresh, y luego construye el JWT efímero.
+- Se ejecuta internamente dentro de ResolveAuth (sección 7.9) en cada request válida. No tiene slice propia.
 - La cookie se renueva con la nueva fecha de `Expires` en la respuesta HTTP.
 
 #### Tests Unitarios (Dominio)
@@ -361,84 +475,6 @@ return sessionValidator.ValidateOrThrow(session);
 ❌ Sesión expirada
 - Precondición: Session con ExpiresAt en el pasado
 - Resultado: UnauthorizedException "Session expired"
-
----
-
-### 7.5 GetSessionById
-
-#### Event Storming
-```
-🟡[Auth Service] → 🔵(GetSessionById) → 🟤[[Session]] → 📊 Session
-```
-
-#### Query interna
-
-No es un endpoint REST. Es una operación interna del servicio de Auth que se ejecuta en cada request autenticada.
-
-```csharp
-var session = await sessionRepository.GetByIdAsync(sessionId);
-// sessionId viene del valor de la cookie fudie_session
-```
-
-**Notas:**
-- Si el documento no existe en Firestore → 401 Unauthorized.
-- Si la sesión está expirada → se elimina el documento y se devuelve 401.
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene sesión existente por Id
-- Verifica que repository.GetByIdAsync es llamado con el sessionId de la cookie
-
-✅ Retorna null cuando no existe
-- Verifica que se devuelve null y se responde 401
-
----
-
-### 7.6 ListSessionsByRoleAndTenant
-
-#### Event Storming
-```
-🟡[Auth Service] → 🔵(ListSessionsByRoleAndTenant) → 🟤[[Session]] → 📊 Session[]
-```
-
-#### Query interna
-
-Se ejecuta cuando cambian los permisos de un rol. Busca todas las sesiones activas con ese `RoleId` y `TenantId` para destruirlas.
-
-```csharp
-var sessions = await sessionRepository.ListByRoleAndTenantAsync(roleId, tenantId);
-```
-
-#### Tests Unitarios (Servicio)
-
-✅ Retorna sesiones que coinciden con RoleId y TenantId
-- Verifica que filtra correctamente
-
-✅ Retorna lista vacía si no hay sesiones con ese rol
-- Verifica que no falla
-
----
-
-### 7.7 ListSessionsByUserId
-
-#### Event Storming
-```
-🟡[Auth Service] → 🔵(ListSessionsByUserId) → 🟤[[Session]] → 📊 Session[]
-```
-
-#### Query interna
-
-Se ejecuta cuando se desactiva o elimina una Membership. Busca todas las sesiones del usuario para destruir las del tenant afectado.
-
-```csharp
-var sessions = await sessionRepository.ListByUserIdAsync(userId);
-```
-
-#### Tests Unitarios (Servicio)
-
-✅ Retorna sesiones del usuario
-
-✅ Retorna lista vacía si el usuario no tiene sesiones activas
 
 ---
 
@@ -466,9 +502,10 @@ await sessionRepository.DeleteAsync(session.Id);
 ```
 
 **Notas:**
-- Se ejecuta en logout voluntario, invalidación por cambio de permisos, desactivación de Membership, o eliminación de Membership.
+- Se ejecuta en logout voluntario (slice Logout del agregado User), invalidación por cambio de permisos, desactivación de Membership, o eliminación de Membership.
 - La cookie `fudie_session` se limpia en la respuesta HTTP cuando es un logout voluntario.
 - Para invalidación masiva (cambio de permisos de un rol), se usa `ListSessionsByRoleAndTenant` seguido de `Destroy` para cada sesión.
+- No tiene slice propia — se ejecuta internamente desde otras slices.
 
 #### Tests Unitarios (Dominio)
 
@@ -477,11 +514,72 @@ await sessionRepository.DeleteAsync(session.Id);
 
 ---
 
-## 8. JWT Efímero — Construcción desde la Session
+### 7.9 ResolveAuth
 
-> Esta sección documenta cómo el servicio de Auth construye el JWT efímero a partir de los datos de la sesión. No es un comando del agregado — es lógica de infraestructura que consume los datos de la sesión.
+> El gateway llama a este endpoint en cada request autenticada. Es el punto donde la cookie o API Key se convierte en JWT efímero.
 
-### Construcción
+#### Event Storming
+```
+🟡[Gateway] → 🔵(ResolveAuth) → 🟤[[Session]] → 🟠<AuthResolved>
+                                      │
+                            🟣{SessionExists}
+                            🟣{SessionNotExpired}
+```
+
+#### Input
+
+No tiene input explícito. Lee los headers originales del cliente reenviados por el gateway:
+- Cookie `fudie_session` → para administradores web
+- Header `X-Api-Key` → para aplicaciones externas
+
+#### Inyecta
+- `ISessionRepository`
+- `Session.Refresh`
+- Servicio de firma JWT (clave privada ES256)
+
+#### Guards
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| No hay cookie ni API Key | 401 | UnauthorizedGuard | "Authentication required" |
+| Cookie → sesión no existe | 401 | UnauthorizedGuard | "Invalid session" |
+| Cookie → sesión expirada | 401 | UnauthorizedGuard | "Session expired" |
+| API Key → hash no existe en api_keys | 401 | UnauthorizedGuard | "Invalid API key" |
+| API Key → api_key no activa | 401 | UnauthorizedGuard | "API key is inactive" |
+| API Key → Membership no activa | 401 | UnauthorizedGuard | "Membership is inactive" |
+
+#### Lógica
+```
+¿Tiene cookie fudie_session?
+    │
+    ├─ Sí → GetSessionById(sessionId)
+    │         │
+    │         ├─ ¿Existe? → No → 401
+    │         ├─ ¿Expirada? → Sí → Destroy + 401
+    │         └─ Session.Refresh() → sliding expiration
+    │                │
+    │                ▼
+    │         Construye JWT efímero desde datos de la sesión
+    │
+    └─ ¿Tiene header X-Api-Key?
+              │
+              ├─ Sí → Hash SHA-256 → busca en api_keys/{hash}
+              │         │
+              │         ├─ ¿Existe y activa? → No → 401
+              │         └─ Carga Membership → obtiene permisos del rol
+              │                │
+              │                ▼
+              │         Construye JWT efímero desde datos de la Membership
+              │
+              └─ Ninguno → 401
+
+Firma JWT con clave privada ES256 (vida útil: 45 segundos)
+        │
+        ▼
+Devuelve JWT al gateway
+```
+
+**Construcción del JWT efímero:**
 
 ```csharp
 // Si no hay contexto de tenant
@@ -521,21 +619,21 @@ return new JwtPayload
 };
 ```
 
-### JWT resultante — Sin tenant
+**JWT resultante — Sin tenant:**
 
 ```json
 {
-  "sub": "google-oauth2|123456789",
+  "sub": "user-001-guid",
   "iat": 1738900800,
   "exp": 1738900845
 }
 ```
 
-### JWT resultante — Owner
+**JWT resultante — Owner:**
 
 ```json
 {
-  "sub": "google-oauth2|123456789",
+  "sub": "user-001-guid",
   "tid": "tenant-guid",
   "owner": true,
   "iat": 1738900800,
@@ -543,11 +641,11 @@ return new JwtPayload
 }
 ```
 
-### JWT resultante — Usuario con permisos
+**JWT resultante — Usuario con permisos:**
 
 ```json
 {
-  "sub": "google-oauth2|123456789",
+  "sub": "user-001-guid",
   "tid": "tenant-guid",
   "groups": ["menu:read", "menu:write"],
   "add": ["reservation-service:CancelReservation"],
@@ -557,133 +655,178 @@ return new JwtPayload
 }
 ```
 
-**Notas:**
-- El JWT se firma con clave privada ES256. Solo el servicio de Auth tiene la clave privada.
+**Notas sobre el JWT efímero:**
+- Se firma con clave privada ES256. Solo el servicio de Auth tiene la clave privada.
 - Vida útil: 45 segundos. Nace, viaja al microservicio, se valida, muere.
-- Los microservicios validan la firma con clave pública descargada de `/.well-known/jwks.json` del servicio de Auth.
+- No se almacena en ningún sitio. No hay documento en Firestore. No hay caché.
+- Los microservicios validan la firma con clave pública descargada del endpoint JWKS (sección 7.10).
 - Clock skew recomendado: 5 segundos en `TokenValidationParameters`.
 
----
+#### Slice: POST /auth/resolve
 
-## 9. Flujos de Uso
+> Endpoint **interno**. Solo lo llama el gateway. No está expuesto al exterior.
 
-### 9.1 Login (Google OAuth o Password)
+**Request**
 
-```
-Usuario se autentica
-        │
-        ▼
-Slice de login resuelve/crea User
-        │
-        ▼
-Session.Create(userId)
-        │
-        ▼
-Session sin tenant → cookie fudie_session={sessionId}
-        │
-        ▼
-Frontend muestra selector de tenant (o auto-selecciona si solo tiene uno)
-        │
-        ▼
-Session.SetTenantContext(tenantId, roleId, groups, add, exc, isOwner)
+El gateway reenvía los headers originales del cliente. No hay body.
+
+**Response**: 200 OK
+
+```json
+{
+  "token": "eyJhbGciOiJFUzI1NiIs..."
+}
 ```
 
-### 9.2 Request autenticada (cada request)
+**Response de error**: 401 Unauthorized
 
-```
-Cookie fudie_session={sessionId}
-        │
-        ▼
-GetSessionById(sessionId)
-        │
-        ▼
-¿Existe? → No → 401
-        │
-        ▼
-Session.Refresh() → actualiza sliding expiration
-        │
-        ▼
-Construye JWT efímero desde datos de la sesión
-        │
-        ▼
-Firma JWT con clave privada ES256
-        │
-        ▼
-Reenvía request + JWT al microservicio destino
-```
+**Notas:**
+- El gateway recibe el JWT y lo inyecta como header `Authorization: Bearer {token}` al reenviar la request al microservicio destino.
+- Este endpoint no pasa por la librería de permisos — es el propio servicio de Auth resolviendo la autenticación.
 
-### 9.3 Cambio de permisos de un rol
+#### Tests Unitarios (Servicio)
 
-```
-Owner modifica permisos de un rol
-        │
-        ▼
-ListSessionsByRoleAndTenant(roleId, tenantId)
-        │
-        ▼
-Para cada sesión → Session.Destroy()
-        │
-        ▼
-Usuarios afectados → siguiente request → 401 → re-login (un click)
-        │
-        ▼
-Nueva sesión con permisos actualizados
-```
+> Estado previo: `TestableSession` con diferentes configuraciones.
 
-### 9.4 Desactivación de Membership
+✅ Resolve con cookie válida — sesión con tenant
+- Precondición: Session con TenantId, Groups=["menu:read"]
+- Resultado: JWT con sub, tid, groups
 
-```
-Owner desactiva Membership de un usuario
-        │
-        ▼
-ListSessionsByUserId(userId)
-        │
-        ▼
-Filtrar sesiones con TenantId del tenant afectado
-        │
-        ▼
-Session.Destroy() para cada una
-```
+✅ Resolve con cookie válida — sesión sin tenant
+- Precondición: Session con TenantId=null
+- Resultado: JWT con sub, sin tid ni permisos
 
-### 9.5 Crear tenant (comprar suscripción)
+✅ Resolve con cookie válida — sesión Owner
+- Precondición: Session con IsOwner=true
+- Resultado: JWT con sub, tid, owner=true, sin arrays de permisos
 
-```
-Usuario autenticado sin tenant
-        │
-        ▼
-POST /tenants → crea tenant + Membership Owner
-        │
-        ▼
-Session.SetTenantContext(tenantId, roleId, groups=[], add=[], exc=[], isOwner=true)
-        │
-        ▼
-Siguiente request → JWT con owner: true y tid
-```
+✅ Resolve con API Key válida
+- Precondición: api_keys/{hash} existe y activa, Membership activa
+- Resultado: JWT con sub, tid, permisos del rol de la Membership
+
+❌ Sin cookie ni API Key
+- Resultado: 401 "Authentication required"
+
+❌ Cookie con sesión inexistente
+- Resultado: 401 "Invalid session"
+
+❌ Cookie con sesión expirada
+- Resultado: 401 "Session expired", sesión destruida
+
+❌ API Key inválida
+- Resultado: 401 "Invalid API key"
+
+❌ API Key con Membership inactiva
+- Resultado: 401 "Membership is inactive"
+
+#### Tests Integración
+
+✅ 200 OK → `{ "token": "eyJ..." }` con cookie válida
+
+✅ 200 OK → `{ "token": "eyJ..." }` con API Key válida
+
+❌ 401 → Sin credenciales
+
+❌ 401 → Cookie inválida
+
+❌ 401 → API Key inválida
 
 ---
 
-## 10. Descripciones de Permisos
+### 7.10 GetJwks
 
-No aplica. La Session no tiene endpoints REST públicos — es un agregado interno del servicio de Auth. No genera scopes atómicos en el catálogo de permisos.
+> Endpoint estándar JWKS. Los microservicios descargan la clave pública de aquí al arrancar para validar las firmas de los JWT efímeros.
+
+#### Event Storming
+```
+🟡[Microservicio] → 🔵(GetJwks) → 📊 JwksResponse
+```
+
+#### Input
+
+Ninguno.
+
+#### Guards
+
+Ninguno.
+
+#### Slice: GET /auth/jwks
+
+> Endpoint **público**. `.AllowAnonymous()`.
+
+**Response**: 200 OK
+
+```json
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "...",
+      "y": "...",
+      "kid": "auth-key-001",
+      "use": "sig",
+      "alg": "ES256"
+    }
+  ]
+}
+```
+
+**Notas:**
+- `kid` (Key ID) permite rotación de claves: se publica la clave nueva junto a la anterior, los microservicios validan contra ambas, y cuando ya no hay JWTs en vuelo con la clave vieja se retira.
+- Los microservicios configuran `TokenValidationParameters` con `IssuerSigningKeyResolver` apuntando a esta URL.
+- Se cachea al arrancar y se refresca periódicamente (ej: cada hora) sin reiniciar el microservicio.
+- Clock skew recomendado: 5 segundos en `TokenValidationParameters.ClockSkew`.
+
+#### Tests Integración
+
+✅ 200 OK → JWKS con al menos una clave ES256
+
+✅ La clave pública puede verificar un JWT firmado por el servicio de Auth
 
 ---
 
-## 11. Resumen de Operaciones (Orden de Implementación)
+## 8. Descripciones de Permisos
 
-| # | Operación | Tipo | Trigger | Resultado |
-|---|-----------|------|---------|-----------|
-| 1 | Session.Create | Comando | Login exitoso | Session sin tenant |
-| 2 | GetSessionById | Query | Cada request | Session o 401 |
-| 3 | Session.Refresh | Comando | Cada request válida | Sliding expiration |
-| 4 | Session.SetTenantContext | Comando | Crear/seleccionar tenant | Session con permisos |
-| 5 | Session.ClearTenantContext | Comando | Cambiar de tenant | Session sin permisos |
-| 6 | ListSessionsByRoleAndTenant | Query | Cambio de permisos de rol | Sessions a destruir |
-| 7 | ListSessionsByUserId | Query | Desactivar/eliminar Membership | Sessions a destruir |
-| 8 | Session.Destroy | Comando | Logout / invalidación | Documento eliminado |
+> Las descripciones son **responsabilidad de producto**. Se definen en español durante la sesión de diseño. Claude Code genera el archivo de descripciones del microservicio con el español como base y traduce automáticamente al resto de idiomas necesarios.
+>
+> Deben ser claras, concisas y comprensibles para alguien sin conocimientos técnicos — es lo que el administrador del restaurante ve cuando configura roles.
+
+### Scopes atómicos
+
+| Scope (nombre de clase) | Descripción (es) |
+|--------------------------|-------------------|
+| `SetTenantContext` | Seleccionar el restaurante activo en la sesión |
+| `ClearTenantContext` | Desconectarse del restaurante activo |
+
+> `ResolveAuth` y `GetJwks` no generan scopes atómicos — son endpoints de infraestructura (`AllowAnonymous` / internos del gateway).
+>
+> `Session.Create`, `Session.Refresh`, `Session.Destroy`, `GetSessionById`, `ListSessionsByRoleAndTenant` y `ListSessionsByUserId` no generan scopes atómicos — son operaciones internas del servicio de Auth que no tienen endpoint REST propio.
+
+### Agrupaciones custom
+
+No aplica.
+
+> Las agrupaciones automáticas (`session:read` y `session:write`) no se definen aquí — se generan por reflexión a partir del verbo HTTP.
 
 ---
 
-## 12. Persistencia (Firestore)
+## 9. Resumen de Endpoints (Orden de Implementación)
+
+| # | Método | Ruta | Comando/Query | Response |
+|---|--------|------|---------------|----------|
+| 1 | PUT | /auth/sessions/{id}/tenant | Session.SetTenantContext | 204 |
+| 2 | DELETE | /auth/sessions/{id}/tenant | Session.ClearTenantContext | 204 |
+| 3 | POST | /auth/resolve | ResolveAuth | 200 → `{ "token": "..." }` |
+| 4 | GET | /auth/jwks | GetJwks | 200 → JWKS |
+
+> Los comandos Session.Create, Session.Refresh y Session.Destroy no tienen endpoint propio — se ejecutan internamente desde las slices de login/logout del agregado User y desde operaciones del sistema (invalidación por cambio de permisos).
+>
+> Las queries GetSessionById, ListSessionsByRoleAndTenant y ListSessionsByUserId son operaciones internas del repositorio.
+
+---
+
+## 10. Persistencia (Firestore)
 
 ### Colección
 
@@ -702,19 +845,12 @@ modelBuilder.Entity<Session>(entity =>
 });
 ```
 
-### Índices
-
-| Campo(s) | Tipo | Justificación |
-|----------|------|---------------|
-| `UserId` | Simple | Buscar sesiones de un usuario para invalidación |
-| `RoleId` + `TenantId` | Composite | Buscar sesiones por rol y tenant para invalidación masiva |
-
 ### Documento Ejemplo — Sin tenant
 
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "userId": "google-oauth2|123456789",
+  "userId": "user-001-guid",
   "tenantId": null,
   "roleId": null,
   "groups": [],
@@ -732,7 +868,7 @@ modelBuilder.Entity<Session>(entity =>
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "userId": "google-oauth2|123456789",
+  "userId": "user-001-guid",
   "tenantId": "tenant-001-guid",
   "roleId": "owner-role-guid",
   "groups": [],
@@ -750,7 +886,7 @@ modelBuilder.Entity<Session>(entity =>
 ```json
 {
   "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-  "userId": "google-oauth2|987654321",
+  "userId": "user-002-guid",
   "tenantId": "tenant-001-guid",
   "roleId": "manager-role-guid",
   "groups": ["menu:read", "menu:write", "reservation:read", "reservation:write"],
@@ -765,7 +901,7 @@ modelBuilder.Entity<Session>(entity =>
 
 ---
 
-## 13. Hot Spots ⚠️
+## 11. Hot Spots ⚠️
 
 | # | Pregunta | Estado |
 |---|----------|--------|

@@ -1,0 +1,394 @@
+openapi: 3.0.3
+info:
+  title: Fudie Auth Service — Session API
+  description: |
+    Endpoints del agregado Session del servicio de Auth.
+
+    El servicio de Auth gestiona la autenticación y genera JWT efímeros por request.
+    La sesión es el vínculo entre la cookie opaca del navegador y la identidad del usuario.
+
+    **Endpoints internos:**
+    - `POST /auth/resolve` — solo lo llama el gateway. No está expuesto al exterior.
+    - `GET /auth/.well-known/jwks.json` — público, consumido por microservicios al arrancar.
+
+    **Endpoints de usuario:**
+    - `PUT /auth/sessions/{id}/tenant` — establece el restaurante activo.
+    - `DELETE /auth/sessions/{id}/tenant` — desconecta del restaurante activo.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+tags:
+  - name: Session
+    description: Gestión del contexto de tenant en la sesión
+  - name: Auth
+    description: Resolución de autenticación y distribución de clave pública
+
+paths:
+
+  # ──────────────────────────────────────────────
+  # Session
+  # ──────────────────────────────────────────────
+
+  /auth/sessions/{id}/tenant:
+    put:
+      tags:
+        - Session
+      summary: Establecer contexto de tenant
+      description: |
+        Establece el restaurante activo en la sesión. La slice recibe solo el `TenantId`,
+        internamente carga la Membership (userId + tenantId), obtiene el rol, y extrae
+        los permisos para denormalizarlos en la sesión.
+
+        También permite cambiar de tenant si el usuario tiene múltiples Memberships.
+      operationId: setTenantContext
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetTenantContextRequest'
+      responses:
+        '204':
+          description: Contexto de tenant establecido
+        '404':
+          description: Session o Membership no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                sessionNotFound:
+                  summary: Session no encontrada
+                  value:
+                    type: 'about:blank'
+                    title: Not Found
+                    status: 404
+                    detail: Session not found
+                membershipNotFound:
+                  summary: Membership no encontrada
+                  value:
+                    type: 'about:blank'
+                    title: Not Found
+                    status: 404
+                    detail: Membership not found for this tenant
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'about:blank'
+                title: Validation Error
+                status: 422
+                detail: One or more validation errors occurred.
+                errors:
+                  RoleId:
+                    - RoleId is required when TenantId is set
+
+    delete:
+      tags:
+        - Session
+      summary: Desconectarse del restaurante activo
+      description: |
+        Limpia el contexto de tenant de la sesión. El usuario vuelve al estado
+        "sin tenant" para seleccionar otro.
+
+        La operación es idempotente — limpiar un contexto ya limpio no produce error.
+      operationId: clearTenantContext
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204':
+          description: Contexto de tenant limpiado
+        '404':
+          description: Session no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'about:blank'
+                title: Not Found
+                status: 404
+                detail: Session not found
+
+  # ──────────────────────────────────────────────
+  # Auth
+  # ──────────────────────────────────────────────
+
+  /auth/resolve:
+    post:
+      tags:
+        - Auth
+      summary: Resolver autenticación y generar JWT efímero
+      description: |
+        **Endpoint interno — solo lo llama el gateway.**
+
+        Recibe los headers originales del cliente (cookie `fudie_session` o header `X-Api-Key`),
+        valida la identidad, refresca la sesión (sliding expiration) y devuelve un JWT efímero
+        firmado con ES256.
+
+        El gateway inyecta el JWT como header `Authorization: Bearer {token}` al reenviar
+        la request al microservicio destino.
+
+        **Flujo con cookie:**
+        1. Extrae sessionId de la cookie `fudie_session`
+        2. Busca la sesión en Firestore
+        3. Valida que no esté expirada
+        4. Ejecuta Session.Refresh (sliding expiration)
+        5. Construye JWT efímero desde los datos de la sesión
+
+        **Flujo con API Key:**
+        1. Hashea la API Key con SHA-256
+        2. Busca en `api_keys/{hash}`
+        3. Valida que esté activa y no expirada
+        4. Carga la Membership asociada
+        5. Construye JWT efímero desde los datos de la Membership
+      operationId: resolveAuth
+      parameters:
+        - name: Cookie
+          in: header
+          description: Cookie de sesión del navegador (`fudie_session={sessionId}`)
+          required: false
+          schema:
+            type: string
+            example: fudie_session=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        - name: X-Api-Key
+          in: header
+          description: API Key de aplicación externa
+          required: false
+          schema:
+            type: string
+            example: fud_a3K9mZ3pX7nR2wQ8vB4cD6eF1gH5jK
+      responses:
+        '200':
+          description: JWT efímero generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveAuthResponse'
+              example:
+                token: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Autenticación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                noCredentials:
+                  summary: Sin credenciales
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Authentication required
+                invalidSession:
+                  summary: Sesión inválida
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Invalid session
+                sessionExpired:
+                  summary: Sesión expirada
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Session expired
+                invalidApiKey:
+                  summary: API Key inválida
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Invalid API key
+                apiKeyInactive:
+                  summary: API Key inactiva
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: API key is inactive
+                membershipInactive:
+                  summary: Membership inactiva
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Membership is inactive
+
+  /auth/jwks:
+    get:
+      tags:
+        - Auth
+      summary: Obtener claves públicas (JWKS)
+      description: |
+        Endpoint estándar JWKS. Los microservicios descargan la clave pública de aquí
+        al arrancar y la cachean para validar las firmas de los JWT efímeros.
+
+        Soporta rotación de claves mediante el campo `kid` — se puede publicar la clave
+        nueva junto a la anterior durante la transición.
+
+        **Recomendaciones para microservicios:**
+        - Cachear al arrancar y refrescar periódicamente (ej: cada hora).
+        - Configurar `ClockSkew` de 5 segundos en `TokenValidationParameters`.
+        - Usar `IssuerSigningKeyResolver` apuntando a esta URL.
+      operationId: getJwks
+      security: []
+      responses:
+        '200':
+          description: JWKS con claves públicas ES256
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwksResponse'
+              example:
+                keys:
+                  - kty: EC
+                    crv: P-256
+                    x: f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU
+                    y: x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0
+                    kid: auth-key-001
+                    use: sig
+                    alg: ES256
+
+components:
+
+  # ──────────────────────────────────────────────
+  # Parameters
+  # ──────────────────────────────────────────────
+
+  parameters:
+    SessionId:
+      name: id
+      in: path
+      required: true
+      description: Identificador de la sesión (GUID v7)
+      schema:
+        type: string
+        format: uuid
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+  # ──────────────────────────────────────────────
+  # Schemas
+  # ──────────────────────────────────────────────
+
+  schemas:
+
+    # ──────────────────────────────────────────────
+    # Requests
+    # ──────────────────────────────────────────────
+
+    SetTenantContextRequest:
+      type: object
+      required:
+        - tenantId
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+          description: Identificador del restaurante (tenant) a activar
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+    # ──────────────────────────────────────────────
+    # Responses
+    # ──────────────────────────────────────────────
+
+    ResolveAuthResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: JWT efímero firmado con ES256 (vida útil ~45 segundos)
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    JwksResponse:
+      type: object
+      required:
+        - keys
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/JwkKey'
+
+    JwkKey:
+      type: object
+      required:
+        - kty
+        - crv
+        - x
+        - 'y'
+        - kid
+        - use
+        - alg
+      properties:
+        kty:
+          type: string
+          description: Tipo de clave
+          enum:
+            - EC
+        crv:
+          type: string
+          description: Curva elíptica
+          enum:
+            - P-256
+        x:
+          type: string
+          description: Coordenada X de la clave pública (Base64url)
+        'y':
+          type: string
+          description: Coordenada Y de la clave pública (Base64url)
+        kid:
+          type: string
+          description: Identificador de la clave (para rotación)
+          example: auth-key-001
+        use:
+          type: string
+          description: Uso de la clave
+          enum:
+            - sig
+        alg:
+          type: string
+          description: Algoritmo de firma
+          enum:
+            - ES256
+
+    # ──────────────────────────────────────────────
+    # Errors
+    # ──────────────────────────────────────────────
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

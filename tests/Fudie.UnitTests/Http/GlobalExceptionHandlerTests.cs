@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Fudie.Domain;
 using Fudie.Http;
 using Microsoft.AspNetCore.Http;
 
@@ -32,6 +33,47 @@ public class GlobalExceptionHandlerTests
         var body = await reader.ReadToEndAsync();
         return JsonDocument.Parse(body);
     }
+
+    #region UnauthorizedException Tests
+
+    [Fact]
+    public async Task TryHandleAsync_WithUnauthorizedException_ShouldReturn401()
+    {
+        // Arrange
+        var context = CreateHttpContext();
+        var exception = new UnauthorizedException("Session expired");
+
+        // Act
+        var result = await _handler.TryHandleAsync(context, exception, CancellationToken.None);
+
+        // Assert
+        result.Should().BeTrue();
+        context.Response.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithUnauthorizedException_ShouldReturnCorrectProblemDetails()
+    {
+        // Arrange
+        var context = CreateHttpContext();
+        var exceptionMessage = "Session expired";
+        var exception = new UnauthorizedException(exceptionMessage);
+
+        // Act
+        await _handler.TryHandleAsync(context, exception, CancellationToken.None);
+
+        // Assert
+        var jsonDoc = await GetResponseBody(context);
+        var root = jsonDoc.RootElement;
+
+        root.GetProperty("status").GetInt32().Should().Be(401);
+        root.GetProperty("title").GetString().Should().Be("Unauthorized");
+        root.GetProperty("detail").GetString().Should().Be(exceptionMessage);
+        root.GetProperty("type").GetString().Should().Be("https://tools.ietf.org/html/rfc7235#section-3.1");
+        root.GetProperty("instance").GetString().Should().Be("/api/test");
+    }
+
+    #endregion
 
     #region KeyNotFoundException Tests
 

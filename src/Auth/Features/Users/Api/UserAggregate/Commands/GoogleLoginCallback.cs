@@ -46,7 +46,9 @@ public class GoogleLoginCallback : IFeatureModule
         IGoogleIdTokenValidator idTokenValidator,
         User.Create createUser,
         User.UpdateFromOAuth updateFromOAuth,
+        Session.Create createSession,
         IRepository repository,
+        ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork
     ) : IService
     {
@@ -66,6 +68,8 @@ public class GoogleLoginCallback : IFeatureModule
             var providerId = $"google|{claims.Sub}";
             var existingUser = await repository.FindFirstByProviderIdAndProvider(providerId, AuthProvider.Google);
 
+            Guid userId;
+
             if (existingUser is null)
             {
                 var user = createUser.Execute(new CreateUserCommand(
@@ -77,6 +81,7 @@ public class GoogleLoginCallback : IFeatureModule
                 ));
 
                 repository.Add(user);
+                userId = user.Id;
             }
             else
             {
@@ -85,12 +90,15 @@ public class GoogleLoginCallback : IFeatureModule
                     Name: claims.Name,
                     AvatarUrl: claims.Picture
                 ));
+                userId = existingUser.Id;
             }
+
+            var session = createSession.Execute(new CreateSessionCommand(UserId: userId));
+            sessionRepository.Add(session);
 
             await unitOfWork.SaveChangesAsync();
 
-            // TODO: crear sesión real en Firestore
-            return Guid.NewGuid();
+            return session.Id;
         }
     }
 
@@ -100,4 +108,6 @@ public class GoogleLoginCallback : IFeatureModule
         [Tracking]
         Task<User?> FindFirstByProviderIdAndProvider(string providerId, AuthProvider provider);
     }
+
+    public interface ISessionRepository : IAdd<Session> { }
 }
