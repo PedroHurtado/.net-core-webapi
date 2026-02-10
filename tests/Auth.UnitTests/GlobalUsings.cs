@@ -2,6 +2,8 @@ global using FluentAssertions;
 global using FluentValidation;
 global using Moq;
 
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Query;
 global using Microsoft.Extensions.DependencyInjection;
 global using System.Linq.Expressions;
 
@@ -23,10 +25,15 @@ global using Auth.Infrastructure.Jwt;
 
 global using Auth.Features.Sessions.Api.Queries;
 
+global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
 global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
+
+global using Auth.Features.Roles.Api.TenantRoleAggregate;
+global using Auth.Features.Roles.Api.TenantRoleAggregate.Commands;
+global using Auth.Features.Roles.Api.TenantRoleAggregate.Queries;
 
 global using Auth.UnitTests.Helpers;

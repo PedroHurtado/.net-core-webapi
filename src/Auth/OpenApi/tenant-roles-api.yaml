@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: Fudie – TenantRoles API
+  description: Gestión de roles y permisos del tenant
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+paths:
+
+  /tenant-roles:
+    post:
+      operationId: CreateTenantRole
+      summary: Crear un rol custom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRoleRequest'
+      responses:
+        '201':
+          description: Rol creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantRoleResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      operationId: ListTenantRoles
+      summary: Listar roles del tenant
+      description: El tenantId se obtiene del JWT.
+      responses:
+        '200':
+          description: Lista de roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TenantRoleResponse'
+
+  /tenant-roles/{id}:
+    get:
+      operationId: GetTenantRole
+      summary: Obtener detalle de un rol
+      parameters:
+        - $ref: '#/components/parameters/TenantRoleId'
+      responses:
+        '200':
+          description: Detalle del rol
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantRoleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      operationId: UpdateTenantRole
+      summary: Modificar nombre y descripción de un rol
+      parameters:
+        - $ref: '#/components/parameters/TenantRoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantRoleRequest'
+      responses:
+        '204':
+          description: Rol actualizado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      operationId: DeleteTenantRole
+      summary: Eliminar un rol custom
+      parameters:
+        - $ref: '#/components/parameters/TenantRoleId'
+      responses:
+        '204':
+          description: Rol eliminado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /tenant-roles/{id}/permissions:
+    put:
+      operationId: UpdatePermissions
+      summary: Configurar permisos de un rol
+      parameters:
+        - $ref: '#/components/parameters/TenantRoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePermissionsRequest'
+      responses:
+        '204':
+          description: Permisos actualizados
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+
+  parameters:
+    TenantRoleId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+
+    CreateTenantRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+
+    UpdateTenantRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+
+    UpdatePermissionsRequest:
+      type: object
+      required: [groups, additionalScopes, excludedScopes]
+      properties:
+        groups:
+          type: array
+          items:
+            type: string
+        additionalScopes:
+          type: array
+          items:
+            type: string
+        excludedScopes:
+          type: array
+          items:
+            type: string
+
+    TenantRoleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        isSystem:
+          type: boolean
+        isEditable:
+          type: boolean
+        isDeletable:
+          type: boolean
+        groups:
+          type: array
+          items:
+            type: string
+        additionalScopes:
+          type: array
+          items:
+            type: string
+        excludedScopes:
+          type: array
+          items:
+            type: string
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    Conflict:
+      description: Conflicto de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'

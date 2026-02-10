@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipo y Permisos | Fudie Admin - Wireframe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','sans-serif']},colors:{primary:'#FF4F5A',primaryDark:'#E63E49',success:'#10B981',info:'#3B82F6',stripe:'#635BFF',warning:'#F59E0B'}}}}</script>
+    <style>
+        .cmd-create{background:#DCFCE7;color:#166534}.cmd-update{background:#DBEAFE;color:#1E40AF}.cmd-activate{background:#D1FAE5;color:#065F46}.cmd-deactivate{background:#FEE2E2;color:#991B1B}.cmd-add{background:#E0E7FF;color:#3730A3}.cmd-remove{background:#FCE7F3;color:#9D174D}.cmd-get{background:#F3F4F6;color:#374151}.cmd-delete{background:#FEE2E2;color:#991B1B}
+        .card:hover{transform:translateY(-2px)}.row:hover{background:#f9fafb}.smooth{transition:all .3s}.view{display:none}.view.active{display:block}
+        .perm-toggle{width:44px;height:24px;border-radius:12px;position:relative;cursor:pointer;transition:all .2s}
+        .perm-toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+        .perm-toggle.on{background:#10B981}.perm-toggle.on::after{left:23px}
+        .perm-toggle.off{background:#D1D5DB}
+        .perm-toggle.partial{background:#F59E0B}.perm-toggle.partial::after{left:13px}
+        .tab{padding:8px 16px;border-radius:9999px;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s}
+        .tab.active{background:#FF4F5A;color:white}.tab:not(.active){color:#6B7280;background:#F3F4F6}
+        .tab:not(.active):hover{background:#E5E7EB}
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+<main>
+
+<!-- VIEW 1: TEAM LIST -->
+<div id="team" class="view active p-4 md:p-8"><div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold">Equipo</h1><p class="text-gray-500 text-sm mt-1">Gestiona miembros, roles y permisos de tu restaurante</p></div>
+        <div class="flex gap-3">
+            <button onclick="show('roles')" class="px-5 py-3 rounded-full font-bold text-gray-600 bg-white border hover:bg-gray-50 smooth flex items-center gap-2"><i class="fas fa-shield-alt"></i>Roles y Permisos</button>
+            <button onclick="show('invite')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2"><i class="fas fa-user-plus"></i>Invitar</button>
+        </div>
+    </div>
+    <div class="flex gap-2 mb-6">
+        <div class="tab active" onclick="switchTab(this,'tabPeople','tabApps')"><i class="fas fa-users mr-1.5"></i>Personas <span class="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs">4</span></div>
+        <div class="tab" onclick="switchTab(this,'tabApps','tabPeople')"><i class="fas fa-plug mr-1.5"></i>Integraciones <span class="ml-1 px-2 py-0.5 rounded-full bg-gray-300/50 text-xs">1</span></div>
+    </div>
+    <div class="mb-4"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /memberships → ListMemberships</span></div>
+    <!-- People -->
+    <div id="tabPeople">
+        <div class="bg-white rounded-2xl border shadow-sm overflow-hidden divide-y">
+            <div class="row p-4 flex items-center gap-4 cursor-pointer group" onclick="show('memberDetail')">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primaryDark flex items-center justify-center text-white font-bold text-lg">P</div>
+                <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-bold">Pedro García</h4><span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase">Owner</span></div><p class="text-sm text-gray-500 truncate">pedro@restaurante.com</p></div>
+                <div class="text-right hidden md:block"><p class="text-xs text-gray-400">Desde ene 2026</p><p class="text-xs text-success font-bold">Activo</p></div>
+                <div class="w-5 text-gray-300 group-hover:text-gray-500"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="row p-4 flex items-center gap-4 cursor-pointer group" onclick="show('memberDetail')">
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">M</div>
+                <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-bold">María López</h4><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase">Encargado</span></div><p class="text-sm text-gray-500 truncate">maria@restaurante.com</p></div>
+                <div class="text-right hidden md:block"><p class="text-xs text-gray-400">Desde feb 2026</p><p class="text-xs text-success font-bold">Activo</p></div>
+                <div class="w-5 text-gray-300 group-hover:text-gray-500"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="row p-4 flex items-center gap-4 cursor-pointer group" onclick="show('memberDetail')">
+                <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg">A</div>
+                <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-bold">Ana Martínez</h4><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase">Camarero</span></div><p class="text-sm text-gray-500 truncate">ana@restaurante.com</p></div>
+                <div class="text-right hidden md:block"><p class="text-xs text-gray-400">Desde feb 2026</p><p class="text-xs text-success font-bold">Activo</p></div>
+                <div class="w-5 text-gray-300 group-hover:text-gray-500"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="row p-4 flex items-center gap-4 bg-amber-50/30">
+                <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 text-lg"><i class="fas fa-clock"></i></div>
+                <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-bold text-gray-500">carlos@email.com</h4><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase">Pendiente</span><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">Camarero</span></div><p class="text-sm text-gray-400">Invitación enviada hace 2 días</p></div>
+                <div class="flex gap-2"><button class="px-3 py-1.5 rounded-lg text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200">Reenviar</button><button class="px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100">Cancelar</button></div>
+            </div>
+        </div>
+    </div>
+    <!-- Apps -->
+    <div id="tabApps" class="hidden">
+        <div class="bg-white rounded-2xl border shadow-sm overflow-hidden divide-y">
+            <div class="row p-4 flex items-center gap-4 cursor-pointer group" onclick="show('appDetail')">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl"><i class="fas fa-cash-register"></i></div>
+                <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-bold">TPV MiSoftware</h4><span class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase">ExternalApp</span><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold"><i class="fas fa-circle text-[6px]"></i>Activo</span></div><p class="text-sm text-gray-500">dev@misoftware.com · Conectado feb 2026</p></div>
+                <div class="text-right hidden md:block"><p class="text-xs text-gray-400">Último acceso: hoy</p><p class="text-xs font-mono text-gray-400">fud_a3K9...</p></div>
+                <div class="w-5 text-gray-300 group-hover:text-gray-500"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mt-4 flex items-start gap-3"><i class="fas fa-info-circle text-blue-500 mt-0.5"></i><div><p class="text-sm text-blue-800 font-medium">¿Cómo funcionan las integraciones?</p><p class="text-xs text-blue-700 mt-1">Invita al desarrollador con rol <strong>ExternalApp</strong>. Acepta con Google, obtiene su API Key, y usa la API. Tú controlas los permisos del rol.</p></div></div>
+    </div>
+</div></div>
+
+<!-- VIEW 2: INVITE -->
+<div id="invite" class="view p-4 md:p-8"><div class="max-w-3xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('team')" class="hover:text-primary">Equipo</a><i class="fas fa-chevron-right text-xs"></i><span>Invitar</span></div><h1 class="text-2xl font-bold">Invitar al Equipo</h1></div>
+        <div class="flex gap-3"><button onclick="show('team')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="show('team');toast('Invitación enviada')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2"><i class="fas fa-paper-plane"></i>Enviar</button></div>
+    </div>
+    <div class="mb-6"><span class="cmd-create text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-plus text-[10px] mr-1"></i>POST /memberships → Membership.Create</span></div>
+    <div class="bg-white rounded-3xl border shadow-sm overflow-hidden">
+        <div class="p-6 border-b bg-gray-50/50"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-user-plus"></i></div><div><h3 class="font-bold text-lg">Datos de la invitación</h3><p class="text-xs text-gray-500">El mismo formulario sirve para personas y aplicaciones</p></div></div></div>
+        <div class="p-6 space-y-6">
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email <span class="text-primary">*</span></label><input type="email" placeholder="nombre@ejemplo.com" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"><p class="text-xs text-gray-400 mt-1">Se enviará la invitación a este email</p></div>
+            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Rol <span class="text-primary">*</span></label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="cursor-pointer"><input type="radio" name="role" value="manager" class="sr-only peer"><div class="p-4 rounded-2xl border-2 peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50 smooth"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-user-tie"></i></div><div><h4 class="font-bold">Encargado</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Rol de sistema</p></div></div><p class="text-xs text-gray-500">Gestiona operativa diaria.</p></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="role" value="waiter" class="sr-only peer" checked><div class="p-4 rounded-2xl border-2 peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50 smooth"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-concierge-bell"></i></div><div><h4 class="font-bold">Camarero</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Rol de sistema</p></div></div><p class="text-xs text-gray-500">Servicio en sala.</p></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="role" value="externalapp" class="sr-only peer"><div class="p-4 rounded-2xl border-2 peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50 smooth"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-plug"></i></div><div><h4 class="font-bold">App Externa</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Rol de sistema</p></div></div><p class="text-xs text-gray-500">Acceso programático vía API Key.</p></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="role" value="sommelier" class="sr-only peer"><div class="p-4 rounded-2xl border-2 peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50 smooth"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600"><i class="fas fa-wine-glass-alt"></i></div><div><h4 class="font-bold">Sommelier</h4><p class="text-[10px] text-purple-500 uppercase font-bold">Rol custom</p></div></div><p class="text-xs text-gray-500">Carta de vinos y maridajes.</p></div></label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mt-6 flex items-start gap-3"><i class="fas fa-plug text-indigo-500 mt-0.5"></i><div><p class="text-sm text-indigo-800 font-medium">Si seleccionas "App Externa"</p><p class="text-xs text-indigo-700 mt-1">El desarrollador aceptará con Google OAuth y recibirá automáticamente su <strong>API Key</strong>. Tú no gestionas la key — solo los permisos del rol.</p></div></div>
+    <div class="bg-white rounded-2xl border p-6 mt-6"><h3 class="font-bold mb-4">Flujo de la invitación</h3>
+        <div class="flex items-center gap-2 overflow-x-auto pb-2">
+            <div class="flex flex-col items-center gap-1 min-w-[80px]"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-paper-plane text-sm"></i></div><span class="text-[10px] font-bold text-center">Envías invitación</span></div>
+            <i class="fas fa-arrow-right text-gray-300"></i>
+            <div class="flex flex-col items-center gap-1 min-w-[80px]"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><i class="fas fa-envelope text-sm"></i></div><span class="text-[10px] font-bold text-center">Recibe email</span></div>
+            <i class="fas fa-arrow-right text-gray-300"></i>
+            <div class="flex flex-col items-center gap-1 min-w-[80px]"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><i class="fab fa-google text-sm"></i></div><span class="text-[10px] font-bold text-center">Acepta con Google</span></div>
+            <i class="fas fa-arrow-right text-gray-300"></i>
+            <div class="flex flex-col items-center gap-1 min-w-[80px]"><div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success"><i class="fas fa-check text-sm"></i></div><span class="text-[10px] font-bold text-center">Membership activa</span></div>
+            <i class="fas fa-arrow-right text-gray-300"></i>
+            <div class="flex flex-col items-center gap-1 min-w-[80px]"><div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-key text-sm"></i></div><span class="text-[10px] font-bold text-center">API Key<br><span class="text-gray-400">(solo ExternalApp)</span></span></div>
+        </div>
+    </div>
+</div></div>
+
+<!-- VIEW 3: MEMBER DETAIL -->
+<div id="memberDetail" class="view p-4 md:p-8"><div class="max-w-4xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('team')" class="hover:text-primary">Equipo</a><i class="fas fa-chevron-right text-xs"></i><span>María López</span></div>
+            <div class="flex items-center gap-3 flex-wrap"><h1 class="text-2xl font-bold">María López</h1><span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase">Encargado</span><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/10 text-success text-xs font-bold"><i class="fas fa-circle text-[6px]"></i>Activo</span></div></div>
+        <div class="flex gap-3"><button onclick="show('team')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button><button onclick="openM('mChangeRole')" class="px-4 py-2.5 rounded-full font-bold text-blue-600 bg-blue-50 hover:bg-blue-100"><i class="fas fa-exchange-alt mr-2"></i>Cambiar Rol</button><button class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100"><i class="fas fa-user-slash mr-2"></i>Desactivar</button></div>
+    </div>
+    <div class="mb-6"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-eye text-[10px] mr-1"></i>GET /memberships/{id}</span></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-gray-50/50 border-b flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-user"></i></div><h3 class="font-bold">Información</h3></div>
+                <div class="p-6 grid grid-cols-2 gap-4"><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Nombre</p><p class="font-medium">María López</p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Email</p><p class="font-medium">maria@restaurante.com</p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Rol</p><p class="font-medium">Encargado <span class="text-[10px] text-gray-400">(sistema)</span></p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Desde</p><p class="font-medium">1 feb 2026</p></div></div></div>
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-emerald-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-shield-alt"></i></div><div><h3 class="font-bold">Permisos Efectivos</h3><p class="text-xs text-gray-500">Heredados del rol "Encargado"</p></div></div><button onclick="show('roleEdit')" class="px-4 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Editar Rol</button></div>
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">menu:read</span><span class="text-gray-400">— Ver menús</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">menu:write</span><span class="text-gray-400">— Gestionar menús</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">reservation:read</span><span class="text-gray-400">— Ver reservas</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">reservation:write</span><span class="text-gray-400">— Gestionar reservas</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-times text-red-400 text-xs"></i><span class="font-medium text-gray-400 line-through">SetMenuDepositPolicy</span><span class="text-gray-400">— Fianza</span><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">EXCLUIDO</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-plus text-info text-xs"></i><span class="font-medium text-info">CancelReservation</span><span class="text-gray-400">— Cancelar reservas</span><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold">ADICIONAL</span></div>
+                </div></div>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Acciones</h3><div class="space-y-2"><span class="block cmd-update text-[10px] font-bold px-2 py-1 rounded">PUT → Membership.ChangeRole</span><span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded">POST → Membership.Deactivate</span><span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">POST → Membership.Reactivate</span><span class="block cmd-delete text-[10px] font-bold px-2 py-1 rounded">DELETE → Membership.Delete</span></div></div>
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4"><div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-amber-500"></i><span class="font-bold text-amber-800 text-sm">Efectos</span></div><ul class="text-xs text-amber-700 space-y-1"><li>• <strong>Cambiar rol</strong>: invalida sesión → re-login</li><li>• <strong>Desactivar</strong>: pierde acceso inmediato</li><li>• <strong>Eliminar</strong>: irreversible</li></ul></div>
+        </div>
+    </div>
+</div></div>
+
+<!-- VIEW 4: APP DETAIL -->
+<div id="appDetail" class="view p-4 md:p-8"><div class="max-w-4xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('team')" class="hover:text-primary">Equipo</a><i class="fas fa-chevron-right text-xs"></i><span>TPV MiSoftware</span></div>
+            <div class="flex items-center gap-3 flex-wrap"><h1 class="text-2xl font-bold">TPV MiSoftware</h1><span class="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold uppercase">ExternalApp</span><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/10 text-success text-xs font-bold"><i class="fas fa-circle text-[6px]"></i>Activo</span></div></div>
+        <div class="flex gap-3"><button onclick="show('team')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button><button class="px-4 py-2.5 rounded-full font-bold text-red-600 bg-red-50 hover:bg-red-100"><i class="fas fa-power-off mr-2"></i>Desactivar</button></div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-indigo-50/50 border-b flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-cash-register"></i></div><h3 class="font-bold">Información</h3></div>
+                <div class="p-6 grid grid-cols-2 gap-4"><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Aplicación</p><p class="font-medium">TPV MiSoftware</p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Desarrollador</p><p class="font-medium">dev@misoftware.com</p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Conectada</p><p class="font-medium">5 feb 2026</p></div><div><p class="text-xs font-bold text-gray-400 uppercase mb-1">Último acceso</p><p class="font-medium">Hoy, 14:32</p></div></div></div>
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-gray-50/50 border-b flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center text-gray-500"><i class="fas fa-key"></i></div><div><h3 class="font-bold">API Key</h3><p class="text-xs text-gray-500">Solo el desarrollador ve y gestiona la key</p></div></div>
+                <div class="p-6"><div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"><div class="flex-1"><p class="font-mono font-bold text-lg">fud_a3K9<span class="text-gray-300">••••••••••••••••••••••••</span></p><p class="text-xs text-gray-400 mt-1">Creada 5 feb 2026 · SHA-256 hash almacenado</p></div><div class="px-3 py-1.5 rounded-lg bg-success/10 text-success text-xs font-bold">Activa</div></div><p class="text-xs text-gray-400 mt-3"><i class="fas fa-lock mr-1"></i>El Owner no puede ver ni rotar la API Key. Solo desactivar o eliminar la membership.</p></div></div>
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-emerald-50/50 border-b flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-shield-alt"></i></div><div><h3 class="font-bold">Permisos</h3><p class="text-xs text-gray-500">Heredados del rol "ExternalApp"</p></div></div><button onclick="show('roleEdit')" class="px-4 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold text-sm"><i class="fas fa-pencil-alt mr-1"></i>Editar Rol</button></div>
+                <div class="p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">menu:read</span><span class="text-gray-400">— Ver menús</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-check text-success text-xs"></i><span class="font-medium">reservation:read</span><span class="text-gray-400">— Ver reservas</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-times text-gray-300 text-xs"></i><span class="font-medium text-gray-400">menu:write</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i class="fas fa-times text-gray-300 text-xs"></i><span class="font-medium text-gray-400">reservation:write</span></div>
+                </div></div>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Acciones del Owner</h3><div class="space-y-2"><span class="block cmd-deactivate text-[10px] font-bold px-2 py-1 rounded">Deactivate → desactiva API Key</span><span class="block cmd-activate text-[10px] font-bold px-2 py-1 rounded">Reactivate → reactiva API Key</span><span class="block cmd-delete text-[10px] font-bold px-2 py-1 rounded">Delete → elimina API Key</span></div></div>
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Acciones del Dev</h3><span class="block cmd-update text-[10px] font-bold px-2 py-1 rounded">POST → ApiKey.Rotate</span><p class="text-xs text-gray-400 mt-2">La rotación la hace el dev desde su panel.</p></div>
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-4"><div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-red-500"></i><span class="font-bold text-red-800 text-sm">Restricción</span></div><p class="text-xs text-red-700">No se puede cambiar ExternalApp ↔ rol humano.</p><span class="block cmd-update text-[10px] font-bold px-2 py-1 rounded mt-2">ChangeRole → ConflictGuard</span></div>
+        </div>
+    </div>
+</div></div>
+
+<!-- VIEW 5: ROLES LIST -->
+<div id="roles" class="view p-4 md:p-8"><div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('team')" class="hover:text-primary">Equipo</a><i class="fas fa-chevron-right text-xs"></i><span>Roles</span></div><h1 class="text-2xl font-bold">Roles y Permisos</h1><p class="text-gray-500 text-sm mt-1">Configura qué puede hacer cada rol</p></div>
+        <button onclick="openM('mCreateRole')" class="bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark smooth flex items-center gap-2"><i class="fas fa-plus"></i>Crear Rol Custom</button>
+    </div>
+    <div class="mb-4"><span class="cmd-get text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-code text-[10px] mr-1"></i>GET /restaurant-roles</span></div>
+    <h3 class="font-bold text-gray-500 text-sm uppercase mb-3">Roles de Sistema</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-2xl border shadow-sm p-5 opacity-75"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-xl"><i class="fas fa-crown"></i></div><div><h4 class="font-bold">Owner</h4><p class="text-[10px] text-gray-400 uppercase font-bold">No editable · No eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Todos los permisos. Ancla de seguridad.</p><div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 text-primary text-xs font-bold"><i class="fas fa-infinity"></i><span>Todos los permisos — automático</span></div></div>
+        <div class="card bg-white rounded-2xl border shadow-sm p-5 cursor-pointer smooth hover:shadow-lg" onclick="show('roleEdit')"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl"><i class="fas fa-user-tie"></i></div><div><h4 class="font-bold">Encargado</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Editable · No eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Operativa diaria.</p><div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu:read</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu:write</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">reservation:read</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">reservation:write</span><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">-1 exc</span><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold">+1 add</span></div></div>
+        <div class="card bg-white rounded-2xl border shadow-sm p-5 cursor-pointer smooth hover:shadow-lg" onclick="show('roleEdit')"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 text-xl"><i class="fas fa-concierge-bell"></i></div><div><h4 class="font-bold">Camarero</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Editable · No eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Servicio en sala.</p><div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu:read</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">reservation:read</span></div></div>
+        <div class="card bg-white rounded-2xl border shadow-sm p-5 cursor-pointer smooth hover:shadow-lg" onclick="show('roleEdit')"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 text-xl"><i class="fas fa-plug"></i></div><div><h4 class="font-bold">App Externa</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Editable · No eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Acceso programático API.</p><div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu:read</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">reservation:read</span></div></div>
+        <div class="card bg-white rounded-2xl border shadow-sm p-5 cursor-pointer smooth hover:shadow-lg" onclick="show('roleEdit')"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 text-xl"><i class="fas fa-utensils"></i></div><div><h4 class="font-bold">Comensal</h4><p class="text-[10px] text-gray-400 uppercase font-bold">Editable · No eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Cliente registrado (opt-in).</p><div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">reservation:read</span></div></div>
+    </div>
+    <h3 class="font-bold text-gray-500 text-sm uppercase mb-3">Roles Custom</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="card bg-white rounded-2xl border shadow-sm p-5 cursor-pointer smooth hover:shadow-lg" onclick="show('roleEdit')"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-500 text-xl"><i class="fas fa-wine-glass-alt"></i></div><div><h4 class="font-bold">Sommelier</h4><p class="text-[10px] text-purple-500 uppercase font-bold">Custom · Eliminable</p></div></div><p class="text-sm text-gray-500 mb-3">Carta de vinos.</p><div class="flex flex-wrap gap-1.5"><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu:read</span><span class="px-2 py-0.5 rounded bg-success/10 text-success text-[10px] font-bold">menu-item:write</span></div></div>
+        <div onclick="openM('mCreateRole')" class="border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center text-gray-400 hover:text-primary hover:border-primary cursor-pointer smooth min-h-[180px]"><i class="fas fa-plus text-2xl mb-2"></i><span class="font-bold text-sm">Crear rol custom</span></div>
+    </div>
+</div></div>
+
+<!-- VIEW 6: ROLE EDIT -->
+<div id="roleEdit" class="view p-4 md:p-8"><div class="max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div><div class="flex items-center gap-2 text-sm text-gray-400 mb-1"><a href="#" onclick="show('team')" class="hover:text-primary">Equipo</a><i class="fas fa-chevron-right text-xs"></i><a href="#" onclick="show('roles')" class="hover:text-primary">Roles</a><i class="fas fa-chevron-right text-xs"></i><span>Encargado</span></div>
+            <div class="flex items-center gap-3"><h1 class="text-2xl font-bold">Editar: Encargado</h1><span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">ROL DE SISTEMA</span></div></div>
+        <div class="flex gap-3"><button onclick="show('roles')" class="px-4 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200"><i class="fas fa-arrow-left mr-2"></i>Volver</button><button onclick="show('roles');toast('Permisos guardados — sesiones invalidadas')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primaryDark flex items-center gap-2"><i class="fas fa-save"></i>Guardar</button></div>
+    </div>
+    <div class="mb-6"><span class="cmd-update text-xs font-bold px-3 py-1 rounded-full"><i class="fas fa-pencil-alt text-[10px] mr-1"></i>PUT /restaurant-roles/{id}</span></div>
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3"><i class="fas fa-exclamation-triangle text-amber-500 mt-0.5"></i><div><p class="text-sm text-amber-800 font-medium">Guardar invalida sesiones</p><p class="text-xs text-amber-700 mt-1">Se <strong>cerrarán las sesiones</strong> de todos los miembros con rol "Encargado". Re-login con Google (un click) para aplicar permisos nuevos.</p></div></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-3 space-y-6">
+            <!-- Rol info -->
+            <div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 bg-gray-50/50 border-b flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600"><i class="fas fa-tag"></i></div><h3 class="font-bold">Información del Rol</h3></div>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre</label><input type="text" value="Encargado" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div><div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><input type="text" value="Gestiona operativa diaria" class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div></div></div>
+
+            <!-- PERMISSIONS -->
+            <div class="bg-white rounded-2xl border overflow-hidden">
+                <div class="p-4 bg-emerald-50/50 border-b flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fas fa-shield-alt"></i></div><div><h3 class="font-bold">Permisos</h3><p class="text-xs text-gray-500">Agrupaciones del catálogo. Expande para control fino.</p></div></div>
+                <div class="px-6 py-3 bg-gray-50 border-b flex flex-wrap gap-4 text-xs">
+                    <div class="flex items-center gap-1.5"><div class="w-4 h-2.5 rounded-full bg-success"></div><span class="text-gray-600">Activo</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-4 h-2.5 rounded-full bg-warning"></div><span class="text-gray-600">Parcial (exclusiones)</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-4 h-2.5 rounded-full bg-gray-300"></div><span class="text-gray-600">Inactivo</span></div>
+                    <div class="flex items-center gap-1.5"><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold text-[10px]">+ADD</span><span class="text-gray-600">Adicional individual</span></div>
+                </div>
+                <div class="divide-y">
+                    <!-- DOMAIN: Menús -->
+                    <div class="px-6 py-4">
+                        <h4 class="font-bold text-gray-800 flex items-center gap-2 mb-4"><i class="fas fa-book-open text-gray-400"></i>Menús<span class="text-xs font-normal text-gray-400">— menu-service</span></h4>
+                        <!-- menu:read ON -->
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth cursor-pointer" onclick="toggleExpand('menuRead')"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="event.stopPropagation();togglePerm(this)"></div><div><span class="font-bold text-sm">menu:read</span><span class="text-sm text-gray-500 ml-2">— Ver menús</span></div></div><div class="flex items-center gap-2"><span class="text-xs text-gray-400">2 scopes</span><i id="menuReadIcon" class="fas fa-chevron-down text-gray-400 text-xs smooth"></i></div></div>
+                            <div id="menuRead" class="hidden ml-14 mt-2 space-y-1">
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">GetMenu</span><span class="text-xs text-gray-400">— Ver un menú</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">GetMenus</span><span class="text-xs text-gray-400">— Ver lista</span></div>
+                            </div>
+                        </div>
+                        <!-- menu:write PARTIAL -->
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-amber-50/50 hover:bg-amber-50 smooth cursor-pointer" onclick="toggleExpand('menuWrite')"><div class="flex items-center gap-3"><div class="perm-toggle partial" onclick="event.stopPropagation();togglePerm(this)"></div><div><span class="font-bold text-sm">menu:write</span><span class="text-sm text-gray-500 ml-2">— Gestionar menús</span><span class="ml-2 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">2 EXCLUIDOS</span></div></div><div class="flex items-center gap-2"><span class="text-xs text-gray-400">10 scopes</span><i id="menuWriteIcon" class="fas fa-chevron-down text-gray-400 text-xs smooth"></i></div></div>
+                            <div id="menuWrite" class="hidden ml-14 mt-2 space-y-1">
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">CreateMenu</span><span class="text-xs text-gray-400">— Crear menú</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">UpdateMenu</span><span class="text-xs text-gray-400">— Modificar menú</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">ActivateMenu</span><span class="text-xs text-gray-400">— Activar</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">DeactivateMenu</span><span class="text-xs text-gray-400">— Desactivar</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">AddMenuCategory</span><span class="text-xs text-gray-400">— Añadir categoría</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">UpdateMenuCategory</span><span class="text-xs text-gray-400">— Modificar categoría</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">RemoveMenuCategory</span><span class="text-xs text-gray-400">— Eliminar categoría</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">AddItemToCategory</span><span class="text-xs text-gray-400">— Añadir plato</span></div>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-red-50/50 border border-red-100"><div class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded"><span class="text-sm font-medium text-red-700 line-through">SetMenuDepositPolicy</span><span class="text-xs text-red-500">— Configurar fianza</span></div><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">EXCLUIDO</span></div>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-red-50/50 border border-red-100"><div class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded"><span class="text-sm font-medium text-red-700 line-through">RemoveMenuDepositPolicy</span><span class="text-xs text-red-500">— Eliminar fianza</span></div><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">EXCLUIDO</span></div>
+                            </div>
+                        </div>
+                        <!-- menu:deposit CUSTOM OFF -->
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth cursor-pointer"><div class="flex items-center gap-3"><div class="perm-toggle off" onclick="event.stopPropagation();togglePerm(this)"></div><div><span class="font-bold text-sm">menu:deposit</span><span class="text-sm text-gray-500 ml-2">— Fianzas de menús</span><span class="ml-2 px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">CUSTOM</span></div></div><span class="text-xs text-gray-400">2 scopes</span></div></div>
+                    </div>
+
+                    <!-- DOMAIN: Reservas -->
+                    <div class="px-6 py-4">
+                        <h4 class="font-bold text-gray-800 flex items-center gap-2 mb-4"><i class="fas fa-calendar-alt text-gray-400"></i>Reservas<span class="text-xs font-normal text-gray-400">— reservation-service</span></h4>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth cursor-pointer" onclick="toggleExpand('resRead')"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="event.stopPropagation();togglePerm(this)"></div><div><span class="font-bold text-sm">reservation:read</span><span class="text-sm text-gray-500 ml-2">— Ver reservas</span></div></div><div class="flex items-center gap-2"><span class="text-xs text-gray-400">3 scopes</span><i id="resReadIcon" class="fas fa-chevron-down text-gray-400 text-xs smooth"></i></div></div>
+                            <div id="resRead" class="hidden ml-14 mt-2 space-y-1">
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">GetReservation</span><span class="text-xs text-gray-400">— Ver una reserva</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">ListReservations</span><span class="text-xs text-gray-400">— Listar</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">GetReservationStats</span><span class="text-xs text-gray-400">— Estadísticas</span></div>
+                            </div>
+                        </div>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth cursor-pointer" onclick="toggleExpand('resWrite')"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="event.stopPropagation();togglePerm(this)"></div><div><span class="font-bold text-sm">reservation:write</span><span class="text-sm text-gray-500 ml-2">— Gestionar reservas</span></div></div><div class="flex items-center gap-2"><span class="text-xs text-gray-400">4 scopes</span><i id="resWriteIcon" class="fas fa-chevron-down text-gray-400 text-xs smooth"></i></div></div>
+                            <div id="resWrite" class="hidden ml-14 mt-2 space-y-1">
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">CreateReservation</span><span class="text-xs text-gray-400">— Crear</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">UpdateReservation</span><span class="text-xs text-gray-400">— Modificar</span></div>
+                                <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50"><input type="checkbox" checked class="w-4 h-4 rounded text-success"><span class="text-sm font-medium">ConfirmReservation</span><span class="text-xs text-gray-400">— Confirmar</span></div>
+                                <div class="flex items-center justify-between p-2 rounded-lg bg-blue-50/50 border border-blue-100"><div class="flex items-center gap-2"><input type="checkbox" checked class="w-4 h-4 rounded text-info"><span class="text-sm font-medium text-info">CancelReservation</span><span class="text-xs text-blue-500">— Cancelar</span></div><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold">ADICIONAL</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DOMAIN: Platos -->
+                    <div class="px-6 py-4">
+                        <h4 class="font-bold text-gray-800 flex items-center gap-2 mb-4"><i class="fas fa-drumstick-bite text-gray-400"></i>Platos<span class="text-xs font-normal text-gray-400">— menu-service</span></h4>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="togglePerm(this)"></div><div><span class="font-bold text-sm">menu-item:read</span><span class="text-sm text-gray-500 ml-2">— Ver platos</span></div></div><span class="text-xs text-gray-400">2 scopes</span></div></div>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="togglePerm(this)"></div><div><span class="font-bold text-sm">menu-item:write</span><span class="text-sm text-gray-500 ml-2">— Gestionar platos</span></div></div><span class="text-xs text-gray-400">11 scopes</span></div></div>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth"><div class="flex items-center gap-3"><div class="perm-toggle off" onclick="togglePerm(this)"></div><div><span class="font-bold text-sm">menu-item:deposit</span><span class="text-sm text-gray-500 ml-2">— Fianzas</span><span class="ml-2 px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">CUSTOM</span></div></div><span class="text-xs text-gray-400">2 scopes</span></div></div>
+                    </div>
+
+                    <!-- DOMAIN: Alérgenos -->
+                    <div class="px-6 py-4">
+                        <h4 class="font-bold text-gray-800 flex items-center gap-2 mb-4"><i class="fas fa-allergies text-gray-400"></i>Alérgenos<span class="text-xs font-normal text-gray-400">— plataforma</span></h4>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth"><div class="flex items-center gap-3"><div class="perm-toggle on" onclick="togglePerm(this)"></div><div><span class="font-bold text-sm">allergen:read</span><span class="text-sm text-gray-500 ml-2">— Ver alérgenos</span></div></div><span class="text-xs text-gray-400">2 scopes</span></div></div>
+                        <div class="mb-3"><div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 smooth"><div class="flex items-center gap-3"><div class="perm-toggle off" onclick="togglePerm(this)"></div><div><span class="font-bold text-sm">allergen:write</span><span class="text-sm text-gray-500 ml-2">— Gestionar alérgenos</span></div></div><span class="text-xs text-gray-400">2 scopes</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3 flex items-center gap-2"><i class="fas fa-code text-gray-400"></i>JWT Preview</h3>
+                <div class="bg-gray-900 text-green-400 rounded-xl p-4 text-xs font-mono overflow-x-auto"><pre>{
+  "sub": "userId",
+  "tid": "restaurantId",
+  "groups": [
+    "menu:read",
+    "menu:write",
+    "reservation:read",
+    "reservation:write",
+    "menu-item:read",
+    "menu-item:write",
+    "allergen:read"
+  ],
+  "add": [
+    "res-svc:CancelReservation"
+  ],
+  "exc": [
+    "menu-svc:SetMenuDepositPolicy",
+    "menu-svc:RemoveMenuDepositPolicy"
+  ]
+}</pre></div></div>
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Firestore: restaurant_roles</h3>
+                <div class="bg-gray-900 text-amber-400 rounded-xl p-4 text-xs font-mono overflow-x-auto"><pre>{
+  "name": "Encargado",
+  "restaurantId": "xxx",
+  "isSystem": true,
+  "isEditable": true,
+  "isDeletable": false,
+  "groups": ["menu:read", ...],
+  "additionalScopes": [
+    "res-svc:CancelReservation"
+  ],
+  "excludedScopes": [
+    "menu-svc:SetMenuDepositPolicy",
+    "menu-svc:RemoveMenuDepositPolicy"
+  ]
+}</pre></div></div>
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4"><div class="flex items-center gap-2 mb-2"><i class="fas fa-info-circle text-blue-500"></i><span class="font-bold text-blue-800 text-sm">Validación</span></div><div class="bg-white rounded-xl p-3 text-xs font-mono text-blue-800 mt-2"><pre>inGroup && !excluded
+  || additional</pre></div></div>
+            <div class="bg-white rounded-2xl border p-4"><h3 class="font-bold mb-3">Miembros afectados</h3><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">M</div><span class="text-sm font-medium">María López</span></div><p class="text-xs text-gray-400 mt-2">1 sesión será invalidada al guardar.</p></div>
+        </div>
+    </div>
+</div></div>
+<!-- MODALS -->
+<!-- Change Role -->
+<div id="mChangeRole" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-md w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Cambiar Rol</h3><span class="cmd-update text-[10px] font-bold px-2 py-0.5 rounded">PUT → Membership.ChangeRole</span></div><button onclick="closeM('mChangeRole')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div>
+<div class="p-6 space-y-4">
+    <p class="text-sm text-gray-600">Nuevo rol para <strong>María López</strong>:</p>
+    <div class="space-y-2">
+        <label class="flex items-center gap-3 p-3 rounded-xl border hover:bg-gray-50 cursor-pointer"><input type="radio" name="newRole" value="manager" checked class="w-4 h-4 text-primary"><span class="font-bold text-sm">Encargado</span><span class="text-xs text-gray-400">(actual)</span></label>
+        <label class="flex items-center gap-3 p-3 rounded-xl border hover:bg-gray-50 cursor-pointer"><input type="radio" name="newRole" value="waiter" class="w-4 h-4 text-primary"><span class="font-bold text-sm">Camarero</span></label>
+        <label class="flex items-center gap-3 p-3 rounded-xl border hover:bg-gray-50 cursor-pointer"><input type="radio" name="newRole" value="sommelier" class="w-4 h-4 text-primary"><span class="font-bold text-sm">Sommelier</span><span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">custom</span></label>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3"><p class="text-xs text-amber-700"><i class="fas fa-exclamation-triangle mr-1"></i>Se cerrará su sesión. Re-login con Google (un click).</p></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mChangeRole')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mChangeRole');toast('Rol actualizado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Cambiar</button></div>
+</div></div>
+
+<!-- Create Role -->
+<div id="mCreateRole" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+<div class="bg-white rounded-3xl max-w-md w-full shadow-2xl"><div class="p-6 border-b flex items-center justify-between"><div><h3 class="text-lg font-bold">Crear Rol Custom</h3><span class="cmd-create text-[10px] font-bold px-2 py-0.5 rounded">POST → CreateRole</span></div><button onclick="closeM('mCreateRole')" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400"><i class="fas fa-times"></i></button></div>
+<div class="p-6 space-y-4">
+    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Nombre *</label><input type="text" placeholder="Ej: Sommelier, Hostess..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none"></div>
+    <div><label class="block text-xs font-bold text-gray-500 uppercase mb-2">Descripción</label><textarea rows="2" placeholder="Qué hace este rol..." class="w-full bg-gray-50 border rounded-xl px-4 py-3 font-medium focus:border-primary outline-none resize-none"></textarea></div>
+    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3"><p class="text-xs text-blue-700"><i class="fas fa-info-circle mr-1"></i>Se creará sin permisos. Configúralos desde la edición del rol.</p></div>
+</div>
+<div class="p-6 border-t flex justify-end gap-3"><button onclick="closeM('mCreateRole')" class="px-6 py-2.5 rounded-full font-bold text-gray-500 hover:bg-gray-100">Cancelar</button><button onclick="closeM('mCreateRole');show('roleEdit');toast('Rol creado')" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primaryDark">Crear</button></div>
+</div></div>
+
+<!-- Toast -->
+<div id="toastEl" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50"><div class="w-8 h-8 rounded-full bg-success flex items-center justify-center"><i class="fas fa-check"></i></div><span id="toastMsg">OK</span></div>
+
+<script>
+function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));document.getElementById(v)?.classList.add('active');window.scrollTo(0,0);}
+function openM(id){document.getElementById(id)?.classList.remove('hidden');}
+function closeM(id){document.getElementById(id)?.classList.add('hidden');}
+function toast(msg){const t=document.getElementById('toastEl');document.getElementById('toastMsg').textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2500);}
+function switchTab(el,showId,hideId){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById(showId)?.classList.remove('hidden');document.getElementById(hideId)?.classList.add('hidden');}
+function toggleExpand(id){const el=document.getElementById(id);const icon=document.getElementById(id+'Icon');if(el){el.classList.toggle('hidden');icon?.classList.toggle('rotate-180');}}
+function togglePerm(el){if(el.classList.contains('on')){el.classList.remove('on');el.classList.add('off');}else if(el.classList.contains('off')){el.classList.remove('off');el.classList.add('on');}else{el.classList.remove('partial');el.classList.add('on');}}
+</script>
+</body>
+</html>

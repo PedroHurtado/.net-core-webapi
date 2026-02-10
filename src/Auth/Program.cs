@@ -70,6 +70,9 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger";
         c.SwaggerEndpoint("/openapi/auth-api.yaml", "Auth API");
         c.SwaggerEndpoint("/openapi/session-api.yaml", "Session API");        
+        c.SwaggerEndpoint("/openapi/tenant-roles-api.yaml", "Roles API"); 
+        c.SwaggerEndpoint("/openapi/memberships-api.yaml", "MemberShip API"); 
+        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "Esternal Apps API"); 
     });
 
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
