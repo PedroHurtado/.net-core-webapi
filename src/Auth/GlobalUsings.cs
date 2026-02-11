@@ -36,6 +36,7 @@ global using Refit;
 
 global using Auth.Features.Memberships.Api.MembershipAggregate;
 global using Auth.Features.Roles.Api.TenantRoleAggregate;
+global using Auth.Features.ExternalApps.Domain.ExternalAppAggregate;
 global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;

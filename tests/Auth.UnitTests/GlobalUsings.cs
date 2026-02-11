@@ -28,6 +28,7 @@ global using Auth.Features.Sessions.Api.Queries;
 global using Auth.Features.Memberships.Api.MembershipAggregate;
 global using Auth.Features.Memberships.Api.MembershipAggregate.Commands;
 global using Auth.Features.Memberships.Api.MembershipAggregate.Queries;
+global using Auth.Features.ExternalApps.Domain.ExternalAppAggregate;
 global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
