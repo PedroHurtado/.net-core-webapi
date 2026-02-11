@@ -25,6 +25,7 @@ global using Auth.Infrastructure.Jwt;
 
 global using Auth.Features.Sessions.Api.Queries;
 
+global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 

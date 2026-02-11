@@ -35,6 +35,7 @@ global using Microsoft.IdentityModel.Tokens;
 global using Refit;
 
 global using Auth.Features.Roles.Api.TenantRoleAggregate;
+global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 
