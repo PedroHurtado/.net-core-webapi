@@ -72,7 +72,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/openapi/session-api.yaml", "Session API");        
         c.SwaggerEndpoint("/openapi/tenant-roles-api.yaml", "Roles API"); 
         c.SwaggerEndpoint("/openapi/memberships-api.yaml", "MemberShip API"); 
-        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "Esternal Apps API"); 
+        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "External Apps API"); 
     });
 
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();

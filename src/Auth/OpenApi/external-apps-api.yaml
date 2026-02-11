@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Fudie – ExternalApps API
+  title: Fudie – External Apps API
   description: Gestión de aplicaciones externas del tenant
   version: 1.0.0
 
@@ -18,7 +18,6 @@ paths:
     post:
       operationId: CreateExternalApp
       summary: Conectar una nueva aplicación externa
-      description: Crear es invitar al desarrollador. Nace con InvitationStatus=Pending, UserId=null y sin API Key.
       requestBody:
         required: true
         content:
@@ -40,10 +39,9 @@ paths:
     get:
       operationId: ListExternalApps
       summary: Listar aplicaciones externas del tenant
-      description: El tenantId se obtiene del JWT.
       responses:
         '200':
-          description: Lista de aplicaciones externas
+          description: Lista de external apps
           content:
             application/json:
               schema:
@@ -59,7 +57,7 @@ paths:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
         '200':
-          description: Detalle de la aplicación externa
+          description: Detalle de la external app
           content:
             application/json:
               schema:
@@ -69,7 +67,7 @@ paths:
 
     put:
       operationId: UpdateExternalApp
-      summary: Modificar el nombre de una aplicación externa
+      summary: Modificar nombre de la aplicación externa
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       requestBody:
@@ -100,13 +98,13 @@ paths:
   /external-apps/{id}/accept:
     post:
       operationId: AcceptExternalAppInvitation
-      summary: Aceptar invitación de aplicación externa
-      description: Endpoint público. El UserId se obtiene del Google OAuth. Genera la API Key.
+      summary: Aceptar invitación y obtener API Key
+      description: Endpoint público. El userId se obtiene del JWT. Devuelve la API Key en claro una sola vez.
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
         '200':
-          description: Invitación aceptada. API Key generada (se muestra una sola vez).
+          description: Invitación aceptada — API Key generada
           content:
             application/json:
               schema:
@@ -119,7 +117,7 @@ paths:
   /external-apps/{id}/cancel-invitation:
     post:
       operationId: CancelExternalAppInvitation
-      summary: Cancelar invitación pendiente de aplicación externa
+      summary: Cancelar invitación pendiente
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
@@ -137,7 +135,7 @@ paths:
   /external-apps/{id}/resend-invitation:
     post:
       operationId: ResendExternalAppInvitation
-      summary: Reenviar invitación pendiente de aplicación externa
+      summary: Reenviar invitación pendiente
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
@@ -151,7 +149,7 @@ paths:
   /external-apps/{id}/permissions:
     put:
       operationId: UpdateExternalAppPermissions
-      summary: Configurar permisos de una aplicación externa
+      summary: Configurar permisos de la aplicación externa
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       requestBody:
@@ -169,13 +167,13 @@ paths:
   /external-apps/{id}/rotate-api-key:
     post:
       operationId: RotateApiKey
-      summary: Rotar API Key
-      description: Solo el desarrollador puede ejecutar este endpoint. La key anterior queda inválida inmediatamente.
+      summary: Regenerar API Key
+      description: Solo el desarrollador puede rotar su API Key. La key anterior queda inválida inmediatamente.
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
         '200':
-          description: API Key rotada (se muestra una sola vez).
+          description: API Key regenerada
           content:
             application/json:
               schema:
@@ -189,7 +187,7 @@ paths:
     post:
       operationId: DeactivateExternalApp
       summary: Desactivar una aplicación externa
-      description: La API Key queda inválida. Las requests con esa key son rechazadas.
+      description: La API Key queda inválida mientras esté desactivada.
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
@@ -204,16 +202,16 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
 
-  /external-apps/{id}/reactivate:
+  /external-apps/{id}/activate:
     post:
-      operationId: ReactivateExternalApp
-      summary: Reactivar una aplicación externa
+      operationId: ActivateExternalApp
+      summary: Activar una aplicación externa
       description: La API Key vuelve a ser válida. No se genera nueva key.
       parameters:
         - $ref: '#/components/parameters/ExternalAppId'
       responses:
         '200':
-          description: External app reactivada
+          description: External app activada
           content:
             application/json:
               schema:
@@ -284,6 +282,7 @@ components:
           format: uuid
         userId:
           type: string
+          format: uuid
           nullable: true
         name:
           type: string
@@ -291,6 +290,7 @@ components:
           type: boolean
         invitationEmail:
           type: string
+          format: email
         invitationStatus:
           type: string
           enum: [Pending, Accepted, Cancelled]
@@ -319,10 +319,10 @@ components:
       properties:
         apiKey:
           type: string
-          description: API Key en claro. Se muestra una sola vez.
+          description: API Key en claro. Solo se muestra una vez.
         prefix:
           type: string
-          description: Primeros 8 caracteres de la key.
+          description: Primeros 8 caracteres para identificación visual.
         message:
           type: string
 
@@ -354,14 +354,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomProblemDetails'
-
     Conflict:
-      description: Conflicto de negocio
+      description: Conflicto de estado
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomProblemDetails'
-
     ValidationError:
       description: Error de validación
       content:
