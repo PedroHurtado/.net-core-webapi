@@ -8,8 +8,10 @@ public partial class Membership
         public override Membership Execute(Membership membership)
         {
             ConflictGuard.ThrowIf(
-                membership.InvitationStatus != InvitationStatus.Pending,
-                "Invitation is not pending");
+                membership.InvitationStatus == InvitationStatus.Accepted,
+                "Invitation is already accepted");
+
+            membership.InvitationStatus = InvitationStatus.Pending;
 
             return membership;
         }

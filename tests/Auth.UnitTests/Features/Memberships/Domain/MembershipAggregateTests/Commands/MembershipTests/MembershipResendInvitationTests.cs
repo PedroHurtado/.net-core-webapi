@@ -20,7 +20,22 @@ public class MembershipResendInvitationTests(DomainFixture fixture) : IClassFixt
     }
 
     [Fact]
-    public void Execute_WhenNotPending_ThrowsConflictException()
+    public void Execute_WithCancelledInvitation_TransitionsToPending()
+    {
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(Guid.NewGuid())
+            .WithRole(new TestableTenantRole(Guid.NewGuid()))
+            .WithIsActive(true)
+            .WithInvitationEmail("maria@ejemplo.com")
+            .WithInvitationStatus(InvitationStatus.Cancelled);
+
+        var result = _resendInvitation.Execute(membership);
+
+        result.InvitationStatus.Should().Be(InvitationStatus.Pending);
+    }
+
+    [Fact]
+    public void Execute_WhenAccepted_ThrowsConflictException()
     {
         var membership = new TestableMembership(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
@@ -32,6 +47,6 @@ public class MembershipResendInvitationTests(DomainFixture fixture) : IClassFixt
         var act = () => _resendInvitation.Execute(membership);
 
         act.Should().Throw<ConflictException>()
-            .WithMessage("*Invitation is not pending*");
+            .WithMessage("*Invitation is already accepted*");
     }
 }
