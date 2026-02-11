@@ -38,6 +38,8 @@ global using Auth.Features.Roles.Api.TenantRoleAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 
+global using Auth.Features.Shared.Enums;
+
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
 global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
