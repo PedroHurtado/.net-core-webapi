@@ -9,6 +9,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 builder.Services.AddScoped(typeof(Guid), _ => tenantId);
 
+// User ID (temporal - hardcoded for development)
+var userId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+builder.Services.AddScoped(_ => new CurrentUserId(userId));
+
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 
