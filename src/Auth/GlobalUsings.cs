@@ -34,6 +34,9 @@ global using Microsoft.IdentityModel.JsonWebTokens;
 global using Microsoft.IdentityModel.Tokens;
 global using Refit;
 
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate;
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Commands;
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Queries;
 global using Auth.Features.Memberships.Api.MembershipAggregate;
 global using Auth.Features.Roles.Api.TenantRoleAggregate;
 global using Auth.Features.ExternalApps.Domain.ExternalAppAggregate;

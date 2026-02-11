@@ -25,6 +25,9 @@ global using Auth.Infrastructure.Jwt;
 
 global using Auth.Features.Sessions.Api.Queries;
 
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate;
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Commands;
+global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Queries;
 global using Auth.Features.Memberships.Api.MembershipAggregate;
 global using Auth.Features.Memberships.Api.MembershipAggregate.Commands;
 global using Auth.Features.Memberships.Api.MembershipAggregate.Queries;
