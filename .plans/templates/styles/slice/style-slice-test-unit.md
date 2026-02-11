@@ -88,7 +88,7 @@ public class Get{Aggregate}sTests
 
 Los comandos de dominio validan la **entidad completa** antes de ejecutar. Un `Testable{Aggregate}` con campos faltantes lanza `ValidationException`.
 
-**Regla**: Leer `Testable{Aggregate}.cs`, identificar todos los campos requeridos del agregado (los que el validador marca como obligatorios), y configurarlos TODOS en cada test. Después añadir el estado específico del test.
+**Regla**: Leer `Testable{Aggregate}.cs`, identificar todos los campos requeridos del agregado (los que el validador marca como obligatorios), y configurarlos TODOS en cada test. Esto incluye **enums con `IsInEnum()`** — no confiar en el default `0` del enum, siempre usar `.With{Enum}()` explícito. Después añadir el estado específico del test.
 
 ```csharp
 // 1. Todos los campos requeridos del agregado
