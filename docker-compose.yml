@@ -8,3 +8,14 @@ services:
     volumes:
       - ./firebase.json:/home/node/firebase.json
     working_dir: /home/node
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Auth/Dockerfile
+    ports:
+      - "5001:8080"
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
