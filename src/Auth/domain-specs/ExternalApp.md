@@ -371,13 +371,13 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 
 ### 6.4 ExternalApp.ResendInvitation
 
-> Solo dispara el evento. No cambia estado.
+> Reenvía la invitación. Si estaba cancelada, la reactiva a Pending.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(ResendInvitation) → 🟤[[ExternalApp]] → 🟠<ExternalAppInvitationResent>
                                         │
-                                  🟣{IsPending}
+                                  🟣{NotAccepted}
 ```
 
 #### Input
@@ -388,15 +388,15 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Invitación no está en Pending | 409 | ConflictGuard | "Invitation is not pending" |
+| Invitación ya aceptada | 409 | ConflictGuard | "Invitation is already accepted" |
 
 #### Lógica
 ```csharp
 ConflictGuard.ThrowIf(
-    externalApp.InvitationStatus != InvitationStatus.Pending,
-    "Invitation is not pending");
+    externalApp.InvitationStatus == InvitationStatus.Accepted,
+    "Invitation is already accepted");
 
-// No cambia estado — solo lanza evento ExternalAppInvitationResent
+externalApp.InvitationStatus = InvitationStatus.Pending;
 ```
 
 #### Slice: POST /external-apps/{externalAppId}/resend-invitation
@@ -405,14 +405,15 @@ ConflictGuard.ThrowIf(
 
 #### Tests Unitarios (Dominio)
 
-✅ Reenviar invitación pendiente → evento lanzado
-❌ Invitación no pendiente → ConflictException
+✅ Reenviar invitación pendiente → se mantiene Pending
+✅ Reenviar invitación cancelada → transiciona a Pending
+❌ Invitación ya aceptada → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK
 ❌ 404 → No encontrada
-❌ 409 → No está pendiente
+❌ 409 → Ya aceptada
 
 ---
 
