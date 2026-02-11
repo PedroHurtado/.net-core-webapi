@@ -8,6 +8,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantI
     public DbSet<TenantRole> TenantRoles => Set<TenantRole>();
 
     public DbSet<Membership> Memberships => Set<Membership>();
+    public DbSet<ExternalApp> ExternalApps => Set<ExternalApp>();
 
     public IQueryable<T> Query<T>() where T : class, IEntity
     {
@@ -42,7 +43,13 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantI
 
             entity.Reference(x=>x.Role);
             entity.Reference(x=>x.User);
-            
+
+        });
+
+        modelBuilder.Entity<ExternalApp>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.Reference(x => x.User);
         });
     }
 }
