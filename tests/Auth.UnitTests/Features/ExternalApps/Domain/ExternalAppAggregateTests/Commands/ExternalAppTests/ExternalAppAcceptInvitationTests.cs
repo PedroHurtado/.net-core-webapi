@@ -15,13 +15,14 @@ public class ExternalAppAcceptInvitationTests(DomainFixture fixture) : IClassFix
             .WithIsActive(true);
 
         var user = new TestableUser(Guid.NewGuid());
-        var command = new AcceptExternalAppInvitationCommand(user, "hash123", "fud_a3K9");
+        var command = new AcceptExternalAppInvitationCommand(user, "hash123", "salt123", "fud_a3K9");
 
         var result = _acceptInvitation.Execute(externalApp, command);
 
         result.InvitationStatus.Should().Be(InvitationStatus.Accepted);
         result.User.Should().Be(user);
         result.ApiKeyHash.Should().Be("hash123");
+        result.ApiKeySalt.Should().Be("salt123");
         result.ApiKeyPrefix.Should().Be("fud_a3K9");
     }
 
@@ -35,7 +36,7 @@ public class ExternalAppAcceptInvitationTests(DomainFixture fixture) : IClassFix
             .WithInvitationStatus(InvitationStatus.Accepted)
             .WithIsActive(true);
 
-        var command = new AcceptExternalAppInvitationCommand(new TestableUser(Guid.NewGuid()), "hash", "fud_pre1");
+        var command = new AcceptExternalAppInvitationCommand(new TestableUser(Guid.NewGuid()), "hash", "salt", "fud_pre1");
 
         var act = () => _acceptInvitation.Execute(externalApp, command);
 
@@ -53,7 +54,7 @@ public class ExternalAppAcceptInvitationTests(DomainFixture fixture) : IClassFix
             .WithInvitationStatus(InvitationStatus.Cancelled)
             .WithIsActive(true);
 
-        var command = new AcceptExternalAppInvitationCommand(new TestableUser(Guid.NewGuid()), "hash", "fud_pre1");
+        var command = new AcceptExternalAppInvitationCommand(new TestableUser(Guid.NewGuid()), "hash", "salt", "fud_pre1");
 
         var act = () => _acceptInvitation.Execute(externalApp, command);
 

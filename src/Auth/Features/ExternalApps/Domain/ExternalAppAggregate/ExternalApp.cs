@@ -47,10 +47,16 @@ public partial class ExternalApp : AggregateRoot<Guid>
     public InvitationStatus InvitationStatus { get; protected set; }
 
     /// <summary>
-    /// Gets the hash of the API key.
+    /// Gets the BCrypt hash of the API key.
     /// </summary>
-    /// <value>The SHA-256 hash of the API key, or <c>null</c> if no key has been generated.</value>
+    /// <value>The BCrypt hash of the API key, or <c>null</c> if no key has been generated.</value>
     public string? ApiKeyHash { get; protected set; }
+
+    /// <summary>
+    /// Gets the BCrypt salt used to hash the API key.
+    /// </summary>
+    /// <value>The salt, or <c>null</c> if no key has been generated.</value>
+    public string? ApiKeySalt { get; protected set; }
 
     /// <summary>
     /// Gets the prefix of the API key for identification.

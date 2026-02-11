@@ -3,6 +3,7 @@ namespace Auth.Features.ExternalApps.Domain.ExternalAppAggregate;
 public record AcceptExternalAppInvitationCommand(
     User User,
     string ApiKeyHash,
+    string ApiKeySalt,
     string ApiKeyPrefix
 );
 
@@ -22,6 +23,7 @@ public partial class ExternalApp
             externalApp.User = command.User;
             externalApp.InvitationStatus = InvitationStatus.Accepted;
             externalApp.ApiKeyHash = command.ApiKeyHash;
+            externalApp.ApiKeySalt = command.ApiKeySalt;
             externalApp.ApiKeyPrefix = command.ApiKeyPrefix;
 
             return externalAppValidator.ValidateOrThrow(externalApp);

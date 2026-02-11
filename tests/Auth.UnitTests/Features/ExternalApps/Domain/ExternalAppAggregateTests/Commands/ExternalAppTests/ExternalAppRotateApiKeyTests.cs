@@ -16,11 +16,12 @@ public class ExternalAppRotateApiKeyTests(DomainFixture fixture) : IClassFixture
             .WithApiKeyHash("oldHash")
             .WithApiKeyPrefix("fud_old1");
 
-        var command = new RotateExternalAppApiKeyCommand("newHash", "fud_new1");
+        var command = new RotateExternalAppApiKeyCommand("newHash", "newSalt", "fud_new1");
 
         var result = _rotateApiKey.Execute(externalApp, command);
 
         result.ApiKeyHash.Should().Be("newHash");
+        result.ApiKeySalt.Should().Be("newSalt");
         result.ApiKeyPrefix.Should().Be("fud_new1");
     }
 
@@ -34,7 +35,7 @@ public class ExternalAppRotateApiKeyTests(DomainFixture fixture) : IClassFixture
             .WithInvitationStatus(InvitationStatus.Pending)
             .WithIsActive(true);
 
-        var command = new RotateExternalAppApiKeyCommand("hash", "fud_pre1");
+        var command = new RotateExternalAppApiKeyCommand("hash", "salt", "fud_pre1");
 
         var act = () => _rotateApiKey.Execute(externalApp, command);
 
@@ -52,7 +53,7 @@ public class ExternalAppRotateApiKeyTests(DomainFixture fixture) : IClassFixture
             .WithInvitationStatus(InvitationStatus.Accepted)
             .WithIsActive(false);
 
-        var command = new RotateExternalAppApiKeyCommand("hash", "fud_pre1");
+        var command = new RotateExternalAppApiKeyCommand("hash", "salt", "fud_pre1");
 
         var act = () => _rotateApiKey.Execute(externalApp, command);
 

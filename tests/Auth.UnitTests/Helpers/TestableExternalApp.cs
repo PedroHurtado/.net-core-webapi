@@ -11,6 +11,7 @@ public class TestableExternalApp : ExternalApp
     public TestableExternalApp WithInvitationEmail(string value) { InvitationEmail = value; return this; }
     public TestableExternalApp WithInvitationStatus(InvitationStatus value) { InvitationStatus = value; return this; }
     public TestableExternalApp WithApiKeyHash(string? value) { ApiKeyHash = value; return this; }
+    public TestableExternalApp WithApiKeySalt(string? value) { ApiKeySalt = value; return this; }
     public TestableExternalApp WithApiKeyPrefix(string? value) { ApiKeyPrefix = value; return this; }
     public TestableExternalApp WithApiKeyExpiresAt(DateTime? value) { ApiKeyExpiresAt = value; return this; }
     public TestableExternalApp WithGroup(string group) { _groups.Add(group); return this; }
