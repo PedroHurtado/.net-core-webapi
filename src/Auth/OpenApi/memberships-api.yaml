@@ -222,16 +222,21 @@ components:
         id:
           type: string
           format: uuid
-        tenantId:
-          type: string
-          format: uuid
         userId:
           type: string
           format: uuid
           nullable: true
+        userName:
+          type: string
+          nullable: true
+        userPhone:
+          type: string
+          nullable: true
         roleId:
           type: string
           format: uuid
+        roleName:
+          type: string
         isActive:
           type: boolean
         invitationEmail:
