@@ -9,6 +9,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 builder.Services.AddScoped(typeof(Guid), _ => tenantId);
 
+// User ID (temporal - hardcoded for development)
+var userId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+builder.Services.AddScoped(_ => new CurrentUserId(userId));
+
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 
@@ -72,7 +76,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/openapi/session-api.yaml", "Session API");        
         c.SwaggerEndpoint("/openapi/tenant-roles-api.yaml", "Roles API"); 
         c.SwaggerEndpoint("/openapi/memberships-api.yaml", "MemberShip API"); 
-        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "Esternal Apps API"); 
+        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "External Apps API"); 
     });
 
     app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();

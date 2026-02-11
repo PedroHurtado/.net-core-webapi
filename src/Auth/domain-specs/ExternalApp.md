@@ -33,7 +33,7 @@ public enum InvitationStatus
 ExternalApp (Aggregate Root)
 ├─ Id: Guid
 ├─ TenantId: Guid
-├─ UserId: string?
+├─ User: User?
 ├─ Name: string
 ├─ IsActive: bool
 ├─ InvitationEmail: string
@@ -52,7 +52,7 @@ ExternalApp (Aggregate Root)
 |-----------|------|-------------|
 | Id | Guid | init |
 | TenantId | Guid | init |
-| UserId | string? | protected set |
+| User | User? | protected set |
 | Name | string | protected set |
 | IsActive | bool | protected set |
 | InvitationEmail | string | init |
@@ -88,7 +88,6 @@ public IReadOnlyCollection<string> ExcludedScopes => _excludedScopes.ToList().As
 | InvitationEmail | MaxLength(254) | "Invitation email cannot exceed 254 characters" |
 | InvitationEmail | ValidEmail | "Invitation email must be a valid email address" |
 | InvitationStatus | IsInEnum | "Invitation status must be a valid status" |
-| UserId | MaxLength(100) | "User ID cannot exceed 100 characters" |
 | ApiKeyPrefix | MaxLength(8) | "API key prefix cannot exceed 8 characters" |
 
 ---
@@ -99,7 +98,7 @@ public IReadOnlyCollection<string> ExcludedScopes => _excludedScopes.ToList().As
 public record ExternalAppResponse(
     Guid Id,
     Guid TenantId,
-    string? UserId,
+    Guid? UserId,
     string Name,
     bool IsActive,
     string InvitationEmail,
@@ -134,12 +133,12 @@ public record ExternalAppResponse(
 ## 6. Comandos
 
 > ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
-> - ExternalApp.Create es la invitación — nace con InvitationStatus=Pending y UserId=null
-> - AcceptInvitation va después (vincula UserId y genera API Key)
+> - ExternalApp.Create es la invitación — nace con InvitationStatus=Pending, User=null y sin API Key
+> - AcceptInvitation va después (vincula User y genera API Key)
 > - Las Queries van después
-> - UpdatePermissions va después
+> - Update, UpdatePermissions van después
 > - RotateApiKey va después (solo el developer)
-> - Deactivate/Reactivate van después
+> - Activate/Deactivate van después
 > - Delete va al final
 
 > **Tests de dominio**: Usar `TestableExternalApp` para preparar estado previo. Usar `DomainFixture` para resolver comandos y validators. **NO encadenar comandos** para crear estado.
@@ -150,13 +149,13 @@ public record ExternalAppResponse(
 
 ### 6.1 ExternalApp.Create
 
-> Crear es invitar. La ExternalApp nace con InvitationStatus=Pending, UserId=null y sin API Key. Se lanza el evento ExternalAppCreated que dispara el envío del email de invitación al desarrollador.
+> Crear es invitar al desarrollador. Nace con InvitationStatus=Pending, User=null y sin API Key.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(CreateExternalApp) → 🟤[[ExternalApp]] → 🟠<ExternalAppCreated>
                                          │
-                                   🟣{UniqueEmail}
+                                   🟣{UniqueEmail} ← slice
 ```
 
 #### Input
@@ -169,7 +168,11 @@ public record ExternalAppResponse(
 #### Inyecta
 - `IValidator<ExternalApp>`
 
-#### Guards
+#### Guards (dominio)
+
+Ninguno. Las validaciones de datos las hace el Validator.
+
+#### Guards (slice)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -177,15 +180,10 @@ public record ExternalAppResponse(
 
 #### Lógica
 ```csharp
-var duplicate = await externalAppRepository.ExistsByEmailAndTenantAsync(
-    command.InvitationEmail, command.TenantId);
-
-ConflictGuard.ThrowIf(duplicate, "An external app with this email already exists in this tenant");
-
 var externalApp = new ExternalApp(Guid.NewGuid())
 {
     TenantId = command.TenantId,
-    UserId = null,
+    User = null,
     Name = command.Name,
     IsActive = true,
     InvitationEmail = command.InvitationEmail,
@@ -199,6 +197,13 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 ```
 
 #### Slice: POST /external-apps
+
+**Guards de slice**
+```csharp
+var duplicate = await externalAppRepository.ExistsByEmailAndTenantAsync(
+    request.InvitationEmail, tenantId);
+ConflictGuard.ThrowIf(duplicate, "An external app with this email already exists in this tenant");
+```
 
 **Request**
 ```csharp
@@ -214,52 +219,31 @@ public record CreateExternalAppRequest(
 
 ✅ Crear external app con datos válidos
 - Input: Name="TPV MiSoftware", InvitationEmail="dev@misoftware.com"
-- Resultado: ExternalApp con InvitationStatus=Pending, UserId=null, ApiKeyHash=null, IsActive=true
+- Resultado: InvitationStatus=Pending, User=null, ApiKeyHash=null, IsActive=true
 
-❌ Name vacío
-- Input: Name=""
-- Resultado: ValidationException "Name is required"
-
-❌ Email vacío
-- Input: InvitationEmail=""
-- Resultado: ValidationException "Invitation email is required"
-
-❌ Email inválido
-- Input: InvitationEmail="no-es-email"
-- Resultado: ValidationException "Invitation email must be a valid email address"
-
-❌ Email duplicado en el tenant
-- Precondición: Ya existe external app con email="dev@misoftware.com" en el tenant
-- Input: InvitationEmail="dev@misoftware.com"
-- Resultado: ConflictException "An external app with this email already exists in this tenant"
+❌ Name vacío → ValidationException
+❌ Email vacío → ValidationException
+❌ Email inválido → ValidationException
 
 #### Tests Unitarios (Servicio)
 
-✅ Verifica unicidad antes de crear
-- Verifica que externalAppRepository.ExistsByEmailAndTenantAsync es llamado
-
+✅ Verifica unicidad de email
 ✅ Añade la external app al repositorio
-- Verifica que repository.Add es llamado con la external app creada
-
 ✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
 ✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene los datos de la external app
+❌ Email duplicado → 409
 
 #### Tests Integración
 
 ✅ 201 Created → ExternalAppResponse con InvitationStatus=Pending
-
 ❌ 409 → Email duplicado
-
 ❌ 422 → Validación fallida
 
 ---
 
 ### 6.2 ExternalApp.AcceptInvitation
 
-> El desarrollador hace login con Google OAuth. El sistema vincula su userId, cambia InvitationStatus a Accepted y genera la API Key.
+> El desarrollador hace login con Google OAuth. Se vincula su User y se genera la API Key.
 
 #### Event Storming
 ```
@@ -272,12 +256,12 @@ public record CreateExternalAppRequest(
 
 | Campo | Tipo |
 |-------|------|
-| UserId | string |
+| User | User |
 
 #### Inyecta
 - `IValidator<ExternalApp>`
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -289,10 +273,9 @@ ConflictGuard.ThrowIf(
     externalApp.InvitationStatus != InvitationStatus.Pending,
     "Invitation is not pending");
 
-externalApp.UserId = command.UserId;
+externalApp.User = command.User;
 externalApp.InvitationStatus = InvitationStatus.Accepted;
 
-// Generar API Key
 var apiKey = $"fud_{CryptoRandom.GenerateString(32)}";
 externalApp.ApiKeyHash = SHA256.HashString(apiKey);
 externalApp.ApiKeyPrefix = apiKey[..8];
@@ -304,9 +287,12 @@ return (externalAppValidator.ValidateOrThrow(externalApp), apiKey);
 
 #### Slice: POST /external-apps/{externalAppId}/accept
 
-**Request**
+> Endpoint público. El userId se obtiene del JWT.
 
-> El UserId se obtiene del OAuth. No se envía en el body.
+```csharp
+var userId = httpContext.User.GetUserId();
+var externalAppId = route.Get<Guid>("externalAppId");
+```
 
 **Response**: 200 OK
 
@@ -321,31 +307,22 @@ return (externalAppValidator.ValidateOrThrow(externalApp), apiKey);
 #### Tests Unitarios (Dominio)
 
 ✅ Aceptar invitación pendiente
-- Precondición: ExternalApp con InvitationStatus=Pending, UserId=null
-- Input: UserId="google-oauth2|987654321"
-- Resultado: InvitationStatus=Accepted, UserId vinculado, ApiKeyHash generado, ApiKeyPrefix generado
+- Precondición: InvitationStatus=Pending, User=null
+- Input: User=valid
+- Resultado: InvitationStatus=Accepted, User vinculado, ApiKeyHash generado, ApiKeyPrefix generado
 
-❌ Invitación ya aceptada
-- Precondición: ExternalApp con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
-
-❌ Invitación cancelada
-- Precondición: ExternalApp con InvitationStatus=Cancelled
-- Resultado: ConflictException "Invitation is not pending"
+❌ Invitación ya aceptada → ConflictException
+❌ Invitación cancelada → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → Response con apiKey en claro (única vez)
-
 ❌ 404 → No encontrada
-
 ❌ 409 → No está pendiente
 
 ---
 
 ### 6.3 ExternalApp.CancelInvitation
-
-> El Owner cancela una invitación pendiente.
 
 #### Event Storming
 ```
@@ -358,7 +335,7 @@ return (externalAppValidator.ValidateOrThrow(externalApp), apiKey);
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -381,56 +358,45 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 
 #### Tests Unitarios (Dominio)
 
-✅ Cancelar invitación pendiente
-- Precondición: ExternalApp con InvitationStatus=Pending
-- Resultado: InvitationStatus=Cancelled
-
-❌ Invitación ya aceptada
-- Precondición: ExternalApp con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
-
-❌ Invitación ya cancelada
-- Precondición: ExternalApp con InvitationStatus=Cancelled
-- Resultado: ConflictException "Invitation is not pending"
+✅ Cancelar invitación pendiente → InvitationStatus=Cancelled
+❌ Invitación no pendiente → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → ExternalAppResponse con InvitationStatus=Cancelled
-
 ❌ 404 → No encontrada
-
 ❌ 409 → No está pendiente
 
 ---
 
 ### 6.4 ExternalApp.ResendInvitation
 
-> El Owner reenvía la invitación. Solo dispara el evento para que se envíe el email de nuevo. No cambia estado.
+> Reenvía la invitación. Si estaba cancelada, la reactiva a Pending.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(ResendInvitation) → 🟤[[ExternalApp]] → 🟠<ExternalAppInvitationResent>
                                         │
-                                  🟣{IsPending}
+                                  🟣{NotAccepted}
 ```
 
 #### Input
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Invitación no está en Pending | 409 | ConflictGuard | "Invitation is not pending" |
+| Invitación ya aceptada | 409 | ConflictGuard | "Invitation is already accepted" |
 
 #### Lógica
 ```csharp
 ConflictGuard.ThrowIf(
-    externalApp.InvitationStatus != InvitationStatus.Pending,
-    "Invitation is not pending");
+    externalApp.InvitationStatus == InvitationStatus.Accepted,
+    "Invitation is already accepted");
 
-// No cambia estado — solo lanza evento ExternalAppInvitationResent
+externalApp.InvitationStatus = InvitationStatus.Pending;
 ```
 
 #### Slice: POST /external-apps/{externalAppId}/resend-invitation
@@ -439,30 +405,19 @@ ConflictGuard.ThrowIf(
 
 #### Tests Unitarios (Dominio)
 
-✅ Reenviar invitación pendiente
-- Precondición: ExternalApp con InvitationStatus=Pending
-- Resultado: Sin cambio de estado, evento lanzado
-
-❌ Invitación no pendiente
-- Precondición: ExternalApp con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
+✅ Reenviar invitación pendiente → se mantiene Pending
+✅ Reenviar invitación cancelada → transiciona a Pending
+❌ Invitación ya aceptada → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK
-
 ❌ 404 → No encontrada
-
-❌ 409 → No está pendiente
+❌ 409 → Ya aceptada
 
 ---
 
 ### 6.5 ListExternalApps
-
-#### Event Storming
-```
-🟡[Owner] → 🔵(ListExternalApps) → 🟤[[ExternalApp]] → 📊 ExternalAppResponse[]
-```
 
 #### Slice: GET /external-apps
 
@@ -473,25 +428,16 @@ ConflictGuard.ThrowIf(
 #### Tests Unitarios (Servicio)
 
 ✅ Obtiene external apps del tenantId del JWT
-- Verifica que repository.GetByTenantIdAsync es llamado con el tenantId del token
-
 ✅ Retorna lista mapeada correctamente
-- Verifica que el Response contiene todas las external apps del tenant
 
 #### Tests Integración
 
 ✅ 200 OK → Lista de ExternalAppResponse
-
 ✅ 200 OK → Lista vacía si no hay external apps
 
 ---
 
 ### 6.6 GetExternalApp
-
-#### Event Storming
-```
-🟡[Owner] → 🔵(GetExternalApp) → 🟤[[ExternalApp]] → 📊 ExternalAppResponse
-```
 
 #### Slice: GET /external-apps/{externalAppId}
 
@@ -500,7 +446,6 @@ ConflictGuard.ThrowIf(
 #### Tests Integración
 
 ✅ 200 OK → ExternalAppResponse
-
 ❌ 404 → No encontrada
 
 ---
@@ -523,7 +468,7 @@ ConflictGuard.ThrowIf(
 #### Inyecta
 - `IValidator<ExternalApp>`
 
-#### Guards
+#### Guards (dominio)
 
 Ninguno.
 
@@ -548,20 +493,12 @@ public record UpdateExternalAppRequest(
 #### Tests Unitarios (Dominio)
 
 ✅ Actualizar nombre
-- Precondición: ExternalApp con Name="TPV MiSoftware"
-- Input: Name="TPV MiSoftware v2"
-- Resultado: ExternalApp con Name="TPV MiSoftware v2"
-
-❌ Name vacío
-- Input: Name=""
-- Resultado: ValidationException "Name is required"
+❌ Name vacío → ValidationException
 
 #### Tests Integración
 
 ✅ 204 No Content
-
 ❌ 404 → No encontrada
-
 ❌ 422 → Validación fallida
 
 ---
@@ -586,7 +523,7 @@ public record UpdateExternalAppRequest(
 #### Inyecta
 - `IValidator<ExternalApp>`
 
-#### Guards
+#### Guards (dominio)
 
 Ninguno.
 
@@ -615,22 +552,12 @@ public record UpdateExternalAppPermissionsRequest(
 #### Tests Unitarios (Dominio)
 
 ✅ Actualizar permisos
-- Precondición: ExternalApp con Groups=[]
-- Input: Groups=["menu:read", "reservation:read"], AdditionalScopes=[], ExcludedScopes=[]
-- Resultado: ExternalApp con Groups=["menu:read", "reservation:read"]
-
 ✅ Actualizar con exclusiones
-- Input: Groups=["menu:read", "menu:write"], ExcludedScopes=["menu-svc:SetMenuDepositPolicy"]
-- Resultado: ExternalApp con exclusión aplicada
-
-✅ Sin duplicados en colecciones
-- Input: Groups=["menu:read", "menu:read"]
-- Resultado: Groups contiene "menu:read" una sola vez (HashSet)
+✅ Sin duplicados en colecciones (HashSet)
 
 #### Tests Integración
 
 ✅ 204 No Content
-
 ❌ 404 → No encontrada
 
 ---
@@ -654,7 +581,7 @@ public record UpdateExternalAppPermissionsRequest(
 #### Inyecta
 - `IValidator<ExternalApp>`
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -693,30 +620,20 @@ return (externalAppValidator.ValidateOrThrow(externalApp), apiKey);
 #### Tests Unitarios (Dominio)
 
 ✅ Rotar API Key de external app activa y aceptada
-- Precondición: ExternalApp con IsActive=true, InvitationStatus=Accepted, ApiKeyHash=oldHash
-- Resultado: ApiKeyHash cambiado, ApiKeyPrefix cambiado, apiKey en claro devuelto
-
-❌ Invitación no aceptada
-- Precondición: ExternalApp con InvitationStatus=Pending
-- Resultado: ConflictException "External app invitation has not been accepted"
-
-❌ External app inactiva
-- Precondición: ExternalApp con IsActive=false, InvitationStatus=Accepted
-- Resultado: ConflictException "Cannot rotate key for inactive external app"
+❌ Invitación no aceptada → ConflictException
+❌ External app inactiva → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → Response con nueva apiKey en claro
-
 ❌ 404 → No encontrada
-
 ❌ 409 → No aceptada o inactiva
 
 ---
 
 ### 6.10 ExternalApp.Deactivate
 
-> Al desactivar la external app, la API Key queda inválida. Las requests con esa key son rechazadas.
+> Al desactivar, la API Key queda inválida. Las requests con esa key son rechazadas.
 
 #### Event Storming
 ```
@@ -727,7 +644,7 @@ return (externalAppValidator.ValidateOrThrow(externalApp), apiKey);
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -748,38 +665,31 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 
 #### Tests Unitarios (Dominio)
 
-✅ Desactivar external app activa
-- Precondición: ExternalApp con IsActive=true
-- Resultado: IsActive=false
-
-❌ Ya inactiva
-- Precondición: ExternalApp con IsActive=false
-- Resultado: ConflictException "External app is already inactive"
+✅ Desactivar external app activa → IsActive=false
+❌ Ya inactiva → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → ExternalAppResponse con IsActive=false
-
 ❌ 404 → No encontrada
-
 ❌ 409 → Ya inactiva
 
 ---
 
-### 6.11 ExternalApp.Reactivate
+### 6.11 ExternalApp.Activate
 
-> Al reactivar, la API Key vuelve a ser válida. No se genera nueva key — la existente se reactiva.
+> Al activar, la API Key vuelve a ser válida. No se genera nueva key.
 
 #### Event Storming
 ```
-🟡[Owner] → 🔵(ReactivateExternalApp) → 🟤[[ExternalApp]] → 🟠<ExternalAppReactivated>
+🟡[Owner] → 🔵(ActivateExternalApp) → 🟤[[ExternalApp]] → 🟠<ExternalAppActivated>
 ```
 
 #### Input
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -794,33 +704,24 @@ externalApp.IsActive = true;
 return externalAppValidator.ValidateOrThrow(externalApp);
 ```
 
-#### Slice: POST /external-apps/{externalAppId}/reactivate
+#### Slice: POST /external-apps/{externalAppId}/activate
 
 **Response**: 200 OK → `ExternalAppResponse`
 
 #### Tests Unitarios (Dominio)
 
-✅ Reactivar external app inactiva
-- Precondición: ExternalApp con IsActive=false
-- Resultado: IsActive=true
-
-❌ Ya activa
-- Precondición: ExternalApp con IsActive=true
-- Resultado: ConflictException "External app is already active"
+✅ Activar external app inactiva → IsActive=true
+❌ Ya activa → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → ExternalAppResponse con IsActive=true
-
 ❌ 404 → No encontrada
-
 ❌ 409 → Ya activa
 
 ---
 
 ### 6.12 ExternalApp.Delete
-
-> Al eliminar, la API Key se destruye. Irreversible.
 
 #### Event Storming
 ```
@@ -831,7 +732,7 @@ return externalAppValidator.ValidateOrThrow(externalApp);
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 Ninguno.
 
@@ -844,26 +745,9 @@ externalAppRepository.Delete(externalApp);
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
-
-✅ Eliminar external app
-- Resultado: External app eliminada
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene la external app del repositorio
-- Verifica que repository.GetByIdAsync es llamado con externalAppId
-
-✅ Elimina la external app
-- Verifica que repository.Delete es llamado
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
 #### Tests Integración
 
 ✅ 204 No Content
-
 ❌ 404 → No encontrada
 
 ---
@@ -886,7 +770,7 @@ externalAppRepository.Delete(externalApp);
 | `CancelExternalAppInvitation` | Cancelar una invitación pendiente de aplicación externa |
 | `ResendExternalAppInvitation` | Reenviar una invitación pendiente de aplicación externa |
 | `DeactivateExternalApp` | Desactivar una aplicación externa |
-| `ReactivateExternalApp` | Reactivar una aplicación externa desactivada |
+| `ActivateExternalApp` | Reactivar una aplicación externa desactivada |
 | `DeleteExternalApp` | Eliminar una aplicación externa |
 
 > `AcceptInvitation` y `RotateApiKey` no generan scope — los ejecuta el desarrollador, no el Owner.
@@ -907,7 +791,7 @@ externalAppRepository.Delete(externalApp);
 | 8 | PUT | /external-apps/{id}/permissions | ExternalApp.UpdatePermissions | 204 |
 | 9 | POST | /external-apps/{id}/rotate-api-key | ExternalApp.RotateApiKey | 200 → ApiKey |
 | 10 | POST | /external-apps/{id}/deactivate | ExternalApp.Deactivate | 200 → `ExternalAppResponse` |
-| 11 | POST | /external-apps/{id}/reactivate | ExternalApp.Reactivate | 200 → `ExternalAppResponse` |
+| 11 | POST | /external-apps/{id}/activate | ExternalApp.Activate | 200 → `ExternalAppResponse` |
 | 12 | DELETE | /external-apps/{id} | ExternalApp.Delete | 204 |
 
 ---
@@ -925,6 +809,9 @@ modelBuilder.Entity<ExternalApp>(entity =>
 {
     // QueryFilter: multi-tenancy by TenantId
     entity.HasQueryFilter(x => x.TenantId == tenantId);
+
+    // Reference: User → User (nullable)
+    entity.Reference(x => x.User);
 
     // Backing fields: HashSet<string> para evitar duplicados
     entity.Property(x => x.Groups)
@@ -944,7 +831,7 @@ modelBuilder.Entity<ExternalApp>(entity =>
 {
   "id": "ext-001-guid",
   "tenantId": "tenant-001-guid",
-  "userId": null,
+  "user": null,
   "name": "TPV MiSoftware",
   "isActive": true,
   "invitationEmail": "dev@misoftware.com",
@@ -962,7 +849,7 @@ modelBuilder.Entity<ExternalApp>(entity =>
 {
   "id": "ext-002-guid",
   "tenantId": "tenant-001-guid",
-  "userId": "google-oauth2|987654321",
+  "user": "users/user-dev-guid",
   "name": "TPV MiSoftware",
   "isActive": true,
   "invitationEmail": "dev@misoftware.com",
@@ -984,11 +871,11 @@ modelBuilder.Entity<ExternalApp>(entity =>
 |---|----------|--------|
 | 1 | ¿Límite de external apps por tenant? | Pendiente |
 | 2 | ¿Rate limiting específico por API Key? | Pendiente |
-| 3 | ¿Se necesita campo lastUsedAt para la API Key? | Pendiente: Útil para el Owner pero implica write en cada request |
-| 4 | ¿Expiración automática de API Keys? | Pendiente: apiKeyExpiresAt existe pero no hay flujo de renovación |
+| 3 | ¿Se necesita campo lastUsedAt para la API Key? | Pendiente |
+| 4 | ¿Expiración automática de API Keys? | Pendiente |
 | 5 | ¿Webhook de notificaciones hacia la app externa? | Pendiente: Fuera de alcance actual |
 
 ---
 
-**Fecha**: 2026-02-10
+**Fecha**: 2026-02-11
 **Autor**: Equipo Fudie

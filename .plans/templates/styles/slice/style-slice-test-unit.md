@@ -4,8 +4,8 @@
 
 El test verifica la **orquestación real**: request → comando de dominio (real) → mutación de entidad → response map (real).
 
-- **Se mockea**: IRepository, IUnitOfWork
-- **Se ejecuta real**: Comandos de dominio (vía `DomainFixture`), `{Aggregate}Response.Map()`
+- **Se mockea**: IRepository, IUnitOfWork, IQuery
+- **Se ejecuta real**: Comandos de dominio (vía `DomainFixture`), `{Aggregate}Response.Map()`, operadores LINQ (OrderBy, Include, ToListAsync)
 - **NO se re-testea**: Validaciones de dominio, 404 del repositorio, excepciones del dominio
 
 ### Qué tests escribir
@@ -15,6 +15,7 @@ El test verifica la **orquestación real**: request → comando de dominio (real
 | **Todas** | Happy path |
 | **Con ConflictGuard propio** (ej: ExistsBySlug) | + Conflict test |
 | **Con lógica condicional** (ej: `if slug != request.Slug`) | + Branch alternativo |
+| **Query lista (IQuery)** | Happy path (con datos ordenados) + Lista vacía |
 
 ---
 
@@ -51,18 +52,32 @@ public class {Action}{Aggregate}Tests : IClassFixture<DomainFixture>
 }
 ```
 
-**Queries sin comando de dominio** no necesitan `DomainFixture`:
+**Queries por ID (IRepository)** no necesitan `DomainFixture`:
 
 ```csharp
 public class Get{Aggregate}Tests
 {
-    private readonly Guid _tenantId = Guid.NewGuid();
     private readonly Mock<Get{Aggregate}.IRepository> _repository = new();
     private readonly Get{Aggregate}.Service _service;
 
     public Get{Aggregate}Tests()
     {
-        _service = new Get{Aggregate}.Service(_tenantId, _repository.Object);
+        _service = new Get{Aggregate}.Service(_repository.Object);
+    }
+}
+```
+
+**Queries lista (IQuery)** no necesitan `DomainFixture`. Se mockea `IQuery` y se usa `AsyncQueryable` de `Fudie.Tests.Common` para proveer `IAsyncQueryProvider`:
+
+```csharp
+public class Get{Aggregate}sTests
+{
+    private readonly Mock<IQuery> _query = new();
+    private readonly Get{Aggregate}s.Service _service;
+
+    public Get{Aggregate}sTests()
+    {
+        _service = new Get{Aggregate}s.Service(_query.Object);
     }
 }
 ```
@@ -143,22 +158,65 @@ public async Task HandleAsync_WithValidRequest_ReturnsResponseWith{State}()
 }
 ```
 
-### Query — mock del repositorio retorna entidad
+### Query por ID (IRepository) — mock del repositorio retorna entidad
 
 ```csharp
 [Fact]
 public async Task HandleAsync_WithExistingEntity_ReturnsResponse()
 {
-    var entity = new Testable{Aggregate}(_tenantId)
+    var entity = new Testable{Aggregate}(Guid.NewGuid())
         .With{AllRequired}();
 
-    _repository.Setup(r => r.Get(_tenantId)).ReturnsAsync(entity);
+    _repository.Setup(r => r.Get(entity.Id)).ReturnsAsync(entity);
 
-    var response = await _service.HandleAsync();
+    var response = await _service.HandleAsync(entity.Id);
 
     response.{Property}.Should().Be({expected});
 }
 ```
+
+### Query lista (IQuery + AsyncQueryable) — mock de IQuery retorna colección async
+
+`AsyncQueryable` (de `Fudie.Tests.Common`) provee `IAsyncQueryProvider` para que `ToListAsync`, `Include`, `OrderBy`, etc. funcionen en tests sin EF Core real. `Include` es no-op (EF Core 8 lo ignora para providers no-EF).
+
+```csharp
+[Fact]
+public async Task HandleAsync_WithEntities_ReturnsOrderedList()
+{
+    var entity1 = new Testable{Aggregate}(Guid.NewGuid())
+        .With{AllRequired}()
+        .With{FieldForOrder}("beta");
+
+    var entity2 = new Testable{Aggregate}(Guid.NewGuid())
+        .With{AllRequired}()
+        .With{FieldForOrder}("alpha");
+
+    _query.Setup(q => q.Query<{Aggregate}>())
+        .Returns(AsyncQueryable.Of(entity1, entity2));
+
+    var response = await _service.HandleAsync();
+
+    response.Should().HaveCount(2);
+    response[0].{FieldForOrder}.Should().Be("alpha");
+    response[1].{FieldForOrder}.Should().Be("beta");
+}
+
+[Fact]
+public async Task HandleAsync_WithNoEntities_ReturnsEmptyList()
+{
+    _query.Setup(q => q.Query<{Aggregate}>())
+        .Returns(AsyncQueryable.Empty<{Aggregate}>());
+
+    var response = await _service.HandleAsync();
+
+    response.Should().BeEmpty();
+}
+```
+
+**Métodos de `AsyncQueryable`**:
+- `AsyncQueryable.Of(entity1, entity2, ...)` — colección con elementos (params)
+- `AsyncQueryable.Of(enumerable)` — colección desde IEnumerable
+- `AsyncQueryable.Empty<T>()` — colección vacía
 
 ### ConflictGuard (solo si la slice lo tiene)
 
@@ -231,6 +289,7 @@ tests/{Project}.UnitTests/Features/{Feature}/Api/{Aggregate}Aggregate/Queries/{A
 ```csharp
 global using Moq;
 global using Fudie.Infrastructure;
+global using Fudie.Tests.Common;
 global using {Project}.Features.{Feature}.Api.{Aggregate}Aggregate;
 global using {Project}.Features.{Feature}.Api.{Aggregate}Aggregate.Commands;
 global using {Project}.Features.{Feature}.Api.{Aggregate}Aggregate.Queries;
@@ -245,7 +304,8 @@ global using {Project}.Features.{Feature}.Api.{Aggregate}Aggregate.Queries;
 - `DomainFixture` para resolver comandos (excepto queries sin comando)
 - NO `new` de validators ni comandos → `DomainFixture`
 - `Testable{Aggregate}` SIEMPRE completo
-- Repository y UnitOfWork → Mock
+- Repository, UnitOfWork e IQuery → Mock
+- Queries lista con `IQuery` → usar `AsyncQueryable.Of(...)` / `AsyncQueryable.Empty<T>()`
 - No verificar `SaveChangesAsync` ni `Repository.Add/Get`
 - Nomenclatura: `HandleAsync_{Scenario}_{ExpectedResult}`
 - NO re-testear validaciones de dominio, 404 ni excepciones del dominio

@@ -7,6 +7,8 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantI
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<TenantRole> TenantRoles => Set<TenantRole>();
 
+    public DbSet<Membership> Memberships => Set<Membership>();
+
     public IQueryable<T> Query<T>() where T : class, IEntity
     {
         return Set<T>().AsQueryable().AsNoTracking();
@@ -31,6 +33,16 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantI
         modelBuilder.Entity<TenantRole>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+        });
+
+
+        modelBuilder.Entity<Membership>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantId);
+
+            entity.Reference(x=>x.Role);
+            entity.Reference(x=>x.User);
+            
         });
     }
 }

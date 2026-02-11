@@ -34,9 +34,13 @@ global using Microsoft.IdentityModel.JsonWebTokens;
 global using Microsoft.IdentityModel.Tokens;
 global using Refit;
 
+global using Auth.Features.Memberships.Api.MembershipAggregate;
 global using Auth.Features.Roles.Api.TenantRoleAggregate;
+global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
+
+global using Auth.Features.Shared.Enums;
 
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;

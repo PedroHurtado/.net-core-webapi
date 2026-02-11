@@ -25,8 +25,14 @@ global using Auth.Infrastructure.Jwt;
 
 global using Auth.Features.Sessions.Api.Queries;
 
+global using Auth.Features.Memberships.Api.MembershipAggregate;
+global using Auth.Features.Memberships.Api.MembershipAggregate.Commands;
+global using Auth.Features.Memberships.Api.MembershipAggregate.Queries;
+global using Auth.Features.Memberships.Domain.MembershipAggregate;
 global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
+
+global using Auth.Features.Shared.Enums;
 
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
@@ -37,3 +43,5 @@ global using Auth.Features.Roles.Api.TenantRoleAggregate.Commands;
 global using Auth.Features.Roles.Api.TenantRoleAggregate.Queries;
 
 global using Auth.UnitTests.Helpers;
+
+global using Fudie.Tests.Common;

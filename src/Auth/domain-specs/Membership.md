@@ -31,7 +31,7 @@ public enum InvitationStatus
 Membership (Aggregate Root)
 ├─ Id: Guid
 ├─ TenantId: Guid
-├─ UserId: string?
+├─ User: User?
 ├─ Role: TenantRole
 ├─ IsActive: bool
 ├─ InvitationEmail: string
@@ -44,7 +44,7 @@ Membership (Aggregate Root)
 |-----------|------|-------------|
 | Id | Guid | init |
 | TenantId | Guid | init |
-| UserId | string? | protected set |
+| User | User? | protected set |
 | Role | TenantRole | protected set |
 | IsActive | bool | protected set |
 | InvitationEmail | string | init |
@@ -63,7 +63,6 @@ Membership (Aggregate Root)
 | InvitationEmail | MaxLength(254) | "Invitation email cannot exceed 254 characters" |
 | InvitationEmail | ValidEmail | "Invitation email must be a valid email address" |
 | InvitationStatus | IsInEnum | "Invitation status must be a valid status" |
-| UserId | MaxLength(100) | "User ID cannot exceed 100 characters" |
 
 ---
 
@@ -73,7 +72,7 @@ Membership (Aggregate Root)
 public record MembershipResponse(
     Guid Id,
     Guid TenantId,
-    string? UserId,
+    Guid? UserId,
     Guid RoleId,
     bool IsActive,
     string InvitationEmail,
@@ -101,10 +100,10 @@ public record MembershipResponse(
 ## 6. Comandos
 
 > ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
-> - Membership.Create es la invitación — nace con InvitationStatus=Pending y UserId=null
-> - AcceptInvitation va después (vincula UserId)
+> - Membership.Create es la invitación — nace con InvitationStatus=Pending y User=null
+> - AcceptInvitation va después (vincula User)
 > - Las Queries van después
-> - ChangeRole, Deactivate/Reactivate van después
+> - ChangeRole, Activate/Deactivate van después
 > - Delete va al final
 
 > **Tests de dominio**: Usar `TestableMembership` para preparar estado previo. Usar `DomainFixture` para resolver comandos y validators. **NO encadenar comandos** para crear estado.
@@ -115,15 +114,14 @@ public record MembershipResponse(
 
 ### 6.1 Membership.Create
 
-> Crear es invitar. El membership nace con InvitationStatus=Pending y UserId=null. Se lanza el evento MembershipCreated que dispara el envío del email de invitación.
+> Crear es invitar. El membership nace con InvitationStatus=Pending y User=null. Se lanza el evento MembershipCreated que dispara el envío del email de invitación.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(CreateMembership) → 🟤[[Membership]] → 🟠<MembershipCreated>
                                         │
-                                  🟣{UniqueMembership}
-                                  🟣{RoleExists}
-                                  🟣{RoleIsHuman}
+                                  🟣{UniqueEmail} ← slice
+                                  🟣{RoleExists} ← slice
 ```
 
 #### Input
@@ -131,39 +129,29 @@ public record MembershipResponse(
 | Campo | Tipo |
 |-------|------|
 | InvitationEmail | string |
-| RoleId | Guid |
+| Role | TenantRole |
 
 #### Inyecta
 - `IValidator<Membership>`
 
-#### Guards
+#### Guards (dominio)
+
+Ninguno. Las validaciones de datos las hace el Validator.
+
+#### Guards (slice)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Ya existe membership con ese email en el tenant | 409 | ConflictGuard | "A membership with this email already exists in this tenant" |
 | El rol no existe | 404 | NotFoundGuard | "Role not found" |
-| El rol es ExternalApp | 409 | ConflictGuard | "Cannot assign ExternalApp role to a membership" |
+| Ya existe membership con ese email en el tenant | 409 | ConflictGuard | "A membership with this email already exists in this tenant" |
 
 #### Lógica
 ```csharp
-var role = await tenantRoleRepository.GetByIdAsync(command.RoleId);
-
-NotFoundGuard.ThrowIfNull(role, command.RoleId);
-
-ConflictGuard.ThrowIf(
-    role!.Name == "ExternalApp",
-    "Cannot assign ExternalApp role to a membership");
-
-var duplicate = await membershipRepository.ExistsByEmailAndTenantAsync(
-    command.InvitationEmail, command.TenantId);
-
-ConflictGuard.ThrowIf(duplicate, "A membership with this email already exists in this tenant");
-
 var membership = new Membership(Guid.NewGuid())
 {
     TenantId = command.TenantId,
-    UserId = null,
-    RoleId = command.RoleId,
+    User = null,
+    Role = command.Role,
     IsActive = true,
     InvitationEmail = command.InvitationEmail,
     InvitationStatus = InvitationStatus.Pending
@@ -173,6 +161,16 @@ return membershipValidator.ValidateOrThrow(membership);
 ```
 
 #### Slice: POST /memberships
+
+**Guards de slice**
+```csharp
+var role = await tenantRoleRepository.GetByIdAsync(request.RoleId);
+NotFoundGuard.ThrowIfNull(role, request.RoleId);
+
+var duplicate = await membershipRepository.ExistsByEmailAndTenantAsync(
+    request.InvitationEmail, tenantId);
+ConflictGuard.ThrowIf(duplicate, "A membership with this email already exists in this tenant");
+```
 
 **Request**
 ```csharp
@@ -187,70 +185,35 @@ public record CreateMembershipRequest(
 #### Tests Unitarios (Dominio)
 
 ✅ Crear membership con datos válidos
-- Input: InvitationEmail="maria@ejemplo.com", RoleId=valid (Manager)
-- Resultado: Membership con InvitationStatus=Pending, UserId=null, IsActive=true
+- Input: InvitationEmail="maria@ejemplo.com", Role=Manager
+- Resultado: Membership con InvitationStatus=Pending, User=null, IsActive=true
 
-✅ Crear membership con rol custom
-- Input: RoleId=valid (Sommelier)
-- Resultado: Membership creado
-
-❌ Email vacío
-- Input: InvitationEmail=""
-- Resultado: ValidationException "Invitation email is required"
-
-❌ Email inválido
-- Input: InvitationEmail="no-es-email"
-- Resultado: ValidationException "Invitation email must be a valid email address"
-
-❌ RoleId vacío
-- Input: RoleId=Guid.Empty
-- Resultado: ValidationException "RoleId is required"
-
-❌ Rol no existe
-- Input: RoleId=inexistente
-- Resultado: KeyNotFoundException "Role not found"
-
-❌ Rol es ExternalApp
-- Input: RoleId=valid (ExternalApp)
-- Resultado: ConflictException "Cannot assign ExternalApp role to a membership"
-
-❌ Membership duplicado (mismo email + tenant)
-- Precondición: Ya existe membership con email="maria@ejemplo.com" en el tenant
-- Input: InvitationEmail="maria@ejemplo.com"
-- Resultado: ConflictException "A membership with this email already exists in this tenant"
+❌ Email vacío → ValidationException "Invitation email is required"
+❌ Email inválido → ValidationException "Invitation email must be a valid email address"
+❌ Role null → ValidationException "Role is required"
 
 #### Tests Unitarios (Servicio)
 
 ✅ Verifica que el rol existe
-- Verifica que tenantRoleRepository.GetByIdAsync es llamado con roleId
-
-✅ Verifica unicidad antes de crear
-- Verifica que membershipRepository.ExistsByEmailAndTenantAsync es llamado
-
+✅ Verifica unicidad de email
 ✅ Añade el membership al repositorio
-- Verifica que repository.Add es llamado con el membership creado
-
 ✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
 ✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene los datos del membership
+❌ Rol no existe → 404
+❌ Email duplicado → 409
 
 #### Tests Integración
 
 ✅ 201 Created → MembershipResponse con InvitationStatus=Pending
-
 ❌ 404 → Rol no encontrado
-
-❌ 409 → Duplicado o rol ExternalApp
-
+❌ 409 → Email duplicado
 ❌ 422 → Validación fallida
 
 ---
 
 ### 6.2 Membership.AcceptInvitation
 
-> El invitado hace login con Google OAuth. El sistema vincula su userId al membership y cambia InvitationStatus a Accepted.
+> El invitado hace login con Google OAuth y accede al link de invitación. La slice lee el userId del JWT y el membershipId de la ruta.
 
 #### Event Storming
 ```
@@ -263,12 +226,12 @@ public record CreateMembershipRequest(
 
 | Campo | Tipo |
 |-------|------|
-| UserId | string |
+| User | User |
 
 #### Inyecta
 - `IValidator<Membership>`
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -280,7 +243,7 @@ ConflictGuard.ThrowIf(
     membership.InvitationStatus != InvitationStatus.Pending,
     "Invitation is not pending");
 
-membership.UserId = command.UserId;
+membership.User = command.User;
 membership.InvitationStatus = InvitationStatus.Accepted;
 
 return membershipValidator.ValidateOrThrow(membership);
@@ -288,40 +251,34 @@ return membershipValidator.ValidateOrThrow(membership);
 
 #### Slice: POST /memberships/{membershipId}/accept
 
-**Request**
+> Endpoint público. El userId se obtiene del JWT.
 
-> El UserId se obtiene del JWT (Google OAuth). No se envía en el body.
+```csharp
+var userId = httpContext.User.GetUserId();
+var membershipId = route.Get<Guid>("membershipId");
+```
 
 **Response**: 200 OK → `MembershipResponse`
 
 #### Tests Unitarios (Dominio)
 
 ✅ Aceptar invitación pendiente
-- Precondición: Membership con InvitationStatus=Pending, UserId=null
-- Input: UserId="google-oauth2|123456789"
-- Resultado: Membership con InvitationStatus=Accepted, UserId="google-oauth2|123456789"
+- Precondición: InvitationStatus=Pending, User=null
+- Input: User=valid
+- Resultado: InvitationStatus=Accepted, User vinculado
 
-❌ Invitación ya aceptada
-- Precondición: Membership con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
-
-❌ Invitación cancelada
-- Precondición: Membership con InvitationStatus=Cancelled
-- Resultado: ConflictException "Invitation is not pending"
+❌ Invitación ya aceptada → ConflictException
+❌ Invitación cancelada → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → MembershipResponse con InvitationStatus=Accepted
-
 ❌ 404 → No encontrado
-
 ❌ 409 → No está pendiente
 
 ---
 
 ### 6.3 Membership.CancelInvitation
-
-> El Owner cancela una invitación pendiente.
 
 #### Event Storming
 ```
@@ -334,7 +291,7 @@ return membershipValidator.ValidateOrThrow(membership);
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -357,31 +314,21 @@ return membershipValidator.ValidateOrThrow(membership);
 
 #### Tests Unitarios (Dominio)
 
-✅ Cancelar invitación pendiente
-- Precondición: Membership con InvitationStatus=Pending
-- Resultado: Membership con InvitationStatus=Cancelled
-
-❌ Invitación ya aceptada
-- Precondición: Membership con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
-
-❌ Invitación ya cancelada
-- Precondición: Membership con InvitationStatus=Cancelled
-- Resultado: ConflictException "Invitation is not pending"
+✅ Cancelar invitación pendiente → InvitationStatus=Cancelled
+❌ Invitación ya aceptada → ConflictException
+❌ Invitación ya cancelada → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → MembershipResponse con InvitationStatus=Cancelled
-
 ❌ 404 → No encontrado
-
 ❌ 409 → No está pendiente
 
 ---
 
 ### 6.4 Membership.ResendInvitation
 
-> El Owner reenvía la invitación. Solo dispara el evento para que se envíe el email de nuevo. No cambia estado.
+> Solo dispara el evento. No cambia estado.
 
 #### Event Storming
 ```
@@ -394,7 +341,7 @@ return membershipValidator.ValidateOrThrow(membership);
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -415,27 +362,20 @@ ConflictGuard.ThrowIf(
 
 #### Tests Unitarios (Dominio)
 
-✅ Reenviar invitación pendiente
-- Precondición: Membership con InvitationStatus=Pending
-- Resultado: Sin cambio de estado, evento lanzado
-
-❌ Invitación no pendiente
-- Precondición: Membership con InvitationStatus=Accepted
-- Resultado: ConflictException "Invitation is not pending"
+✅ Reenviar invitación pendiente → evento lanzado
+❌ Invitación no pendiente → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK
-
 ❌ 404 → No encontrado
-
 ❌ 409 → No está pendiente
 
 ---
 
 ### 6.5 ListMemberships
 
-**Slice**: GET /memberships
+#### Slice: GET /memberships
 
 > El tenantId se obtiene del JWT.
 
@@ -444,29 +384,24 @@ ConflictGuard.ThrowIf(
 #### Tests Unitarios (Servicio)
 
 ✅ Obtiene memberships del tenantId del JWT
-- Verifica que repository.GetByTenantIdAsync es llamado con el tenantId del token
-
 ✅ Retorna lista mapeada correctamente
-- Verifica que el Response contiene todos los memberships del tenant
 
 #### Tests Integración
 
 ✅ 200 OK → Lista de MembershipResponse
-
 ✅ 200 OK → Lista vacía si no hay memberships
 
 ---
 
 ### 6.6 GetMembership
 
-**Slice**: GET /memberships/{membershipId}
+#### Slice: GET /memberships/{membershipId}
 
 **Response**: 200 OK → `MembershipResponse`
 
 #### Tests Integración
 
 ✅ 200 OK → MembershipResponse
-
 ❌ 404 → No encontrada
 
 ---
@@ -477,57 +412,42 @@ ConflictGuard.ThrowIf(
 ```
 🟡[Owner] → 🔵(ChangeRole) → 🟤[[Membership]] → 🟠<MembershipRoleChanged>
                                    │
-                             🟣{RoleExists}
-                             🟣{RoleIsHuman}
-                             🟣{NotOwnerRole}
+                             🟣{RoleExists} ← slice
 ```
 
 #### Input
 
 | Campo | Tipo |
 |-------|------|
-| RoleId | Guid |
+| Role | TenantRole |
 
 #### Inyecta
 - `IValidator<Membership>`
 
-#### Guards
+#### Guards (dominio)
+
+Ninguno.
+
+#### Guards (slice)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Mismo rol actual | 409 | ConflictGuard | "Membership already has this role" |
 | El rol no existe | 404 | NotFoundGuard | "Role not found" |
-| El rol es ExternalApp | 409 | ConflictGuard | "Cannot assign ExternalApp role to a membership" |
-| El membership actual es Owner y es el único | 409 | ConflictGuard | "Cannot change role of the only owner" |
 
 #### Lógica
 ```csharp
-ConflictGuard.ThrowIf(
-    membership.RoleId == command.RoleId,
-    "Membership already has this role");
-
-var newRole = await tenantRoleRepository.GetByIdAsync(command.RoleId);
-
-NotFoundGuard.ThrowIfNull(newRole, command.RoleId);
-
-ConflictGuard.ThrowIf(
-    newRole!.Name == "ExternalApp",
-    "Cannot assign ExternalApp role to a membership");
-
-// Si el membership actual tiene rol Owner, verificar que no es el único
-var currentRole = await tenantRoleRepository.GetByIdAsync(membership.RoleId);
-if (currentRole!.Name == "Owner")
-{
-    var ownerCount = await membershipRepository.CountByRoleIdAsync(membership.RoleId);
-    ConflictGuard.ThrowIf(ownerCount <= 1, "Cannot change role of the only owner");
-}
-
-membership.RoleId = command.RoleId;
+membership.Role = command.Role;
 
 return membershipValidator.ValidateOrThrow(membership);
 ```
 
 #### Slice: PUT /memberships/{membershipId}/role
+
+**Guards de slice**
+```csharp
+var role = await tenantRoleRepository.GetByIdAsync(request.RoleId);
+NotFoundGuard.ThrowIfNull(role, request.RoleId);
+```
 
 **Request**
 ```csharp
@@ -539,44 +459,16 @@ public record ChangeRoleRequest(Guid RoleId);
 #### Tests Unitarios (Dominio)
 
 ✅ Cambiar de Manager a Waiter
-- Precondición: Membership con RoleId=Manager
-- Input: RoleId=Waiter
-- Resultado: Membership con RoleId=Waiter
-
 ✅ Cambiar a rol custom
-- Input: RoleId=Sommelier
-- Resultado: Membership con RoleId=Sommelier
 
-✅ Cambiar Owner a Manager (hay más owners)
-- Precondición: Membership con RoleId=Owner, existen 2 memberships con ese rol
-- Input: RoleId=Manager
-- Resultado: Membership con RoleId=Manager
+#### Tests Unitarios (Servicio)
 
-❌ Mismo rol
-- Precondición: Membership con RoleId=Manager
-- Input: RoleId=Manager
-- Resultado: ConflictException "Membership already has this role"
-
-❌ Rol no existe
-- Input: RoleId=inexistente
-- Resultado: KeyNotFoundException "Role not found"
-
-❌ Rol es ExternalApp
-- Input: RoleId=ExternalApp
-- Resultado: ConflictException "Cannot assign ExternalApp role to a membership"
-
-❌ Único Owner intenta cambiar rol
-- Precondición: Membership con RoleId=Owner, es el único
-- Input: RoleId=Manager
-- Resultado: ConflictException "Cannot change role of the only owner"
+❌ Rol no existe → 404
 
 #### Tests Integración
 
 ✅ 204 No Content
-
 ❌ 404 → Membership o rol no encontrado
-
-❌ 409 → Mismo rol, rol ExternalApp o único owner
 
 ---
 
@@ -585,29 +477,23 @@ public record ChangeRoleRequest(Guid RoleId);
 #### Event Storming
 ```
 🟡[Owner] → 🔵(DeactivateMembership) → 🟤[[Membership]] → 🟠<MembershipDeactivated>
+                                            │
+                                      🟣{IsActive}
 ```
 
 #### Input
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Ya está inactiva | 409 | ConflictGuard | "Membership is already inactive" |
-| Es el único Owner activo | 409 | ConflictGuard | "Cannot deactivate the only active owner" |
+| Ya está inactivo | 409 | ConflictGuard | "Membership is already inactive" |
 
 #### Lógica
 ```csharp
 ConflictGuard.ThrowIf(!membership.IsActive, "Membership is already inactive");
-
-var currentRole = await tenantRoleRepository.GetByIdAsync(membership.RoleId);
-if (currentRole!.Name == "Owner")
-{
-    var activeOwnerCount = await membershipRepository.CountActiveByRoleIdAsync(membership.RoleId);
-    ConflictGuard.ThrowIf(activeOwnerCount <= 1, "Cannot deactivate the only active owner");
-}
 
 membership.IsActive = false;
 
@@ -620,52 +506,35 @@ return membershipValidator.ValidateOrThrow(membership);
 
 #### Tests Unitarios (Dominio)
 
-✅ Desactivar membership activa (Waiter)
-- Precondición: Membership con IsActive=true, Role=Waiter
-- Resultado: Membership con IsActive=false
-
-✅ Desactivar membership activa (Manager)
-- Precondición: Membership con IsActive=true, Role=Manager
-- Resultado: Membership con IsActive=false
-
-✅ Desactivar Owner (hay más owners activos)
-- Precondición: Membership con Role=Owner, IsActive=true, hay 2 owners activos
-- Resultado: Membership con IsActive=false
-
-❌ Membership ya inactiva
-- Precondición: Membership con IsActive=false
-- Resultado: ConflictException "Membership is already inactive"
-
-❌ Único Owner activo
-- Precondición: Membership con Role=Owner, es el único owner activo
-- Resultado: ConflictException "Cannot deactivate the only active owner"
+✅ Desactivar membership activo → IsActive=false
+❌ Ya inactivo → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → MembershipResponse con IsActive=false
-
 ❌ 404 → No encontrada
-
-❌ 409 → Ya inactiva o único owner
+❌ 409 → Ya inactiva
 
 ---
 
-### 6.9 Membership.Reactivate
+### 6.9 Membership.Activate
 
 #### Event Storming
 ```
-🟡[Owner] → 🔵(ReactivateMembership) → 🟤[[Membership]] → 🟠<MembershipReactivated>
+🟡[Owner] → 🔵(ActivateMembership) → 🟤[[Membership]] → 🟠<MembershipActivated>
+                                          │
+                                    🟣{IsInactive}
 ```
 
 #### Input
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Ya está activa | 409 | ConflictGuard | "Membership is already active" |
+| Ya está activo | 409 | ConflictGuard | "Membership is already active" |
 
 #### Lógica
 ```csharp
@@ -676,26 +545,19 @@ membership.IsActive = true;
 return membershipValidator.ValidateOrThrow(membership);
 ```
 
-#### Slice: POST /memberships/{membershipId}/reactivate
+#### Slice: POST /memberships/{membershipId}/activate
 
 **Response**: 200 OK → `MembershipResponse`
 
 #### Tests Unitarios (Dominio)
 
-✅ Reactivar membership inactiva
-- Precondición: Membership con IsActive=false
-- Resultado: Membership con IsActive=true
-
-❌ Membership ya activa
-- Precondición: Membership con IsActive=true
-- Resultado: ConflictException "Membership is already active"
+✅ Activar membership inactivo → IsActive=true
+❌ Ya activo → ConflictException
 
 #### Tests Integración
 
 ✅ 200 OK → MembershipResponse con IsActive=true
-
 ❌ 404 → No encontrada
-
 ❌ 409 → Ya activa
 
 ---
@@ -705,29 +567,18 @@ return membershipValidator.ValidateOrThrow(membership);
 #### Event Storming
 ```
 🟡[Owner] → 🔵(DeleteMembership) → 🟤[[Membership]] → 🟠<MembershipDeleted>
-                                        │
-                                  🟣{NotOnlyOwner}
 ```
 
 #### Input
 
 *Sin input adicional*
 
-#### Guards
+#### Guards (dominio)
 
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| Es el único Owner | 409 | ConflictGuard | "Cannot delete the only owner" |
+Ninguno.
 
 #### Lógica
 ```csharp
-var currentRole = await tenantRoleRepository.GetByIdAsync(membership.RoleId);
-if (currentRole!.Name == "Owner")
-{
-    var ownerCount = await membershipRepository.CountByRoleIdAsync(membership.RoleId);
-    ConflictGuard.ThrowIf(ownerCount <= 1, "Cannot delete the only owner");
-}
-
 membershipRepository.Delete(membership);
 ```
 
@@ -735,31 +586,10 @@ membershipRepository.Delete(membership);
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
-
-✅ Eliminar membership de Waiter
-- Precondición: Membership con Role=Waiter
-- Resultado: Membership eliminada
-
-✅ Eliminar membership de Manager
-- Precondición: Membership con Role=Manager
-- Resultado: Membership eliminada
-
-✅ Eliminar Owner (hay más owners)
-- Precondición: Membership con Role=Owner, hay 2 owners
-- Resultado: Membership eliminada
-
-❌ Único Owner
-- Precondición: Membership con Role=Owner, es el único
-- Resultado: ConflictException "Cannot delete the only owner"
-
 #### Tests Integración
 
 ✅ 204 No Content
-
 ❌ 404 → No encontrada
-
-❌ 409 → Único owner
 
 ---
 
@@ -778,10 +608,12 @@ membershipRepository.Delete(membership);
 | `GetMembership` | Ver los detalles de un miembro |
 | `ChangeRole` | Cambiar el rol de un miembro |
 | `DeactivateMembership` | Desactivar temporalmente a un miembro |
-| `ReactivateMembership` | Reactivar a un miembro desactivado |
+| `ActivateMembership` | Reactivar a un miembro desactivado |
 | `DeleteMembership` | Eliminar a un miembro del equipo |
 | `CancelInvitation` | Cancelar una invitación pendiente |
 | `ResendInvitation` | Reenviar una invitación pendiente |
+
+> `AcceptInvitation` no genera scope — es un endpoint público que ejecuta el invitado.
 
 ---
 
@@ -797,7 +629,7 @@ membershipRepository.Delete(membership);
 | 6 | GET | /memberships/{membershipId} | GetMembership | 200 → `MembershipResponse` |
 | 7 | PUT | /memberships/{membershipId}/role | Membership.ChangeRole | 204 |
 | 8 | POST | /memberships/{membershipId}/deactivate | Membership.Deactivate | 200 → `MembershipResponse` |
-| 9 | POST | /memberships/{membershipId}/reactivate | Membership.Reactivate | 200 → `MembershipResponse` |
+| 9 | POST | /memberships/{membershipId}/activate | Membership.Activate | 200 → `MembershipResponse` |
 | 10 | DELETE | /memberships/{membershipId} | Membership.Delete | 204 |
 
 ---
@@ -816,6 +648,9 @@ modelBuilder.Entity<Membership>(entity =>
     // QueryFilter: multi-tenancy by TenantId
     entity.HasQueryFilter(x => x.TenantId == tenantId);
 
+    // Reference: User → User (nullable hasta que acepta la invitación)
+    entity.Reference(x => x.User);
+
     // Reference: Role → TenantRole
     entity.Reference(x => x.Role);
 });
@@ -827,7 +662,7 @@ modelBuilder.Entity<Membership>(entity =>
 {
   "id": "mem-001-guid",
   "tenantId": "tenant-001-guid",
-  "userId": null,
+  "user": null,
   "role": "tenant_roles/role-manager-guid",
   "isActive": true,
   "invitationEmail": "maria@ejemplo.com",
@@ -839,7 +674,7 @@ modelBuilder.Entity<Membership>(entity =>
 {
   "id": "mem-002-guid",
   "tenantId": "tenant-001-guid",
-  "userId": "google-oauth2|123456789",
+  "user": "users/user-001-guid",
   "role": "tenant_roles/role-waiter-guid",
   "isActive": true,
   "invitationEmail": "ana@ejemplo.com",
@@ -855,11 +690,9 @@ modelBuilder.Entity<Membership>(entity =>
 |---|----------|--------|
 | 1 | ¿Se necesita flujo de expiración de invitaciones? | Pendiente: Puede añadirse en V2 |
 | 2 | ¿Se necesita historial/auditoría de cambios en memberships? | Pendiente |
-| 3 | ¿Transferencia de ownership entre usuarios? | Pendiente: Puede ser un comando específico en V2 |
-| 4 | ¿Se debe invalidar sesión al cambiar de rol? | Decidido: Sí — el wireframe lo muestra explícitamente |
-| 5 | ¿El Owner puede cambiar el rol de otro Owner? | Pendiente: Se definirá con la matriz de permisos |
+| 3 | ¿Se debe invalidar sesión al cambiar de rol? | Decidido: Sí — el wireframe lo muestra explícitamente |
 
 ---
 
-**Fecha**: 2026-02-10
+**Fecha**: 2026-02-11
 **Autor**: Equipo Fudie
