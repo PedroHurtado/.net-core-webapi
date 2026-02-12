@@ -10,14 +10,14 @@ WORKDIR /src
 COPY ${PROJECT_DIR}/src/Menus/Menus.csproj ${PROJECT_DIR}/src/Menus/
 COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj ${PROJECT_DIR}/src/Fudie/
 COPY ${PROJECT_DIR}/src/Fudie.Generator/Fudie.Generator.csproj ${PROJECT_DIR}/src/Fudie.Generator/
-COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/
+COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
 RUN dotnet restore ${PROJECT_DIR}/src/Menus/Menus.csproj --runtime linux-musl-x64
 
 COPY ${PROJECT_DIR}/src/Menus/ ${PROJECT_DIR}/src/Menus/
 COPY ${PROJECT_DIR}/src/Fudie/ ${PROJECT_DIR}/src/Fudie/
 COPY ${PROJECT_DIR}/src/Fudie.Generator/ ${PROJECT_DIR}/src/Fudie.Generator/
-COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/ ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/
+COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/ Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
 RUN dotnet publish ${PROJECT_DIR}/src/Menus/Menus.csproj -c Release -o /app \
     --runtime linux-musl-x64 \

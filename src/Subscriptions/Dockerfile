@@ -10,7 +10,7 @@ WORKDIR /src
 COPY ${PROJECT_DIR}/src/Subscriptions/Subscriptions.csproj ${PROJECT_DIR}/src/Subscriptions/
 COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj ${PROJECT_DIR}/src/Fudie/
 COPY ${PROJECT_DIR}/src/Fudie.Generator/Fudie.Generator.csproj ${PROJECT_DIR}/src/Fudie.Generator/
-COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/
+COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
 RUN dotnet restore ${PROJECT_DIR}/src/Subscriptions/Subscriptions.csproj --runtime linux-musl-x64
 
