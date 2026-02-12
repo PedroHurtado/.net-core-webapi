@@ -45,7 +45,7 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
-    RequestPath = "/openapi",
+    RequestPath = "/menus/openapi",
     ContentTypeProvider = provider
 });
 
@@ -54,13 +54,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerUI(c =>
     {
-        c.RoutePrefix = "swagger";
-        c.SwaggerEndpoint("/openapi/allergen-api.yaml", "Allergen API");
-        c.SwaggerEndpoint("/openapi/menuitem-api.yaml", "MenuItem API");
-        c.SwaggerEndpoint("/openapi/menu-api.yaml", "Menu");
+        c.RoutePrefix = "menus/swagger";
+        c.SwaggerEndpoint("/menus/openapi/allergen-api.yaml", "Allergen API");
+        c.SwaggerEndpoint("/menus/openapi/menuitem-api.yaml", "MenuItem API");
+        c.SwaggerEndpoint("/menus/openapi/menu-api.yaml", "Menu");
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/menus/swagger")).ExcludeFromDescription();
 }
 
 app.MapFeatures();

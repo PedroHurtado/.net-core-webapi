@@ -41,7 +41,7 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
-    RequestPath = "/openapi",
+    RequestPath = "/schedules/openapi",
     ContentTypeProvider = provider
 });
 
@@ -50,12 +50,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerUI(c =>
     {
-        c.RoutePrefix = "swagger";
-        c.SwaggerEndpoint("/openapi/schedule-api.yaml", "Schedule API");
-        c.SwaggerEndpoint("/openapi/service-schedule-api.yaml", "Service Schedule API");
+        c.RoutePrefix = "schedules/swagger";
+        c.SwaggerEndpoint("/schedules/openapi/schedule-api.yaml", "Schedule API");
+        c.SwaggerEndpoint("/schedules/openapi/service-schedule-api.yaml", "Service Schedule API");
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/schedules/swagger")).ExcludeFromDescription();
 }
 
 app.MapFeatures();
