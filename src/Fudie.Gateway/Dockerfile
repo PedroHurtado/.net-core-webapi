@@ -3,13 +3,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
 COPY *.csproj ./
-RUN dotnet restore --runtime linux-musl-x64
+RUN dotnet restore
 
 COPY . ./
-RUN dotnet publish -c Release -o /app \
-    --runtime linux-musl-x64 \
-    --self-contained false \
-    --no-restore
+RUN dotnet publish -c Release -o /app
 
 # --- Runtime stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
