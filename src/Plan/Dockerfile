@@ -1,33 +1,37 @@
 # --- Build stage ---
+ARG PROJECT_DIR=webapi
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+ARG PROJECT_DIR
 WORKDIR /src
 
-COPY webapi/src/Plan/Plan.csproj webapi/src/Plan/
-COPY webapi/src/Fudie/Fudie.csproj webapi/src/Fudie/
-COPY webapi/src/Fudie.Generator/Fudie.Generator.csproj webapi/src/Fudie.Generator/
+COPY ${PROJECT_DIR}/src/Plan/Plan.csproj ${PROJECT_DIR}/src/Plan/
+COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj ${PROJECT_DIR}/src/Fudie/
+COPY ${PROJECT_DIR}/src/Fudie.Generator/Fudie.Generator.csproj ${PROJECT_DIR}/src/Fudie.Generator/
 COPY Firestore/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
-RUN dotnet restore webapi/src/Plan/Plan.csproj --runtime linux-musl-x64
+RUN dotnet restore ${PROJECT_DIR}/src/Plan/Plan.csproj --runtime linux-musl-x64
 
-COPY webapi/src/Plan/ webapi/src/Plan/
-COPY webapi/src/Fudie/ webapi/src/Fudie/
-COPY webapi/src/Fudie.Generator/ webapi/src/Fudie.Generator/
+COPY ${PROJECT_DIR}/src/Plan/ ${PROJECT_DIR}/src/Plan/
+COPY ${PROJECT_DIR}/src/Fudie/ ${PROJECT_DIR}/src/Fudie/
+COPY ${PROJECT_DIR}/src/Fudie.Generator/ ${PROJECT_DIR}/src/Fudie.Generator/
 COPY Firestore/src/Fudie.Firestore.EntityFrameworkCore/ Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
-RUN dotnet publish webapi/src/Plan/Plan.csproj -c Release -o /app \
+RUN dotnet publish ${PROJECT_DIR}/src/Plan/Plan.csproj -c Release -o /app \
     --runtime linux-musl-x64 \
     --self-contained false \
     --no-restore
 
 # --- Runtime stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+ARG PROJECT_DIR
 WORKDIR /app
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 COPY --from=build /app .
-COPY --from=build /src/webapi/src/Plan/OpenApi ./OpenApi
+COPY --from=build /src/${PROJECT_DIR}/src/Plan/OpenApi ./OpenApi
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
