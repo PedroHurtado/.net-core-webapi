@@ -14,19 +14,23 @@ services:
   auth-service:
     build:
       context: ..
-      dockerfile: webapi/src/Auth/Dockerfile
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Auth/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     depends_on:
       - firebase
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development      
+      - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/appuser/.microsoft/usersecrets:ro
+      - ${USER_SECRETS_PATH:-~/.microsoft/usersecrets}:/home/appuser/.microsoft/usersecrets:ro
 
   menus-service:
     build:
       context: ..
-      dockerfile: webapi/src/Menus/Dockerfile
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Menus/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     depends_on:
       - firebase
     environment:
@@ -36,7 +40,9 @@ services:
   plan-service:
     build:
       context: ..
-      dockerfile: webapi/src/Plan/Dockerfile
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Plan/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     depends_on:
       - firebase
     environment:
@@ -46,7 +52,9 @@ services:
   schedules-service:
     build:
       context: ..
-      dockerfile: webapi/src/Schedules/Dockerfile
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Schedules/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     depends_on:
       - firebase
     environment:
@@ -56,7 +64,9 @@ services:
   customers-service:
     build:
       context: ..
-      dockerfile: webapi/src/Customers/Dockerfile
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Customers/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     depends_on:
       - firebase
     environment:

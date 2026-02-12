@@ -1,0 +1,17 @@
+global using System.Net;
+global using System.Net.Http.Json;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;
+global using FluentAssertions;
+global using Microsoft.AspNetCore.Mvc.Testing;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.DependencyInjection;
+global using Xunit;
+global using Subscriptions.Infrastructure;
+// global using Subscriptions.IntegrationTests.Fixtures;
+// global using Subscriptions.IntegrationTests.Helpers;
+global using Fudie;
+global using Fudie.Domain;
+global using Fudie.Infrastructure;
+global using Fudie.Firestore.EntityFrameworkCore;
+global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
