@@ -114,7 +114,7 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
         var result = await GoogleLoginCallback.Handler(mockService.Object, httpContext, "auth-code", "valid-state");
 
         result.Should().BeOfType<RedirectHttpResult>()
-            .Which.Url.Should().Be("/dev");
+            .Which.Url.Should().Be("/");
         httpContext.Response.Headers["Set-Cookie"].ToString()
             .Should().Contain($"fudie_session={sessionId}");
     }
