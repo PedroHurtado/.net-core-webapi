@@ -62,7 +62,7 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
-    RequestPath = "/openapi",
+    RequestPath = "/auth/openapi",
     ContentTypeProvider = provider
 });
 
@@ -71,17 +71,18 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerUI(c =>
     {
-        c.RoutePrefix = "swagger";
-        c.SwaggerEndpoint("/openapi/auth-api.yaml", "Auth API");
-        c.SwaggerEndpoint("/openapi/session-api.yaml", "Session API");        
-        c.SwaggerEndpoint("/openapi/tenant-roles-api.yaml", "Roles API"); 
-        c.SwaggerEndpoint("/openapi/memberships-api.yaml", "MemberShip API"); 
-        c.SwaggerEndpoint("/openapi/external-apps-api.yaml", "External Apps API"); 
+        c.RoutePrefix = "auth/swagger";
+        c.SwaggerEndpoint("/auth/openapi/auth-api.yaml", "Auth API");
+        c.SwaggerEndpoint("/auth/openapi/session-api.yaml", "Session API");
+        c.SwaggerEndpoint("/auth/openapi/tenant-roles-api.yaml", "Roles API");
+        c.SwaggerEndpoint("/auth/openapi/memberships-api.yaml", "MemberShip API");
+        c.SwaggerEndpoint("/auth/openapi/external-apps-api.yaml", "External Apps API");
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/auth/swagger")).ExcludeFromDescription();
+    app.MapGet("/auth", () => Results.Redirect("/auth/swagger")).ExcludeFromDescription();
 
-    app.MapGet("/dev", () => Results.Content(DevLoginPage.Html, "text/html"))
+    app.MapGet("/auth/dev", () => Results.Content(DevLoginPage.Html, "text/html"))
         .AllowAnonymous()
         .ExcludeFromDescription();
 }

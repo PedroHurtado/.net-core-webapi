@@ -18,4 +18,16 @@ services:
     depends_on:
       - firebase
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Development      
+      - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/appuser/.microsoft/usersecrets:ro
+
+  gateway:
+    build:
+      context: ./src/Fudie.Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5176:8080"
+    depends_on:
+      - auth-service

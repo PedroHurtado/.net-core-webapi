@@ -24,7 +24,7 @@ public class GoogleLoginCallback : IFeatureModule
                 SameSite = SameSiteMode.Lax
             });
 
-            return Results.Redirect("/dev");
+            return Results.Redirect("/");
         };
 
     public void AddRoutes(IEndpointRouteBuilder app)
