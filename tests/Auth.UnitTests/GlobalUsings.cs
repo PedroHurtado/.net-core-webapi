@@ -45,6 +45,10 @@ global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
 global using Auth.Features.Roles.Api.TenantRoleAggregate;
 global using Auth.Features.Roles.Api.TenantRoleAggregate.Commands;
 global using Auth.Features.Roles.Api.TenantRoleAggregate.Queries;
+global using Auth.Features.Users.Api.UserAggregate.Commands;
+
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Http.HttpResults;
 
 global using Auth.UnitTests.Helpers;
 

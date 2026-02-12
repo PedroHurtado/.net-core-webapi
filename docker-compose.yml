@@ -1,3 +1,5 @@
+name: fudie
+
 services:
   firebase:
     image: andreysenov/firebase-tools
@@ -8,3 +10,78 @@ services:
     volumes:
       - ./firebase.json:/home/node/firebase.json
     working_dir: /home/node
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Auth/Dockerfile
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development      
+      - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/appuser/.microsoft/usersecrets:ro
+
+  menus-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Menus/Dockerfile
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Firestore__EmulatorHost=firebase:8080
+
+  plan-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Plan/Dockerfile
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Firestore__EmulatorHost=firebase:8080
+
+  schedules-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Schedules/Dockerfile
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Firestore__EmulatorHost=firebase:8080
+
+  customers-service:
+    build:
+      context: ..
+      dockerfile: webapi/src/Customers/Dockerfile
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Firestore__EmulatorHost=firebase:8080
+
+  gateway:
+    build:
+      context: ./src/Fudie.Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5176:8080"
+    depends_on:
+      - auth-service
+      - menus-service
+      - plan-service
+      - schedules-service
+      - customers-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address=http://auth-service:8080
+      - ReverseProxy__Clusters__menus-cluster__Destinations__destination1__Address=http://menus-service:8080
+      - ReverseProxy__Clusters__plan-cluster__Destinations__destination1__Address=http://plan-service:8080
+      - ReverseProxy__Clusters__schedules-cluster__Destinations__destination1__Address=http://schedules-service:8080
+      - ReverseProxy__Clusters__customers-cluster__Destinations__destination1__Address=http://customers-service:8080
+    volumes:
+      - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
+      - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro

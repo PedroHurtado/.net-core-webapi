@@ -33,8 +33,9 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
-    RequestPath = "/openapi",
-    ContentTypeProvider = provider
+    RequestPath = "/plans/openapi",
+    ContentTypeProvider = provider,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache, no-store"
 });
 
 // Configure the HTTP request pipeline.
@@ -42,11 +43,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerUI(c =>
     {
-        c.RoutePrefix = "swagger";
-        c.SwaggerEndpoint("/openapi/plan-api.yaml", "Plan API");
+        c.RoutePrefix = "plans/swagger";
+        c.SwaggerEndpoint("/plans/openapi/plan-api.yaml", "Plan API");
+        c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
-    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/plans/swagger")).ExcludeFromDescription();
 }
 
 app.MapFeatures();
