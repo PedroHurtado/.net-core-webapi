@@ -1,3 +1,5 @@
+name: fudie
+
 services:
   firebase:
     image: andreysenov/firebase-tools
