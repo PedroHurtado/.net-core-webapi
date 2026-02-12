@@ -31,3 +31,6 @@ services:
       - "5176:8080"
     depends_on:
       - auth-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address=http://auth-service:8080

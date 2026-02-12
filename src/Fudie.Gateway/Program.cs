@@ -17,6 +17,13 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 
 app.UseRateLimiter();
+
+if (app.Environment.IsDevelopment())
+{
+    var html = File.ReadAllText(Path.Combine(app.Environment.ContentRootPath, "DevPortal.html"));
+    app.MapGet("/", () => Results.Content(html, "text/html"));
+}
+
 app.MapReverseProxy();
 
 app.Run();
