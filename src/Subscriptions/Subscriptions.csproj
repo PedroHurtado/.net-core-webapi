@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootNamespace>Subscriptions</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Refit" Version="8.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fudie\Fudie.csproj" />
+    <ProjectReference Include="..\Fudie.Generator\Fudie.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Firestore\src\Fudie.Firestore.EntityFrameworkCore\Fudie.Firestore.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+</Project>
