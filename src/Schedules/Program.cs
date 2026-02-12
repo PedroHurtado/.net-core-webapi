@@ -42,7 +42,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
     RequestPath = "/schedules/openapi",
-    ContentTypeProvider = provider
+    ContentTypeProvider = provider,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache, no-store"
 });
 
 // Configure the HTTP request pipeline.
@@ -53,6 +54,7 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "schedules/swagger";
         c.SwaggerEndpoint("/schedules/openapi/schedule-api.yaml", "Schedule API");
         c.SwaggerEndpoint("/schedules/openapi/service-schedule-api.yaml", "Service Schedule API");
+        c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
     app.MapGet("/", () => Results.Redirect("/schedules/swagger")).ExcludeFromDescription();

@@ -15,8 +15,6 @@ services:
     build:
       context: ..
       dockerfile: webapi/src/Auth/Dockerfile
-    ports:
-      - "5001:8080"
     depends_on:
       - firebase
     environment:
@@ -29,8 +27,6 @@ services:
     build:
       context: ..
       dockerfile: webapi/src/Menus/Dockerfile
-    ports:
-      - "5002:8080"
     depends_on:
       - firebase
     environment:
@@ -41,8 +37,6 @@ services:
     build:
       context: ..
       dockerfile: webapi/src/Plan/Dockerfile
-    ports:
-      - "5003:8080"
     depends_on:
       - firebase
     environment:
@@ -53,8 +47,6 @@ services:
     build:
       context: ..
       dockerfile: webapi/src/Schedules/Dockerfile
-    ports:
-      - "5004:8080"
     depends_on:
       - firebase
     environment:
@@ -65,8 +57,6 @@ services:
     build:
       context: ..
       dockerfile: webapi/src/Customers/Dockerfile
-    ports:
-      - "5005:8080"
     depends_on:
       - firebase
     environment:
@@ -94,3 +84,4 @@ services:
       - ReverseProxy__Clusters__customers-cluster__Destinations__destination1__Address=http://customers-service:8080
     volumes:
       - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
+      - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro

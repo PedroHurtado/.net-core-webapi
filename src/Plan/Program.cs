@@ -34,7 +34,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
     RequestPath = "/plans/openapi",
-    ContentTypeProvider = provider
+    ContentTypeProvider = provider,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache, no-store"
 });
 
 // Configure the HTTP request pipeline.
@@ -44,6 +45,7 @@ if (app.Environment.IsDevelopment())
     {
         c.RoutePrefix = "plans/swagger";
         c.SwaggerEndpoint("/plans/openapi/plan-api.yaml", "Plan API");
+        c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
     app.MapGet("/", () => Results.Redirect("/plans/swagger")).ExcludeFromDescription();

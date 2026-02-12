@@ -14,14 +14,30 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.SetIsOriginAllowed(origin =>
+                new Uri(origin).Host == "localhost")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
+    });
+}
+
 var app = builder.Build();
 
 app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
-    var html = File.ReadAllText(Path.Combine(app.Environment.ContentRootPath, "DevPortal.html"));
-    app.MapGet("/", () => Results.Content(html, "text/html"));
+    app.UseCors();
+    var portalPath = Path.Combine(app.Environment.ContentRootPath, "DevPortal.html");
+    app.MapGet("/", () => Results.Content(File.ReadAllText(portalPath), "text/html"));
 }
 
 app.MapReverseProxy();

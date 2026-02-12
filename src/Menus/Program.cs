@@ -46,7 +46,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
     RequestPath = "/menus/openapi",
-    ContentTypeProvider = provider
+    ContentTypeProvider = provider,
+    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache, no-store"
 });
 
 // Configure the HTTP request pipeline.
@@ -58,6 +59,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/menus/openapi/allergen-api.yaml", "Allergen API");
         c.SwaggerEndpoint("/menus/openapi/menuitem-api.yaml", "MenuItem API");
         c.SwaggerEndpoint("/menus/openapi/menu-api.yaml", "Menu");
+        c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
     app.MapGet("/", () => Results.Redirect("/menus/swagger")).ExcludeFromDescription();
