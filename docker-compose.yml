@@ -12,7 +12,7 @@ services:
     working_dir: /home/node
 
   auth-service:
-    platform: linux/amd64
+
     build:
       context: ..
       dockerfile: ${PROJECT_DIR:-webapi}/src/Auth/Dockerfile
@@ -28,7 +28,7 @@ services:
       - ${USER_SECRETS_PATH:-~/.microsoft/usersecrets}:/home/appuser/.microsoft/usersecrets:ro
 
   menus-service:
-    platform: linux/amd64
+
     build:
       context: ..
       dockerfile: ${PROJECT_DIR:-webapi}/src/Menus/Dockerfile
@@ -42,7 +42,7 @@ services:
       - Firestore__EmulatorHost=firebase:8080
 
   plan-service:
-    platform: linux/amd64
+
     build:
       context: ..
       dockerfile: ${PROJECT_DIR:-webapi}/src/Plan/Dockerfile
@@ -56,7 +56,7 @@ services:
       - Firestore__EmulatorHost=firebase:8080
 
   schedules-service:
-    platform: linux/amd64
+
     build:
       context: ..
       dockerfile: ${PROJECT_DIR:-webapi}/src/Schedules/Dockerfile
@@ -70,7 +70,7 @@ services:
       - Firestore__EmulatorHost=firebase:8080
 
   customers-service:
-    platform: linux/amd64
+
     build:
       context: ..
       dockerfile: ${PROJECT_DIR:-webapi}/src/Customers/Dockerfile
@@ -84,7 +84,7 @@ services:
       - Firestore__EmulatorHost=firebase:8080
 
   gateway:
-    platform: linux/amd64
+
     build:
       context: ./src/Fudie.Gateway
       dockerfile: Dockerfile
