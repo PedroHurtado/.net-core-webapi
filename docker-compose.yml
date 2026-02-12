@@ -17,6 +17,7 @@ services:
       dockerfile: ${PROJECT_DIR:-webapi}/src/Auth/Dockerfile
       args:
         PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
     depends_on:
       - firebase
     environment:
@@ -31,6 +32,7 @@ services:
       dockerfile: ${PROJECT_DIR:-webapi}/src/Menus/Dockerfile
       args:
         PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
     depends_on:
       - firebase
     environment:
@@ -43,6 +45,7 @@ services:
       dockerfile: ${PROJECT_DIR:-webapi}/src/Plan/Dockerfile
       args:
         PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
     depends_on:
       - firebase
     environment:
@@ -55,6 +58,7 @@ services:
       dockerfile: ${PROJECT_DIR:-webapi}/src/Schedules/Dockerfile
       args:
         PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
     depends_on:
       - firebase
     environment:
@@ -67,6 +71,7 @@ services:
       dockerfile: ${PROJECT_DIR:-webapi}/src/Customers/Dockerfile
       args:
         PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
     depends_on:
       - firebase
     environment:
