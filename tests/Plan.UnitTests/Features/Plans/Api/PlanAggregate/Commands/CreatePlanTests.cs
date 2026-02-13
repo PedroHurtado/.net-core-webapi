@@ -8,10 +8,8 @@ public class CreatePlanTests
 
     public CreatePlanTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        var planCreate = new Plan.Create(createMoney, planValidator);
+        var planCreate = new Plan.Create(planValidator);
 
         _service = new CreatePlan.Service(
             planCreate,
@@ -25,10 +23,7 @@ public class CreatePlanTests
     {
         var request = new CreatePlan.Request(
             Name: "Plan Básico",
-            Description: "Ideal para empezar",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Ideal para empezar"
         );
 
         var response = await _service.HandleAsync(request);
@@ -37,12 +32,9 @@ public class CreatePlanTests
         response.Id.Should().NotBeEmpty();
         response.Name.Should().Be("Plan Básico");
         response.Description.Should().Be("Ideal para empezar");
-        response.Price.Amount.Should().Be(9.99m);
-        response.Price.Currency.Code.Should().Be("EUR");
-        response.BillingPeriod.Should().Be(BillingPeriod.Monthly);
         response.IsActive.Should().BeFalse();
         response.Features.Should().BeEmpty();
-        response.ProviderConfigurations.Should().BeEmpty();
+        response.PricingTiers.Should().BeEmpty();
     }
 
     [Fact]
@@ -50,10 +42,7 @@ public class CreatePlanTests
     {
         var request = new CreatePlan.Request(
             Name: "Plan Básico",
-            Description: "Ideal para empezar",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Ideal para empezar"
         );
 
         await _service.HandleAsync(request);
@@ -66,10 +55,7 @@ public class CreatePlanTests
     {
         var request = new CreatePlan.Request(
             Name: "Plan Básico",
-            Description: "Ideal para empezar",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Ideal para empezar"
         );
 
         await _service.HandleAsync(request);
@@ -82,10 +68,7 @@ public class CreatePlanTests
     {
         var request = new CreatePlan.Request(
             Name: "",
-            Description: "Descripción válida",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Descripción válida"
         );
 
         var act = () => _service.HandleAsync(request);
@@ -99,50 +82,13 @@ public class CreatePlanTests
     {
         var request = new CreatePlan.Request(
             Name: "Plan Válido",
-            Description: "",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: ""
         );
 
         var act = () => _service.HandleAsync(request);
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("*Description*required*");
-    }
-
-    [Fact]
-    public async Task HandleAsync_WithNegativeAmount_ThrowsValidationException()
-    {
-        var request = new CreatePlan.Request(
-            Name: "Plan Válido",
-            Description: "Descripción válida",
-            Amount: -5m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
-        );
-
-        var act = () => _service.HandleAsync(request);
-
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Amount*negative*");
-    }
-
-    [Fact]
-    public async Task HandleAsync_WithInvalidCurrencyCode_ThrowsArgumentException()
-    {
-        var request = new CreatePlan.Request(
-            Name: "Plan Válido",
-            Description: "Descripción válida",
-            Amount: 9.99m,
-            CurrencyCode: "XXX",
-            BillingPeriod: BillingPeriod.Monthly
-        );
-
-        var act = () => _service.HandleAsync(request);
-
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*XXX*not supported*");
     }
 
     [Fact]
@@ -155,8 +101,6 @@ public class CreatePlanTests
                 expectedId,
                 "Plan Test",
                 "Descripción",
-                new MoneyResponse(9.99m, new CurrencyResponse("EUR", "€", 2)),
-                BillingPeriod.Monthly,
                 false,
                 false,
                 [],
@@ -165,10 +109,7 @@ public class CreatePlanTests
 
         var request = new CreatePlan.Request(
             Name: "Plan Test",
-            Description: "Descripción",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Descripción"
         );
 
         var result = await CreatePlan.Handler(mockService.Object, request);

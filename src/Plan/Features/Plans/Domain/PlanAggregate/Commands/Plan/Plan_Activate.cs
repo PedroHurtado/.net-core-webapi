@@ -51,11 +51,11 @@ public partial class Plan
                 nameof(plan.Features)
             );
 
-            // 422 - Validación: Al menos una configuración de proveedor activa (dato inválido: ninguna activa)
+            // 422 - Validación: Al menos un pricing tier activo con proveedor activo
             ValidationGuard.ThrowIf(
-                !plan.ProviderConfigurations.Any(c => c.IsActive),
-                PlanValidationMessages.AtLeastOneActiveProviderRequired,
-                nameof(plan.ProviderConfigurations)
+                !plan.PricingTiers.Any(t => t.IsActive && t.HasActiveProvider),
+                PlanValidationMessages.AtLeastOneActivePricingTierRequired,
+                nameof(plan.PricingTiers)
             );
 
             plan.IsActive = true;

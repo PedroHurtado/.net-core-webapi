@@ -61,12 +61,9 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
 
     public async Task<PlanResponse> CreatePlanAsync(
         string name = "Plan Test",
-        string description = "Descripción de test",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+        string description = "Descripción de test")
     {
-        var request = new CreatePlan.Request(name, description, amount, currencyCode, billingPeriod);
+        var request = new CreatePlan.Request(name, description);
         var response = await Client.PostAsJsonAsync("/plans", request);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
@@ -87,15 +84,29 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
         return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
     }
 
-    public async Task<PlanResponse> AddProviderConfigToPlanAsync(
+    public async Task<PlanResponse> AddPricingTierToPlanAsync(
         Guid planId,
+        string billingPeriod = "Monthly",
+        decimal amount = 9.99m,
+        string currencyCode = "EUR",
+        bool isActive = false)
+    {
+        var request = new { BillingPeriod = billingPeriod, Amount = amount, CurrencyCode = currencyCode, IsActive = isActive };
+        var response = await Client.PostAsJsonAsync($"/plans/{planId}/pricing-tiers", request);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
+    }
+
+    public async Task<PlanResponse> AddPricingTierProviderConfigToPlanAsync(
+        Guid planId,
+        string billingPeriod = "Monthly",
         string provider = "Stripe",
         string externalProductId = "prod_123",
         string externalPriceId = "price_123",
         bool isActive = true)
     {
         var request = new { Provider = provider, ExternalProductId = externalProductId, ExternalPriceId = externalPriceId, IsActive = isActive };
-        var response = await Client.PostAsJsonAsync($"/plans/{planId}/provider-configurations", request);
+        var response = await Client.PostAsJsonAsync($"/plans/{planId}/pricing-tiers/{billingPeriod}/provider-configurations", request);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;
     }
@@ -106,6 +117,7 @@ public class PlanWebApplicationFixture : IClassFixture<WebApplicationFactory<Pro
     {
         var plan = await CreatePlanAsync(name, description);
         await AddFeatureToPlanAsync(plan.Id);
-        return await AddProviderConfigToPlanAsync(plan.Id);
+        await AddPricingTierToPlanAsync(plan.Id, isActive: true);
+        return await AddPricingTierProviderConfigToPlanAsync(plan.Id);
     }
 }

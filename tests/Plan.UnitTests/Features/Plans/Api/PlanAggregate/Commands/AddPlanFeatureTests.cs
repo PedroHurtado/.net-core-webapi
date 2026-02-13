@@ -9,13 +9,11 @@ public class AddPlanFeatureTests
 
     public AddPlanFeatureTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
         var featureValidator = new FeatureValidator();
-        var createMoney = new Money.Create(moneyValidator);
         var createFeature = new Feature.Create(featureValidator);
         var addFeature = new Plan.AddFeature(createFeature, planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        _createPlan = new Plan.Create(planValidator);
 
         _service = new AddPlanFeature.Service(
             addFeature,
@@ -26,17 +24,11 @@ public class AddPlanFeatureTests
 
     private Plan CreatePlan(
         string name = "Plan Test",
-        string description = "Descripcion test",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+        string description = "Descripcion test")
     {
         return _createPlan.Execute(new CreatePlanCommand(
             name,
-            description,
-            amount,
-            currencyCode,
-            billingPeriod
+            description
         ));
     }
 
@@ -194,8 +186,6 @@ public class AddPlanFeatureTests
             id,
             "Plan Test",
             "Description",
-            new MoneyResponse(9.99m, new CurrencyResponse("EUR", "E", 2)),
-            BillingPeriod.Monthly,
             false,
             false,
             [],

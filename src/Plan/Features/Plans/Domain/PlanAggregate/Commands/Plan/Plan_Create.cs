@@ -5,15 +5,9 @@ namespace Plans.Features.Plans.Domain.PlanAggregate;
 /// </summary>
 /// <param name="Name">The name of the plan. Required, maximum 100 characters. Must be unique in the system.</param>
 /// <param name="Description">The description of the plan. Required, maximum 500 characters.</param>
-/// <param name="Amount">The price amount of the plan.</param>
-/// <param name="CurrencyCode">The currency code of the plan price (e.g., "EUR").</param>
-/// <param name="BillingPeriod">The billing period (Monthly, Quarterly, Semester, Yearly).</param>
 public record CreatePlanCommand(
     string Name,
-    string Description,
-    decimal Amount,
-    string CurrencyCode,
-    BillingPeriod BillingPeriod
+    string Description
 );
 
 public partial class Plan
@@ -24,17 +18,15 @@ public partial class Plan
     /// <remarks>
     /// <para>
     /// This command creates a new plan with the provided details. The plan is created
-    /// as inactive by default (IsActive = false).
+    /// as inactive by default (IsActive = false) with no pricing tiers.
     /// </para>
     /// <para>
-    /// The command validates the plan using <see cref="PlanValidator"/> before returning.
+    /// Pricing tiers are added separately via the AddPricingTier command.
     /// </para>
     /// </remarks>
-    /// <param name="moneyCreate">The service to create money instances.</param>
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class Create(
-        Money.Create moneyCreate,
         IValidator<Plan> planValidator
     ) : AbstractCreateCommand<CreatePlanCommand, Plan>
     {
@@ -46,15 +38,10 @@ public partial class Plan
         /// <exception cref="ValidationException">Thrown when the plan data is invalid.</exception>
         public override Plan Execute(CreatePlanCommand command)
         {
-            var currency = Currency.FromCode(command.CurrencyCode);
-            var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, currency));
-
             var plan = new Plan(Guid.NewGuid())
             {
                 Name = command.Name,
                 Description = command.Description,
-                Price = price,
-                BillingPeriod = command.BillingPeriod,
                 IsActive = false
             };
 

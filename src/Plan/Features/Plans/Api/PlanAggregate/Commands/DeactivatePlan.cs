@@ -38,5 +38,6 @@ public class DeactivatePlan : IFeatureModule
         }
     }
 
+    [Include<Plan>("Features", "PricingTiers")]
     public interface IRepository : IUpdate<Plan, Guid> { }
 }

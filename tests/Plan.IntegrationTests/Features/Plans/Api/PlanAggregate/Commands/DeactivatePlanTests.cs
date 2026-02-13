@@ -7,9 +7,7 @@ public class DeactivatePlanTests : PlanWebApplicationFixture
 
     private async Task<PlanResponse> CreateAndActivatePlanAsync()
     {
-        var plan = await CreatePlanAsync();
-        await AddFeatureToPlanAsync(plan.Id);
-        await AddProviderConfigToPlanAsync(plan.Id, "Stripe", "prod_123", "price_123", isActive: true);
+        var plan = await CreateCompletePlanAsync();
         var activateResponse = await Client.PostAsync($"/plans/{plan.Id}/activate", null);
         activateResponse.EnsureSuccessStatusCode();
         return (await activateResponse.Content.ReadFromJsonAsync<PlanResponse>(JsonOptions))!;

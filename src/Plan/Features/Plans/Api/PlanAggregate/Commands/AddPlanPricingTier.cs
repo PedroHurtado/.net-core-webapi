@@ -1,12 +1,12 @@
 namespace Plans.Features.Plans.Api.PlanAggregate.Commands;
 
-public class AddPlanProviderConfiguration : IFeatureModule
+public class AddPlanPricingTier : IFeatureModule
 {
     public record Request(
-        string Provider,
-        string ExternalProductId,
-        string ExternalPriceId,
-        bool IsActive = true
+        BillingPeriod BillingPeriod,
+        decimal Amount,
+        string CurrencyCode,
+        bool IsActive = false
     );
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler =>
@@ -18,7 +18,7 @@ public class AddPlanProviderConfiguration : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/provider-configurations", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers", Handler);
     }
 
     public interface IService
@@ -28,7 +28,7 @@ public class AddPlanProviderConfiguration : IFeatureModule
 
     [Injectable]
     public class Service(
-        Plan.AddProviderConfiguration addProviderConfig,
+        Plan.AddPricingTier addPricingTier,
         IRepository repository,
         IUnitOfWork unitOfWork
     ) : IService
@@ -37,14 +37,14 @@ public class AddPlanProviderConfiguration : IFeatureModule
         {
             var plan = await repository.Get(id);
 
-            var command = new AddProviderConfigurationCommand(
-                request.Provider,
-                request.ExternalProductId,
-                request.ExternalPriceId,
+            var command = new AddPricingTierCommand(
+                request.BillingPeriod,
+                request.Amount,
+                request.CurrencyCode,
                 request.IsActive
             );
 
-            addProviderConfig.Execute(plan, command);
+            addPricingTier.Execute(plan, command);
 
             await unitOfWork.SaveChangesAsync();
 
@@ -52,6 +52,6 @@ public class AddPlanProviderConfiguration : IFeatureModule
         }
     }
 
-    [Include<Plan>("Features", "ProviderConfigurations")]
+    [Include<Plan>("Features", "PricingTiers")]
     public interface IRepository : IUpdate<Plan, Guid> { }
 }

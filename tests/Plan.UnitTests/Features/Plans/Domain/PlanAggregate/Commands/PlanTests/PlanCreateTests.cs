@@ -3,14 +3,11 @@
 public class PlanCreateTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly MoneyValidator _moneyValidator = new();
-    private readonly Money.Create _createMoney;
     private readonly Plan.Create _create;
 
     public PlanCreateTests()
     {
-        _createMoney = new(_moneyValidator);
-        _create = new(_createMoney, _validator);
+        _create = new(_validator);
     }
 
     [Fact]
@@ -18,10 +15,7 @@ public class PlanCreateTests
     {
         var command = new CreatePlanCommand(
             Name: "Plan Básico",
-            Description: "Plan ideal para empezar",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Plan ideal para empezar"
         );
 
         var result = _create.Execute(command);
@@ -30,12 +24,9 @@ public class PlanCreateTests
         result.Id.Should().NotBeEmpty();
         result.Name.Should().Be("Plan Básico");
         result.Description.Should().Be("Plan ideal para empezar");
-        result.Price.Amount.Should().Be(9.99m);
-        result.Price.Currency.Code.Should().Be("EUR");
-        result.BillingPeriod.Should().Be(BillingPeriod.Monthly);
         result.IsActive.Should().BeFalse();
         result.Features.Should().BeEmpty();
-        result.ProviderConfigurations.Should().BeEmpty();
+        result.PricingTiers.Should().BeEmpty();
     }
 
     #region Validation Throws
@@ -47,10 +38,7 @@ public class PlanCreateTests
     {
         var command = new CreatePlanCommand(
             Name: name!,
-            Description: "Description",
-            Amount: 10m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Description"
         );
 
         var act = () => _create.Execute(command);
@@ -63,10 +51,7 @@ public class PlanCreateTests
     {
         var command = new CreatePlanCommand(
             Name: new string('a', 101),
-            Description: "Description",
-            Amount: 10m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Description"
         );
 
         var act = () => _create.Execute(command);
@@ -81,10 +66,7 @@ public class PlanCreateTests
     {
         var command = new CreatePlanCommand(
             Name: "Plan Name",
-            Description: description!,
-            Amount: 10m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: description!
         );
 
         var act = () => _create.Execute(command);
@@ -97,42 +79,7 @@ public class PlanCreateTests
     {
         var command = new CreatePlanCommand(
             Name: "Plan Name",
-            Description: new string('a', 501),
-            Amount: 10m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
-        );
-
-        var act = () => _create.Execute(command);
-
-        act.Should().Throw<ValidationException>();
-    }
-
-    [Fact]
-    public void Execute_WithNegativeAmount_ThrowsValidationException()
-    {
-        var command = new CreatePlanCommand(
-            Name: "Plan Name",
-            Description: "Description",
-            Amount: -10m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
-        );
-
-        var act = () => _create.Execute(command);
-
-        act.Should().Throw<ValidationException>();
-    }
-
-    [Fact]
-    public void Execute_WithInvalidCurrencyCode_ThrowsArgumentException()
-    {
-        var command = new CreatePlanCommand(
-            Name: "Plan Name",
-            Description: "Description",
-            Amount: 10m,
-            CurrencyCode: "XXX",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: new string('a', 501)
         );
 
         var act = () => _create.Execute(command);

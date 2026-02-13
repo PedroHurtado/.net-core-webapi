@@ -4,10 +4,7 @@ public class UpdatePlan : IFeatureModule
 {
     public record Request(
         string Name,
-        string Description,
-        decimal Amount,
-        string CurrencyCode,
-        BillingPeriod BillingPeriod
+        string Description
     );
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler =>
@@ -40,10 +37,7 @@ public class UpdatePlan : IFeatureModule
 
             var command = new UpdatePlanCommand(
                 request.Name,
-                request.Description,
-                request.Amount,
-                request.CurrencyCode,
-                request.BillingPeriod
+                request.Description
             );
 
             planUpdate.Execute(plan, command);

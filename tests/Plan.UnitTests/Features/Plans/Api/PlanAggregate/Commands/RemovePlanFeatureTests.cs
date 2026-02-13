@@ -10,13 +10,11 @@ public class RemovePlanFeatureTests
 
     public RemovePlanFeatureTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
         var featureValidator = new FeatureValidator();
-        var createMoney = new Money.Create(moneyValidator);
         var featureCreate = new Feature.Create(featureValidator);
         var removeFeature = new Plan.RemoveFeature(planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        _createPlan = new Plan.Create(planValidator);
         _addFeature = new Plan.AddFeature(featureCreate, planValidator);
 
         _service = new RemovePlanFeature.Service(
@@ -30,10 +28,7 @@ public class RemovePlanFeatureTests
     {
         var plan = _createPlan.Execute(new CreatePlanCommand(
             "Plan Test",
-            "Descripción de test",
-            9.99m,
-            "EUR",
-            BillingPeriod.Monthly
+            "Descripción de test"
         ));
 
         for (var i = 1; i <= featureCount; i++)

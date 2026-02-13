@@ -3,35 +3,29 @@
 public class PlanAddFeatureTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly MoneyValidator _moneyValidator = new();
-    private readonly FeatureValidator _featureValidator = new();
-    private readonly Money.Create _createMoney;
     private readonly Feature.Create _createFeature;
     private readonly PaymentProviderConfig.Create _createProviderConfig;
     private readonly Plan.AddFeature _addFeature;
 
     public PlanAddFeatureTests()
     {
-        _createMoney = new(_moneyValidator);
-        _createFeature = new(_featureValidator);
+        _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
         _addFeature = new(_createFeature, _validator);
     }
 
     private TestablePlan CreateValidPlan()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature = _createFeature.Execute(new CreateFeatureCommand("ORIGINAL_FEATURE", "Original", null, FeatureType.Boolean));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_original", "price_original", true));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(10m, Currency.EUR), true, [provider]);
 
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Original Plan");
         plan.SetDescription("Original description");
-        plan.SetPrice(price);
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(true);
         plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider);
+        plan.AddPricingTier(tier);
 
         return plan;
     }
@@ -66,7 +60,7 @@ public class PlanAddFeatureTests
     public void Execute_WithBooleanType_AddsFeature()
     {
         var plan = CreateValidPlan();
-        
+
         var command = new AddFeatureCommand(
             Code: "BOOL_FEATURE",
             Name: "Boolean Feature",
@@ -87,7 +81,7 @@ public class PlanAddFeatureTests
     public void Execute_WithUnlimitedType_AddsFeature()
     {
         var plan = CreateValidPlan();
-        
+
         var command = new AddFeatureCommand(
             Code: "UNLIMITED_FEATURE",
             Name: "Unlimited Feature",
@@ -111,10 +105,8 @@ public class PlanAddFeatureTests
         var originalId = plan.Id;
         var originalName = plan.Name;
         var originalDescription = plan.Description;
-        var originalPrice = plan.Price;
-        var originalBillingPeriod = plan.BillingPeriod;
         var originalIsActive = plan.IsActive;
-        var originalProvidersCount = plan.ProviderConfigurations.Count;
+        var originalTiersCount = plan.PricingTiers.Count;
 
         var command = new AddFeatureCommand(
             "TEST_FEATURE", "Test", "", FeatureType.Boolean, 0, ""
@@ -125,10 +117,8 @@ public class PlanAddFeatureTests
         result.Id.Should().Be(originalId);
         result.Name.Should().Be(originalName);
         result.Description.Should().Be(originalDescription);
-        result.Price.Should().Be(originalPrice);
-        result.BillingPeriod.Should().Be(originalBillingPeriod);
         result.IsActive.Should().Be(originalIsActive);
-        result.ProviderConfigurations.Should().HaveCount(originalProvidersCount);
+        result.PricingTiers.Should().HaveCount(originalTiersCount);
     }
 
     #region Conflict Throws (409)
