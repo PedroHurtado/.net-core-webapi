@@ -50,6 +50,7 @@ if (app.Environment.IsDevelopment())
     {
         c.RoutePrefix = "subscriptions/swagger";
         c.SwaggerEndpoint("/subscriptions/openapi/subscription-api.yaml", "Subscription API");
+        c.SwaggerEndpoint("/subscriptions/openapi/billinghistory.-api.yaml", "Billinghistory API");
         c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 

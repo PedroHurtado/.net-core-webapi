@@ -1,0 +1,286 @@
+openapi: 3.0.3
+info:
+  title: Fudie – Billing History API
+  description: Historial de facturación de las suscripciones
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+tags:
+  - name: BillingHistory
+    description: Historial de facturación
+
+paths:
+
+  /billing-history/{id}:
+    get:
+      tags: [BillingHistory]
+      operationId: GetBillingHistory
+      summary: Obtener detalle de un registro de facturación
+      parameters:
+        - $ref: '#/components/parameters/BillingHistoryId'
+      responses:
+        '200':
+          description: Detalle del registro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingHistoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /billing-history/by-tenant/{tenantId}:
+    get:
+      tags: [BillingHistory]
+      operationId: ListBillingHistoryByTenant
+      summary: Historial de facturación de un tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        - name: from
+          in: query
+          required: false
+          description: Filtro desde fecha (PeriodStart)
+          schema:
+            type: string
+            format: date
+          example: '2026-01-01'
+        - name: to
+          in: query
+          required: false
+          description: Filtro hasta fecha (PeriodStart)
+          schema:
+            type: string
+            format: date
+          example: '2026-12-31'
+      responses:
+        '200':
+          description: Lista de registros de facturación
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingHistoryResponse'
+
+  /billing-history/by-subscription/{subscriptionId}:
+    get:
+      tags: [BillingHistory]
+      operationId: ListBillingHistoryBySubscription
+      summary: Historial de facturación de una suscripción
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: a1b2c3d4-5678-9012-3456-789012345678
+      responses:
+        '200':
+          description: Lista de registros de facturación
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingHistoryResponse'
+
+components:
+
+  # ──────────────────────────────────────────────
+  # Parameters
+  # ──────────────────────────────────────────────
+
+  parameters:
+    BillingHistoryId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: b2c3d4e5-6789-0123-4567-890123456789
+
+  # ──────────────────────────────────────────────
+  # Responses
+  # ──────────────────────────────────────────────
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+  # ──────────────────────────────────────────────
+  # Schemas
+  # ──────────────────────────────────────────────
+
+  schemas:
+
+    # ──────────────────────────────────────────────
+    # Enums
+    # ──────────────────────────────────────────────
+
+    PaymentStatus:
+      type: string
+      enum: [Paid, Failed, Refunded]
+
+    BillingPeriod:
+      type: string
+      enum: [Monthly, Quarterly, Semester, Yearly]
+
+    FeatureType:
+      type: string
+      enum: [Boolean, Limit, Unlimited]
+
+    # ──────────────────────────────────────────────
+    # Responses
+    # ──────────────────────────────────────────────
+
+    BillingHistoryResponse:
+      type: object
+      required:
+        - id
+        - tenantId
+        - subscriptionId
+        - planId
+        - planName
+        - billingPeriod
+        - price
+        - periodStart
+        - periodEnd
+        - paymentStatus
+        - features
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        subscriptionId:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        planName:
+          type: string
+          example: Plan Básico
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+        price:
+          $ref: '#/components/schemas/MoneyResponse'
+        periodStart:
+          type: string
+          format: date-time
+        periodEnd:
+          type: string
+          format: date-time
+        paymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+        externalInvoiceId:
+          type: string
+          nullable: true
+          example: in_1OXbFJ2eZvKYlo2C5004ogvj
+        externalPaymentIntentId:
+          type: string
+          nullable: true
+          example: pi_3OXbFJ2eZvKYlo2C1234abcd
+        provider:
+          type: string
+          nullable: true
+          example: Stripe
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingFeatureSnapshotResponse'
+
+    BillingFeatureSnapshotResponse:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: string
+          example: RESERVATIONS_MONTHLY
+        type:
+          $ref: '#/components/schemas/FeatureType'
+        limit:
+          type: integer
+          nullable: true
+          example: 100
+
+    MoneyResponse:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 9.99
+        currency:
+          $ref: '#/components/schemas/CurrencyResponse'
+
+    CurrencyResponse:
+      type: object
+      required:
+        - code
+        - symbol
+        - decimalPlaces
+      properties:
+        code:
+          type: string
+          example: EUR
+        symbol:
+          type: string
+          example: €
+        decimalPlaces:
+          type: integer
+          example: 2
+
+    # ──────────────────────────────────────────────
+    # Errors
+    # ──────────────────────────────────────────────
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
