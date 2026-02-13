@@ -6,16 +6,17 @@ info:
 
     ## Conceptos Clave
 
-    - **Plan**: Representa un plan de suscripción con precio, período de facturación y características
+    - **Plan**: Representa un plan de suscripción con nombre, descripción y características
     - **Feature**: Característica incluida en un plan (Boolean, Limit o Unlimited)
-    - **ProviderConfiguration**: Configuración de integración con proveedores de pago (Stripe, Paddle, etc.)
+    - **PricingTier**: Período de facturación con precio y configuraciones de proveedor (Monthly, Quarterly, Semester, Yearly)
+    - **ProviderConfiguration**: Configuración de integración con proveedores de pago (Stripe, Paddle, etc.) dentro de un PricingTier
 
     ## Flujo de Activación
 
     Un plan solo puede activarse cuando:
     1. Tiene al menos una Feature
-    2. Tiene al menos una ProviderConfiguration activa
-  version: 1.0.0
+    2. Tiene al menos un PricingTier activo con al menos una ProviderConfiguration activa
+  version: 2.0.0
   contact:
     name: Equipo Fudie
 servers:
@@ -30,8 +31,10 @@ tags:
     description: Operaciones CRUD sobre planes
   - name: Features
     description: Gestión de características de un plan
+  - name: Pricing Tiers
+    description: Gestión de períodos de facturación y precios de un plan
   - name: Provider Configurations
-    description: Configuraciones de proveedores de pago
+    description: Configuraciones de proveedores de pago dentro de un pricing tier
 paths:
   /plans:
     post:
@@ -39,9 +42,9 @@ paths:
         - Plans
       summary: Crear un nuevo plan
       description: |
-        Crea un nuevo plan de suscripción. El plan se crea con `isActive=false`.
+        Crea un nuevo plan de suscripción. El plan se crea con `isActive=false` y sin pricing tiers.
 
-        Para activarlo, primero debe tener al menos una Feature y una ProviderConfiguration activa.
+        Para activarlo, primero debe tener al menos una Feature y un PricingTier activo con ProviderConfiguration activa.
       operationId: createPlan
       requestBody:
         required: true
@@ -61,7 +64,7 @@ paths:
               description: URL del plan creado
               schema:
                 type: string
-                example: /api/v1/plans/3fa85f64-5717-4562-b3fc-2c963f66afa6
+                example: /plans/3fa85f64-5717-4562-b3fc-2c963f66afa6
         '422':
           description: Error de validación
           content:
@@ -122,7 +125,7 @@ paths:
       tags:
         - Plans
       summary: Actualizar un plan
-      description: Actualiza los datos básicos de un plan existente
+      description: Actualiza los datos básicos de un plan existente (nombre y descripción)
       operationId: updatePlan
       requestBody:
         required: true
@@ -163,7 +166,7 @@ paths:
 
         **Requisitos:**
         - El plan debe tener al menos una Feature
-        - El plan debe tener al menos una ProviderConfiguration activa
+        - El plan debe tener al menos un PricingTier activo con una ProviderConfiguration activa
         - El plan no debe estar ya activo
       operationId: activatePlan
       responses:
@@ -206,15 +209,15 @@ paths:
                     errors:
                       Features:
                         - Plan must have at least one feature
-                noProvider:
-                  summary: Sin proveedor activo
+                noPricingTier:
+                  summary: Sin pricing tier activo con proveedor
                   value:
                     type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
                     title: One or more validation errors occurred.
                     status: 422
                     errors:
-                      ProviderConfigurations:
-                        - Plan must have at least one active provider configuration
+                      PricingTiers:
+                        - Plan must have at least one active pricing tier with an active provider configuration
   '/plans/{id}/deactivate':
     parameters:
       - name: id
@@ -452,7 +455,7 @@ paths:
                 errors:
                   Features:
                     - Cannot remove last feature from active plan
-  '/plans/{id}/provider-configurations':
+  '/plans/{id}/pricing-tiers':
     parameters:
       - name: id
         in: path
@@ -463,12 +466,284 @@ paths:
           format: uuid
     post:
       tags:
-        - Provider Configurations
-      summary: Añadir configuración de proveedor
+        - Pricing Tiers
+      summary: Añadir un pricing tier
       description: |
-        Añade una nueva configuración de proveedor de pagos al plan.
+        Añade un nuevo período de facturación con precio al plan.
 
-        **Regla:** Solo puede haber una configuración activa por proveedor.
+        El `billingPeriod` debe ser único dentro del plan. Se crea con `isActive=false` por defecto
+        y sin configuraciones de proveedor.
+      operationId: addPricingTier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPricingTierRequest'
+            examples:
+              monthly:
+                summary: Tier mensual
+                value:
+                  billingPeriod: Monthly
+                  amount: 9.99
+                  currencyCode: EUR
+                  isActive: false
+              yearly:
+                summary: Tier anual
+                value:
+                  billingPeriod: Yearly
+                  amount: 99.99
+                  currencyCode: EUR
+                  isActive: true
+      responses:
+        '201':
+          description: Pricing tier añadido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+          headers:
+            Location:
+              description: URL del plan
+              schema:
+                type: string
+                example: /plans/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        '404':
+          description: Plan no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: Ya existe un pricing tier con ese período de facturación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Pricing tier with billing period 'Monthly' already exists in the plan
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+  '/plans/{id}/pricing-tiers/{billingPeriod}':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
+    put:
+      tags:
+        - Pricing Tiers
+      summary: Actualizar precio de un pricing tier
+      description: |
+        Actualiza el precio de un pricing tier existente.
+
+        **Nota:** Preserva el estado `isActive` y las configuraciones de proveedor.
+      operationId: updatePricingTier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePricingTierRequest'
+      responses:
+        '200':
+          description: Pricing tier actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan o pricing tier no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                planNotFound:
+                  summary: Plan no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Plan with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                tierNotFound:
+                  summary: Pricing tier no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Pricing tier with billing period 'Yearly' not found
+        '422':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+    delete:
+      tags:
+        - Pricing Tiers
+      summary: Eliminar un pricing tier
+      description: |
+        Elimina un pricing tier del plan.
+
+        **Restricción:** No se puede eliminar el último pricing tier activo con proveedor activo de un plan activo.
+      operationId: removePricingTier
+      responses:
+        '204':
+          description: Pricing tier eliminado exitosamente
+        '404':
+          description: Plan o pricing tier no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: No se puede eliminar el último pricing tier activo con proveedor activo de un plan activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  PricingTiers:
+                    - Cannot remove the last active pricing tier with an active provider from an active plan
+  '/plans/{id}/pricing-tiers/{billingPeriod}/activate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
+    post:
+      tags:
+        - Pricing Tiers
+      summary: Activar un pricing tier
+      description: Activa un pricing tier para que esté disponible.
+      operationId: activatePricingTier
+      responses:
+        '200':
+          description: Pricing tier activado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan o pricing tier no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El pricing tier ya está activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Pricing tier with billing period 'Monthly' is already active
+  '/plans/{id}/pricing-tiers/{billingPeriod}/deactivate':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
+    post:
+      tags:
+        - Pricing Tiers
+      summary: Desactivar un pricing tier
+      description: |
+        Desactiva un pricing tier.
+
+        **Restricción:** No se puede desactivar el último pricing tier activo con proveedor activo de un plan activo.
+      operationId: deactivatePricingTier
+      responses:
+        '200':
+          description: Pricing tier desactivado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+        '404':
+          description: Plan o pricing tier no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: No se puede desactivar el último pricing tier activo con proveedor activo de un plan activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1'
+                title: One or more validation errors occurred.
+                status: 422
+                errors:
+                  PricingTiers:
+                    - Cannot deactivate the last active pricing tier with an active provider from an active plan
+  '/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations':
+    parameters:
+      - name: id
+        in: path
+        description: ID único del plan
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
+    post:
+      tags:
+        - Provider Configurations
+      summary: Añadir configuración de proveedor a un pricing tier
+      description: |
+        Añade una nueva configuración de proveedor de pagos a un pricing tier.
+
+        El `provider` debe ser único dentro del pricing tier.
       operationId: addProviderConfiguration
       requestBody:
         required: true
@@ -488,14 +763,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlanResponse'
+          headers:
+            Location:
+              description: URL del plan
+              schema:
+                type: string
+                example: /plans/3fa85f64-5717-4562-b3fc-2c963f66afa6
         '404':
-          description: Plan no encontrado
+          description: Plan o pricing tier no encontrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                planNotFound:
+                  summary: Plan no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Plan with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                tierNotFound:
+                  summary: Pricing tier no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Pricing tier with billing period 'Monthly' not found
         '409':
-          description: Ya existe una configuración activa para ese proveedor
+          description: Ya existe una configuración para ese proveedor en el pricing tier
           content:
             application/json:
               schema:
@@ -504,14 +800,14 @@ paths:
                 type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
                 title: Conflict
                 status: 409
-                detail: Active configuration for 'Stripe' already exists
+                detail: Configuration for 'Stripe' already exists in pricing tier 'Monthly'
         '422':
           description: Error de validación
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
-  '/plans/{id}/provider-configurations/{provider}':
+  '/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}':
     parameters:
       - name: id
         in: path
@@ -520,6 +816,12 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
       - name: provider
         in: path
         description: Nombre del proveedor
@@ -543,10 +845,14 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateProviderConfigRequest'
       responses:
-        '204':
+        '200':
           description: Configuración actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
         '404':
-          description: Plan o configuración no encontrada
+          description: Plan, pricing tier o configuración no encontrada
           content:
             application/json:
               schema:
@@ -559,20 +865,27 @@ paths:
                     title: Not Found
                     status: 404
                     detail: Plan with id '3fa85f64-5717-4562-b3fc-2c963f66afa6' not found
+                tierNotFound:
+                  summary: Pricing tier no encontrado
+                  value:
+                    type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
+                    title: Not Found
+                    status: 404
+                    detail: Pricing tier with billing period 'Monthly' not found
                 configNotFound:
                   summary: Configuración no encontrada
                   value:
                     type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5'
                     title: Not Found
                     status: 404
-                    detail: Configuration for 'Paddle' not found
+                    detail: Configuration for 'Paddle' not found in pricing tier 'Monthly'
         '422':
           description: Error de validación
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
-  '/plans/{id}/provider-configurations/{provider}/activate':
+  '/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/activate':
     parameters:
       - name: id
         in: path
@@ -581,6 +894,12 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
       - name: provider
         in: path
         description: Nombre del proveedor
@@ -592,10 +911,7 @@ paths:
       tags:
         - Provider Configurations
       summary: Activar configuración de proveedor
-      description: |
-        Activa una configuración de proveedor.
-
-        **Idempotente:** Si ya está activa, no hace cambios.
+      description: Activa una configuración de proveedor dentro de un pricing tier.
       operationId: activateProviderConfiguration
       responses:
         '200':
@@ -605,13 +921,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlanResponse'
         '404':
-          description: Plan o configuración no encontrada
+          description: Plan, pricing tier o configuración no encontrada
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
         '409':
-          description: Ya existe otra configuración activa para ese proveedor
+          description: La configuración ya está activa
           content:
             application/json:
               schema:
@@ -620,8 +936,8 @@ paths:
                 type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
                 title: Conflict
                 status: 409
-                detail: Another active configuration for 'Stripe' already exists
-  '/plans/{id}/provider-configurations/{provider}/deactivate':
+                detail: Configuration for 'Stripe' is already active in pricing tier 'Monthly'
+  '/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/deactivate':
     parameters:
       - name: id
         in: path
@@ -630,6 +946,12 @@ paths:
         schema:
           type: string
           format: uuid
+      - name: billingPeriod
+        in: path
+        description: Período de facturación del tier
+        required: true
+        schema:
+          $ref: '#/components/schemas/BillingPeriod'
       - name: provider
         in: path
         description: Nombre del proveedor
@@ -642,11 +964,9 @@ paths:
         - Provider Configurations
       summary: Desactivar configuración de proveedor
       description: |
-        Desactiva una configuración de proveedor.
+        Desactiva una configuración de proveedor dentro de un pricing tier.
 
-        **Restricción:** No se puede desactivar la última configuración activa de un plan activo.
-
-        **Idempotente:** Si ya está inactiva, no hace cambios.
+        **Restricción:** No se puede desactivar el último proveedor activo del último pricing tier activo de un plan activo.
       operationId: deactivateProviderConfiguration
       responses:
         '200':
@@ -656,13 +976,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/PlanResponse'
         '404':
-          description: Plan o configuración no encontrada
+          description: Plan, pricing tier o configuración no encontrada
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: La configuración ya está inactiva
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10'
+                title: Conflict
+                status: 409
+                detail: Configuration for 'Stripe' is already inactive in pricing tier 'Monthly'
         '422':
-          description: No se puede desactivar la última configuración activa de un plan activo
+          description: No se puede desactivar el último proveedor activo del último tier activo de un plan activo
           content:
             application/json:
               schema:
@@ -673,7 +1004,7 @@ paths:
                 status: 422
                 errors:
                   ProviderConfigurations:
-                    - Cannot deactivate last provider on active plan
+                    - Cannot deactivate the last active provider configuration from the last active pricing tier of an active plan
 components:
   schemas:
     CustomProblemDetails:
@@ -700,7 +1031,7 @@ components:
         - Quarterly
         - Semester
         - Yearly
-      description: Período de facturación del plan
+      description: Período de facturación
     FeatureType:
       type: string
       enum:
@@ -821,18 +1152,41 @@ components:
           type: boolean
           example: true
           description: Indica si esta configuración está activa
+    PricingTierResponse:
+      type: object
+      required:
+        - billingPeriod
+        - price
+        - isActive
+        - hasActiveProvider
+        - providerConfigurations
+      properties:
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+        price:
+          $ref: '#/components/schemas/MoneyResponse'
+        isActive:
+          type: boolean
+          example: true
+          description: Indica si este pricing tier está activo
+        hasActiveProvider:
+          type: boolean
+          example: true
+          description: Indica si tiene al menos una configuración de proveedor activa
+        providerConfigurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderConfigResponse'
     PlanResponse:
       type: object
       required:
         - id
         - name
         - description
-        - price
-        - billingPeriod
         - isActive
-        - hasActiveProvider
+        - hasActivePricingTierWithProvider
         - features
-        - providerConfigurations
+        - pricingTiers
       properties:
         id:
           type: string
@@ -846,34 +1200,27 @@ components:
           type: string
           maxLength: 500
           example: Ideal para restaurantes que están empezando
-        price:
-          $ref: '#/components/schemas/MoneyResponse'
-        billingPeriod:
-          $ref: '#/components/schemas/BillingPeriod'
         isActive:
           type: boolean
           example: true
           description: Indica si el plan está disponible para nuevas suscripciones
-        hasActiveProvider:
+        hasActivePricingTierWithProvider:
           type: boolean
           example: true
-          description: Indica si tiene al menos una configuración de proveedor activa
+          description: Indica si tiene al menos un pricing tier activo con proveedor activo
         features:
           type: array
           items:
             $ref: '#/components/schemas/FeatureResponse'
-        providerConfigurations:
+        pricingTiers:
           type: array
           items:
-            $ref: '#/components/schemas/ProviderConfigResponse'
+            $ref: '#/components/schemas/PricingTierResponse'
     CreatePlanRequest:
       type: object
       required:
         - name
         - description
-        - amount
-        - currencyCode
-        - billingPeriod
       properties:
         name:
           type: string
@@ -885,29 +1232,11 @@ components:
           maxLength: 500
           example: Ideal para restaurantes que están empezando
           description: Descripción del plan
-        amount:
-          type: number
-          format: decimal
-          minimum: 0
-          example: 9.99
-          description: Precio del plan
-        currencyCode:
-          type: string
-          minLength: 3
-          maxLength: 3
-          pattern: '^[A-Z]{3}$'
-          example: EUR
-          description: Código ISO 4217 de la moneda
-        billingPeriod:
-          $ref: '#/components/schemas/BillingPeriod'
     UpdatePlanRequest:
       type: object
       required:
         - name
         - description
-        - amount
-        - currencyCode
-        - billingPeriod
       properties:
         name:
           type: string
@@ -917,19 +1246,52 @@ components:
           type: string
           maxLength: 500
           example: Nueva descripción del plan
+    AddPricingTierRequest:
+      type: object
+      required:
+        - billingPeriod
+        - amount
+        - currencyCode
+      properties:
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
         amount:
           type: number
           format: decimal
           minimum: 0
-          example: 12.99
+          example: 9.99
+          description: Precio del período de facturación
         currencyCode:
           type: string
           minLength: 3
           maxLength: 3
           pattern: '^[A-Z]{3}$'
           example: EUR
-        billingPeriod:
-          $ref: '#/components/schemas/BillingPeriod'
+          description: Código ISO 4217 de la moneda
+        isActive:
+          type: boolean
+          default: false
+          example: false
+          description: Si el pricing tier se crea activo
+    UpdatePricingTierRequest:
+      type: object
+      required:
+        - amount
+        - currencyCode
+      properties:
+        amount:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 12.99
+          description: Nuevo precio
+        currencyCode:
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: '^[A-Z]{3}$'
+          example: EUR
+          description: Nuevo código de moneda
     AddFeatureRequest:
       type: object
       required:
