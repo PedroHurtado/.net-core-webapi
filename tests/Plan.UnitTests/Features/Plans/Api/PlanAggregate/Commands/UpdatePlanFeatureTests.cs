@@ -10,13 +10,11 @@ public class UpdatePlanFeatureTests
 
     public UpdatePlanFeatureTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
         var featureValidator = new FeatureValidator();
-        var createMoney = new Money.Create(moneyValidator);
         var featureCreate = new Feature.Create(featureValidator);
         var updateFeature = new Plan.UpdateFeature(featureCreate, planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        _createPlan = new Plan.Create(planValidator);
         _addFeature = new Plan.AddFeature(featureCreate, planValidator);
 
         _service = new UpdatePlanFeature.Service(
@@ -33,10 +31,7 @@ public class UpdatePlanFeatureTests
     {
         var plan = _createPlan.Execute(new CreatePlanCommand(
             "Plan Test",
-            "Descripción de test",
-            9.99m,
-            "EUR",
-            BillingPeriod.Monthly
+            "Descripción de test"
         ));
 
         _addFeature.Execute(plan, new AddFeatureCommand(

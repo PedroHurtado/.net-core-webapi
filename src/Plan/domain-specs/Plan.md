@@ -361,6 +361,97 @@ return configValidator.ValidateOrThrow(config);
 
 ---
 
+### 2.5 PricingTier
+
+#### Estructura
+
+| Propiedad | Tipo |
+|-----------|------|
+| BillingPeriod | BillingPeriod |
+| Price | Money |
+| IsActive | bool |
+| ProviderConfigurations | IReadOnlyCollection\<PaymentProviderConfig\> |
+
+#### Propiedades Calculadas
+
+| Propiedad | Tipo | Fórmula |
+|-----------|------|---------|
+| HasActiveProvider | bool | `ProviderConfigurations.Any(p => p.IsActive)` |
+
+#### Validaciones
+
+| Propiedad | Regla | Mensaje |
+|-----------|-------|---------|
+| BillingPeriod | IsEnum | |
+| Price | NotNull | "Price is required" |
+
+#### Comando: PricingTier.Create
+
+**Input**
+
+| Campo | Tipo | Default |
+|-------|------|---------|
+| BillingPeriod | BillingPeriod | |
+| Amount | decimal | |
+| CurrencyCode | string | |
+| IsActive | bool | false |
+
+**Inyecta**: `Money.Create`, `IValidator<PricingTier>`
+
+**Lógica**
+```csharp
+var money = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, command.CurrencyCode));
+
+var tier = new PricingTier(
+    command.BillingPeriod,
+    money,
+    command.IsActive,
+    Array.Empty<PaymentProviderConfig>().AsReadOnly());
+
+return pricingTierValidator.ValidateOrThrow(tier);
+```
+
+#### Transform: PricingTier.Activate
+
+Sin comando. Devuelve `current with { IsActive = true }`.
+
+#### Transform: PricingTier.Deactivate
+
+Sin comando. Devuelve `current with { IsActive = false }`.
+
+#### Transform: PricingTier.UpdatePrice
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| Amount | decimal |
+| CurrencyCode | string |
+
+**Inyecta**: `Money.Create`, `IValidator<PricingTier>`
+
+**Lógica**: Crea nuevo Money → `current with { Price = newMoney }` → ValidateOrThrow.
+
+#### Tests Unitarios
+
+✅ PricingTier válido
+- Input: BillingPeriod=Monthly, Amount=9.99, CurrencyCode="EUR", IsActive=false
+- Resultado: PricingTier creado con ProviderConfigurations vacío
+
+✅ PricingTier activo
+- Input: IsActive=true
+- Resultado: PricingTier creado con IsActive=true
+
+❌ Amount negativo
+- Input: Amount=-5
+- Resultado: ValidationException "Amount cannot be negative"
+
+✅ Activate → IsActive=true
+✅ Deactivate → IsActive=false
+✅ UpdatePrice → nuevo Money preservando IsActive y ProviderConfigurations
+
+---
+
 ## 3. Aggregate: Plan
 
 ### Estructura
@@ -370,11 +461,13 @@ Plan (Aggregate Root)
 ├─ Id: Guid
 ├─ Name: string
 ├─ Description: string
-├─ Price: Money
-├─ BillingPeriod: BillingPeriod
 ├─ IsActive: bool
 ├─ Features: IReadOnlyCollection<Feature>
-└─ ProviderConfigurations: IReadOnlyCollection<PaymentProviderConfig>
+└─ PricingTiers: IReadOnlyCollection<PricingTier>
+    ├─ BillingPeriod: BillingPeriod
+    ├─ Price: Money
+    ├─ IsActive: bool
+    └─ ProviderConfigurations: IReadOnlyCollection<PaymentProviderConfig>
 ```
 
 #### Propiedades
@@ -384,8 +477,6 @@ Plan (Aggregate Root)
 | Id | Guid | init |
 | Name | string | protected set |
 | Description | string | protected set |
-| Price | Money | protected set |
-| BillingPeriod | BillingPeriod | protected set |
 | IsActive | bool | protected set |
 
 #### Colecciones
@@ -394,15 +485,15 @@ Plan (Aggregate Root)
 protected HashSet<Feature> _features = [];
 public IReadOnlyCollection<Feature> Features => _features.ToList().AsReadOnly();
 
-protected HashSet<PaymentProviderConfig> _providerConfigurations = [];
-public IReadOnlyCollection<PaymentProviderConfig> ProviderConfigurations => _providerConfigurations.ToList().AsReadOnly();
+protected HashSet<PricingTier> _pricingTiers = [];
+public IReadOnlyCollection<PricingTier> PricingTiers => _pricingTiers.ToList().AsReadOnly();
 ```
 
 #### Propiedades Calculadas
 
 | Propiedad | Tipo | Fórmula |
 |-----------|------|---------|
-| HasActiveProvider | bool | `_providerConfigurations.Any(p => p.IsActive)` |
+| HasActivePricingTierWithProvider | bool | `_pricingTiers.Any(t => t.IsActive && t.HasActiveProvider)` |
 
 ### Validaciones
 
@@ -413,8 +504,6 @@ public IReadOnlyCollection<PaymentProviderConfig> ProviderConfigurations => _pro
 | Name | Max(100) | "Name cannot exceed 100 characters" |
 | Description | NotEmpty | "Description is required" |
 | Description | Max(500) | "Description cannot exceed 500 characters" |
-| Price | NotNull | "Price is required" |
-| BillingPeriod | IsEnum | |
 
 ---
 
@@ -425,11 +514,17 @@ public record PlanResponse(
     Guid Id,
     string Name,
     string Description,
-    MoneyResponse Price,
+    bool IsActive,
+    bool HasActivePricingTierWithProvider,
+    IReadOnlyCollection<FeatureResponse> Features,
+    IReadOnlyCollection<PricingTierResponse> PricingTiers
+);
+
+public record PricingTierResponse(
     BillingPeriod BillingPeriod,
+    MoneyResponse Price,
     bool IsActive,
     bool HasActiveProvider,
-    IReadOnlyCollection<FeatureResponse> Features,
     IReadOnlyCollection<ProviderConfigResponse> ProviderConfigurations
 );
 
@@ -498,12 +593,8 @@ public record ProviderConfigResponse(
 |-------|------|
 | Name | string |
 | Description | string |
-| Amount | decimal |
-| CurrencyCode | string |
-| BillingPeriod | BillingPeriod |
 
 **Inyecta**
-- `Money.Create`
 - `IValidator<Plan>`
 
 **Guards**
@@ -512,14 +603,10 @@ Ninguno.
 
 **Lógica**
 ```csharp
-var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, command.CurrencyCode));
-
 var plan = new Plan(Guid.NewGuid())
 {
     Name = command.Name,
     Description = command.Description,
-    Price = price,
-    BillingPeriod = command.BillingPeriod,
     IsActive = false
 };
 
@@ -529,8 +616,8 @@ return planValidator.ValidateOrThrow(plan);
 **Tests Unitarios Dominio**
 
 ✅ Crear plan con datos válidos
-- Input: Name="Plan Básico", Description="Ideal para empezar", Amount=9.99, CurrencyCode="EUR", BillingPeriod=Monthly
-- Resultado: Plan creado con IsActive=false, Features vacío, ProviderConfigurations vacío
+- Input: Name="Plan Básico", Description="Ideal para empezar"
+- Resultado: Plan creado con IsActive=false, Features vacío, PricingTiers vacío
 
 ❌ Name vacío
 - Input: Name=""
@@ -540,33 +627,19 @@ return planValidator.ValidateOrThrow(plan);
 - Input: Description=""
 - Resultado: ValidationException "Description is required"
 
-❌ Amount negativo
-- Input: Amount=-5
-- Resultado: ValidationException "Amount cannot be negative"
-
-❌ CurrencyCode inválido
-- Input: CurrencyCode="XXX"
-- Resultado: ArgumentException "Currency XXX not supported"
-
 #### Slice: POST /plans
 
 **Request**
 ```csharp
 public record CreatePlanRequest(
     string Name,
-    string Description,
-    decimal Amount,
-    string CurrencyCode,
-    BillingPeriod BillingPeriod
+    string Description
 );
 ```
 
 **Response**: 201 Created → `PlanResponse`
 
 **Tests Unitarios Servicio**
-
-✅ Llama a Money.Create con los parámetros correctos
-- Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
 
 ✅ Llama a Plan.Create con los parámetros correctos
 - Verifica que se invoca planCreate.Execute con el command correcto
@@ -582,7 +655,7 @@ public record CreatePlanRequest(
 
 **Tests Integración**
 
-✅ 201 Created → PlanResponse con IsActive=false
+✅ 201 Created → PlanResponse con IsActive=false, PricingTiers vacío
 
 ❌ 422 → Validación fallida
 
@@ -659,12 +732,8 @@ public record CreatePlanRequest(
 |-------|------|
 | Name | string |
 | Description | string |
-| Amount | decimal |
-| CurrencyCode | string |
-| BillingPeriod | BillingPeriod |
 
 **Inyecta**
-- `Money.Create`
 - `IValidator<Plan>`
 
 **Guards**
@@ -673,12 +742,8 @@ Ninguno.
 
 **Lógica**
 ```csharp
-var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, command.CurrencyCode));
-
 plan.Name = command.Name;
 plan.Description = command.Description;
-plan.Price = price;
-plan.BillingPeriod = command.BillingPeriod;
 
 return planValidator.ValidateOrThrow(plan);
 ```
@@ -687,7 +752,7 @@ return planValidator.ValidateOrThrow(plan);
 
 ✅ Actualizar plan existente
 - Precondición: Plan existe
-- Input: Name="Plan Actualizado", Description="Nueva descripción", Amount=12.99, CurrencyCode="EUR", BillingPeriod=Monthly
+- Input: Name="Plan Actualizado", Description="Nueva descripción"
 - Resultado: Plan actualizado
 
 ❌ Name vacío
@@ -700,10 +765,7 @@ return planValidator.ValidateOrThrow(plan);
 ```csharp
 public record UpdatePlanRequest(
     string Name,
-    string Description,
-    decimal Amount,
-    string CurrencyCode,
-    BillingPeriod BillingPeriod
+    string Description
 );
 ```
 
@@ -713,9 +775,6 @@ public record UpdatePlanRequest(
 
 ✅ Obtiene el plan del repositorio
 - Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Money.Create con los parámetros correctos
-- Verifica que se invoca moneyCreate.Execute con Amount y CurrencyCode
 
 ✅ Llama a Plan.Update con los parámetros correctos
 - Verifica que se invoca planUpdate.Execute con el command correcto
@@ -789,26 +848,10 @@ return planValidator.ValidateOrThrow(plan);
 **Tests Unitarios Dominio**
 
 ✅ Añadir Feature tipo Limit
-- Precondición: Plan sin Feature RESERVATIONS_MONTHLY
-- Input: Code="RESERVATIONS_MONTHLY", Name="Reservas", Type=Limit, Limit=100
-- Resultado: Feature añadido al Plan
-
 ✅ Añadir Feature tipo Boolean
-- Input: Code="PRIORITY_SUPPORT", Name="Soporte", Type=Boolean
-- Resultado: Feature añadido al Plan
-
 ✅ Añadir Feature tipo Unlimited
-- Input: Code="RESERVATIONS_MONTHLY", Name="Reservas", Type=Unlimited
-- Resultado: Feature añadido al Plan
-
-❌ Code duplicado
-- Precondición: Plan ya tiene Feature RESERVATIONS_MONTHLY
-- Input: Code="RESERVATIONS_MONTHLY"
-- Resultado: ConflictException "Feature with code 'RESERVATIONS_MONTHLY' already exists"
-
+❌ Code duplicado → ConflictException
 ❌ Validación de Feature falla
-- Input: Type=Limit, Limit=null
-- Resultado: ValidationException "Limit is required when feature type is Limit"
 
 #### Slice: POST /plans/{id}/features
 
@@ -826,30 +869,12 @@ public record AddFeatureRequest(
 
 **Response**: 201 Created → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.AddFeature con los parámetros correctos
-- Verifica que se invoca addFeature.Execute con el command correcto
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene el Feature añadido
-
 **Tests Integración**
 
 ✅ 201 Created → PlanResponse con Feature añadido
-
 ✅ Persistencia: POST → GET → verificar Feature añadido
-
 ❌ 404 → Plan no encontrado
-
 ❌ 409 → Code duplicado
-
 ❌ 422 → Validación fallida
 
 ---
@@ -877,9 +902,7 @@ public record AddFeatureRequest(
 
 *Code viene en la ruta*
 
-**Inyecta**
-- `Feature.Create`
-- `IValidator<Plan>`
+**Inyecta**: `Feature.Create`, `IValidator<Plan>`
 
 **Guards**
 
@@ -887,75 +910,15 @@ public record AddFeatureRequest(
 |-----------|------|-------|---------|
 | Feature no existe | 404 | NotFoundGuard | "Feature with code '{Code}' not found" |
 
-**Lógica**
-```csharp
-var existing = plan.Features.FirstOrDefault(f => f.Code == code);
-NotFoundGuard.ThrowIfNull(existing, $"Feature with code '{code}' not found");
-
-var updated = featureCreate.Execute(new CreateFeatureCommand(
-    code,
-    command.Name,
-    command.Description,
-    command.Type,
-    command.Limit,
-    command.Unit));
-
-plan._features.Remove(existing);
-plan._features.Add(updated);
-
-return planValidator.ValidateOrThrow(plan);
-```
-
-**Tests Unitarios Dominio**
-
-✅ Actualizar Feature existente
-- Precondición: Plan tiene Feature RESERVATIONS_MONTHLY con Limit=100
-- Input: Name="Reservas", Type=Limit, Limit=200
-- Resultado: Feature actualizado con Limit=200
-
-✅ Cambiar de Limit a Unlimited
-- Precondición: Plan tiene Feature con Type=Limit
-- Input: Type=Unlimited
-- Resultado: Feature actualizado con Type=Unlimited, Limit=null
-
-❌ Feature no existe
-- Precondición: Plan no tiene Feature NONEXISTENT
-- Resultado: NotFoundException "Feature with code 'NONEXISTENT' not found"
-
 #### Slice: PUT /plans/{id}/features/{code}
 
-**Request**
-```csharp
-public record UpdateFeatureRequest(
-    string Name,
-    string? Description,
-    FeatureType Type,
-    int? Limit,
-    string? Unit
-);
-```
-
 **Response**: 204 No Content
-
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.UpdateFeature con los parámetros correctos
-- Verifica que se invoca updateFeature.Execute con el code y command correctos
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 **Tests Integración**
 
 ✅ 204 No Content
-
 ✅ Persistencia: PUT → GET → verificar Feature actualizado
-
 ❌ 404 → Plan o Feature no encontrado
-
 ❌ 422 → Validación fallida
 
 ---
@@ -972,12 +935,9 @@ public record UpdateFeatureRequest(
 
 #### Dominio
 
-**Input**
-
 *Code viene en la ruta*
 
-**Inyecta**
-- `IValidator<Plan>`
+**Inyecta**: `IValidator<Plan>`
 
 **Guards**
 
@@ -986,74 +946,26 @@ public record UpdateFeatureRequest(
 | Feature no existe | 404 | NotFoundGuard | "Feature with code '{Code}' not found" |
 | Es el último y Plan activo | 422 | ValidationGuard | "Cannot remove last feature from active plan" |
 
-**Lógica**
-```csharp
-var existing = plan.Features.FirstOrDefault(f => f.Code == code);
-NotFoundGuard.ThrowIfNull(existing, $"Feature with code '{code}' not found");
-
-ValidationGuard.ThrowIf(
-    plan.IsActive && plan.Features.Count <= 1,
-    "Cannot remove last feature from active plan",
-    nameof(plan.Features));
-
-plan._features.Remove(existing);
-
-return planValidator.ValidateOrThrow(plan);
-```
-
-**Tests Unitarios Dominio**
-
-✅ Eliminar Feature (plan tiene varios)
-- Precondición: Plan con 3 Features
-- Input: Code="PRIORITY_SUPPORT"
-- Resultado: Feature eliminado, quedan 2
-
-✅ Eliminar último Feature (plan inactivo)
-- Precondición: Plan inactivo con 1 Feature
-- Input: Code="RESERVATIONS_MONTHLY"
-- Resultado: Feature eliminado, quedan 0
-
-❌ Feature no existe
-- Resultado: NotFoundException "Feature with code 'NONEXISTENT' not found"
-
-❌ Último Feature en plan activo
-- Precondición: Plan activo con 1 Feature
-- Resultado: ValidationException "Cannot remove last feature from active plan"
-
 #### Slice: DELETE /plans/{id}/features/{code}
 
 **Response**: 204 No Content
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.RemoveFeature con el code correcto
-- Verifica que se invoca removeFeature.Execute con el code
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
 **Tests Integración**
 
 ✅ 204 No Content
-
 ✅ Persistencia: DELETE → GET → verificar Feature eliminado
-
 ❌ 404 → Plan o Feature no encontrado
-
 ❌ 422 → Es el último en plan activo
 
 ---
 
-### 6.8 Plan.AddProviderConfiguration
+### 6.8 Plan.AddPricingTier
 
 #### Event Storming
 ```
-🟡[Admin] → 🔵(AddProviderConfig) → 🟤[[Plan]] → 🟠<ProviderConfigAdded>
-                                         │
-                               🟣{NoActivoDuplicado}
+🟡[Admin] → 🔵(AddPricingTier) → 🟤[[Plan]] → 🟠<PricingTierAdded>
+                                       │
+                             🟣{BillingPeriodÚnico}
 ```
 
 #### Dominio
@@ -1062,64 +974,328 @@ return planValidator.ValidateOrThrow(plan);
 
 | Campo | Tipo | Default |
 |-------|------|---------|
-| Provider | string | |
-| ExternalProductId | string | |
-| ExternalPriceId | string | |
-| IsActive | bool | true |
+| BillingPeriod | BillingPeriod | |
+| Amount | decimal | |
+| CurrencyCode | string | |
+| IsActive | bool | false |
 
 **Inyecta**
-- `PaymentProviderConfig.Create`
+- `PricingTier.Create`
 - `IValidator<Plan>`
 
 **Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Ya existe config activa del mismo Provider | 409 | ConflictGuard | "Active configuration for '{Provider}' already exists" |
+| BillingPeriod ya existe | 409 | ConflictGuard | "Pricing tier with billing period '{BillingPeriod}' already exists in the plan" |
 
 **Lógica**
 ```csharp
 ConflictGuard.ThrowIf(
-    command.IsActive && plan.ProviderConfigurations.Any(c => c.Provider == command.Provider && c.IsActive),
-    $"Active configuration for '{command.Provider}' already exists");
+    plan.PricingTiers.Any(t => t.BillingPeriod == command.BillingPeriod),
+    $"Pricing tier with billing period '{command.BillingPeriod}' already exists in the plan");
 
-var config = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
-    command.Provider,
-    command.ExternalProductId,
-    command.ExternalPriceId,
+var tier = pricingTierCreate.Execute(new CreatePricingTierCommand(
+    command.BillingPeriod,
+    command.Amount,
+    command.CurrencyCode,
     command.IsActive));
 
-plan._providerConfigurations.Add(config);
+plan._pricingTiers.Add(tier);
 
 return planValidator.ValidateOrThrow(plan);
 ```
 
 **Tests Unitarios Dominio**
 
-✅ Añadir primera config (Stripe)
-- Precondición: Plan sin ProviderConfigurations
-- Input: Provider="Stripe", ExternalProductId="prod_xxx", ExternalPriceId="price_xxx"
-- Resultado: Config añadida con IsActive=true
+✅ Añadir PricingTier Monthly
+- Input: BillingPeriod=Monthly, Amount=9.99, CurrencyCode="EUR"
+- Resultado: Tier añadido con IsActive=false, ProviderConfigurations vacío
 
-✅ Añadir segunda config (Paddle)
-- Precondición: Plan con Stripe activa
-- Input: Provider="Paddle", ExternalProductId="pro_xxx", ExternalPriceId="pri_xxx"
-- Resultado: Config añadida
+✅ Añadir múltiples períodos (Monthly + Yearly)
+- Resultado: Plan con 2 PricingTiers
 
-✅ Añadir config inactiva
-- Input: Provider="Stripe", IsActive=false
-- Resultado: Config añadida con IsActive=false
+❌ BillingPeriod duplicado
+- Precondición: Plan ya tiene Monthly
+- Input: BillingPeriod=Monthly
+- Resultado: ConflictException
 
-❌ Config activa duplicada
-- Precondición: Plan con Stripe activa
-- Input: Provider="Stripe", IsActive=true
-- Resultado: ConflictException "Active configuration for 'Stripe' already exists"
+❌ Amount negativo
+- Input: Amount=-5
+- Resultado: ValidationException
 
-#### Slice: POST /plans/{id}/provider-configurations
+#### Slice: POST /plans/{id}/pricing-tiers
 
 **Request**
 ```csharp
-public record AddProviderConfigRequest(
+public record Request(
+    BillingPeriod BillingPeriod,
+    decimal Amount,
+    string CurrencyCode,
+    bool IsActive = false
+);
+```
+
+**Response**: 201 Created → `PlanResponse`
+
+**Tests Integración**
+
+✅ 201 Created → PlanResponse con PricingTier añadido
+✅ Persistencia: POST → GET → verificar PricingTier
+✅ Múltiples BillingPeriods
+❌ 404 → Plan no encontrado
+❌ 409 → BillingPeriod duplicado
+❌ 422 → Validación fallida (amount negativo)
+
+---
+
+### 6.9 Plan.UpdatePricingTier
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(UpdatePricingTier) → 🟤[[Plan]] → 🟠<PricingTierUpdated>
+                                          │
+                                🟣{TierExiste}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+| Amount | decimal |
+| CurrencyCode | string |
+
+**Inyecta**: `PricingTier.UpdatePrice`, `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+
+**Lógica**: Busca tier → PricingTier.UpdatePrice transform → remove+add → ValidateOrThrow.
+
+Preserva `IsActive` y `ProviderConfigurations`.
+
+**Tests Unitarios Dominio**
+
+✅ Actualizar precio de tier existente
+✅ Preserva IsActive y ProviderConfigurations
+❌ Tier no existe → NotFoundException
+
+#### Slice: PUT /plans/{id}/pricing-tiers/{billingPeriod}
+
+**Request**
+```csharp
+public record Request(
+    decimal Amount,
+    string CurrencyCode
+);
+```
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Integración**
+
+✅ 200 OK → PlanResponse con precio actualizado
+✅ Persistencia
+✅ Preserva IsActive
+❌ 404 → Plan o tier no encontrado
+
+---
+
+### 6.10 Plan.RemovePricingTier
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(RemovePricingTier) → 🟤[[Plan]] → 🟠<PricingTierRemoved>
+                                          │
+                                🟣{TierExiste}
+                                🟣{NoEsElÚltimoActivoConProvider}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+
+**Inyecta**: `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Plan activo y es el último tier activo con provider activo | 422 | ValidationGuard | "Cannot remove the last active pricing tier with an active provider from an active plan" |
+
+**Tests Unitarios Dominio**
+
+✅ Eliminar tier (plan tiene varios)
+✅ Eliminar último tier (plan inactivo)
+❌ Tier no existe → NotFoundException
+❌ Último tier activo con provider en plan activo → ValidationException
+
+#### Slice: DELETE /plans/{id}/pricing-tiers/{billingPeriod}
+
+**Response**: 204 No Content
+
+**Tests Integración**
+
+✅ 204 No Content
+✅ Persistencia
+❌ 404 → Plan o tier no encontrado
+❌ 422 → Último tier activo de plan activo
+
+---
+
+### 6.11 Plan.ActivatePricingTier
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(ActivatePricingTier) → 🟤[[Plan]] → 🟠<PricingTierActivated>
+                                            │
+                                  🟣{TierExiste}
+                                  🟣{NoYaActivo}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+
+**Inyecta**: `PricingTier.Activate`, `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Ya está activo | 409 | ConflictGuard | "Pricing tier with billing period '{BillingPeriod}' is already active" |
+
+**Lógica**: Busca tier → PricingTier.Activate transform → remove+add → ValidateOrThrow.
+
+**Tests Unitarios Dominio**
+
+✅ Activar tier inactivo → IsActive=true
+❌ Tier no existe → NotFoundException
+❌ Ya activo → ConflictException
+
+#### Slice: POST /plans/{id}/pricing-tiers/{billingPeriod}/activate
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Integración**
+
+✅ 200 OK → PlanResponse con tier activado
+✅ Persistencia
+❌ 404 → Plan o tier no encontrado
+❌ 409 → Ya activo
+
+---
+
+### 6.12 Plan.DeactivatePricingTier
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(DeactivatePricingTier) → 🟤[[Plan]] → 🟠<PricingTierDeactivated>
+                                              │
+                                    🟣{TierExiste}
+                                    🟣{NoEsElÚltimoActivoConProvider}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+
+**Inyecta**: `PricingTier.Deactivate`, `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Plan activo y es el último tier activo con provider activo | 422 | ValidationGuard | "Cannot deactivate the last active pricing tier with an active provider from an active plan" |
+
+**Lógica**: Busca tier → PricingTier.Deactivate transform → remove+add → ValidateOrThrow.
+
+**Tests Unitarios Dominio**
+
+✅ Desactivar tier activo → IsActive=false
+✅ Desactivar con otros tiers activos (plan activo OK)
+❌ Tier no existe → NotFoundException
+❌ Último tier activo con provider en plan activo → ValidationException
+
+#### Slice: POST /plans/{id}/pricing-tiers/{billingPeriod}/deactivate
+
+**Response**: 200 OK → `PlanResponse`
+
+**Tests Integración**
+
+✅ 200 OK → PlanResponse con tier desactivado
+✅ Persistencia
+❌ 404 → Plan o tier no encontrado
+❌ 422 → Último tier activo de plan activo
+
+---
+
+### 6.13 Plan.AddPricingTierProviderConfiguration
+
+#### Event Storming
+```
+🟡[Admin] → 🔵(AddProviderConfig) → 🟤[[Plan]] → 🟠<ProviderConfigAdded>
+                                          │
+                                🟣{TierExiste}
+                                🟣{ProviderÚnicoEnTier}
+```
+
+#### Dominio
+
+**Input**
+
+| Campo | Tipo | Default |
+|-------|------|---------|
+| BillingPeriod | BillingPeriod | |
+| Provider | string | |
+| ExternalProductId | string | |
+| ExternalPriceId | string | |
+| IsActive | bool | true |
+
+**Inyecta**: `PaymentProviderConfig.Create`, `IValidator<Plan>`
+
+**Guards**
+
+| Condición | HTTP | Guard | Mensaje |
+|-----------|------|-------|---------|
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Provider duplicado en tier | 409 | ConflictGuard | "Configuration for '{Provider}' already exists in pricing tier '{BillingPeriod}'" |
+
+**Lógica**: Busca tier → ConflictGuard → providerConfigCreate.Execute → rebuild tier con `with { ProviderConfigurations = updatedConfigs }` → remove+add → ValidateOrThrow.
+
+**Tests Unitarios Dominio**
+
+✅ Añadir primera config (Stripe)
+✅ Añadir segunda config (Paddle)
+❌ Tier no existe → NotFoundException
+❌ Provider duplicado → ConflictException
+
+#### Slice: POST /plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations
+
+**Request**
+```csharp
+public record Request(
     string Provider,
     string ExternalProductId,
     string ExternalPriceId,
@@ -1129,41 +1305,24 @@ public record AddProviderConfigRequest(
 
 **Response**: 201 Created → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.AddProviderConfiguration con los parámetros correctos
-- Verifica que se invoca addProviderConfig.Execute con el command correcto
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene la Config añadida
-
 **Tests Integración**
 
 ✅ 201 Created → PlanResponse con Config añadida
-
-✅ Persistencia: POST → GET → verificar Config añadida
-
-❌ 404 → Plan no encontrado
-
-❌ 409 → Ya existe config activa para ese Provider
-
-❌ 422 → Validación fallida
+✅ Persistencia
+✅ Múltiples providers en un tier
+❌ 404 → Plan o tier no encontrado
+❌ 409 → Provider duplicado
 
 ---
 
-### 6.9 Plan.UpdateProviderConfiguration
+### 6.14 Plan.UpdatePricingTierProviderConfiguration
 
 #### Event Storming
 ```
 🟡[Admin] → 🔵(UpdateProviderConfig) → 🟤[[Plan]] → 🟠<ProviderConfigUpdated>
-                                            │
-                                  🟣{ConfigExiste}
+                                             │
+                                   🟣{TierExiste}
+                                   🟣{ConfigExiste}
 ```
 
 #### Dominio
@@ -1172,291 +1331,166 @@ public record AddProviderConfigRequest(
 
 | Campo | Tipo |
 |-------|------|
+| BillingPeriod | BillingPeriod |
+| Provider | string |
 | ExternalProductId | string |
 | ExternalPriceId | string |
 
-*Provider viene en la ruta*
-
-**Inyecta**
-- `PaymentProviderConfig.Create`
-- `IValidator<Plan>`
+**Inyecta**: `PaymentProviderConfig.Create`, `IValidator<Plan>`
 
 **Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found in pricing tier '{BillingPeriod}'" |
 
-**Lógica**
-```csharp
-var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
-NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
-
-var updated = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
-    provider,
-    command.ExternalProductId,
-    command.ExternalPriceId,
-    existing.IsActive));
-
-plan._providerConfigurations.Remove(existing);
-plan._providerConfigurations.Add(updated);
-
-return planValidator.ValidateOrThrow(plan);
-```
+**Lógica**: Busca tier → busca config → crea nueva config preservando IsActive → rebuild tier → remove+add → ValidateOrThrow.
 
 **Tests Unitarios Dominio**
 
-✅ Actualizar IDs de Stripe
-- Precondición: Plan con config Stripe
-- Input: ExternalProductId="prod_new", ExternalPriceId="price_new"
-- Resultado: IDs actualizados, IsActive se mantiene
+✅ Actualizar IDs de Stripe → IDs actualizados, IsActive preservado
+❌ Tier no existe → NotFoundException
+❌ Config no existe → NotFoundException
 
-❌ Config no existe
-- Precondición: Plan sin config Paddle
-- Resultado: NotFoundException "Configuration for 'Paddle' not found"
-
-#### Slice: PUT /plans/{id}/provider-configurations/{provider}
+#### Slice: PUT /plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}
 
 **Request**
 ```csharp
-public record UpdateProviderConfigRequest(
+public record Request(
     string ExternalProductId,
     string ExternalPriceId
 );
 ```
 
-**Response**: 204 No Content
-
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.UpdateProviderConfiguration con los parámetros correctos
-- Verifica que se invoca updateProviderConfig.Execute con el provider y command correctos
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
+**Response**: 200 OK → `PlanResponse`
 
 **Tests Integración**
 
-✅ 204 No Content
-
-✅ Persistencia: PUT → GET → verificar Config actualizada
-
-❌ 404 → Plan o Config no encontrada
-
-❌ 422 → Validación fallida
+✅ 200 OK → PlanResponse con Config actualizada
+✅ Persistencia
+✅ Preserva IsActive
+❌ 404 → Plan, tier o config no encontrada
 
 ---
 
-### 6.10 Plan.ActivateProviderConfiguration
+### 6.15 Plan.ActivatePricingTierProviderConfiguration
 
 #### Event Storming
 ```
 🟡[Admin] → 🔵(ActivateProviderConfig) → 🟤[[Plan]] → 🟠<ProviderConfigActivated>
-                                              │
-                                    🟣{ConfigExiste}
-                                    🟣{NoActivoDuplicado}
+                                               │
+                                     🟣{TierExiste}
+                                     🟣{ConfigExiste}
+                                     🟣{NoYaActiva}
 ```
 
 #### Dominio
 
 **Input**
 
-*Provider viene en la ruta*
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+| Provider | string |
 
-**Inyecta**
-- `PaymentProviderConfig.Create`
-- `IValidator<Plan>`
+**Inyecta**: `PaymentProviderConfig.Create`, `IValidator<Plan>`
 
 **Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
-| Ya existe otra config activa del mismo Provider | 409 | ConflictGuard | "Another active configuration for '{Provider}' already exists" |
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found in pricing tier '{BillingPeriod}'" |
+| Ya activa | 409 | ConflictGuard | "Configuration for '{Provider}' is already active in pricing tier '{BillingPeriod}'" |
 
-**Lógica**
-```csharp
-var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
-NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
-
-if (existing.IsActive)
-    return plan;
-
-ConflictGuard.ThrowIf(
-    plan.ProviderConfigurations.Any(c => c.Provider == provider && c.IsActive && c != existing),
-    $"Another active configuration for '{provider}' already exists");
-
-var activated = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
-    existing.Provider,
-    existing.ExternalProductId,
-    existing.ExternalPriceId,
-    true));
-
-plan._providerConfigurations.Remove(existing);
-plan._providerConfigurations.Add(activated);
-
-return planValidator.ValidateOrThrow(plan);
-```
+**Lógica**: Busca tier → busca config → crea nueva config con IsActive=true → rebuild tier → remove+add → ValidateOrThrow.
 
 **Tests Unitarios Dominio**
 
-✅ Activar config inactiva
-- Precondición: Plan con config Stripe inactiva
-- Resultado: Config con IsActive=true
+✅ Activar config inactiva → IsActive=true
+❌ Tier no existe → NotFoundException
+❌ Config no existe → NotFoundException
+❌ Ya activa → ConflictException
 
-✅ Activar config ya activa (idempotente)
-- Precondición: Plan con config Stripe activa
-- Resultado: Plan sin cambios
-
-❌ Config no existe
-- Resultado: NotFoundException "Configuration for 'Paddle' not found"
-
-#### Slice: POST /plans/{id}/provider-configurations/{provider}/activate
+#### Slice: POST /plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/activate
 
 **Response**: 200 OK → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.ActivateProviderConfiguration con el provider correcto
-- Verifica que se invoca activateProviderConfig.Execute con el provider
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene la Config activada
-
 **Tests Integración**
 
-✅ 200 OK → PlanResponse
-
-✅ Persistencia: POST → GET → verificar Config activada
-
-❌ 404 → Plan o Config no encontrada
-
-❌ 409 → Ya hay otra activa del mismo Provider
+✅ 200 OK → PlanResponse con config activada
+✅ Persistencia
+❌ 404 → Plan, tier o config no encontrada
+❌ 409 → Ya activa
 
 ---
 
-### 6.11 Plan.DeactivateProviderConfiguration
+### 6.16 Plan.DeactivatePricingTierProviderConfiguration
 
 #### Event Storming
 ```
 🟡[Admin] → 🔵(DeactivateProviderConfig) → 🟤[[Plan]] → 🟠<ProviderConfigDeactivated>
-                                                │
-                                      🟣{ConfigExiste}
-                                      🟣{NoEsLaÚnicaActiva}
+                                                 │
+                                       🟣{TierExiste}
+                                       🟣{ConfigExiste}
+                                       🟣{NoYaInactiva}
+                                       🟣{NoEsElÚltimoProviderActivoDelÚltimoTierActivo}
 ```
 
 #### Dominio
 
 **Input**
 
-*Provider viene en la ruta*
+| Campo | Tipo |
+|-------|------|
+| BillingPeriod | BillingPeriod |
+| Provider | string |
 
-**Inyecta**
-- `PaymentProviderConfig.Create`
-- `IValidator<Plan>`
+**Inyecta**: `PaymentProviderConfig.Create`, `IValidator<Plan>`
 
 **Guards**
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found" |
-| Es la única activa y Plan activo | 422 | ValidationGuard | "Cannot deactivate last provider on active plan" |
+| Tier no existe | 404 | NotFoundGuard | "Pricing tier with billing period '{BillingPeriod}' not found" |
+| Config no existe | 404 | NotFoundGuard | "Configuration for '{Provider}' not found in pricing tier '{BillingPeriod}'" |
+| Ya inactiva | 409 | ConflictGuard | "Configuration for '{Provider}' is already inactive in pricing tier '{BillingPeriod}'" |
+| Plan activo + último provider activo del último tier activo | 422 | ValidationGuard | "Cannot deactivate the last active provider configuration from the last active pricing tier of an active plan" |
 
-**Lógica**
-```csharp
-var existing = plan.ProviderConfigurations.FirstOrDefault(c => c.Provider == provider);
-NotFoundGuard.ThrowIfNull(existing, $"Configuration for '{provider}' not found");
-
-if (!existing.IsActive)
-    return plan;
-
-var activeCount = plan.ProviderConfigurations.Count(c => c.IsActive);
-ValidationGuard.ThrowIf(
-    plan.IsActive && activeCount <= 1,
-    "Cannot deactivate last provider on active plan",
-    nameof(plan.ProviderConfigurations));
-
-var deactivated = providerConfigCreate.Execute(new CreatePaymentProviderConfigCommand(
-    existing.Provider,
-    existing.ExternalProductId,
-    existing.ExternalPriceId,
-    false));
-
-plan._providerConfigurations.Remove(existing);
-plan._providerConfigurations.Add(deactivated);
-
-return planValidator.ValidateOrThrow(plan);
-```
+**Lógica**: Busca tier → busca config → guards → crea nueva config con IsActive=false → rebuild tier → remove+add → ValidateOrThrow.
 
 **Tests Unitarios Dominio**
 
-✅ Desactivar config (hay otras activas)
-- Precondición: Plan con Stripe y Paddle activas
-- Input: Provider="Stripe"
-- Resultado: Stripe con IsActive=false
+✅ Desactivar config (hay otras activas) → IsActive=false
+✅ Desactivar en plan inactivo (OK)
+❌ Tier no existe → NotFoundException
+❌ Config no existe → NotFoundException
+❌ Ya inactiva → ConflictException
+❌ Último provider activo del último tier activo de plan activo → ValidationException
 
-✅ Desactivar única activa (plan inactivo)
-- Precondición: Plan inactivo con solo Stripe activa
-- Resultado: Stripe con IsActive=false
-
-✅ Desactivar config ya inactiva (idempotente)
-- Precondición: Config Stripe ya inactiva
-- Resultado: Plan sin cambios
-
-❌ Config no existe
-- Resultado: NotFoundException "Configuration for 'Paddle' not found"
-
-❌ Última activa en plan activo
-- Precondición: Plan activo con solo Stripe activa
-- Resultado: ValidationException "Cannot deactivate last provider on active plan"
-
-#### Slice: POST /plans/{id}/provider-configurations/{provider}/deactivate
+#### Slice: POST /plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/deactivate
 
 **Response**: 200 OK → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.DeactivateProviderConfiguration con el provider correcto
-- Verifica que se invoca deactivateProviderConfig.Execute con el provider
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene la Config desactivada
-
 **Tests Integración**
 
-✅ 200 OK → PlanResponse
-
-✅ Persistencia: POST → GET → verificar Config desactivada
-
-❌ 404 → Plan o Config no encontrada
-
-❌ 422 → Es la única activa en plan activo
+✅ 200 OK → PlanResponse con config desactivada
+✅ Persistencia
+❌ 404 → Plan, tier o config no encontrada
+❌ 409 → Ya inactiva
+❌ 422 → Último provider activo de plan activo
 
 ---
 
-### 6.12 Plan.Activate
+### 6.17 Plan.Activate
 
 #### Event Storming
 ```
 🟡[Admin] → 🔵(ActivatePlan) → 🟤[[Plan]] → 🟠<PlanActivated>
                                     │
                           🟣{TieneFeatures}
-                          🟣{TieneProviderActivo}
+                          🟣{TienePricingTierActivoConProvider}
 ```
 
 #### Dominio
@@ -1474,13 +1508,13 @@ Ninguno
 |-----------|------|-------|---------|
 | Ya está activo | 409 | ConflictGuard | "Plan is already active" |
 | No tiene Features | 422 | ValidationGuard | "Plan must have at least one feature" |
-| No tiene ProviderConfig activa | 422 | ValidationGuard | "Plan must have at least one active provider configuration" |
+| No tiene PricingTier activo con provider activo | 422 | ValidationGuard | "Plan must have at least one active pricing tier with an active provider configuration" |
 
 **Lógica**
 ```csharp
 ConflictGuard.ThrowIf(plan.IsActive, "Plan is already active");
 ValidationGuard.ThrowIf(!plan.Features.Any(), "Plan must have at least one feature", nameof(plan.Features));
-ValidationGuard.ThrowIf(!plan.HasActiveProvider, "Plan must have at least one active provider configuration", nameof(plan.ProviderConfigurations));
+ValidationGuard.ThrowIf(!plan.HasActivePricingTierWithProvider, "Plan must have at least one active pricing tier with an active provider configuration", nameof(plan.PricingTiers));
 
 plan.IsActive = true;
 
@@ -1490,54 +1524,30 @@ return planValidator.ValidateOrThrow(plan);
 **Tests Unitarios Dominio**
 
 ✅ Activar plan completo
-- Precondición: Plan con Features y ProviderConfig activa, IsActive=false
+- Precondición: Plan con Features y PricingTier activo con ProviderConfig activa, IsActive=false
 - Resultado: Plan con IsActive=true
 
-❌ Plan ya activo
-- Precondición: Plan con IsActive=true
-- Resultado: ConflictException "Plan is already active"
+❌ Plan ya activo → ConflictException
 
-❌ Plan sin Features
-- Precondición: Plan sin Features, con ProviderConfig activa
-- Resultado: ValidationException "Plan must have at least one feature"
+❌ Plan sin Features → ValidationException
 
-❌ Plan sin ProviderConfig activa
-- Precondición: Plan con Features, sin ProviderConfig activa
-- Resultado: ValidationException "Plan must have at least one active provider configuration"
+❌ Plan sin PricingTier activo con provider → ValidationException
 
 #### Slice: POST /plans/{id}/activate
 
 **Response**: 200 OK → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.Activate
-- Verifica que se invoca planActivate.Execute
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene IsActive=true
-
 **Tests Integración**
 
 ✅ 200 OK → PlanResponse con IsActive=true
-
 ✅ Persistencia: POST → GET → verificar IsActive=true
-
 ❌ 404 → Plan no encontrado
-
 ❌ 409 → Ya estaba activo
-
-❌ 422 → Falta Feature o ProviderConfig
+❌ 422 → Falta Feature o PricingTier con provider
 
 ---
 
-### 6.13 Plan.Deactivate
+### 6.18 Plan.Deactivate
 
 #### Event Storming
 ```
@@ -1570,40 +1580,19 @@ return planValidator.ValidateOrThrow(plan);
 
 **Tests Unitarios Dominio**
 
-✅ Desactivar plan activo
-- Precondición: Plan con IsActive=true
-- Resultado: Plan con IsActive=false
+✅ Desactivar plan activo → IsActive=false
 
-❌ Plan ya inactivo
-- Precondición: Plan con IsActive=false
-- Resultado: ConflictException "Plan is already inactive"
+❌ Plan ya inactivo → ConflictException
 
 #### Slice: POST /plans/{id}/deactivate
 
 **Response**: 200 OK → `PlanResponse`
 
-**Tests Unitarios Servicio**
-
-✅ Obtiene el plan del repositorio
-- Verifica que repository.Get es llamado con el id correcto
-
-✅ Llama a Plan.Deactivate
-- Verifica que se invoca planDeactivate.Execute
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
-
-✅ Retorna Response mapeado correctamente
-- Verifica que el Response contiene IsActive=false
-
 **Tests Integración**
 
 ✅ 200 OK → PlanResponse con IsActive=false
-
 ✅ Persistencia: POST → GET → verificar IsActive=false
-
 ❌ 404 → Plan no encontrado
-
 ❌ 409 → Ya estaba inactivo
 
 ---
@@ -1619,12 +1608,17 @@ return planValidator.ValidateOrThrow(plan);
 | 5 | POST | /plans/{id}/features | Plan.AddFeature | 201 → `PlanResponse` |
 | 6 | PUT | /plans/{id}/features/{code} | Plan.UpdateFeature | 204 |
 | 7 | DELETE | /plans/{id}/features/{code} | Plan.RemoveFeature | 204 |
-| 8 | POST | /plans/{id}/provider-configurations | Plan.AddProviderConfiguration | 201 → `PlanResponse` |
-| 9 | PUT | /plans/{id}/provider-configurations/{provider} | Plan.UpdateProviderConfiguration | 204 |
-| 10 | POST | /plans/{id}/provider-configurations/{provider}/activate | Plan.ActivateProviderConfiguration | 200 → `PlanResponse` |
-| 11 | POST | /plans/{id}/provider-configurations/{provider}/deactivate | Plan.DeactivateProviderConfiguration | 200 → `PlanResponse` |
-| 12 | POST | /plans/{id}/activate | Plan.Activate | 200 → `PlanResponse` |
-| 13 | POST | /plans/{id}/deactivate | Plan.Deactivate | 200 → `PlanResponse` |
+| 8 | POST | /plans/{id}/pricing-tiers | Plan.AddPricingTier | 201 → `PlanResponse` |
+| 9 | PUT | /plans/{id}/pricing-tiers/{billingPeriod} | Plan.UpdatePricingTier | 200 → `PlanResponse` |
+| 10 | DELETE | /plans/{id}/pricing-tiers/{billingPeriod} | Plan.RemovePricingTier | 204 |
+| 11 | POST | /plans/{id}/pricing-tiers/{billingPeriod}/activate | Plan.ActivatePricingTier | 200 → `PlanResponse` |
+| 12 | POST | /plans/{id}/pricing-tiers/{billingPeriod}/deactivate | Plan.DeactivatePricingTier | 200 → `PlanResponse` |
+| 13 | POST | .../provider-configurations | Plan.AddPricingTierProviderConfiguration | 201 → `PlanResponse` |
+| 14 | PUT | .../provider-configurations/{provider} | Plan.UpdatePricingTierProviderConfiguration | 200 → `PlanResponse` |
+| 15 | POST | .../provider-configurations/{provider}/activate | Plan.ActivatePricingTierProviderConfiguration | 200 → `PlanResponse` |
+| 16 | POST | .../provider-configurations/{provider}/deactivate | Plan.DeactivatePricingTierProviderConfiguration | 200 → `PlanResponse` |
+| 17 | POST | /plans/{id}/activate | Plan.Activate | 200 → `PlanResponse` |
+| 18 | POST | /plans/{id}/deactivate | Plan.Deactivate | 200 → `PlanResponse` |
 
 ---
 
@@ -1639,30 +1633,23 @@ return planValidator.ValidateOrThrow(plan);
 ```csharp
 modelBuilder.Entity<PlanAgg>(entity =>
 {
-    // Ignore: propiedades computed (no backing fields)
-    entity.Ignore(p => p.HasActiveProvider);            
+    // Ignore: propiedades computed
+    entity.Ignore(p => p.HasActivePricingTierWithProvider);
 
-    // ComplexType: Price (Money con Currency anidado)
-    entity.ComplexProperty(p => p.Price, price =>
-    {
-        // Ignore: propiedades computed de Money
-        price.Ignore(m => m.IsZero);
-        price.Ignore(m => m.IsPositive);
-        price.Ignore(m => m.IsNegative);
-
-        price.ComplexProperty(m => m.Currency);
-    });
-
-    // ArrayOf: Features (usa backing field _features)
+    // ArrayOf: Features
     entity.ArrayOf(p => p.Features, feature =>
     {
-        // Ignore: propiedades computed de Feature
         feature.Ignore(f => f.IsValid);
         feature.Ignore(f => f.DisplayValue);
     });
 
-    // ArrayOf: ProviderConfigurations (usa backing field _providerConfigurations)
-    entity.ArrayOf(p => p.ProviderConfigurations);
+    // ArrayOf: PricingTiers (con nested maps)
+    entity.ArrayOf(p => p.PricingTiers, tier =>
+    {
+        tier.Ignore(t => t.HasActiveProvider);
+        // Price y Currency se mapean por convención (nested maps)
+        // ProviderConfigurations se mapea por convención (nested ArrayOf)
+    });
 });
 ```
 
@@ -1673,15 +1660,6 @@ modelBuilder.Entity<PlanAgg>(entity =>
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "name": "Plan Básico",
   "description": "Ideal para empezar",
-  "price": {
-    "amount": 9.99,
-    "currency": {
-      "code": "EUR",
-      "symbol": "€",
-      "decimalPlaces": 2
-    }
-  },
-  "billingPeriod": "Monthly",
   "isActive": true,
   "features": [
     {
@@ -1693,12 +1671,46 @@ modelBuilder.Entity<PlanAgg>(entity =>
       "unit": "reservas/mes"
     }
   ],
-  "providerConfigurations": [
+  "pricingTiers": [
     {
-      "provider": "Stripe",
-      "externalProductId": "prod_xxx",
-      "externalPriceId": "price_xxx",
-      "isActive": true
+      "billingPeriod": "Monthly",
+      "price": {
+        "amount": 9.99,
+        "currency": {
+          "code": "EUR",
+          "symbol": "€",
+          "decimalPlaces": 2
+        }
+      },
+      "isActive": true,
+      "providerConfigurations": [
+        {
+          "provider": "Stripe",
+          "externalProductId": "prod_xxx",
+          "externalPriceId": "price_xxx",
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "billingPeriod": "Yearly",
+      "price": {
+        "amount": 99.99,
+        "currency": {
+          "code": "EUR",
+          "symbol": "€",
+          "decimalPlaces": 2
+        }
+      },
+      "isActive": true,
+      "providerConfigurations": [
+        {
+          "provider": "Stripe",
+          "externalProductId": "prod_yyy",
+          "externalPriceId": "price_yyy",
+          "isActive": true
+        }
+      ]
     }
   ]
 }
@@ -1717,4 +1729,5 @@ modelBuilder.Entity<PlanAgg>(entity =>
 ---
 
 **Fecha**: 2025-01-28
+**Última actualización**: 2026-02-13
 **Autor**: Equipo Fudie

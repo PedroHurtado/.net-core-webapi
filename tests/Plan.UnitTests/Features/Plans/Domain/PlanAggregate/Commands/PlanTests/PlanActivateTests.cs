@@ -3,15 +3,12 @@
 public class PlanActivateTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly MoneyValidator _moneyValidator = new();
-    private readonly Money.Create _createMoney;
     private readonly Feature.Create _createFeature;
     private readonly PaymentProviderConfig.Create _createProviderConfig;
     private readonly Plan.Activate _activate;
 
     public PlanActivateTests()
     {
-        _createMoney = new(_moneyValidator);
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
         _activate = new(_validator);
@@ -22,8 +19,6 @@ public class PlanActivateTests
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Inactive Plan");
         plan.SetDescription("Plan description");
-        plan.SetPrice(_createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR)));
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(false);
         return plan;
     }
@@ -33,10 +28,11 @@ public class PlanActivateTests
         var plan = CreateInactivePlan();
         var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
-        
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(9.99m, Currency.EUR), true, [provider]);
+
         plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider);
-        
+        plan.AddPricingTier(tier);
+
         return plan;
     }
 
@@ -58,10 +54,8 @@ public class PlanActivateTests
         var originalId = plan.Id;
         var originalName = plan.Name;
         var originalDescription = plan.Description;
-        var originalPrice = plan.Price;
-        var originalBillingPeriod = plan.BillingPeriod;
         var originalFeaturesCount = plan.Features.Count;
-        var originalProvidersCount = plan.ProviderConfigurations.Count;
+        var originalTiersCount = plan.PricingTiers.Count;
 
         var command = new ActivatePlanCommand();
 
@@ -70,10 +64,8 @@ public class PlanActivateTests
         result.Id.Should().Be(originalId);
         result.Name.Should().Be(originalName);
         result.Description.Should().Be(originalDescription);
-        result.Price.Should().Be(originalPrice);
-        result.BillingPeriod.Should().Be(originalBillingPeriod);
         result.Features.Should().HaveCount(originalFeaturesCount);
-        result.ProviderConfigurations.Should().HaveCount(originalProvidersCount);
+        result.PricingTiers.Should().HaveCount(originalTiersCount);
     }
 
     [Fact]
@@ -94,9 +86,9 @@ public class PlanActivateTests
     public void Execute_WithNoFeatures_ThrowsValidationException()
     {
         var plan = CreateInactivePlan();
-        // Add only provider, no features
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
-        plan.AddProviderConfiguration(provider);
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(9.99m, Currency.EUR), true, [provider]);
+        plan.AddPricingTier(tier);
 
         var command = new ActivatePlanCommand();
 
@@ -107,10 +99,9 @@ public class PlanActivateTests
     }
 
     [Fact]
-    public void Execute_WithNoActiveProvider_ThrowsValidationException()
+    public void Execute_WithNoActivePricingTierWithProvider_ThrowsValidationException()
     {
         var plan = CreateInactivePlan();
-        // Add only feature, no provider
         var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
         plan.AddFeature(feature);
 
@@ -119,7 +110,7 @@ public class PlanActivateTests
         var act = () => _activate.Execute(plan, command);
 
         act.Should().Throw<ValidationException>()
-            .WithMessage("*at least one active provider*");
+            .WithMessage("*at least one active pricing tier*");
     }
 
     [Fact]
@@ -127,16 +118,17 @@ public class PlanActivateTests
     {
         var plan = CreateInactivePlan();
         var feature = _createFeature.Execute(new CreateFeatureCommand("TEST_FEATURE", "Test", null, FeatureType.Boolean));
-        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", false)); // Inactive
-        
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", false));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(9.99m, Currency.EUR), true, [provider]);
+
         plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider);
+        plan.AddPricingTier(tier);
 
         var command = new ActivatePlanCommand();
 
         var act = () => _activate.Execute(plan, command);
 
         act.Should().Throw<ValidationException>()
-            .WithMessage("*at least one active provider*");
+            .WithMessage("*at least one active pricing tier*");
     }
 }

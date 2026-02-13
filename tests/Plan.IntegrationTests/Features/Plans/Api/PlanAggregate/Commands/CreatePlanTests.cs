@@ -11,10 +11,7 @@ public class CreatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "Plan Básico",
-            Description = "Ideal para empezar",
-            Amount = 9.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
+            Description = "Ideal para empezar"
         };
 
         var response = await Client.PostAsJsonAsync("/plans", request);
@@ -27,12 +24,9 @@ public class CreatePlanTests : PlanWebApplicationFixture
         content!.Id.Should().NotBeEmpty();
         content.Name.Should().Be("Plan Básico");
         content.Description.Should().Be("Ideal para empezar");
-        content.Price.Amount.Should().Be(9.99m);
-        content.Price.Currency.Code.Should().Be("EUR");
-        content.BillingPeriod.Should().Be(BillingPeriod.Monthly);
         content.IsActive.Should().BeFalse();
         content.Features.Should().BeEmpty();
-        content.ProviderConfigurations.Should().BeEmpty();
+        content.PricingTiers.Should().BeEmpty();
     }
 
     [Fact]
@@ -41,10 +35,7 @@ public class CreatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "",
-            Description = "Descripción válida",
-            Amount = 9.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
+            Description = "Descripción válida"
         };
 
         var response = await Client.PostAsJsonAsync("/plans", request);
@@ -58,44 +49,7 @@ public class CreatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "Plan Válido",
-            Description = "",
-            Amount = 9.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
-        };
-
-        var response = await Client.PostAsJsonAsync("/plans", request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-    }
-
-    [Fact]
-    public async Task Create_WithNegativeAmount_Returns422()
-    {
-        var request = new
-        {
-            Name = "Plan Válido",
-            Description = "Descripción válida",
-            Amount = -5m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
-        };
-
-        var response = await Client.PostAsJsonAsync("/plans", request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-    }
-
-    [Fact]
-    public async Task Create_WithInvalidCurrencyCode_Returns422()
-    {
-        var request = new
-        {
-            Name = "Plan Válido",
-            Description = "Descripción válida",
-            Amount = 9.99m,
-            CurrencyCode = "XXX",
-            BillingPeriod = "Monthly"
+            Description = ""
         };
 
         var response = await Client.PostAsJsonAsync("/plans", request);

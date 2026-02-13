@@ -9,11 +9,9 @@ public class UpdatePlanTests
 
     public UpdatePlanTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        var planUpdate = new Plan.Update(createMoney, planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        var planUpdate = new Plan.Update(planValidator);
+        _createPlan = new Plan.Create(planValidator);
 
         _service = new UpdatePlan.Service(
             planUpdate,
@@ -24,17 +22,11 @@ public class UpdatePlanTests
 
     private Plan CreatePlan(
         string name = "Plan Original",
-        string description = "Descripción original",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+        string description = "Descripción original")
     {
         return _createPlan.Execute(new CreatePlanCommand(
             name,
-            description,
-            amount,
-            currencyCode,
-            billingPeriod
+            description
         ));
     }
 
@@ -46,10 +38,7 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "Plan Actualizado",
-            Description: "Nueva descripción",
-            Amount: 12.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Nueva descripción"
         );
 
         await _service.HandleAsync(plan.Id, request);
@@ -65,19 +54,13 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "Plan Actualizado",
-            Description: "Nueva descripción",
-            Amount: 12.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Nueva descripción"
         );
 
         await _service.HandleAsync(plan.Id, request);
 
         plan.Name.Should().Be("Plan Actualizado");
         plan.Description.Should().Be("Nueva descripción");
-        plan.Price.Amount.Should().Be(12.99m);
-        plan.Price.Currency.Code.Should().Be("EUR");
-        plan.BillingPeriod.Should().Be(BillingPeriod.Monthly);
     }
 
     [Fact]
@@ -88,10 +71,7 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "Plan Actualizado",
-            Description: "Nueva descripción",
-            Amount: 12.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Nueva descripción"
         );
 
         await _service.HandleAsync(plan.Id, request);
@@ -107,10 +87,7 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "",
-            Description: "Descripción válida",
-            Amount: 9.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Descripción válida"
         );
 
         var act = () => _service.HandleAsync(plan.Id, request);
@@ -128,10 +105,7 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "Plan Actualizado",
-            Description: "Nueva descripción",
-            Amount: 12.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Nueva descripción"
         );
 
         var act = () => _service.HandleAsync(nonExistentId, request);
@@ -147,10 +121,7 @@ public class UpdatePlanTests
 
         var request = new UpdatePlan.Request(
             Name: "Plan Actualizado",
-            Description: "Nueva descripción",
-            Amount: 12.99m,
-            CurrencyCode: "EUR",
-            BillingPeriod: BillingPeriod.Monthly
+            Description: "Nueva descripción"
         );
 
         var result = await UpdatePlan.Handler(mockService.Object, id, request);

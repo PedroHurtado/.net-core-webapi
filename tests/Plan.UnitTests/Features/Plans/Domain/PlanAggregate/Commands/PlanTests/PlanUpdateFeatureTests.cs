@@ -3,35 +3,29 @@
 public class PlanUpdateFeatureTests
 {
     private readonly PlanValidator _validator = new();
-    private readonly FeatureValidator _featureValidator = new();
-    private readonly MoneyValidator _moneyValidator = new();
-    private readonly Money.Create _createMoney;
     private readonly Feature.Create _createFeature;
     private readonly PaymentProviderConfig.Create _createProviderConfig;
     private readonly Plan.UpdateFeature _updateFeature;
 
     public PlanUpdateFeatureTests()
     {
-        _createMoney = new(_moneyValidator);
-        _createFeature = new(_featureValidator);
+        _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
         _updateFeature = new(_createFeature, _validator);
     }
 
     private TestablePlan CreatePlanWithFeature(string code, FeatureType type, int? limit = null)
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature = _createFeature.Execute(new CreateFeatureCommand(code, "Original Name", "Original Desc", type, limit, "units"));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_test", "price_test", true));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(10m, Currency.EUR), true, [provider]);
 
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Test Plan");
         plan.SetDescription("Description");
-        plan.SetPrice(price);
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(true);
         plan.AddFeature(feature);
-        plan.AddProviderConfiguration(provider);
+        plan.AddPricingTier(tier);
 
         return plan;
     }
@@ -66,7 +60,7 @@ public class PlanUpdateFeatureTests
     public void Execute_ChangeTypeToUnlimited_UpdatesFeature()
     {
         var plan = CreatePlanWithFeature("RESERVATIONS_MONTHLY", FeatureType.Limit, 100);
-        
+
         var command = new UpdateFeatureCommand(
             Code: "RESERVATIONS_MONTHLY",
             Name: "Reservas",
@@ -89,9 +83,8 @@ public class PlanUpdateFeatureTests
         var plan = CreatePlanWithFeature("TEST_FEATURE", FeatureType.Boolean);
         var originalId = plan.Id;
         var originalName = plan.Name;
-        var originalPrice = plan.Price;
-        var originalBillingPeriod = plan.BillingPeriod;
         var originalIsActive = plan.IsActive;
+        var originalTiersCount = plan.PricingTiers.Count;
 
         var command = new UpdateFeatureCommand(
             Code: "TEST_FEATURE",
@@ -106,9 +99,8 @@ public class PlanUpdateFeatureTests
 
         result.Id.Should().Be(originalId);
         result.Name.Should().Be(originalName);
-        result.Price.Should().Be(originalPrice);
-        result.BillingPeriod.Should().Be(originalBillingPeriod);
         result.IsActive.Should().Be(originalIsActive);
+        result.PricingTiers.Should().HaveCount(originalTiersCount);
     }
 
     #region NotFound Throws (404)

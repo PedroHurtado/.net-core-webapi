@@ -5,23 +5,15 @@ public class ActivatePlanTests
     private readonly Mock<ActivatePlan.IRepository> _repository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly ActivatePlan.Service _service;
-    private readonly Plan.Create _createPlan;
-    private readonly Plan.AddFeature _addFeature;
-    private readonly Plan.AddProviderConfiguration _addProviderConfig;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
 
     public ActivatePlanTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var featureValidator = new FeatureValidator();
-        var providerConfigValidator = new PaymentProviderConfigValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        var createFeature = new Feature.Create(featureValidator);
-        var createProviderConfig = new PaymentProviderConfig.Create(providerConfigValidator);
         var planActivate = new Plan.Activate(planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
-        _addFeature = new Plan.AddFeature(createFeature, planValidator);
-        _addProviderConfig = new Plan.AddProviderConfiguration(createProviderConfig, planValidator);
+        _createFeature = new(new FeatureValidator());
+        _createProviderConfig = new(new PaymentProviderConfigValidator());
 
         _service = new ActivatePlan.Service(
             planActivate,
@@ -30,39 +22,19 @@ public class ActivatePlanTests
         );
     }
 
-    private Plan CreatePlan(
-        string name = "Plan Test",
-        string description = "Descripcion test",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+    private TestablePlan CreateCompletePlan()
     {
-        return _createPlan.Execute(new CreatePlanCommand(
-            name,
-            description,
-            amount,
-            currencyCode,
-            billingPeriod
-        ));
-    }
+        var feature = _createFeature.Execute(new CreateFeatureCommand("FEATURE_01", "Feature One", "Description", FeatureType.Boolean));
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_123", "price_123", true));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(9.99m, Currency.EUR), true, [provider]);
 
-    private Plan CreateCompletePlan()
-    {
-        var plan = CreatePlan();
-        _addFeature.Execute(plan, new AddFeatureCommand(
-            "FEATURE_01",
-            "Feature One",
-            "Description",
-            FeatureType.Boolean,
-            null,
-            null
-        ));
-        _addProviderConfig.Execute(plan, new AddProviderConfigurationCommand(
-            "Stripe",
-            "prod_123",
-            "price_123",
-            true
-        ));
+        var plan = new TestablePlan(Guid.NewGuid());
+        plan.SetName("Plan Test");
+        plan.SetDescription("Descripcion test");
+        plan.SetIsActive(false);
+        plan.AddFeature(feature);
+        plan.AddPricingTier(tier);
+
         return plan;
     }
 
@@ -115,7 +87,7 @@ public class ActivatePlanTests
     public async Task HandleAsync_WithAlreadyActivePlan_ThrowsConflictException()
     {
         var plan = CreateCompletePlan();
-        plan.GetType().GetProperty("IsActive")!.SetValue(plan, true);
+        plan.SetIsActive(true);
         _repository.Setup(r => r.Get(plan.Id)).ReturnsAsync(plan);
 
         var act = () => _service.HandleAsync(plan.Id);
@@ -144,12 +116,15 @@ public class ActivatePlanTests
             id,
             "Plan Test",
             "Description",
-            new MoneyResponse(9.99m, new CurrencyResponse("EUR", "E", 2)),
-            BillingPeriod.Monthly,
             true,
             true,
             [new FeatureResponse("FEATURE_01", "Feature One", "Desc", FeatureType.Boolean, null, null, "Yes")],
-            [new ProviderConfigResponse("Stripe", "prod_123", "price_123", true)]
+            [new PricingTierResponse(
+                BillingPeriod.Monthly,
+                new MoneyResponse(9.99m, new CurrencyResponse("EUR", "E", 2)),
+                true,
+                true,
+                [new ProviderConfigResponse("Stripe", "prod_123", "price_123", true)])]
         );
         mockService.Setup(s => s.HandleAsync(id))
             .ReturnsAsync(planResponse);

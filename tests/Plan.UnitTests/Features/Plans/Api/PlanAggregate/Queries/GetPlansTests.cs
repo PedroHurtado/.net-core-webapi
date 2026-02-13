@@ -8,10 +8,8 @@ public class GetPlansTests
 
     public GetPlansTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        _createPlan = new Plan.Create(planValidator);
 
         _service = new GetPlans.Service(_queryMock.Object);
     }
@@ -19,17 +17,11 @@ public class GetPlansTests
     private Plan CreatePlan(
         string name = "Plan Test",
         string description = "Descripción de test",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly,
         bool isActive = false)
     {
         var plan = _createPlan.Execute(new CreatePlanCommand(
             name,
-            description,
-            amount,
-            currencyCode,
-            billingPeriod
+            description
         ));
 
         if (isActive)
@@ -125,7 +117,7 @@ public class GetPlansTests
         var serviceMock = new Mock<GetPlans.IService>();
         var expectedResponse = new List<PlanResponse>
         {
-            new(Guid.NewGuid(), "Plan Test", "Desc", new MoneyResponse(9.99m, new CurrencyResponse("EUR", "€", 2)), BillingPeriod.Monthly, false, false, [], [])
+            new(Guid.NewGuid(), "Plan Test", "Desc", false, false, [], [])
         };
 
         serviceMock.Setup(s => s.HandleAsync(null)).ReturnsAsync(expectedResponse);

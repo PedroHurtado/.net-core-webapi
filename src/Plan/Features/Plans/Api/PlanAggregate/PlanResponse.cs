@@ -4,26 +4,40 @@ public record PlanResponse(
     Guid Id,
     string Name,
     string Description,
-    MoneyResponse Price,
-    BillingPeriod BillingPeriod,
     bool IsActive,
-    bool HasActiveProvider,
+    bool HasActivePricingTierWithProvider,
     IReadOnlyCollection<FeatureResponse> Features,
-    IReadOnlyCollection<ProviderConfigResponse> ProviderConfigurations)
+    IReadOnlyCollection<PricingTierResponse> PricingTiers)
 {
     public static PlanResponse Map(Plan plan) => new(
         Id: plan.Id,
         Name: plan.Name,
         Description: plan.Description,
-        Price: MoneyResponse.Map(plan.Price),
-        BillingPeriod: plan.BillingPeriod,
         IsActive: plan.IsActive,
-        HasActiveProvider: plan.HasActiveProvider,
+        HasActivePricingTierWithProvider: plan.HasActivePricingTierWithProvider,
         Features: plan.Features
             .Select(FeatureResponse.Map)
             .ToList()
             .AsReadOnly(),
-        ProviderConfigurations: plan.ProviderConfigurations
+        PricingTiers: plan.PricingTiers
+            .Select(PricingTierResponse.Map)
+            .ToList()
+            .AsReadOnly());
+}
+
+public record PricingTierResponse(
+    BillingPeriod BillingPeriod,
+    MoneyResponse Price,
+    bool IsActive,
+    bool HasActiveProvider,
+    IReadOnlyCollection<ProviderConfigResponse> ProviderConfigurations)
+{
+    public static PricingTierResponse Map(PricingTier tier) => new(
+        BillingPeriod: tier.BillingPeriod,
+        Price: MoneyResponse.Map(tier.Price),
+        IsActive: tier.IsActive,
+        HasActiveProvider: tier.HasActiveProvider,
+        ProviderConfigurations: tier.ProviderConfigurations
             .Select(ProviderConfigResponse.Map)
             .ToList()
             .AsReadOnly());

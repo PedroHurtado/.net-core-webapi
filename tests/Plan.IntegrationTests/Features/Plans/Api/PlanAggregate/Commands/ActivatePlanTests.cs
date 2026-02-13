@@ -66,7 +66,8 @@ public class ActivatePlanTests : PlanWebApplicationFixture
     public async Task Activate_WithPlanWithoutFeatures_Returns422()
     {
         var plan = await CreatePlanAsync();
-        await AddProviderConfigToPlanAsync(plan.Id);
+        await AddPricingTierToPlanAsync(plan.Id, isActive: true);
+        await AddPricingTierProviderConfigToPlanAsync(plan.Id);
 
         var response = await Client.PostAsync($"/plans/{plan.Id}/activate", null);
 
@@ -74,7 +75,7 @@ public class ActivatePlanTests : PlanWebApplicationFixture
     }
 
     [Fact]
-    public async Task Activate_WithPlanWithoutActiveProviderConfig_Returns422()
+    public async Task Activate_WithPlanWithoutActivePricingTier_Returns422()
     {
         var plan = await CreatePlanAsync();
         await AddFeatureToPlanAsync(plan.Id);

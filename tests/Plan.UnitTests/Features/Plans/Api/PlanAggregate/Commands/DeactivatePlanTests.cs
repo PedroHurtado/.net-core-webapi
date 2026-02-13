@@ -5,25 +5,15 @@ public class DeactivatePlanTests
     private readonly Mock<DeactivatePlan.IRepository> _repository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly DeactivatePlan.Service _service;
-    private readonly Plan.Create _createPlan;
-    private readonly Plan.Activate _activatePlan;
-    private readonly Plan.AddProviderConfiguration _addProviderConfig;
-    private readonly Plan.AddFeature _addFeature;
+    private readonly Feature.Create _createFeature;
+    private readonly PaymentProviderConfig.Create _createProviderConfig;
 
     public DeactivatePlanTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var providerConfigValidator = new PaymentProviderConfigValidator();
-        var featureValidator = new FeatureValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        var providerConfigCreate = new PaymentProviderConfig.Create(providerConfigValidator);
-        var featureCreate = new Feature.Create(featureValidator);
         var planDeactivate = new Plan.Deactivate(planValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
-        _activatePlan = new Plan.Activate(planValidator);
-        _addProviderConfig = new Plan.AddProviderConfiguration(providerConfigCreate, planValidator);
-        _addFeature = new Plan.AddFeature(featureCreate, planValidator);
+        _createFeature = new(new FeatureValidator());
+        _createProviderConfig = new(new PaymentProviderConfigValidator());
 
         _service = new DeactivatePlan.Service(
             planDeactivate,
@@ -32,33 +22,18 @@ public class DeactivatePlanTests
         );
     }
 
-    private Plan CreateActivePlan()
+    private TestablePlan CreateActivePlan()
     {
-        var plan = _createPlan.Execute(new CreatePlanCommand(
-            "Plan Test",
-            "Descripcion de test",
-            9.99m,
-            "EUR",
-            BillingPeriod.Monthly
-        ));
+        var feature = _createFeature.Execute(new CreateFeatureCommand("FEATURE_01", "Feature One", "Description", FeatureType.Boolean));
+        var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_123", "price_123", true));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(9.99m, Currency.EUR), true, [provider]);
 
-        _addFeature.Execute(plan, new AddFeatureCommand(
-            "FEATURE_01",
-            "Feature One",
-            "Description",
-            FeatureType.Boolean,
-            null,
-            null
-        ));
-
-        _addProviderConfig.Execute(plan, new AddProviderConfigurationCommand(
-            "Stripe",
-            "prod_123",
-            "price_123",
-            true
-        ));
-
-        _activatePlan.Execute(plan, new ActivatePlanCommand());
+        var plan = new TestablePlan(Guid.NewGuid());
+        plan.SetName("Plan Test");
+        plan.SetDescription("Descripcion de test");
+        plan.SetIsActive(true);
+        plan.AddFeature(feature);
+        plan.AddPricingTier(tier);
 
         return plan;
     }
@@ -124,13 +99,10 @@ public class DeactivatePlanTests
     [Fact]
     public async Task HandleAsync_WithAlreadyInactivePlan_ThrowsConflictException()
     {
-        var plan = _createPlan.Execute(new CreatePlanCommand(
-            "Plan Test",
-            "Descripcion de test",
-            9.99m,
-            "EUR",
-            BillingPeriod.Monthly
-        ));
+        var plan = new TestablePlan(Guid.NewGuid());
+        plan.SetName("Plan Test");
+        plan.SetDescription("Descripcion de test");
+        plan.SetIsActive(false);
         _repository.Setup(r => r.Get(plan.Id)).ReturnsAsync(plan);
 
         var act = () => _service.HandleAsync(plan.Id);
@@ -147,10 +119,8 @@ public class DeactivatePlanTests
             id,
             "Plan Test",
             "Descripcion",
-            new MoneyResponse(9.99m, new CurrencyResponse("EUR", "E", 2)),
-            BillingPeriod.Monthly,
             false,
-            true,
+            false,
             [],
             []
         );

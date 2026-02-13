@@ -1,0 +1,531 @@
+openapi: 3.0.3
+info:
+  title: Fudie – Subscription API
+  description: Gestión de suscripciones de los establecimientos
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:5176'
+    description: Development
+  - url: 'https://api-staging.fudie.com'
+    description: Staging
+  - url: 'https://api.fudie.com'
+    description: Production
+
+tags:
+  - name: Subscriptions
+    description: Gestión de suscripciones
+  - name: Webhooks
+    description: Webhooks de proveedores de pago
+
+paths:
+
+  # ──────────────────────────────────────────────
+  # Subscriptions
+  # ──────────────────────────────────────────────
+
+  /subscriptions:
+    post:
+      tags: [Subscriptions]
+      operationId: CreateSubscription
+      summary: Contratar una suscripción
+      description: |
+        Orquesta la creación completa:
+        1. Valida que el plan existe y está activo (plan-service)
+        2. Crea el customer/tenant (customer-service)
+        3. Establece el contexto de tenant en la sesión (auth-service)
+        4. Crea la subscription
+
+        **TODO:** Integración con Stripe pendiente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Suscripción creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    get:
+      tags: [Subscriptions]
+      operationId: ListSubscriptions
+      summary: Listar suscripciones
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SubscriptionStatus'
+      responses:
+        '200':
+          description: Lista de suscripciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionResponse'
+
+  /subscriptions/{id}:
+    get:
+      tags: [Subscriptions]
+      operationId: GetSubscription
+      summary: Obtener detalle de una suscripción
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Detalle de la suscripción
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /subscriptions/by-tenant/{tenantId}:
+    get:
+      tags: [Subscriptions]
+      operationId: GetSubscriptionByTenant
+      summary: Consultar la suscripción de un tenant
+      description: Endpoint clave para que otros microservicios consulten qué subscription y qué features tiene un tenant.
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+      responses:
+        '200':
+          description: Suscripción del tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /subscriptions/{id}/cancel:
+    post:
+      tags: [Subscriptions]
+      operationId: CancelSubscription
+      summary: Cancelar una suscripción
+      description: La suscripción sigue activa hasta el fin del período actual.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+      responses:
+        '200':
+          description: Suscripción cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  # ──────────────────────────────────────────────
+  # Webhooks
+  # ──────────────────────────────────────────────
+
+  /subscriptions/webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      operationId: StripeWebhook
+      summary: Webhook de Stripe
+      description: |
+        Endpoint único para recibir eventos de Stripe.
+        Valida la firma del webhook y despacha al comando correspondiente.
+
+        | Evento Stripe | Comando |
+        |---|---|
+        | `checkout.session.completed` | Activate / SetExternalIds |
+        | `invoice.paid` | Activate (primera) / Renew (renovación) |
+        | `invoice.payment_failed` | MarkPastDue |
+        | `customer.subscription.deleted` | Expire |
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe Event JSON
+      responses:
+        '200':
+          description: Evento procesado
+
+components:
+
+  # ──────────────────────────────────────────────
+  # Parameters
+  # ──────────────────────────────────────────────
+
+  parameters:
+    SubscriptionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: a1b2c3d4-5678-9012-3456-789012345678
+
+  # ──────────────────────────────────────────────
+  # Responses
+  # ──────────────────────────────────────────────
+
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    Conflict:
+      description: Conflicto de estado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CustomProblemDetails'
+
+  # ──────────────────────────────────────────────
+  # Schemas
+  # ──────────────────────────────────────────────
+
+  schemas:
+
+    # ──────────────────────────────────────────────
+    # Enums
+    # ──────────────────────────────────────────────
+
+    SubscriptionStatus:
+      type: string
+      enum: [Trial, Active, PastDue, Cancelled, Expired]
+
+    BillingPeriod:
+      type: string
+      enum: [Monthly, Quarterly, Semester, Yearly]
+
+    FeatureType:
+      type: string
+      enum: [Boolean, Limit, Unlimited]
+
+    # ──────────────────────────────────────────────
+    # Requests
+    # ──────────────────────────────────────────────
+
+    CreateSubscriptionRequest:
+      type: object
+      required:
+        - planId
+        - customer
+      properties:
+        planId:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        customer:
+          $ref: '#/components/schemas/CreateCustomerRequest'
+        startWithTrial:
+          type: boolean
+          default: false
+
+    CreateCustomerRequest:
+      type: object
+      required:
+        - name
+        - slug
+        - establishmentType
+        - defaultCulture
+        - timeZoneId
+        - address
+        - contactInfo
+        - billingInfo
+      properties:
+        name:
+          type: string
+          example: La Trattoria
+        slug:
+          type: string
+          example: la-trattoria
+        description:
+          type: string
+          nullable: true
+        establishmentType:
+          type: string
+          example: restaurant
+        defaultCulture:
+          type: string
+          example: es-ES
+        timeZoneId:
+          type: string
+          example: Europe/Madrid
+        address:
+          $ref: '#/components/schemas/CreateAddressRequest'
+        contactInfo:
+          $ref: '#/components/schemas/CreateContactInfoRequest'
+        billingInfo:
+          $ref: '#/components/schemas/CreateBillingInfoRequest'
+
+    CreateAddressRequest:
+      type: object
+      required:
+        - street
+        - city
+        - postalCode
+        - region
+        - country
+        - latitude
+        - longitude
+      properties:
+        street:
+          type: string
+          example: Calle Mayor 12
+        city:
+          type: string
+          example: Madrid
+        postalCode:
+          type: string
+          example: '28001'
+        region:
+          type: string
+          example: Madrid
+        country:
+          type: string
+          example: ES
+        latitude:
+          type: number
+          format: double
+          example: 40.4168
+        longitude:
+          type: number
+          format: double
+          example: -3.7038
+
+    CreateContactInfoRequest:
+      type: object
+      required:
+        - phone
+      properties:
+        phone:
+          type: string
+          example: '+34912345678'
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: info@latrattoria.com
+        websiteUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: https://latrattoria.com
+
+    CreateBillingInfoRequest:
+      type: object
+      required:
+        - businessName
+        - taxId
+        - billingAddress
+      properties:
+        businessName:
+          type: string
+          example: La Trattoria S.L.
+        taxId:
+          type: string
+          example: B12345678
+        billingAddress:
+          $ref: '#/components/schemas/CreateAddressRequest'
+
+    CancelSubscriptionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          nullable: true
+          maxLength: 500
+          example: Too expensive
+
+    # ──────────────────────────────────────────────
+    # Responses
+    # ──────────────────────────────────────────────
+
+    SubscriptionResponse:
+      type: object
+      required:
+        - id
+        - tenantId
+        - planId
+        - planName
+        - status
+        - billingPeriod
+        - price
+        - currentPeriodStart
+        - currentPeriodEnd
+        - isInTrial
+        - isUsable
+        - hasExternalProvider
+        - features
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        planName:
+          type: string
+          example: Plan Básico
+        status:
+          $ref: '#/components/schemas/SubscriptionStatus'
+        billingPeriod:
+          $ref: '#/components/schemas/BillingPeriod'
+        price:
+          $ref: '#/components/schemas/MoneyResponse'
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        trialEndsAt:
+          type: string
+          format: date-time
+          nullable: true
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+        cancellationReason:
+          type: string
+          nullable: true
+        externalSubscriptionId:
+          type: string
+          nullable: true
+          example: sub_1OXbFJ2eZvKYlo2C5004ogvj
+        externalCustomerId:
+          type: string
+          nullable: true
+          example: cus_PZ8qx5N3VBn5DP
+        provider:
+          type: string
+          nullable: true
+          example: Stripe
+        isInTrial:
+          type: boolean
+        isUsable:
+          type: boolean
+        hasExternalProvider:
+          type: boolean
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionFeatureResponse'
+
+    SubscriptionFeatureResponse:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: string
+          example: RESERVATIONS_MONTHLY
+        type:
+          $ref: '#/components/schemas/FeatureType'
+        limit:
+          type: integer
+          nullable: true
+          example: 100
+
+    MoneyResponse:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+          format: double
+          example: 9.99
+        currency:
+          $ref: '#/components/schemas/CurrencyResponse'
+
+    CurrencyResponse:
+      type: object
+      required:
+        - code
+        - symbol
+        - decimalPlaces
+      properties:
+        code:
+          type: string
+          example: EUR
+        symbol:
+          type: string
+          example: €
+        decimalPlaces:
+          type: integer
+          example: 2
+
+    # ──────────────────────────────────────────────
+    # Errors
+    # ──────────────────────────────────────────────
+
+    CustomProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

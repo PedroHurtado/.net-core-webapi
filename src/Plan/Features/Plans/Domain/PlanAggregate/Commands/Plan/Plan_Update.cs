@@ -5,19 +5,13 @@ namespace Plans.Features.Plans.Domain.PlanAggregate;
 /// </summary>
 /// <remarks>
 /// This command only updates basic plan properties following CQRS principles.
-/// To modify Features or ProviderConfigurations, use specific commands like AddFeature, RemoveFeature, etc.
+/// To modify Features or PricingTiers, use specific commands like AddFeature, AddPricingTier, etc.
 /// </remarks>
 /// <param name="Name">The updated name of the plan. Required, maximum 100 characters.</param>
 /// <param name="Description">The updated description of the plan. Required, maximum 500 characters.</param>
-/// <param name="Amount">The updated price amount of the plan.</param>
-/// <param name="CurrencyCode">The updated currency code of the plan price.</param>
-/// <param name="BillingPeriod">The updated billing period (Monthly, Quarterly, Semester, Yearly).</param>
 public record UpdatePlanCommand(
     string Name,
-    string Description,
-    decimal Amount,
-    string CurrencyCode,
-    BillingPeriod BillingPeriod
+    string Description
 );
 
 public partial class Plan
@@ -27,22 +21,19 @@ public partial class Plan
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This command updates the plan's basic properties including name, description,
-    /// price, and billing period.
+    /// This command updates the plan's basic properties: name and description.
     /// </para>
     /// <para>
     /// The command validates the plan using <see cref="PlanValidator"/> before returning.
     /// </para>
     /// <para>
-    /// Collections (Features, ProviderConfigurations) are not modified by this command.
+    /// Collections (Features, PricingTiers) are not modified by this command.
     /// Use specific commands for collection modifications following CQRS principles.
     /// </para>
     /// </remarks>
-    /// <param name="moneyCreate">The service to create money instances.</param>
     /// <param name="planValidator">The validator for plan instances.</param>
     [Injectable(ServiceLifetime.Singleton)]
     public class Update(
-        Money.Create moneyCreate,
         IValidator<Plan> planValidator
     ) : AbstractModifyCommand<UpdatePlanCommand, Plan>
     {
@@ -55,14 +46,8 @@ public partial class Plan
         /// <exception cref="ValidationException">Thrown when the updated data is invalid.</exception>
         public override Plan Execute(Plan plan, UpdatePlanCommand command)
         {
-            var currency = Currency.FromCode(command.CurrencyCode);
-            var price = moneyCreate.Execute(new CreateMoneyCommand(command.Amount, currency));
-
-            // Update basic properties only
             plan.Name = command.Name;
             plan.Description = command.Description;
-            plan.Price = price;
-            plan.BillingPeriod = command.BillingPeriod;
 
             return planValidator.ValidateOrThrow(plan);
         }

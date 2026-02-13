@@ -4,34 +4,30 @@ public class PlanRemoveFeatureTests
 {
     private readonly PlanValidator _validator = new();
     private readonly Plan.RemoveFeature _removeFeature;
-    private readonly Money.Create _createMoney;
     private readonly Feature.Create _createFeature;
     private readonly PaymentProviderConfig.Create _createProviderConfig;
 
     public PlanRemoveFeatureTests()
     {
         _removeFeature = new(_validator);
-        _createMoney = new(new MoneyValidator());
         _createFeature = new(new FeatureValidator());
         _createProviderConfig = new(new PaymentProviderConfigValidator());
     }
 
     private TestablePlan CreateValidPlanWithMultipleFeatures()
     {
-        var price = _createMoney.Execute(new CreateMoneyCommand(10m, Currency.EUR));
         var feature1 = _createFeature.Execute(new CreateFeatureCommand("FEATURE_1", "Feature 1", null, FeatureType.Boolean));
         var feature2 = _createFeature.Execute(new CreateFeatureCommand("FEATURE_2", "Feature 2", null, FeatureType.Limit, 10, "units"));
         var provider = _createProviderConfig.Execute(new CreatePaymentProviderConfigCommand("Stripe", "prod_original", "price_original", true));
+        var tier = new PricingTier(BillingPeriod.Monthly, new TestableMoney(10m, Currency.EUR), true, [provider]);
 
         var plan = new TestablePlan(Guid.NewGuid());
         plan.SetName("Original Plan");
         plan.SetDescription("Original description");
-        plan.SetPrice(price);
-        plan.SetBillingPeriod(BillingPeriod.Monthly);
         plan.SetIsActive(true);
         plan.AddFeature(feature1);
         plan.AddFeature(feature2);
-        plan.AddProviderConfiguration(provider);
+        plan.AddPricingTier(tier);
 
         return plan;
     }
@@ -58,10 +54,8 @@ public class PlanRemoveFeatureTests
         var originalId = plan.Id;
         var originalName = plan.Name;
         var originalDescription = plan.Description;
-        var originalPrice = plan.Price;
-        var originalBillingPeriod = plan.BillingPeriod;
         var originalIsActive = plan.IsActive;
-        var originalProvidersCount = plan.ProviderConfigurations.Count;
+        var originalTiersCount = plan.PricingTiers.Count;
 
         var command = new RemoveFeatureCommand("FEATURE_1");
 
@@ -70,10 +64,8 @@ public class PlanRemoveFeatureTests
         result.Id.Should().Be(originalId);
         result.Name.Should().Be(originalName);
         result.Description.Should().Be(originalDescription);
-        result.Price.Should().Be(originalPrice);
-        result.BillingPeriod.Should().Be(originalBillingPeriod);
         result.IsActive.Should().Be(originalIsActive);
-        result.ProviderConfigurations.Should().HaveCount(originalProvidersCount);
+        result.PricingTiers.Should().HaveCount(originalTiersCount);
     }
 
     #region Validation Throws (422)
@@ -84,7 +76,7 @@ public class PlanRemoveFeatureTests
         var plan = CreateValidPlanWithMultipleFeatures();
         // Remove one first so only one remains
         _removeFeature.Execute(plan, new RemoveFeatureCommand("FEATURE_1"));
-        
+
         plan.Features.Should().HaveCount(1);
         var lastFeatureCode = plan.Features.First().Code;
 

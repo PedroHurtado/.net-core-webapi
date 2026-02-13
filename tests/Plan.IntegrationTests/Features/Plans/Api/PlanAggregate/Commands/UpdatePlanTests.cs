@@ -12,10 +12,7 @@ public class UpdatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "Plan Actualizado",
-            Description = "Nueva descripción",
-            Amount = 12.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
+            Description = "Nueva descripción"
         };
 
         var response = await Client.PutAsJsonAsync($"/plans/{created.Id}", request);
@@ -30,10 +27,7 @@ public class UpdatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "Plan Actualizado",
-            Description = "Nueva descripción",
-            Amount = 12.99m,
-            CurrencyCode = "USD",
-            BillingPeriod = "Yearly"
+            Description = "Nueva descripción"
         };
 
         await Client.PutAsJsonAsync($"/plans/{created.Id}", request);
@@ -44,9 +38,6 @@ public class UpdatePlanTests : PlanWebApplicationFixture
         result.Should().NotBeNull();
         result!.Name.Should().Be("Plan Actualizado");
         result.Description.Should().Be("Nueva descripción");
-        result.Price.Amount.Should().Be(12.99m);
-        result.Price.Currency.Code.Should().Be("USD");
-        result.BillingPeriod.Should().Be(BillingPeriod.Yearly);
     }
 
     [Fact]
@@ -56,10 +47,7 @@ public class UpdatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "Plan Actualizado",
-            Description = "Nueva descripción",
-            Amount = 12.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
+            Description = "Nueva descripción"
         };
 
         var response = await Client.PutAsJsonAsync($"/plans/{nonExistentId}", request);
@@ -74,10 +62,7 @@ public class UpdatePlanTests : PlanWebApplicationFixture
         var request = new
         {
             Name = "",
-            Description = "Descripción válida",
-            Amount = 9.99m,
-            CurrencyCode = "EUR",
-            BillingPeriod = "Monthly"
+            Description = "Descripción válida"
         };
 
         var response = await Client.PutAsJsonAsync($"/plans/{created.Id}", request);

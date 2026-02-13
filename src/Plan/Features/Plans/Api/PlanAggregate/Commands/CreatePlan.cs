@@ -4,10 +4,7 @@ public class CreatePlan : IFeatureModule
 {
     public record Request(
         string Name,
-        string Description,
-        decimal Amount,
-        string CurrencyCode,
-        BillingPeriod BillingPeriod
+        string Description
     );
 
     public static Func<IService, Request, Task<IResult>> Handler =>
@@ -38,10 +35,7 @@ public class CreatePlan : IFeatureModule
         {
             var command = new CreatePlanCommand(
                 request.Name,
-                request.Description,
-                request.Amount,
-                request.CurrencyCode,
-                request.BillingPeriod
+                request.Description
             );
 
             var plan = planCreate.Execute(command);

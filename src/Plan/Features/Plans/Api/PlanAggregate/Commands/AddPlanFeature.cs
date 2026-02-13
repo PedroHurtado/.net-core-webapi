@@ -56,6 +56,6 @@ public class AddPlanFeature : IFeatureModule
         }
     }
 
-    [Include<Plan>("Features", "ProviderConfigurations")]
+    [Include<Plan>("Features", "PricingTiers")]
     public interface IRepository : IUpdate<Plan, Guid> { }
 }

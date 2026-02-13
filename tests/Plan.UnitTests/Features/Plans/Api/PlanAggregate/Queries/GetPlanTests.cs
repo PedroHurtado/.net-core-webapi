@@ -8,27 +8,19 @@ public class GetPlanTests
 
     public GetPlanTests()
     {
-        var moneyValidator = new MoneyValidator();
         var planValidator = new PlanValidator();
-        var createMoney = new Money.Create(moneyValidator);
-        _createPlan = new Plan.Create(createMoney, planValidator);
+        _createPlan = new Plan.Create(planValidator);
 
         _service = new GetPlan.Service(_repositoryMock.Object);
     }
 
     private Plan CreatePlan(
         string name = "Plan Básico",
-        string description = "Ideal para empezar",
-        decimal amount = 9.99m,
-        string currencyCode = "EUR",
-        BillingPeriod billingPeriod = BillingPeriod.Monthly)
+        string description = "Ideal para empezar")
     {
         return _createPlan.Execute(new CreatePlanCommand(
             name,
-            description,
-            amount,
-            currencyCode,
-            billingPeriod
+            description
         ));
     }
 
@@ -52,10 +44,7 @@ public class GetPlanTests
     {
         var plan = CreatePlan(
             name: "Plan Premium",
-            description: "Para profesionales",
-            amount: 29.99m,
-            currencyCode: "EUR",
-            billingPeriod: BillingPeriod.Yearly
+            description: "Para profesionales"
         );
         _repositoryMock.Setup(r => r.Get(plan.Id)).ReturnsAsync(plan);
 
@@ -64,12 +53,9 @@ public class GetPlanTests
         response.Id.Should().Be(plan.Id);
         response.Name.Should().Be("Plan Premium");
         response.Description.Should().Be("Para profesionales");
-        response.Price.Amount.Should().Be(29.99m);
-        response.Price.Currency.Code.Should().Be("EUR");
-        response.BillingPeriod.Should().Be(BillingPeriod.Yearly);
         response.IsActive.Should().BeFalse();
         response.Features.Should().BeEmpty();
-        response.ProviderConfigurations.Should().BeEmpty();
+        response.PricingTiers.Should().BeEmpty();
     }
 
     [Fact]
@@ -108,8 +94,6 @@ public class GetPlanTests
             expectedId,
             "Plan Test",
             "Descripción",
-            new MoneyResponse(9.99m, new CurrencyResponse("EUR", "€", 2)),
-            BillingPeriod.Monthly,
             false,
             false,
             [],
@@ -134,8 +118,6 @@ public class GetPlanTests
             expectedId,
             "Plan Test",
             "Descripción",
-            new MoneyResponse(9.99m, new CurrencyResponse("EUR", "€", 2)),
-            BillingPeriod.Monthly,
             false,
             false,
             [],
