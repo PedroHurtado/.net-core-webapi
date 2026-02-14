@@ -22,4 +22,8 @@ global using Microsoft.Extensions.FileProviders;
 global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
+global using Subscriptions.Features.Shared.Domain.Enums;
+global using Subscriptions.Features.Shared.Domain.ValueObjects;
+global using Subscriptions.Features.Subscriptions.Domain.SubscriptionAggregate;
+global using Subscriptions.Features.Subscriptions.Domain.SubscriptionAggregate.Enums;
 global using Subscriptions.Infrastructure;
