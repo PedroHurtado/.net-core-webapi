@@ -14,7 +14,10 @@ public static class InjectionExtension
     {
         if (assemblies.Length == 0)
         {
-            assemblies = [Assembly.GetCallingAssembly()];
+            assemblies = [
+                Assembly.GetCallingAssembly(),
+                typeof(Features.IFeatureModule).Assembly
+            ];
         }
 
         var injectableTypes = assemblies
