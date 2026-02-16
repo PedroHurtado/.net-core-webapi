@@ -10,43 +10,40 @@ namespace Fudie.Features;
 [Injectable(ServiceLifetime.Singleton)]
 public class CatalogRegistry : ICatalogRegistry
 {
-    private readonly List<CatalogEntry> _entries = [];
-    private readonly Dictionary<string, string> _endpointMap = [];
+    private readonly Dictionary<string, CatalogEntry> _entries = [];
 
     public void Register(string className, Endpoint endpoint)
     {
-        if (endpoint.DisplayName is not null)
-            _endpointMap[endpoint.DisplayName] = className;
-        var hasExclude = endpoint.Metadata
-            .GetMetadata<ExcludeFromDescriptionAttribute>() is not null;
+        var displayName = endpoint.DisplayName ?? className;
 
-        var hasAllowAnonymous = endpoint.Metadata
+        var isExcluded = endpoint.Metadata
+            .GetMetadata<ExcludeFromDescriptionAttribute>() is not null
+            || endpoint.Metadata
             .GetMetadata<AllowAnonymousAttribute>() is not null;
-
-        if (hasExclude || hasAllowAnonymous)
-            return;
 
         var httpMethod = endpoint.Metadata
             .GetMetadata<HttpMethodMetadata>()
             ?.HttpMethods.FirstOrDefault();
 
-        _entries.Add(new CatalogEntry(
+        _entries[displayName] = new CatalogEntry(
+            DisplayName: displayName,
             ClassName: className,
             HttpVerb: httpMethod ?? "GET",
             IsPlatform: endpoint.Metadata.GetMetadata<PlatformRequirement>() is not null,
             IsInternal: endpoint.Metadata.GetMetadata<InternalRequirement>() is not null,
-            CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group));
+            IsExcluded: isExcluded,
+            CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group);
     }
 
     public string? FindClassName(Endpoint endpoint)
         => endpoint.DisplayName is not null
-            && _endpointMap.TryGetValue(endpoint.DisplayName, out var name) ? name : null;
+            && _entries.TryGetValue(endpoint.DisplayName, out var entry) ? entry.ClassName : null;
 
-    public int EndpointMapCount => _endpointMap.Count;
+    public int EndpointMapCount => _entries.Count;
 
     public IReadOnlyList<CatalogEntry> GetAll()
-        => _entries.AsReadOnly();
+        => _entries.Values.Where(e => !e.IsExcluded).ToList().AsReadOnly();
 
     public IReadOnlyList<CatalogEntry> GetTenant()
-        => _entries.Where(e => !e.IsPlatform && !e.IsInternal).ToList().AsReadOnly();
+        => _entries.Values.Where(e => !e.IsExcluded && !e.IsPlatform && !e.IsInternal).ToList().AsReadOnly();
 }

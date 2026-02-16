@@ -57,9 +57,9 @@ public class CatalogEndpointExtensionsTests
         // Arrange
         var platformTenantId = "platform-tenant-123";
         var catalog = new CatalogRegistry();
-        catalog.Register("GetMenu", CreateEndpoint("GET"));
-        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true));
-        catalog.Register("SyncCatalog", CreateEndpoint("POST", isInternal: true));
+        catalog.Register("GetMenu", CreateEndpoint("GET", displayName: "GetMenu"));
+        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true, displayName: "CreateAllergen"));
+        catalog.Register("SyncCatalog", CreateEndpoint("POST", isInternal: true, displayName: "SyncCatalog"));
 
         var configuration = CreateConfiguration("menu-service", platformTenantId);
         var user = CreateUser(platformTenantId);
@@ -83,10 +83,10 @@ public class CatalogEndpointExtensionsTests
         // Arrange
         var platformTenantId = "platform-tenant-123";
         var catalog = new CatalogRegistry();
-        catalog.Register("GetMenu", CreateEndpoint("GET"));
-        catalog.Register("CreateMenu", CreateEndpoint("POST"));
-        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true));
-        catalog.Register("SyncCatalog", CreateEndpoint("POST", isInternal: true));
+        catalog.Register("GetMenu", CreateEndpoint("GET", displayName: "GetMenu"));
+        catalog.Register("CreateMenu", CreateEndpoint("POST", displayName: "CreateMenu"));
+        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true, displayName: "CreateAllergen"));
+        catalog.Register("SyncCatalog", CreateEndpoint("POST", isInternal: true, displayName: "SyncCatalog"));
 
         var configuration = CreateConfiguration("menu-service", platformTenantId);
         var user = CreateUser("restaurant-tenant-456");
@@ -109,8 +109,8 @@ public class CatalogEndpointExtensionsTests
     {
         // Arrange
         var catalog = new CatalogRegistry();
-        catalog.Register("GetMenu", CreateEndpoint("GET"));
-        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true));
+        catalog.Register("GetMenu", CreateEndpoint("GET", displayName: "GetMenu"));
+        catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true, displayName: "CreateAllergen"));
 
         var configuration = CreateConfiguration("menu-service", "platform-tenant-123");
         var user = new ClaimsPrincipal(new ClaimsIdentity());
@@ -132,8 +132,8 @@ public class CatalogEndpointExtensionsTests
     {
         // Arrange
         var catalog = new CatalogRegistry();
-        catalog.Register("GetUser", CreateEndpoint("GET"));
-        catalog.Register("CreateUser", CreateEndpoint("POST"));
+        catalog.Register("GetUser", CreateEndpoint("GET", displayName: "GetUser"));
+        catalog.Register("CreateUser", CreateEndpoint("POST", displayName: "CreateUser"));
 
         var configuration = CreateConfiguration("auth-service", "platform-123");
         var user = CreateUser("some-tenant");
@@ -155,9 +155,9 @@ public class CatalogEndpointExtensionsTests
     {
         // Arrange
         var catalog = new CatalogRegistry();
-        catalog.Register("GetMenu", CreateEndpoint("GET"));
-        catalog.Register("ApproveMenu", CreateEndpoint("POST", customGroup: "menu:approve"));
-        catalog.Register("RejectMenu", CreateEndpoint("POST", customGroup: "menu:approve"));
+        catalog.Register("GetMenu", CreateEndpoint("GET", displayName: "GetMenu"));
+        catalog.Register("ApproveMenu", CreateEndpoint("POST", customGroup: "menu:approve", displayName: "ApproveMenu"));
+        catalog.Register("RejectMenu", CreateEndpoint("POST", customGroup: "menu:approve", displayName: "RejectMenu"));
 
         var configuration = CreateConfiguration("menu-service", "platform-123");
         var user = CreateUser("platform-123");
@@ -271,7 +271,8 @@ public class CatalogEndpointExtensionsTests
         string httpMethod,
         bool isPlatform = false,
         bool isInternal = false,
-        string? customGroup = null)
+        string? customGroup = null,
+        string displayName = "test")
     {
         var metadata = new List<object>
         {
@@ -287,7 +288,7 @@ public class CatalogEndpointExtensionsTests
         if (customGroup is not null)
             metadata.Add(new GroupRequirement(customGroup));
 
-        return new Endpoint(null, new EndpointMetadataCollection(metadata), "test");
+        return new Endpoint(null, new EndpointMetadataCollection(metadata), displayName);
     }
 
     private class DefaultEndpointRouteBuilder : IEndpointRouteBuilder

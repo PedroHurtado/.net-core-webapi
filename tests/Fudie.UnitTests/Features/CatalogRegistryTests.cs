@@ -167,9 +167,9 @@ public class CatalogRegistryTests
         var registry = new CatalogRegistry();
 
         // Act
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET"));
-        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST"));
-        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenu"));
+        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", displayName: "UpdateMenu"));
 
         // Assert
         registry.GetAll().Should().HaveCount(3);
@@ -194,9 +194,9 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
 
         // Act
         var all = registry.GetAll();
@@ -214,8 +214,8 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
 
         // Act
         var tenant = registry.GetTenant();
@@ -230,8 +230,8 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET"));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
 
         // Act
         var tenant = registry.GetTenant();
@@ -246,10 +246,10 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true));
-        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
+        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit", displayName: "UpdateMenu"));
 
         // Act
         var tenant = registry.GetTenant();
@@ -343,7 +343,8 @@ public class CatalogRegistryTests
         bool allowAnonymous = false,
         bool isPlatform = false,
         bool isInternal = false,
-        string? customGroup = null)
+        string? customGroup = null,
+        string displayName = "test")
     {
         var metadata = new List<object>();
 
@@ -368,7 +369,7 @@ public class CatalogRegistryTests
         return new Endpoint(
             requestDelegate: null,
             metadata: new EndpointMetadataCollection(metadata),
-            displayName: "test");
+            displayName: displayName);
     }
 
     #endregion
