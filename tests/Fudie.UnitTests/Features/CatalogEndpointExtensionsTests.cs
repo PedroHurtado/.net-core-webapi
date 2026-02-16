@@ -52,7 +52,7 @@ public class CatalogEndpointExtensionsTests
     #region MapCatalog Tests - Platform Tenant
 
     [Fact]
-    public void MapCatalog_WhenTidMatchesPlatformTenantId_ShouldReturnAllEntries()
+    public void MapCatalog_WhenPlatformTenant_ShouldGroupAllEntriesByReadAndWrite()
     {
         // Arrange
         var platformTenantId = "platform-tenant-123";
@@ -65,11 +65,12 @@ public class CatalogEndpointExtensionsTests
         var user = CreateUser(platformTenantId);
 
         // Act
-        var response = InvokeCatalogHandler(catalog, configuration, user);
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
 
         // Assert
-        response.ServiceId.Should().Be("menu-service");
-        response.Scopes.Should().HaveCount(3);
+        groups.Should().HaveCount(2);
+        groups["menu-service:read"].Should().Equal("GetMenu");
+        groups["menu-service:write"].Should().Equal("CreateAllergen", "SyncCatalog");
     }
 
     #endregion
@@ -77,12 +78,13 @@ public class CatalogEndpointExtensionsTests
     #region MapCatalog Tests - Regular Tenant
 
     [Fact]
-    public void MapCatalog_WhenTidDoesNotMatchPlatformTenantId_ShouldReturnTenantEntries()
+    public void MapCatalog_WhenRegularTenant_ShouldOnlyIncludeTenantEntries()
     {
         // Arrange
         var platformTenantId = "platform-tenant-123";
         var catalog = new CatalogRegistry();
         catalog.Register("GetMenu", CreateEndpoint("GET"));
+        catalog.Register("CreateMenu", CreateEndpoint("POST"));
         catalog.Register("CreateAllergen", CreateEndpoint("POST", isPlatform: true));
         catalog.Register("SyncCatalog", CreateEndpoint("POST", isInternal: true));
 
@@ -90,12 +92,12 @@ public class CatalogEndpointExtensionsTests
         var user = CreateUser("restaurant-tenant-456");
 
         // Act
-        var response = InvokeCatalogHandler(catalog, configuration, user);
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
 
         // Assert
-        response.ServiceId.Should().Be("menu-service");
-        response.Scopes.Should().HaveCount(1);
-        response.Scopes[0].ClassName.Should().Be("GetMenu");
+        groups.Should().HaveCount(2);
+        groups["menu-service:read"].Should().Equal("GetMenu");
+        groups["menu-service:write"].Should().Equal("CreateMenu");
     }
 
     #endregion
@@ -103,7 +105,7 @@ public class CatalogEndpointExtensionsTests
     #region MapCatalog Tests - No Tid Claim
 
     [Fact]
-    public void MapCatalog_WhenUserHasNoTidClaim_ShouldReturnTenantEntries()
+    public void MapCatalog_WhenUserHasNoTidClaim_ShouldOnlyIncludeTenantEntries()
     {
         // Arrange
         var catalog = new CatalogRegistry();
@@ -114,37 +116,86 @@ public class CatalogEndpointExtensionsTests
         var user = new ClaimsPrincipal(new ClaimsIdentity());
 
         // Act
-        var response = InvokeCatalogHandler(catalog, configuration, user);
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
 
         // Assert
-        response.Scopes.Should().HaveCount(1);
-        response.Scopes[0].ClassName.Should().Be("GetMenu");
+        groups.Should().HaveCount(1);
+        groups["menu-service:read"].Should().Equal("GetMenu");
     }
 
     #endregion
 
-    #region MapCatalog Tests - ServiceId
+    #region MapCatalog Tests - ServiceId in Keys
 
     [Fact]
-    public void MapCatalog_ShouldReturnCorrectServiceId()
+    public void MapCatalog_ShouldUseServiceIdInGroupKeys()
     {
         // Arrange
         var catalog = new CatalogRegistry();
+        catalog.Register("GetUser", CreateEndpoint("GET"));
+        catalog.Register("CreateUser", CreateEndpoint("POST"));
+
         var configuration = CreateConfiguration("auth-service", "platform-123");
         var user = CreateUser("some-tenant");
 
         // Act
-        var response = InvokeCatalogHandler(catalog, configuration, user);
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
 
         // Assert
-        response.ServiceId.Should().Be("auth-service");
+        groups.Should().ContainKey("auth-service:read");
+        groups.Should().ContainKey("auth-service:write");
+    }
+
+    #endregion
+
+    #region MapCatalog Tests - Custom Groups
+
+    [Fact]
+    public void MapCatalog_WhenEntriesHaveCustomGroup_ShouldIncludeCustomGroup()
+    {
+        // Arrange
+        var catalog = new CatalogRegistry();
+        catalog.Register("GetMenu", CreateEndpoint("GET"));
+        catalog.Register("ApproveMenu", CreateEndpoint("POST", customGroup: "menu:approve"));
+        catalog.Register("RejectMenu", CreateEndpoint("POST", customGroup: "menu:approve"));
+
+        var configuration = CreateConfiguration("menu-service", "platform-123");
+        var user = CreateUser("platform-123");
+
+        // Act
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
+
+        // Assert
+        groups.Should().HaveCount(3);
+        groups["menu-service:read"].Should().Equal("GetMenu");
+        groups["menu-service:write"].Should().Equal("ApproveMenu", "RejectMenu");
+        groups["menu:approve"].Should().Equal("ApproveMenu", "RejectMenu");
+    }
+
+    #endregion
+
+    #region MapCatalog Tests - Empty Catalog
+
+    [Fact]
+    public void MapCatalog_WhenNoEntries_ShouldReturnEmptyGroups()
+    {
+        // Arrange
+        var catalog = new CatalogRegistry();
+        var configuration = CreateConfiguration("menu-service", "platform-123");
+        var user = CreateUser("some-tenant");
+
+        // Act
+        var groups = InvokeCatalogHandler(catalog, configuration, user);
+
+        // Assert
+        groups.Should().BeEmpty();
     }
 
     #endregion
 
     #region Helper Methods
 
-    private static CatalogResponse InvokeCatalogHandler(
+    private static Dictionary<string, List<string>> InvokeCatalogHandler(
         ICatalogRegistry catalog,
         IConfiguration configuration,
         ClaimsPrincipal user)
@@ -157,7 +208,34 @@ public class CatalogEndpointExtensionsTests
             ? catalog.GetAll()
             : catalog.GetTenant();
 
-        return new CatalogResponse(serviceId!, entries);
+        var groups = new Dictionary<string, List<string>>();
+
+        var readers = entries
+            .Where(e => e.HttpVerb == "GET")
+            .Select(e => e.ClassName)
+            .ToList();
+
+        if (readers.Count > 0)
+            groups[$"{serviceId}:read"] = readers;
+
+        var writers = entries
+            .Where(e => e.HttpVerb != "GET")
+            .Select(e => e.ClassName)
+            .ToList();
+
+        if (writers.Count > 0)
+            groups[$"{serviceId}:write"] = writers;
+
+        foreach (var custom in entries
+            .Where(e => e.CustomGroup != null)
+            .GroupBy(e => e.CustomGroup!))
+        {
+            groups[custom.Key] = custom
+                .Select(e => e.ClassName)
+                .ToList();
+        }
+
+        return groups;
     }
 
     private static IEndpointRouteBuilder CreateEndpointRouteBuilder()
@@ -192,7 +270,8 @@ public class CatalogEndpointExtensionsTests
     private static Endpoint CreateEndpoint(
         string httpMethod,
         bool isPlatform = false,
-        bool isInternal = false)
+        bool isInternal = false,
+        string? customGroup = null)
     {
         var metadata = new List<object>
         {
@@ -204,6 +283,9 @@ public class CatalogEndpointExtensionsTests
 
         if (isInternal)
             metadata.Add(new InternalRequirement());
+
+        if (customGroup is not null)
+            metadata.Add(new GroupRequirement(customGroup));
 
         return new Endpoint(null, new EndpointMetadataCollection(metadata), "test");
     }
