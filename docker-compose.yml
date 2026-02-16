@@ -1,5 +1,13 @@
 name: fudie
 
+volumes:
+  user-secrets:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${USER_SECRETS_PATH:-~/.microsoft/usersecrets}
+
 services:
   firebase:
     image: andreysenov/firebase-tools
@@ -25,7 +33,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
     volumes:
-      - ${USER_SECRETS_PATH:-~/.microsoft/usersecrets}:/home/appuser/.microsoft/usersecrets:ro
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   menus-service:
 
@@ -40,6 +48,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   plan-service:
 
@@ -54,6 +64,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   schedules-service:
 
@@ -68,6 +80,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   customers-service:
 
@@ -82,6 +96,24 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
+
+  subscriptions-service:
+
+    build:
+      context: ..
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Subscriptions/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
+        FIRESTORE_DIR: ${FIRESTORE_DIR:-Firestore}
+    depends_on:
+      - firebase
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Firestore__EmulatorHost=firebase:8080
+    volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   gateway:
 
@@ -96,6 +128,7 @@ services:
       - plan-service
       - schedules-service
       - customers-service
+      - subscriptions-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address=http://auth-service:8080
@@ -103,6 +136,7 @@ services:
       - ReverseProxy__Clusters__plan-cluster__Destinations__destination1__Address=http://plan-service:8080
       - ReverseProxy__Clusters__schedules-cluster__Destinations__destination1__Address=http://schedules-service:8080
       - ReverseProxy__Clusters__customers-cluster__Destinations__destination1__Address=http://customers-service:8080
+      - ReverseProxy__Clusters__subscriptions-cluster__Destinations__destination1__Address=http://subscriptions-service:8080
     volumes:
       - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
       - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro
