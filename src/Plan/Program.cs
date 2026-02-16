@@ -52,6 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapFeatures();
+app.MapCatalog();
 
 app.UseHttpsRedirection();
 
