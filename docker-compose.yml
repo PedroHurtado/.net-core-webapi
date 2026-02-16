@@ -131,6 +131,7 @@ services:
       - subscriptions-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     volumes:
       - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
       - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro
