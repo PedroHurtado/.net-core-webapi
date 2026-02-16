@@ -89,6 +89,7 @@ if (app.Environment.IsDevelopment())
         .ExcludeFromDescription();
 }
 
+app.UseFudieAuthorization();
 app.MapFeatures();
 app.MapCatalog();
 
