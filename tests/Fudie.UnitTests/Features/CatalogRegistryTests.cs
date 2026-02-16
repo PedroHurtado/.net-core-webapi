@@ -272,6 +272,69 @@ public class CatalogRegistryTests
 
     #endregion
 
+    #region FindClassName Tests
+
+    [Fact]
+    public void FindClassName_RegisteredEndpoint_ShouldReturnClassName()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        registry.Register("GetMenu", endpoint);
+
+        // Act
+        var result = registry.FindClassName(endpoint);
+
+        // Assert
+        result.Should().Be("GetMenu");
+    }
+
+    [Fact]
+    public void FindClassName_UnregisteredEndpoint_ShouldReturnNull()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+
+        // Act
+        var result = registry.FindClassName(endpoint);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void FindClassName_ExcludedEndpoint_ShouldStillReturnClassName()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(excludeFromDescription: true);
+        registry.Register("SwaggerRedirect", endpoint);
+
+        // Act
+        var result = registry.FindClassName(endpoint);
+
+        // Assert
+        result.Should().Be("SwaggerRedirect");
+    }
+
+    [Fact]
+    public void FindClassName_AllowAnonymousEndpoint_ShouldStillReturnClassName()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(allowAnonymous: true);
+        registry.Register("Login", endpoint);
+
+        // Act
+        var result = registry.FindClassName(endpoint);
+
+        // Assert
+        result.Should().Be("Login");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static Endpoint CreateEndpoint(

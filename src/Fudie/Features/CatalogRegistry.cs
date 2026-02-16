@@ -11,9 +11,12 @@ namespace Fudie.Features;
 public class CatalogRegistry : ICatalogRegistry
 {
     private readonly List<CatalogEntry> _entries = [];
+    private readonly Dictionary<string, string> _endpointMap = [];
 
     public void Register(string className, Endpoint endpoint)
     {
+        if (endpoint.DisplayName is not null)
+            _endpointMap[endpoint.DisplayName] = className;
         var hasExclude = endpoint.Metadata
             .GetMetadata<ExcludeFromDescriptionAttribute>() is not null;
 
@@ -34,6 +37,12 @@ public class CatalogRegistry : ICatalogRegistry
             IsInternal: endpoint.Metadata.GetMetadata<InternalRequirement>() is not null,
             CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group));
     }
+
+    public string? FindClassName(Endpoint endpoint)
+        => endpoint.DisplayName is not null
+            && _endpointMap.TryGetValue(endpoint.DisplayName, out var name) ? name : null;
+
+    public int EndpointMapCount => _endpointMap.Count;
 
     public IReadOnlyList<CatalogEntry> GetAll()
         => _entries.AsReadOnly();
