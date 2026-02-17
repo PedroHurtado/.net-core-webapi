@@ -18,8 +18,10 @@ global using System.Text.Json;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.IdentityModel.JsonWebTokens;
 global using Microsoft.IdentityModel.Tokens;
+global using Refit;
 
 global using Auth.Infrastructure;
+global using Auth.Infrastructure.Customers;
 global using Auth.Infrastructure.Google;
 global using Auth.Infrastructure.Jwt;
 
