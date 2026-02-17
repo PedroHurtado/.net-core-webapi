@@ -7,7 +7,7 @@ public class Session_SetTenantContextTests(DomainFixture fixture) : IClassFixtur
     [Fact]
     public void Execute_WithValidCommand_SetsTenantContext()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -41,7 +41,7 @@ public class Session_SetTenantContextTests(DomainFixture fixture) : IClassFixtur
     [Fact]
     public void Execute_AsOwner_SetsIsOwnerTrue()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -71,7 +71,7 @@ public class Session_SetTenantContextTests(DomainFixture fixture) : IClassFixtur
     [Fact]
     public void Execute_WithExistingTenant_ChangesToNewTenant()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())

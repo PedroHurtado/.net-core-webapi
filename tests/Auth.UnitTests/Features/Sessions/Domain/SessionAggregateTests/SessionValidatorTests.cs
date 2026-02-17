@@ -7,7 +7,7 @@ public class SessionValidatorTests
     [Fact]
     public void Validate_WithValidSessionWithoutTenant_ReturnsSuccess()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -28,7 +28,7 @@ public class SessionValidatorTests
     [Fact]
     public void Validate_WithValidSessionWithTenant_ReturnsSuccess()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
@@ -51,7 +51,7 @@ public class SessionValidatorTests
     [Fact]
     public void Id_WhenEmpty_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.Empty)
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -77,7 +77,7 @@ public class SessionValidatorTests
     [Fact]
     public void UserId_WhenEmpty_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.Empty)
             .WithTenantId(null)
@@ -103,7 +103,7 @@ public class SessionValidatorTests
     [Fact]
     public void RoleId_WhenNullAndTenantIdSet_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
@@ -125,7 +125,7 @@ public class SessionValidatorTests
     [Fact]
     public void RoleId_WhenSetAndTenantIdNull_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -151,7 +151,7 @@ public class SessionValidatorTests
     [Fact]
     public void ExpiresAt_WhenBeforeCreatedAt_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -173,7 +173,7 @@ public class SessionValidatorTests
     [Fact]
     public void ExpiresAt_WhenEqualToCreatedAt_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -195,7 +195,7 @@ public class SessionValidatorTests
     [Fact]
     public void ExpiresAt_WhenBeforeLastActivityAt_ReturnsError()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)

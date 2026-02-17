@@ -7,7 +7,7 @@ public class Session_RefreshTests(DomainFixture fixture) : IClassFixture<DomainF
     [Fact]
     public void Execute_WithActiveSession_UpdatesLastActivityAndExpires()
     {
-        var createdAt = DateTimeOffset.UtcNow.AddDays(-5);
+        var createdAt = DateTime.UtcNow.AddDays(-5);
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -22,14 +22,14 @@ public class Session_RefreshTests(DomainFixture fixture) : IClassFixture<DomainF
 
         var result = _refresh.Execute(session);
 
-        result.LastActivityAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2));
-        result.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(30), TimeSpan.FromSeconds(2));
+        result.LastActivityAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(2));
+        result.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddDays(30), TimeSpan.FromSeconds(2));
     }
 
     [Fact]
     public void Execute_WithExpiredSession_ThrowsUnauthorizedException()
     {
-        var createdAt = DateTimeOffset.UtcNow.AddDays(-60);
+        var createdAt = DateTime.UtcNow.AddDays(-60);
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)

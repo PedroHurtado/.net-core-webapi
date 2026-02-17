@@ -13,7 +13,7 @@ public partial class Session
     {
         public override Session Execute(CreateSessionCommand command)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTime.UtcNow;
 
             var session = new Session(Guid.NewGuid())
             {

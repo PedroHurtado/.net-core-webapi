@@ -11,7 +11,7 @@ public partial class Session
         {
             UnauthorizedGuard.ThrowIf(session.IsExpired, "Session expired");
 
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTime.UtcNow;
             session.LastActivityAt = now;
             session.ExpiresAt = now.AddDays(30);
 

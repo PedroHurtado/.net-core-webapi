@@ -7,7 +7,7 @@ public class Session_ClearTenantContextTests(DomainFixture fixture) : IClassFixt
     [Fact]
     public void Execute_WithTenantContext_ClearsAllTenantData()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
@@ -33,7 +33,7 @@ public class Session_ClearTenantContextTests(DomainFixture fixture) : IClassFixt
     [Fact]
     public void Execute_WithoutTenantContext_RemainsCleared()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)

@@ -10,7 +10,7 @@ public class SessionTests
         var userId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTime.UtcNow;
         var groups = new[] { "menu:read", "menu:write" };
         var additionalScopes = new[] { "reservation-service:CancelReservation" };
         var excludedScopes = new[] { "menu-service:SetMenuDepositPolicy" };
@@ -49,7 +49,7 @@ public class SessionTests
         var session = new TestableSession(Guid.NewGuid());
 
         // Act
-        session.WithExpiresAt(DateTimeOffset.UtcNow.AddDays(-1));
+        session.WithExpiresAt(DateTime.UtcNow.AddDays(-1));
 
         // Assert
         session.IsExpired.Should().BeTrue();
@@ -62,7 +62,7 @@ public class SessionTests
         var session = new TestableSession(Guid.NewGuid());
 
         // Act
-        session.WithExpiresAt(DateTimeOffset.UtcNow.AddDays(30));
+        session.WithExpiresAt(DateTime.UtcNow.AddDays(30));
 
         // Assert
         session.IsExpired.Should().BeFalse();

@@ -57,25 +57,25 @@ public partial class Session : AggregateRoot<Guid>
     /// Gets the date and time when the session was created.
     /// </summary>
     /// <value>The UTC timestamp of session creation.</value>
-    public DateTimeOffset CreatedAt { get; protected set; }
+    public DateTime CreatedAt { get; protected set; }
 
     /// <summary>
     /// Gets the date and time of the last activity on this session.
     /// </summary>
     /// <value>The UTC timestamp of the last valid request.</value>
-    public DateTimeOffset LastActivityAt { get; protected set; }
+    public DateTime LastActivityAt { get; protected set; }
 
     /// <summary>
     /// Gets the date and time when this session expires.
     /// </summary>
     /// <value>The UTC expiration timestamp, calculated as LastActivityAt + 30 days.</value>
-    public DateTimeOffset ExpiresAt { get; protected set; }
+    public DateTime ExpiresAt { get; protected set; }
 
     /// <summary>
     /// Gets a value indicating whether this session has expired.
     /// </summary>
     /// <value><c>true</c> if the current UTC time is past the expiration; otherwise, <c>false</c>.</value>
-    public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
+    public bool IsExpired => DateTime.UtcNow > ExpiresAt;
 
     /// <summary>
     /// Gets a value indicating whether this session has an active tenant context.
