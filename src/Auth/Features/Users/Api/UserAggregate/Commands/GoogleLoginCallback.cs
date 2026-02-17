@@ -21,7 +21,9 @@ public class GoogleLoginCallback : IFeatureModule
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Lax
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
             });
 
             return Results.Redirect("/");

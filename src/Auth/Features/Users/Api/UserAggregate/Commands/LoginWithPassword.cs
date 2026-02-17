@@ -16,7 +16,8 @@ public class LoginWithPassword : IFeatureModule
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Lax,
-                Path = "/"
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
             });
 
             return Results.NoContent();
