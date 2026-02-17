@@ -25,6 +25,30 @@ tags:
     description: Gestión de usuarios
 
 paths:
+  /auth/seed:
+    post:
+      tags: [Auth]
+      operationId: seed
+      summary: Seed de plataforma
+      description: |
+        Crea el super admin, el tenant de plataforma, los roles de sistema y la Membership Owner.
+        Protegido por `Fudie:SeedKey` (user-secrets). En desarrollo, si ya existe destruye todo y recrea.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeedRequest'
+      responses:
+        '204':
+          description: Seed ejecutado correctamente
+        '401':
+          description: Seed key inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
   /auth/login:
     post:
       tags: [Auth]
@@ -312,6 +336,24 @@ components:
     # ──────────────────────────────────────────────
     # Requests
     # ──────────────────────────────────────────────
+
+    SeedRequest:
+      type: object
+      required: [email, name, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 256
+          example: admin@fudie.app
+        name:
+          type: string
+          maxLength: 200
+          example: Fudie Admin
+        password:
+          type: string
+          format: password
+          example: SecureP@ss123
 
     LoginWithPasswordRequest:
       type: object
