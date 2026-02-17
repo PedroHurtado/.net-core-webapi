@@ -29,7 +29,33 @@ public class InternalTokenService(
         return CreateToken(claims);
     }
 
-    private string CreateToken(Dictionary<string, object> claims)
+    public string GenerateSessionToken(SessionTokenData data)
+    {
+        var claims = new Dictionary<string, object>
+        {
+            ["sub"] = data.UserId.ToString()
+        };
+
+        if (data.TenantId is not null)
+        {
+            claims["tid"] = data.TenantId.Value.ToString();
+
+            if (data.IsOwner)
+            {
+                claims["owner"] = true;
+            }
+            else
+            {
+                claims["groups"] = data.Groups;
+                claims["add"] = data.AdditionalScopes;
+                claims["exc"] = data.ExcludedScopes;
+            }
+        }
+
+        return CreateToken(claims, TimeSpan.FromSeconds(45));
+    }
+
+    private string CreateToken(Dictionary<string, object> claims, TimeSpan? lifetime = null)
     {
         var key = new ECDsaSecurityKey(jwtKeyProvider.GetPrivateKey())
         {
@@ -39,7 +65,7 @@ public class InternalTokenService(
         var descriptor = new SecurityTokenDescriptor
         {
             Claims = claims,
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            Expires = DateTime.UtcNow.Add(lifetime ?? TimeSpan.FromMinutes(5)),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256)
         };
 

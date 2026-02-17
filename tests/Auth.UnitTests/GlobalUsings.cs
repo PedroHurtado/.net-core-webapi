@@ -25,6 +25,7 @@ global using Auth.Infrastructure.Customers;
 global using Auth.Infrastructure.Google;
 global using Auth.Infrastructure.Jwt;
 
+global using Auth.Features.Sessions.Api.Commands;
 global using Auth.Features.Sessions.Api.Queries;
 
 global using Auth.Features.ExternalApps.Api.ExternalAppAggregate;
