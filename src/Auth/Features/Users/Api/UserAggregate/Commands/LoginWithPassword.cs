@@ -55,9 +55,14 @@ public class LoginWithPassword : IFeatureModule
 
             recordLogin.Execute(user);
 
-            var session = createSession.Execute(new CreateSessionCommand(user.Id));
+            var session = await sessionRepository.FindFirstByUserId(user.Id);
 
-            sessionRepository.Add(session);
+            if (session is null)
+            {
+                session = createSession.Execute(new CreateSessionCommand(user.Id));
+                sessionRepository.Add(session);
+            }
+
             await unitOfWork.SaveChangesAsync();
 
             return session.Id;
@@ -70,5 +75,9 @@ public class LoginWithPassword : IFeatureModule
         Task<User?> FindFirstByEmailAndProvider(string email, AuthProvider provider);
     }
 
-    public interface ISessionRepository : IAdd<Session> { }
+    [GenerateRepository<Session>]
+    public interface ISessionRepository : IAdd<Session>
+    {
+        Task<Session?> FindFirstByUserId(Guid userId);
+    }
 }

@@ -93,8 +93,13 @@ public class GoogleLoginCallback : IFeatureModule
                 userId = existingUser.Id;
             }
 
-            var session = createSession.Execute(new CreateSessionCommand(UserId: userId));
-            sessionRepository.Add(session);
+            var session = await sessionRepository.FindFirstByUserId(userId);
+
+            if (session is null)
+            {
+                session = createSession.Execute(new CreateSessionCommand(UserId: userId));
+                sessionRepository.Add(session);
+            }
 
             await unitOfWork.SaveChangesAsync();
 
@@ -109,5 +114,9 @@ public class GoogleLoginCallback : IFeatureModule
         Task<User?> FindFirstByProviderIdAndProvider(string providerId, AuthProvider provider);
     }
 
-    public interface ISessionRepository : IAdd<Session> { }
+    [GenerateRepository<Session>]
+    public interface ISessionRepository : IAdd<Session>
+    {
+        Task<Session?> FindFirstByUserId(Guid userId);
+    }
 }

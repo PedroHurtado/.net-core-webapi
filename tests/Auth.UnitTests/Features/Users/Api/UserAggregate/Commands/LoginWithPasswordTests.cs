@@ -65,17 +65,36 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
     // ──────────────────────────────────────────────
 
     [Fact]
-    public async Task HandleAsync_WithValidCredentials_ReturnsSessionId()
+    public async Task HandleAsync_WithValidCredentials_WhenNoSession_ReturnsNewSessionId()
     {
         var user = CreateLocalUser();
         _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
             .ReturnsAsync(user);
         _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
             .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync((Session?)null);
 
         var sessionId = await _service.HandleAsync(CreateValidRequest());
 
         sessionId.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithValidCredentials_WhenExistingSession_ReturnsExistingSessionId()
+    {
+        var user = CreateLocalUser();
+        var existingSessionId = Guid.NewGuid();
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync(new TestableSession(existingSessionId));
+
+        var sessionId = await _service.HandleAsync(CreateValidRequest());
+
+        sessionId.Should().Be(existingSessionId);
     }
 
     // ──────────────────────────────────────────────

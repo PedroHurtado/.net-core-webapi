@@ -51,6 +51,8 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
         SetupOAuthMocks();
         _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
             .ReturnsAsync((User?)null);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(It.IsAny<Guid>()))
+            .ReturnsAsync((Session?)null);
 
         var sessionId = await _service.HandleAsync("auth-code");
 
@@ -70,6 +72,8 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
 
         _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
             .ReturnsAsync(existingUser);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync((Session?)null);
 
         var sessionId = await _service.HandleAsync("auth-code");
 
@@ -77,6 +81,28 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
         existingUser.Email.Should().Be("pedro@test.com");
         existingUser.Name.Should().Be("Pedro");
         existingUser.AvatarUrl.Should().Be("https://photo.jpg");
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExistingUserAndSession_ReturnsExistingSessionId()
+    {
+        SetupOAuthMocks();
+        var existingSessionId = Guid.NewGuid();
+        var existingUser = new TestableUser(Guid.NewGuid())
+            .WithProviderId("google|sub123")
+            .WithProvider(AuthProvider.Google)
+            .WithEmail("old@test.com")
+            .WithName("Old Name")
+            .WithIsActive(true);
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync(existingUser);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync(new TestableSession(existingSessionId));
+
+        var sessionId = await _service.HandleAsync("auth-code");
+
+        sessionId.Should().Be(existingSessionId);
     }
 
     [Fact]
