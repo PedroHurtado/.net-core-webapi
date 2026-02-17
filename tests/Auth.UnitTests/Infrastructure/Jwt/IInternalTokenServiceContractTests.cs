@@ -4,8 +4,12 @@ public abstract class IInternalTokenServiceContractTests
 {
     protected abstract IInternalTokenService CreateService();
 
+    // ──────────────────────────────────────────────
+    // GenerateTokenInternal(Guid tenantId)
+    // ──────────────────────────────────────────────
+
     [Fact]
-    public void GenerateTokenInternal_ReturnsNonEmptyString()
+    public void WithTenantId_ReturnsNonEmptyString()
     {
         var service = CreateService();
 
@@ -15,51 +19,116 @@ public abstract class IInternalTokenServiceContractTests
     }
 
     [Fact]
-    public void GenerateTokenInternal_TokenContainsTidClaim()
+    public void WithTenantId_TokenContainsTidClaim()
     {
         var service = CreateService();
         var tenantId = Guid.NewGuid();
 
         var token = service.GenerateTokenInternal(tenantId);
 
-        var handler = new JsonWebTokenHandler();
-        var jwt = handler.ReadJsonWebToken(token);
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwt.GetClaim("tid").Value.Should().Be(tenantId.ToString());
     }
 
     [Fact]
-    public void GenerateTokenInternal_TokenIsSignedWithES256()
+    public void WithTenantId_TokenContainsIkClaim()
     {
         var service = CreateService();
 
         var token = service.GenerateTokenInternal(Guid.NewGuid());
 
-        var handler = new JsonWebTokenHandler();
-        var jwt = handler.ReadJsonWebToken(token);
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwt.GetClaim("ik").Value.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void WithTenantId_TokenIsSignedWithES256()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal(Guid.NewGuid());
+
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwt.Alg.Should().Be(SecurityAlgorithms.EcdsaSha256);
     }
 
     [Fact]
-    public void GenerateTokenInternal_TokenHasExpiration()
+    public void WithTenantId_TokenHasExpiration()
     {
         var service = CreateService();
 
         var token = service.GenerateTokenInternal(Guid.NewGuid());
 
-        var handler = new JsonWebTokenHandler();
-        var jwt = handler.ReadJsonWebToken(token);
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwt.ValidTo.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Fact]
-    public void GenerateTokenInternal_TokenHasKid()
+    public void WithTenantId_TokenHasKid()
     {
         var service = CreateService();
 
         var token = service.GenerateTokenInternal(Guid.NewGuid());
 
-        var handler = new JsonWebTokenHandler();
-        var jwt = handler.ReadJsonWebToken(token);
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwt.Kid.Should().NotBeNullOrEmpty();
+    }
+
+    // ──────────────────────────────────────────────
+    // GenerateTokenInternal()
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public void WithoutTenantId_ReturnsNonEmptyString()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal();
+
+        token.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void WithoutTenantId_TokenContainsIkClaim()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal();
+
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwt.GetClaim("ik").Value.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void WithoutTenantId_TokenDoesNotContainTidClaim()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal();
+
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwt.TryGetClaim("tid", out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void WithoutTenantId_TokenIsSignedWithES256()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal();
+
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
+        jwt.Alg.Should().Be(SecurityAlgorithms.EcdsaSha256);
+    }
+
+    [Fact]
+    public void WithoutTenantId_TokenHasKid()
+    {
+        var service = CreateService();
+
+        var token = service.GenerateTokenInternal();
+
+        var jwt = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwt.Kid.Should().NotBeNullOrEmpty();
     }
 }
@@ -73,6 +142,14 @@ public class InternalTokenService_ContractTests : IInternalTokenServiceContractT
         var keyProvider = new Mock<IJwtKeyProvider>();
         keyProvider.Setup(k => k.GetPrivateKey()).Returns(_ecdsa);
         keyProvider.Setup(k => k.GetJsonWebKey()).Returns(new JsonWebKey { Kid = "contract-test-kid" });
-        return new InternalTokenService(keyProvider.Object);
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Fudie:InternalSecret"] = Guid.NewGuid().ToString()
+            })
+            .Build();
+
+        return new InternalTokenService(keyProvider.Object, configuration);
     }
 }
