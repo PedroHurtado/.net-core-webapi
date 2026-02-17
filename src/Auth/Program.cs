@@ -45,6 +45,15 @@ builder.Services
     .AddRefitClient<IGoogleCertsApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://www.googleapis.com"));
 
+builder.Services
+    .AddRefitClient<ICustomerApi>()
+    .ConfigureHttpClient((sp, c) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        c.BaseAddress = new Uri(config["Fudie:Services:Customers"]!);
+    })
+    .AddHttpMessageHandler<InternalAuthHandler>();
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IGoogleOAuthSettings, DevGoogleOAuthSettings>();
