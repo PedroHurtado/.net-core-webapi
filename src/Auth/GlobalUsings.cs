@@ -27,6 +27,7 @@ global using Auth.Infrastructure.Customers;
 global using Auth.Infrastructure.Google;
 global using Auth.Infrastructure.Jwt;
 global using Auth.Infrastructure.OAuth;
+global using Auth.Infrastructure.Memberships;
 global using Auth.Infrastructure.SessionManagement;
 
 global using System.Net.Http.Headers;
