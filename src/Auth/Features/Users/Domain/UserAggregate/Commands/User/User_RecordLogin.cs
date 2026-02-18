@@ -1,15 +1,19 @@
 namespace Auth.Features.Users.Domain.UserAggregate;
 
+public record RecordLoginCommand(
+    DateTime Now
+);
+
 public partial class User
 {
     [Injectable(ServiceLifetime.Singleton)]
     public class RecordLogin(
         IValidator<User> userValidator
-    ) : AbstractModifyCommand<User>
+    ) : AbstractModifyCommand<RecordLoginCommand, User>
     {
-        public override User Execute(User user)
+        public override User Execute(User user, RecordLoginCommand command)
         {
-            user.LastLoginAt = DateTime.UtcNow;
+            user.LastLoginAt = command.Now;
 
             return userValidator.ValidateOrThrow(user);
         }

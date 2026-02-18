@@ -7,6 +7,7 @@ public class UserRecordLoginTests(DomainFixture fixture) : IClassFixture<DomainF
     [Fact]
     public void Execute_WithValidUser_UpdatesLastLoginAt()
     {
+        var now = new DateTime(2025, 6, 15, 10, 0, 0, DateTimeKind.Utc);
         var user = new TestableUser(Guid.NewGuid())
             .WithProviderId("google|123")
             .WithProvider(AuthProvider.Google)
@@ -14,9 +15,8 @@ public class UserRecordLoginTests(DomainFixture fixture) : IClassFixture<DomainF
             .WithName("Pedro")
             .WithIsActive(true);
 
-        var result = _recordLogin.Execute(user);
+        var result = _recordLogin.Execute(user, new RecordLoginCommand(Now: now));
 
-        result.LastLoginAt.Should().NotBeNull();
-        result.LastLoginAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.LastLoginAt.Should().Be(now);
     }
 }
