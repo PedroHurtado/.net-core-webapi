@@ -18,9 +18,7 @@ public partial class TenantRole
                 TenantId = command.TenantId,
                 Name = "Owner",
                 Description = "Propietario. Acceso total al tenant.",
-                IsSystem = true,
-                IsEditable = false,
-                IsDeletable = false
+                IsOwner = true
             };
 
             return tenantRoleValidator.ValidateOrThrow(role);

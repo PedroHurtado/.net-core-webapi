@@ -142,9 +142,7 @@ public class SeedTests : IClassFixture<DomainFixture>
         _roleRepository.Verify(r => r.Add(It.Is<TenantRole>(role =>
             role.TenantId == _platformTenantId &&
             role.Name == "Owner" &&
-            role.IsSystem == true &&
-            role.IsEditable == false &&
-            role.IsDeletable == false)), Times.Once);
+            role.IsOwner == true)), Times.Once);
     }
 
     [Fact]

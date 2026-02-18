@@ -5,15 +5,12 @@ public class TenantRoleValidatorTests
     private readonly TenantRoleValidator _validator = new();
 
     [Fact]
-    public void Validate_WithValidCustomRole_ReturnsSuccess()
+    public void Validate_WithValidRole_ReturnsSuccess()
     {
         var role = new TestableTenantRole(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
             .WithName("Sommelier")
-            .WithDescription("Carta de vinos")
-            .WithIsSystem(false)
-            .WithIsEditable(true)
-            .WithIsDeletable(true);
+            .WithDescription("Carta de vinos");
 
         var result = _validator.Validate(role);
 
@@ -21,15 +18,12 @@ public class TenantRoleValidatorTests
     }
 
     [Fact]
-    public void Validate_WithValidSystemRole_ReturnsSuccess()
+    public void Validate_WithValidOwnerRole_ReturnsSuccess()
     {
         var role = new TestableTenantRole(Guid.NewGuid())
             .WithTenantId(Guid.NewGuid())
             .WithName("Owner")
-            .WithDescription("Propietario. Acceso completo.")
-            .WithIsSystem(true)
-            .WithIsEditable(false)
-            .WithIsDeletable(false);
+            .WithDescription("Propietario. Acceso completo.");
 
         var result = _validator.Validate(role);
 

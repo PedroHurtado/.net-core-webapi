@@ -6,8 +6,8 @@ namespace Auth.Features.Roles.Domain.TenantRoleAggregate;
 /// <remarks>
 /// <para>Roles are the unit of permission assignment. Each role belongs to a single tenant
 /// and defines groups, additional scopes, and excluded scopes that shape the JWT claims.</para>
-/// <para>System roles (Owner, Manager, Waiter, ExternalApp, Customer) are seeded when a tenant
-/// is created. Custom roles can be created, updated, and deleted by the Owner.</para>
+/// <para>The Owner role (IsOwner=true) is created when a tenant is provisioned and cannot be
+/// edited or deleted. All other roles are created by the Owner and are fully manageable.</para>
 /// </remarks>
 public partial class TenantRole : AggregateRoot<Guid>
 {
@@ -30,22 +30,10 @@ public partial class TenantRole : AggregateRoot<Guid>
     public string Description { get; protected set; } = string.Empty;
 
     /// <summary>
-    /// Gets a value indicating whether this is a system-defined role.
+    /// Gets a value indicating whether this is the Owner role of the tenant.
     /// </summary>
-    /// <value><c>true</c> if the role was created by SeedSystemRoles; otherwise, <c>false</c>.</value>
-    public bool IsSystem { get; protected set; }
-
-    /// <summary>
-    /// Gets a value indicating whether this role's name and description can be modified.
-    /// </summary>
-    /// <value><c>true</c> if the role allows editing; otherwise, <c>false</c> (Owner role).</value>
-    public bool IsEditable { get; protected set; }
-
-    /// <summary>
-    /// Gets a value indicating whether this role can be deleted.
-    /// </summary>
-    /// <value><c>true</c> for custom roles; <c>false</c> for system roles.</value>
-    public bool IsDeletable { get; protected set; }
+    /// <value><c>true</c> if the role is the Owner; otherwise, <c>false</c>.</value>
+    public bool IsOwner { get; protected set; }
 
     /// <summary>
     /// The internal collection of permission groups.

@@ -22,7 +22,7 @@ public class CreateTenantRoleTests : IClassFixture<DomainFixture>
     public async Task Handler_WithValidRequest_ReturnsCreated()
     {
         var expectedResponse = new TenantRoleResponse(
-            Guid.NewGuid(), "Admin", "desc", false, true, true, [], [], []);
+            Guid.NewGuid(), "Admin", "desc", false, [], [], []);
         var request = new CreateTenantRole.Request("Admin", "desc");
         var mockService = new Mock<CreateTenantRole.IService>();
         mockService.Setup(s => s.HandleAsync(request)).ReturnsAsync(expectedResponse);

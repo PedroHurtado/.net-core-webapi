@@ -20,9 +20,7 @@ public partial class TenantRole
                 TenantId = command.TenantId,
                 Name = command.Name,
                 Description = command.Description,
-                IsSystem = false,
-                IsEditable = true,
-                IsDeletable = true
+                IsOwner = false
             };
 
             return tenantRoleValidator.ValidateOrThrow(role);

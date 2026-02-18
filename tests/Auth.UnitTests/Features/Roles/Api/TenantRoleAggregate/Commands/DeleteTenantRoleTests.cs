@@ -26,13 +26,13 @@ public class DeleteTenantRoleTests
     }
 
     [Fact]
-    public async Task HandleAsync_WhenRoleIsDeletable_Succeeds()
+    public async Task HandleAsync_WhenRoleIsNotOwner_Succeeds()
     {
         var id = Guid.NewGuid();
         var role = new TestableTenantRole(id)
             .WithName("Custom")
             .WithDescription("Custom role")
-            .WithIsDeletable(true);
+            ;
         _repository.Setup(r => r.Get(id)).ReturnsAsync(role);
 
         var act = () => _service.HandleAsync(id);
@@ -41,13 +41,13 @@ public class DeleteTenantRoleTests
     }
 
     [Fact]
-    public async Task HandleAsync_WhenRoleIsNotDeletable_ThrowsConflictException()
+    public async Task HandleAsync_WhenRoleIsOwner_ThrowsConflictException()
     {
         var id = Guid.NewGuid();
         var role = new TestableTenantRole(id)
             .WithName("System")
             .WithDescription("System role")
-            .WithIsDeletable(false);
+            .WithIsOwner(true);
         _repository.Setup(r => r.Get(id)).ReturnsAsync(role);
 
         var act = () => _service.HandleAsync(id);

@@ -15,9 +15,7 @@ public class TenantRoleCreateOwnerRoleTests(DomainFixture fixture) : IClassFixtu
         result.TenantId.Should().Be(tenantId);
         result.Name.Should().Be("Owner");
         result.Description.Should().Be("Propietario. Acceso total al tenant.");
-        result.IsSystem.Should().BeTrue();
-        result.IsEditable.Should().BeFalse();
-        result.IsDeletable.Should().BeFalse();
+        result.IsOwner.Should().BeTrue();
         result.Groups.Should().BeEmpty();
         result.AdditionalScopes.Should().BeEmpty();
         result.ExcludedScopes.Should().BeEmpty();

@@ -30,9 +30,7 @@ public class GetTenantRoles : IFeatureModule
                     x.Id,
                     x.Name,
                     x.Description,
-                    x.IsSystem,
-                    x.IsEditable,
-                    x.IsDeletable,
+                    x.IsOwner,
                     x.Groups,
                     x.AdditionalScopes,
                     x.ExcludedScopes))

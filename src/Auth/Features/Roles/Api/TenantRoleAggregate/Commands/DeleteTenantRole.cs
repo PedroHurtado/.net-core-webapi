@@ -29,7 +29,7 @@ public class DeleteTenantRole : IFeatureModule
         {
             var role = await repository.Get(id);
 
-            ConflictGuard.ThrowIf(!role.IsDeletable, "This role cannot be deleted");
+            ConflictGuard.ThrowIf(role.IsOwner, "This role cannot be deleted");
 
             repository.Remove(role);
             await unitOfWork.SaveChangesAsync();

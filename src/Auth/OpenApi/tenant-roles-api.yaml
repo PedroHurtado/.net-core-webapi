@@ -182,11 +182,7 @@ components:
           type: string
         description:
           type: string
-        isSystem:
-          type: boolean
-        isEditable:
-          type: boolean
-        isDeletable:
+        isOwner:
           type: boolean
         groups:
           type: array

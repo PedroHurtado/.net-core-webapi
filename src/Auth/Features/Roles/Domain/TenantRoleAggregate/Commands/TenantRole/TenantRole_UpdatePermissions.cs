@@ -15,7 +15,7 @@ public partial class TenantRole
     {
         public override TenantRole Execute(TenantRole role, UpdatePermissionsCommand command)
         {
-            ConflictGuard.ThrowIf(!role.IsEditable, "This role cannot be edited");
+            ConflictGuard.ThrowIf(role.IsOwner, "This role cannot be edited");
 
             role._groups = [.. command.Groups];
             role._additionalScopes = [.. command.AdditionalScopes];

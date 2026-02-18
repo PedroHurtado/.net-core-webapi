@@ -18,9 +18,7 @@ public class TenantRoleCreateTests(DomainFixture fixture) : IClassFixture<Domain
         result.TenantId.Should().Be(tenantId);
         result.Name.Should().Be("Sommelier");
         result.Description.Should().Be("Carta de vinos");
-        result.IsSystem.Should().BeFalse();
-        result.IsEditable.Should().BeTrue();
-        result.IsDeletable.Should().BeTrue();
+        result.IsOwner.Should().BeFalse();
         result.Groups.Should().BeEmpty();
         result.AdditionalScopes.Should().BeEmpty();
         result.ExcludedScopes.Should().BeEmpty();

@@ -4,9 +4,7 @@ public record TenantRoleResponse(
     Guid Id,
     string Name,
     string Description,
-    bool IsSystem,
-    bool IsEditable,
-    bool IsDeletable,
+    bool IsOwner,
     IReadOnlyCollection<string> Groups,
     IReadOnlyCollection<string> AdditionalScopes,
     IReadOnlyCollection<string> ExcludedScopes)
@@ -15,9 +13,7 @@ public record TenantRoleResponse(
         Id: entity.Id,
         Name: entity.Name,
         Description: entity.Description,
-        IsSystem: entity.IsSystem,
-        IsEditable: entity.IsEditable,
-        IsDeletable: entity.IsDeletable,
+        IsOwner: entity.IsOwner,
         Groups: entity.Groups,
         AdditionalScopes: entity.AdditionalScopes,
         ExcludedScopes: entity.ExcludedScopes);
