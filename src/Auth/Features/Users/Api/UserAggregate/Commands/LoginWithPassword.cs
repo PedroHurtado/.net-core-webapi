@@ -6,19 +6,12 @@ public class LoginWithPassword : IFeatureModule
         string Email,
         string Password);
 
-    public static Func<IService, HttpContext, Request, Task<IResult>> Handler =>
-        async (service, httpContext, request) =>
+    public static Func<IService, ISessionCookieService, HttpContext, Request, Task<IResult>> Handler =>
+        async (service, sessionCookieService, httpContext, request) =>
         {
             var sessionId = await service.HandleAsync(request);
 
-            httpContext.Response.Cookies.Append("fudie_session", sessionId.ToString(), new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
+            sessionCookieService.Append(httpContext, sessionId);
 
             return Results.NoContent();
         };
@@ -37,6 +30,8 @@ public class LoginWithPassword : IFeatureModule
     public class Service(
         User.RecordLogin recordLogin,
         Session.Create createSession,
+        Session.Refresh refreshSession,
+        IRequestTimestamp requestTimestamp,
         IPasswordHasher passwordHasher,
         IUserRepository userRepository,
         ISessionRepository sessionRepository,
@@ -54,14 +49,20 @@ public class LoginWithPassword : IFeatureModule
 
             UnauthorizedGuard.ThrowIf(!isValid, "Invalid credentials");
 
-            recordLogin.Execute(user);
+            recordLogin.Execute(user, new RecordLoginCommand(requestTimestamp.UtcNow));
 
             var session = await sessionRepository.FindFirstByUserId(user.Id);
 
             if (session is null)
             {
-                session = createSession.Execute(new CreateSessionCommand(user.Id));
+                session = createSession.Execute(new CreateSessionCommand(
+                    user.Id, requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
                 sessionRepository.Add(session);
+            }
+            else
+            {
+                refreshSession.Execute(session, new RefreshSessionCommand(
+                    requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
             }
 
             await unitOfWork.SaveChangesAsync();

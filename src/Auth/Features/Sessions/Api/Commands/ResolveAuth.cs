@@ -2,23 +2,17 @@ namespace Auth.Features.Sessions.Api.Commands;
 
 public class ResolveAuth : IFeatureModule
 {
-    public static Func<IService, HttpContext, Task<IResult>> Handler =>
-        async (service, httpContext) =>
+    public static Func<IService, ISessionCookieService, ISessionSettings, HttpContext, Task<IResult>> Handler =>
+        async (service, sessionCookieService, sessionSettings, httpContext) =>
         {
-            var sessionId = httpContext.Request.Cookies["fudie_session"];
+            var settings = sessionSettings.Get();
+            var sessionId = httpContext.Request.Cookies[settings.CookieName];
 
             UnauthorizedGuard.ThrowIf(sessionId is null, "Authentication required");
 
             var token = await service.HandleAsync(Guid.Parse(sessionId!));
 
-            httpContext.Response.Cookies.Append("fudie_session", sessionId!, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
+            sessionCookieService.Append(httpContext, Guid.Parse(sessionId!));
 
             httpContext.Response.Headers["X-Auth-Token"] = token;
 
@@ -40,6 +34,7 @@ public class ResolveAuth : IFeatureModule
     [Injectable]
     public class Service(
         Session.Refresh refreshSession,
+        IRequestTimestamp requestTimestamp,
         IInternalTokenService tokenService,
         IRepository repository,
         IUnitOfWork unitOfWork) : IService
@@ -48,7 +43,8 @@ public class ResolveAuth : IFeatureModule
         {
             var session = await repository.Get(sessionId);
 
-            refreshSession.Execute(session);
+            refreshSession.Execute(session, new RefreshSessionCommand(
+                requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
 
             await unitOfWork.SaveChangesAsync();
 

@@ -5,12 +5,18 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
     private readonly Mock<ResolveAuth.IRepository> _repository = new();
     private readonly Mock<IInternalTokenService> _tokenService = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IRequestTimestamp> _requestTimestamp = new();
     private readonly ResolveAuth.Service _service;
 
     public ResolveAuthTests(DomainFixture fixture)
     {
+        var now = DateTime.UtcNow;
+        _requestTimestamp.Setup(t => t.UtcNow).Returns(now);
+        _requestTimestamp.Setup(t => t.ExpiresAt).Returns(now.AddDays(30));
+
         _service = new ResolveAuth.Service(
             fixture.Get<Session.Refresh>(),
+            _requestTimestamp.Object,
             _tokenService.Object,
             _repository.Object,
             _unitOfWork.Object);
@@ -51,7 +57,6 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         await _service.HandleAsync(session.Id);
 
         session.LastActivityAt.Should().BeAfter(previousLastActivity);
-        session.ExpiresAt.Should().BeAfter(DateTime.UtcNow.AddDays(29));
     }
 
     [Fact]

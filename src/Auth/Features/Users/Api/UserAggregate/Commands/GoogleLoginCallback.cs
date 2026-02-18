@@ -2,29 +2,23 @@ namespace Auth.Features.Users.Api.UserAggregate.Commands;
 
 public class GoogleLoginCallback : IFeatureModule
 {
-    public static Func<IService, HttpContext, string, string, Task<IResult>> Handler =>
-        async (service, httpContext, code, state) =>
+    public static Func<IService, ISessionCookieService, IOAuthSettings, HttpContext, string, string, Task<IResult>> Handler =>
+        async (service, sessionCookieService, oauthSettings, httpContext, code, state) =>
         {
-            var cookieState = httpContext.Request.Cookies["fudie_oauth_state"];
+            var settings = oauthSettings.Get();
+            var cookieState = httpContext.Request.Cookies[settings.StateCookieName];
 
             if (cookieState is null || cookieState != state)
                 return Results.Unauthorized();
 
-            httpContext.Response.Cookies.Delete("fudie_oauth_state", new CookieOptions
+            httpContext.Response.Cookies.Delete(settings.StateCookieName, new CookieOptions
             {
                 Path = "/auth/login/google"
             });
 
             var sessionId = await service.HandleAsync(code);
 
-            httpContext.Response.Cookies.Append("fudie_session", sessionId.ToString(), new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Path = "/",
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
+            sessionCookieService.Append(httpContext, sessionId);
 
             return Results.Redirect("/");
         };
@@ -49,6 +43,8 @@ public class GoogleLoginCallback : IFeatureModule
         User.Create createUser,
         User.UpdateFromOAuth updateFromOAuth,
         Session.Create createSession,
+        Session.Refresh refreshSession,
+        IRequestTimestamp requestTimestamp,
         IRepository repository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork
@@ -99,8 +95,14 @@ public class GoogleLoginCallback : IFeatureModule
 
             if (session is null)
             {
-                session = createSession.Execute(new CreateSessionCommand(UserId: userId));
+                session = createSession.Execute(new CreateSessionCommand(
+                    userId, requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
                 sessionRepository.Add(session);
+            }
+            else
+            {
+                refreshSession.Execute(session, new RefreshSessionCommand(
+                    requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
             }
 
             await unitOfWork.SaveChangesAsync();

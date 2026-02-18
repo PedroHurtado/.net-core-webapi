@@ -6,13 +6,20 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
     private readonly Mock<LoginWithPassword.IUserRepository> _userRepository = new();
     private readonly Mock<LoginWithPassword.ISessionRepository> _sessionRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IRequestTimestamp> _requestTimestamp = new();
     private readonly LoginWithPassword.Service _service;
 
     public LoginWithPasswordTests(DomainFixture fixture)
     {
+        var now = DateTime.UtcNow;
+        _requestTimestamp.Setup(t => t.UtcNow).Returns(now);
+        _requestTimestamp.Setup(t => t.ExpiresAt).Returns(now.AddDays(30));
+
         _service = new LoginWithPassword.Service(
             fixture.Get<User.RecordLogin>(),
             fixture.Get<Session.Create>(),
+            fixture.Get<Session.Refresh>(),
+            _requestTimestamp.Object,
             _passwordHasher.Object,
             _userRepository.Object,
             _sessionRepository.Object,
@@ -85,12 +92,19 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
     {
         var user = CreateLocalUser();
         var existingSessionId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+        var existingSession = new TestableSession(existingSessionId)
+            .WithUserId(user.Id)
+            .WithCreatedAt(now.AddDays(-5))
+            .WithLastActivityAt(now.AddDays(-1))
+            .WithExpiresAt(now.AddDays(25));
+
         _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
             .ReturnsAsync(user);
         _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
             .Returns(true);
         _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
-            .ReturnsAsync(new TestableSession(existingSessionId));
+            .ReturnsAsync(existingSession);
 
         var sessionId = await _service.HandleAsync(CreateValidRequest());
 
@@ -107,27 +121,28 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
         var mockService = new Mock<LoginWithPassword.IService>();
         mockService.Setup(s => s.HandleAsync(It.IsAny<LoginWithPassword.Request>()))
             .ReturnsAsync(Guid.NewGuid());
+        var mockCookieService = new Mock<ISessionCookieService>();
         var httpContext = new DefaultHttpContext();
         var request = CreateValidRequest();
 
-        var result = await LoginWithPassword.Handler(mockService.Object, httpContext, request);
+        var result = await LoginWithPassword.Handler(mockService.Object, mockCookieService.Object, httpContext, request);
 
         result.Should().BeOfType<NoContent>();
     }
 
     [Fact]
-    public async Task Handler_SetsFudieSessionCookie()
+    public async Task Handler_CallsSessionCookieService()
     {
         var sessionId = Guid.NewGuid();
         var mockService = new Mock<LoginWithPassword.IService>();
         mockService.Setup(s => s.HandleAsync(It.IsAny<LoginWithPassword.Request>()))
             .ReturnsAsync(sessionId);
+        var mockCookieService = new Mock<ISessionCookieService>();
         var httpContext = new DefaultHttpContext();
         var request = CreateValidRequest();
 
-        await LoginWithPassword.Handler(mockService.Object, httpContext, request);
+        await LoginWithPassword.Handler(mockService.Object, mockCookieService.Object, httpContext, request);
 
-        httpContext.Response.Headers.SetCookie.ToString().Should().Contain("fudie_session");
-        httpContext.Response.Headers.SetCookie.ToString().Should().Contain(sessionId.ToString());
+        mockCookieService.Verify(c => c.Append(httpContext, sessionId), Times.Once);
     }
 }
