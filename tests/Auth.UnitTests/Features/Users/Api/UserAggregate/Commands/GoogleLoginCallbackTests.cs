@@ -123,6 +123,96 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
     }
 
     [Fact]
+    public async Task HandleAsync_WithInactiveExistingUser_ThrowsUnauthorized()
+    {
+        SetupOAuthMocks();
+        var existingUser = new TestableUser(Guid.NewGuid())
+            .WithProviderId("google|sub123")
+            .WithProvider(AuthProvider.Google)
+            .WithEmail("old@test.com")
+            .WithName("Old Name")
+            .WithIsActive(false);
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync(existingUser);
+
+        var act = () => _service.HandleAsync("auth-code");
+
+        await act.Should().ThrowAsync<UnauthorizedException>()
+            .WithMessage("User is inactive");
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExpiredSession_CreatesNewSessionAndRemovesOld()
+    {
+        SetupOAuthMocks();
+        var existingUser = new TestableUser(Guid.NewGuid())
+            .WithProviderId("google|sub123")
+            .WithProvider(AuthProvider.Google)
+            .WithEmail("old@test.com")
+            .WithName("Old Name")
+            .WithIsActive(true);
+
+        var expiredSession = new TestableSession(Guid.NewGuid())
+            .WithUserId(existingUser.Id)
+            .WithCreatedAt(DateTime.UtcNow.AddDays(-31))
+            .WithLastActivityAt(DateTime.UtcNow.AddDays(-31))
+            .WithExpiresAt(DateTime.UtcNow.AddDays(-1));
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync(existingUser);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync(expiredSession);
+
+        var sessionId = await _service.HandleAsync("auth-code");
+
+        sessionId.Should().NotBe(expiredSession.Id);
+        _sessionRepository.Verify(r => r.Remove(expiredSession), Times.Once);
+        _sessionRepository.Verify(r => r.Add(It.IsAny<Session>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExpiredSessionAndMembership_SetsTenantContextOnNewSession()
+    {
+        SetupOAuthMocks();
+        var tenantId = Guid.NewGuid();
+        var role = new TestableTenantRole(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithName("Admin")
+            .WithDescription("Admin role")
+            .WithIsOwner(false);
+
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithRole(role)
+            .WithIsActive(true);
+
+        var existingUser = new TestableUser(Guid.NewGuid())
+            .WithProviderId("google|sub123")
+            .WithProvider(AuthProvider.Google)
+            .WithEmail("old@test.com")
+            .WithName("Old Name")
+            .WithIsActive(true);
+
+        var expiredSession = new TestableSession(Guid.NewGuid())
+            .WithUserId(existingUser.Id)
+            .WithCreatedAt(DateTime.UtcNow.AddDays(-31))
+            .WithLastActivityAt(DateTime.UtcNow.AddDays(-31))
+            .WithExpiresAt(DateTime.UtcNow.AddDays(-1));
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync(existingUser);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync(expiredSession);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync(membership);
+
+        await _service.HandleAsync("auth-code");
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == tenantId)), Times.Once);
+    }
+
+    [Fact]
     public async Task HandleAsync_WithNewUserAndNoMembership_DoesNotSetTenantContext()
     {
         SetupOAuthMocks();

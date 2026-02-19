@@ -70,6 +70,85 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
         await act.Should().ThrowAsync<UnauthorizedException>();
     }
 
+    [Fact]
+    public async Task HandleAsync_WhenUserInactive_ThrowsUnauthorized()
+    {
+        var user = CreateLocalUser().WithIsActive(false);
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+
+        var act = () => _service.HandleAsync(CreateValidRequest());
+
+        await act.Should().ThrowAsync<UnauthorizedException>()
+            .WithMessage("User is inactive");
+    }
+
+    // ──────────────────────────────────────────────
+    // Expired session
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task HandleAsync_WithExpiredSession_CreatesNewSessionAndRemovesOld()
+    {
+        var user = CreateLocalUser();
+        var expiredSession = new TestableSession(Guid.NewGuid())
+            .WithUserId(user.Id)
+            .WithCreatedAt(DateTime.UtcNow.AddDays(-31))
+            .WithLastActivityAt(DateTime.UtcNow.AddDays(-31))
+            .WithExpiresAt(DateTime.UtcNow.AddDays(-1));
+
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync(expiredSession);
+
+        var sessionId = await _service.HandleAsync(CreateValidRequest());
+
+        sessionId.Should().NotBe(expiredSession.Id);
+        _sessionRepository.Verify(r => r.Remove(expiredSession), Times.Once);
+        _sessionRepository.Verify(r => r.Add(It.IsAny<Session>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExpiredSessionAndMembership_SetsTenantContextOnNewSession()
+    {
+        var user = CreateLocalUser();
+        var tenantId = Guid.NewGuid();
+        var role = new TestableTenantRole(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithName("Admin")
+            .WithDescription("Admin role")
+            .WithIsOwner(false);
+
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithRole(role)
+            .WithIsActive(true);
+
+        var expiredSession = new TestableSession(Guid.NewGuid())
+            .WithUserId(user.Id)
+            .WithCreatedAt(DateTime.UtcNow.AddDays(-31))
+            .WithLastActivityAt(DateTime.UtcNow.AddDays(-31))
+            .WithExpiresAt(DateTime.UtcNow.AddDays(-1));
+
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync(expiredSession);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(user.Id))
+            .ReturnsAsync(membership);
+
+        await _service.HandleAsync(CreateValidRequest());
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == tenantId)), Times.Once);
+    }
+
     // ──────────────────────────────────────────────
     // Happy path
     // ──────────────────────────────────────────────

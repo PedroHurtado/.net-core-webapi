@@ -85,6 +85,8 @@ public class GoogleLoginCallback : IFeatureModule
             }
             else
             {
+                UnauthorizedGuard.ThrowIf(!existingUser.IsActive, "User is inactive");
+
                 updateFromOAuth.Execute(existingUser, new UpdateFromOAuthCommand(
                     Email: claims.Email,
                     Name: claims.Name,
@@ -94,6 +96,12 @@ public class GoogleLoginCallback : IFeatureModule
             }
 
             var session = await sessionRepository.FindFirstByUserId(userId);
+
+            if (session?.IsExpired == true)
+            {
+                sessionRepository.Remove(session);
+                session = null;
+            }
 
             if (session is null)
             {
@@ -133,9 +141,9 @@ public class GoogleLoginCallback : IFeatureModule
         Task<User?> FindFirstByProviderIdAndProvider(string providerId, AuthProvider provider);
     }
 
-    [GenerateRepository<Session>]
-    public interface ISessionRepository : IAdd<Session>
+    public interface ISessionRepository : IAdd<Session>, IRemove<Session, Guid>
     {
+        [Tracking]
         Task<Session?> FindFirstByUserId(Guid userId);
     }
 }

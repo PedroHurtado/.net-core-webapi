@@ -50,10 +50,17 @@ public class LoginWithPassword : IFeatureModule
                 request.Password, user!.Password!.Hash, user.Password.Salt);
 
             UnauthorizedGuard.ThrowIf(!isValid, "Invalid credentials");
+            UnauthorizedGuard.ThrowIf(!user.IsActive, "User is inactive");
 
             recordLogin.Execute(user, new RecordLoginCommand(requestTimestamp.UtcNow));
 
             var session = await sessionRepository.FindFirstByUserId(user.Id);
+
+            if (session?.IsExpired == true)
+            {
+                sessionRepository.Remove(session);
+                session = null;
+            }
 
             if (session is null)
             {
@@ -92,9 +99,9 @@ public class LoginWithPassword : IFeatureModule
         Task<User?> FindFirstByEmailAndProvider(string email, AuthProvider provider);
     }
 
-    [GenerateRepository<Session>]
-    public interface ISessionRepository : IAdd<Session>
+    public interface ISessionRepository : IAdd<Session>, IRemove<Session, Guid>
     {
+        [Tracking]
         Task<Session?> FindFirstByUserId(Guid userId);
     }
 }
