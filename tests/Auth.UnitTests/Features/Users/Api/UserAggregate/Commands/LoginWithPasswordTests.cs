@@ -3,6 +3,7 @@ namespace Auth.UnitTests.Features.Users.Api.UserAggregate.Commands;
 public class LoginWithPasswordTests : IClassFixture<DomainFixture>
 {
     private readonly Mock<IPasswordHasher> _passwordHasher = new();
+    private readonly Mock<IMembershipLookup> _membershipLookup = new();
     private readonly Mock<LoginWithPassword.IUserRepository> _userRepository = new();
     private readonly Mock<LoginWithPassword.ISessionRepository> _sessionRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
@@ -19,8 +20,10 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
             fixture.Get<User.RecordLogin>(),
             fixture.Get<Session.Create>(),
             fixture.Get<Session.Refresh>(),
+            fixture.Get<Session.SetTenantContext>(),
             _requestTimestamp.Object,
             _passwordHasher.Object,
+            _membershipLookup.Object,
             _userRepository.Object,
             _sessionRepository.Object,
             _unitOfWork.Object);
@@ -85,6 +88,56 @@ public class LoginWithPasswordTests : IClassFixture<DomainFixture>
         var sessionId = await _service.HandleAsync(CreateValidRequest());
 
         sessionId.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithValidCredentials_WhenNoSessionAndNoMembership_DoesNotSetTenantContext()
+    {
+        var user = CreateLocalUser();
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync((Session?)null);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(user.Id))
+            .ReturnsAsync((Membership?)null);
+
+        await _service.HandleAsync(CreateValidRequest());
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == null)), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithValidCredentials_WhenNoSessionAndHasMembership_SetsTenantContext()
+    {
+        var user = CreateLocalUser();
+        var tenantId = Guid.NewGuid();
+        var role = new TestableTenantRole(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithName("Admin")
+            .WithDescription("Admin role")
+            .WithIsOwner(false)
+            .WithGroup("admin-group")
+            .WithAdditionalScope("extra-scope");
+
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithRole(role)
+            .WithIsActive(true);
+
+        _userRepository.Setup(r => r.FindFirstByEmailAndProvider("admin@fudie.app", AuthProvider.Local))
+            .ReturnsAsync(user);
+        _passwordHasher.Setup(p => p.Verify("SecureP@ss123", "hashed-value", "salt-value"))
+            .Returns(true);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(user.Id))
+            .ReturnsAsync((Session?)null);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(user.Id))
+            .ReturnsAsync(membership);
+
+        await _service.HandleAsync(CreateValidRequest());
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == tenantId)), Times.Once);
     }
 
     [Fact]

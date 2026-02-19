@@ -31,8 +31,10 @@ public class LoginWithPassword : IFeatureModule
         User.RecordLogin recordLogin,
         Session.Create createSession,
         Session.Refresh refreshSession,
+        Session.SetTenantContext setTenantContext,
         IRequestTimestamp requestTimestamp,
         IPasswordHasher passwordHasher,
+        IMembershipLookup membershipLookup,
         IUserRepository userRepository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork) : IService
@@ -57,6 +59,19 @@ public class LoginWithPassword : IFeatureModule
             {
                 session = createSession.Execute(new CreateSessionCommand(
                     user.Id, requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+
+                var membership = await membershipLookup.FindFirstByUserId(user.Id);
+                if (membership is not null)
+                {
+                    setTenantContext.Execute(session, new SetTenantContextCommand(
+                        membership.TenantId,
+                        membership.Role.Id,
+                        [.. membership.Role.Groups],
+                        [.. membership.Role.AdditionalScopes],
+                        [.. membership.Role.ExcludedScopes],
+                        membership.Role.IsOwner));
+                }
+
                 sessionRepository.Add(session);
             }
             else
