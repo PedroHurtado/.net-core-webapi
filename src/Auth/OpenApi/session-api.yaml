@@ -9,11 +9,10 @@ info:
 
     **Endpoints internos:**
     - `POST /auth/resolve` — solo lo llama el gateway. No está expuesto al exterior.
-    - `GET /auth/.well-known/jwks.json` — público, consumido por microservicios al arrancar.
+    - `GET /auth/jwks` — público, consumido por microservicios al arrancar.
 
     **Endpoints de usuario:**
-    - `PUT /auth/sessions/{id}/tenant` — establece el restaurante activo.
-    - `DELETE /auth/sessions/{id}/tenant` — desconecta del restaurante activo.
+    - `PUT /auth/sessions/tenant` — establece el restaurante activo.
   version: 1.0.0
 
 servers:
@@ -36,7 +35,7 @@ paths:
   # Session
   # ──────────────────────────────────────────────
 
-  /auth/sessions/{id}/tenant:
+  /auth/sessions/tenant:
     put:
       tags:
         - Session
@@ -47,9 +46,9 @@ paths:
         los permisos para denormalizarlos en la sesión.
 
         También permite cambiar de tenant si el usuario tiene múltiples Memberships.
+
+        La sesión se identifica a partir de la cookie `fudie_session` (no se pasa el ID en la ruta).
       operationId: setTenantContext
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
       requestBody:
         required: true
         content:
@@ -59,27 +58,38 @@ paths:
       responses:
         '204':
           description: Contexto de tenant establecido
-        '404':
-          description: Session o Membership no encontrada
+        '401':
+          description: Sesión inválida o expirada
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
               examples:
-                sessionNotFound:
-                  summary: Session no encontrada
+                invalidSession:
+                  summary: Sesión inválida
                   value:
                     type: 'about:blank'
-                    title: Not Found
-                    status: 404
-                    detail: Session not found
-                membershipNotFound:
-                  summary: Membership no encontrada
+                    title: Unauthorized
+                    status: 401
+                    detail: Invalid session
+                sessionExpired:
+                  summary: Sesión expirada
                   value:
                     type: 'about:blank'
-                    title: Not Found
-                    status: 404
-                    detail: Membership not found for this tenant
+                    title: Unauthorized
+                    status: 401
+                    detail: Session expired
+        '403':
+          description: Sin acceso al tenant solicitado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              example:
+                type: 'about:blank'
+                title: Forbidden
+                status: 403
+                detail: Membership not found for this tenant
         '422':
           description: Validación fallida
           content:
@@ -95,33 +105,6 @@ paths:
                   RoleId:
                     - RoleId is required when TenantId is set
 
-    delete:
-      tags:
-        - Session
-      summary: Desconectarse del restaurante activo
-      description: |
-        Limpia el contexto de tenant de la sesión. El usuario vuelve al estado
-        "sin tenant" para seleccionar otro.
-
-        La operación es idempotente — limpiar un contexto ya limpio no produce error.
-      operationId: clearTenantContext
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
-      responses:
-        '204':
-          description: Contexto de tenant limpiado
-        '404':
-          description: Session no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-              example:
-                type: 'about:blank'
-                title: Not Found
-                status: 404
-                detail: Session not found
-
   # ──────────────────────────────────────────────
   # Auth
   # ──────────────────────────────────────────────
@@ -134,9 +117,10 @@ paths:
       description: |
         **Endpoint interno — solo lo llama el gateway.**
 
-        Recibe los headers originales del cliente (cookie `fudie_session` o header `X-Api-Key`),
-        valida la identidad, refresca la sesión (sliding expiration) y devuelve un JWT efímero
-        firmado con ES256.
+        El gateway reenvía la request original del cliente (con cookies incluidas).
+        El servicio de Auth valida la identidad, verifica que el usuario y la membership
+        estén activos, refresca la sesión (sliding expiration) y devuelve el JWT efímero
+        en el header `X-Auth-Token`.
 
         El gateway inyecta el JWT como header `Authorization: Bearer {token}` al reenviar
         la request al microservicio destino.
@@ -144,41 +128,21 @@ paths:
         **Flujo con cookie:**
         1. Extrae sessionId de la cookie `fudie_session`
         2. Busca la sesión en Firestore
-        3. Valida que no esté expirada
+        3. Valida que no esté expirada (si lo está, elimina la sesión)
         4. Ejecuta Session.Refresh (sliding expiration)
-        5. Construye JWT efímero desde los datos de la sesión
-
-        **Flujo con API Key:**
-        1. Hashea la API Key con SHA-256
-        2. Busca en `api_keys/{hash}`
-        3. Valida que esté activa y no expirada
-        4. Carga la Membership asociada
-        5. Construye JWT efímero desde los datos de la Membership
+        5. Verifica que el usuario esté activo
+        6. Si hay contexto de tenant, verifica que la membership esté activa
+        7. Construye JWT efímero desde los datos de la sesión
       operationId: resolveAuth
-      parameters:
-        - name: Cookie
-          in: header
-          description: Cookie de sesión del navegador (`fudie_session={sessionId}`)
-          required: false
-          schema:
-            type: string
-            example: fudie_session=a1b2c3d4-e5f6-7890-abcd-ef1234567890
-        - name: X-Api-Key
-          in: header
-          description: API Key de aplicación externa
-          required: false
-          schema:
-            type: string
-            example: fud_a3K9mZ3pX7nR2wQ8vB4cD6eF1gH5jK
       responses:
-        '200':
-          description: JWT efímero generado
-          content:
-            application/json:
+        '204':
+          description: JWT efímero generado y devuelto en el header `X-Auth-Token`
+          headers:
+            X-Auth-Token:
+              description: JWT efímero firmado con ES256 (vida útil ~45 segundos)
               schema:
-                $ref: '#/components/schemas/ResolveAuthResponse'
-              example:
-                token: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+                type: string
+                example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
         '401':
           description: Autenticación fallida
           content:
@@ -201,28 +165,21 @@ paths:
                     status: 401
                     detail: Invalid session
                 sessionExpired:
-                  summary: Sesión expirada
+                  summary: Sesión expirada (la sesión se elimina automáticamente)
                   value:
                     type: 'about:blank'
                     title: Unauthorized
                     status: 401
                     detail: Session expired
-                invalidApiKey:
-                  summary: API Key inválida
+                userInactive:
+                  summary: Usuario desactivado por la plataforma
                   value:
                     type: 'about:blank'
                     title: Unauthorized
                     status: 401
-                    detail: Invalid API key
-                apiKeyInactive:
-                  summary: API Key inactiva
-                  value:
-                    type: 'about:blank'
-                    title: Unauthorized
-                    status: 401
-                    detail: API key is inactive
+                    detail: User is inactive
                 membershipInactive:
-                  summary: Membership inactiva
+                  summary: Membership inactiva para el tenant activo
                   value:
                     type: 'about:blank'
                     title: Unauthorized
@@ -267,21 +224,6 @@ paths:
 components:
 
   # ──────────────────────────────────────────────
-  # Parameters
-  # ──────────────────────────────────────────────
-
-  parameters:
-    SessionId:
-      name: id
-      in: path
-      required: true
-      description: Identificador de la sesión (GUID v7)
-      schema:
-        type: string
-        format: uuid
-        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-
-  # ──────────────────────────────────────────────
   # Schemas
   # ──────────────────────────────────────────────
 
@@ -305,16 +247,6 @@ components:
     # ──────────────────────────────────────────────
     # Responses
     # ──────────────────────────────────────────────
-
-    ResolveAuthResponse:
-      type: object
-      required:
-        - token
-      properties:
-        token:
-          type: string
-          description: JWT efímero firmado con ES256 (vida útil ~45 segundos)
-          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
 
     JwksResponse:
       type: object
