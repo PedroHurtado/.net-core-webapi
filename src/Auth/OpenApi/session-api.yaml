@@ -113,11 +113,11 @@ paths:
     post:
       tags:
         - Auth
-      summary: Resolver autenticación y generar JWT efímero
+      summary: Resolver autenticación por cookie y generar JWT efímero
       description: |
         **Endpoint interno — solo lo llama el gateway.**
 
-        El gateway reenvía la request original del cliente (con cookies incluidas).
+        El gateway redirige aquí cuando la request del cliente contiene la cookie `fudie_session`.
         El servicio de Auth valida la identidad, verifica que el usuario y la membership
         estén activos, refresca la sesión (sliding expiration) y devuelve el JWT efímero
         en el header `X-Auth-Token`.
@@ -125,7 +125,7 @@ paths:
         El gateway inyecta el JWT como header `Authorization: Bearer {token}` al reenviar
         la request al microservicio destino.
 
-        **Flujo con cookie:**
+        **Flujo:**
         1. Extrae sessionId de la cookie `fudie_session`
         2. Busca la sesión en Firestore
         3. Valida que no esté expirada (si lo está, elimina la sesión)
@@ -185,6 +185,83 @@ paths:
                     title: Unauthorized
                     status: 401
                     detail: Membership is inactive
+
+  /auth/resolve-api-key:
+    post:
+      tags:
+        - Auth
+      summary: Resolver autenticación por API Key y generar JWT efímero
+      description: |
+        **Endpoint interno — solo lo llama el gateway.**
+
+        El gateway redirige aquí cuando la request del cliente contiene el header `X-Api-Key`.
+        El servicio de Auth valida la API Key contra la ExternalApp registrada, verifica
+        que la app esté activa y la invitación aceptada, y devuelve el JWT efímero
+        en el header `X-Auth-Token`.
+
+        El gateway inyecta el JWT como header `Authorization: Bearer {token}` al reenviar
+        la request al microservicio destino.
+
+        **Flujo:**
+        1. Extrae la API Key del header `X-Api-Key`
+        2. Extrae el prefijo (primeros 8 caracteres) para buscar la ExternalApp
+        3. Verifica el hash BCrypt de la API Key contra el hash almacenado
+        4. Valida que la invitación esté aceptada
+        5. Valida que la ExternalApp esté activa
+        6. Construye JWT efímero con TenantId y permisos de la ExternalApp (Groups, AdditionalScopes, ExcludedScopes)
+      operationId: resolveApiKey
+      parameters:
+        - name: X-Api-Key
+          in: header
+          required: true
+          description: API Key de la aplicación externa (formato `fud_XXXXXXXX...`)
+          schema:
+            type: string
+            example: fud_a3K9mZ3pX7nR2wQ8vB4cD6eF1gH5jK
+      responses:
+        '204':
+          description: JWT efímero generado y devuelto en el header `X-Auth-Token`
+          headers:
+            X-Auth-Token:
+              description: JWT efímero firmado con ES256 (vida útil ~45 segundos)
+              schema:
+                type: string
+                example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...
+        '401':
+          description: Autenticación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+              examples:
+                noApiKey:
+                  summary: Sin API Key
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: API key is required
+                invalidApiKey:
+                  summary: API Key inválida (no existe o hash no coincide)
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: Invalid API key
+                notAccepted:
+                  summary: Invitación no aceptada
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: External app invitation has not been accepted
+                appInactive:
+                  summary: Aplicación externa desactivada
+                  value:
+                    type: 'about:blank'
+                    title: Unauthorized
+                    status: 401
+                    detail: External app is inactive
 
   /auth/jwks:
     get:
