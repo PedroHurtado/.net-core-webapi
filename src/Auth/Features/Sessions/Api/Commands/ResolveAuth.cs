@@ -36,15 +36,37 @@ public class ResolveAuth : IFeatureModule
         Session.Refresh refreshSession,
         IRequestTimestamp requestTimestamp,
         IInternalTokenService tokenService,
+        IMembershipLookup membershipLookup,
         IRepository repository,
+        IUserRepository userRepository,
         IUnitOfWork unitOfWork) : IService
     {
         public async Task<string> HandleAsync(Guid sessionId)
         {
-            var session = await repository.Get(sessionId);
+            var session = await repository.FindFirstById(sessionId);
 
-            refreshSession.Execute(session, new RefreshSessionCommand(
-                requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+            UnauthorizedGuard.ThrowIf(session is null, "Invalid session");
+
+            try
+            {
+                refreshSession.Execute(session!, new RefreshSessionCommand(
+                    requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+            }
+            catch (UnauthorizedException)
+            {
+                await repository.DeleteById(session!.Id);
+                throw;
+            }
+
+            var isUserActive = await userRepository.ExistsByIdAndIsActiveTrue(session!.UserId);
+            UnauthorizedGuard.ThrowIf(!isUserActive, "User is inactive");
+
+            if (session.HasTenantContext)
+            {
+                var isMembershipActive = await membershipLookup.ExistsByUserIdAndTenantId(
+                    session.UserId, session.TenantId!.Value);
+                UnauthorizedGuard.ThrowIf(!isMembershipActive, "Membership is inactive");
+            }
 
             await unitOfWork.SaveChangesAsync();
 
@@ -57,5 +79,18 @@ public class ResolveAuth : IFeatureModule
                 session.ExcludedScopes));
         }
     }
-    public interface IRepository : IUpdate<Session, Guid> { }
+
+    [GenerateRepository<Session>]
+    public interface IRepository
+    {
+        [Tracking]
+        Task<Session?> FindFirstById(Guid id);
+        Task<int> DeleteById(Guid id);
+    }
+
+    [GenerateRepository<User>]
+    public interface IUserRepository
+    {
+        Task<bool> ExistsByIdAndIsActiveTrue(Guid id);
+    }
 }
