@@ -20,7 +20,8 @@ public class MembershipLookupServiceTests
         var userId = Guid.NewGuid();
         var membership = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
 
         _query.Setup(q => q.Query<Membership>())
             .Returns(new List<Membership> { membership }.AsAsyncQueryable());
@@ -48,10 +49,12 @@ public class MembershipLookupServiceTests
         var userId = Guid.NewGuid();
         var membership1 = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
         var membership2 = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
 
         _query.Setup(q => q.Query<Membership>())
             .Returns(new List<Membership> { membership1, membership2 }.AsAsyncQueryable());
@@ -72,10 +75,12 @@ public class MembershipLookupServiceTests
         var userId = Guid.NewGuid();
         var membership1 = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
         var membership2 = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
 
         _query.Setup(q => q.Query<Membership>())
             .Returns(new List<Membership> { membership1, membership2 }.AsAsyncQueryable());
@@ -103,10 +108,12 @@ public class MembershipLookupServiceTests
         var otherUserId = Guid.NewGuid();
         var mine = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(userId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
         var other = new TestableMembership(Guid.NewGuid())
             .WithUser(new TestableUser(otherUserId))
-            .WithTenantId(Guid.NewGuid());
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
 
         _query.Setup(q => q.Query<Membership>())
             .Returns(new List<Membership> { mine, other }.AsAsyncQueryable());
