@@ -66,6 +66,74 @@ public class MembershipLookupServiceTests
     }
 
     // ──────────────────────────────────────────────
+    // ExistsByUserIdAndTenantId
+    // ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task ExistsByUserIdAndTenantId_WhenActiveMembershipExists_ReturnsTrue()
+    {
+        var userId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithUser(new TestableUser(userId))
+            .WithTenantId(tenantId)
+            .WithIsActive(true);
+
+        _query.Setup(q => q.Query<Membership>())
+            .Returns(new List<Membership> { membership }.AsAsyncQueryable());
+
+        var result = await _sut.ExistsByUserIdAndTenantId(userId, tenantId);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExistsByUserIdAndTenantId_WhenNoMembership_ReturnsFalse()
+    {
+        _query.Setup(q => q.Query<Membership>())
+            .Returns(new List<Membership>().AsAsyncQueryable());
+
+        var result = await _sut.ExistsByUserIdAndTenantId(Guid.NewGuid(), Guid.NewGuid());
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExistsByUserIdAndTenantId_WhenInactiveMembership_ReturnsFalse()
+    {
+        var userId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithUser(new TestableUser(userId))
+            .WithTenantId(tenantId)
+            .WithIsActive(false);
+
+        _query.Setup(q => q.Query<Membership>())
+            .Returns(new List<Membership> { membership }.AsAsyncQueryable());
+
+        var result = await _sut.ExistsByUserIdAndTenantId(userId, tenantId);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExistsByUserIdAndTenantId_WhenDifferentTenant_ReturnsFalse()
+    {
+        var userId = Guid.NewGuid();
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithUser(new TestableUser(userId))
+            .WithTenantId(Guid.NewGuid())
+            .WithIsActive(true);
+
+        _query.Setup(q => q.Query<Membership>())
+            .Returns(new List<Membership> { membership }.AsAsyncQueryable());
+
+        var result = await _sut.ExistsByUserIdAndTenantId(userId, Guid.NewGuid());
+
+        result.Should().BeFalse();
+    }
+
+    // ──────────────────────────────────────────────
     // FindAllByUserId
     // ──────────────────────────────────────────────
 
