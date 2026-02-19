@@ -44,7 +44,9 @@ public class GoogleLoginCallback : IFeatureModule
         User.UpdateFromOAuth updateFromOAuth,
         Session.Create createSession,
         Session.Refresh refreshSession,
+        Session.SetTenantContext setTenantContext,
         IRequestTimestamp requestTimestamp,
+        IMembershipLookup membershipLookup,
         IRepository repository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork
@@ -97,6 +99,19 @@ public class GoogleLoginCallback : IFeatureModule
             {
                 session = createSession.Execute(new CreateSessionCommand(
                     userId, requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+
+                var membership = await membershipLookup.FindFirstByUserId(userId);
+                if (membership is not null)
+                {
+                    setTenantContext.Execute(session, new SetTenantContextCommand(
+                        membership.TenantId,
+                        membership.Role.Id,
+                        [.. membership.Role.Groups],
+                        [.. membership.Role.AdditionalScopes],
+                        [.. membership.Role.ExcludedScopes],
+                        membership.Role.IsOwner));
+                }
+
                 sessionRepository.Add(session);
             }
             else

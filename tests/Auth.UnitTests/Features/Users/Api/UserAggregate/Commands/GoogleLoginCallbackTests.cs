@@ -5,6 +5,7 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
     private readonly Mock<IGoogleOAuthSettings> _googleOAuthSettings = new();
     private readonly Mock<IGoogleOAuthApi> _googleOAuthApi = new();
     private readonly Mock<IGoogleIdTokenValidator> _idTokenValidator = new();
+    private readonly Mock<IMembershipLookup> _membershipLookup = new();
     private readonly Mock<GoogleLoginCallback.IRepository> _repository = new();
     private readonly Mock<GoogleLoginCallback.ISessionRepository> _sessionRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
@@ -33,7 +34,9 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
             fixture.Get<User.UpdateFromOAuth>(),
             fixture.Get<Session.Create>(),
             fixture.Get<Session.Refresh>(),
+            fixture.Get<Session.SetTenantContext>(),
             _requestTimestamp.Object,
+            _membershipLookup.Object,
             _repository.Object,
             _sessionRepository.Object,
             _unitOfWork.Object);
@@ -117,6 +120,87 @@ public class GoogleLoginCallbackTests : IClassFixture<DomainFixture>
         var sessionId = await _service.HandleAsync("auth-code");
 
         sessionId.Should().Be(existingSessionId);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithNewUserAndNoMembership_DoesNotSetTenantContext()
+    {
+        SetupOAuthMocks();
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync((User?)null);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(It.IsAny<Guid>()))
+            .ReturnsAsync((Session?)null);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(It.IsAny<Guid>()))
+            .ReturnsAsync((Membership?)null);
+
+        await _service.HandleAsync("auth-code");
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == null)), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithNewUserAndHasMembership_SetsTenantContext()
+    {
+        SetupOAuthMocks();
+        var tenantId = Guid.NewGuid();
+        var role = new TestableTenantRole(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithName("Admin")
+            .WithDescription("Admin role")
+            .WithIsOwner(false)
+            .WithGroup("admin-group")
+            .WithAdditionalScope("extra-scope");
+
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithRole(role)
+            .WithIsActive(true);
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync((User?)null);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(It.IsAny<Guid>()))
+            .ReturnsAsync((Session?)null);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(It.IsAny<Guid>()))
+            .ReturnsAsync(membership);
+
+        await _service.HandleAsync("auth-code");
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == tenantId)), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExistingUserAndNoSessionAndHasMembership_SetsTenantContext()
+    {
+        SetupOAuthMocks();
+        var tenantId = Guid.NewGuid();
+        var role = new TestableTenantRole(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithName("Admin")
+            .WithDescription("Admin role")
+            .WithIsOwner(false);
+
+        var membership = new TestableMembership(Guid.NewGuid())
+            .WithTenantId(tenantId)
+            .WithRole(role)
+            .WithIsActive(true);
+
+        var existingUser = new TestableUser(Guid.NewGuid())
+            .WithProviderId("google|sub123")
+            .WithProvider(AuthProvider.Google)
+            .WithEmail("old@test.com")
+            .WithName("Old Name")
+            .WithIsActive(true);
+
+        _repository.Setup(r => r.FindFirstByProviderIdAndProvider("google|sub123", AuthProvider.Google))
+            .ReturnsAsync(existingUser);
+        _sessionRepository.Setup(r => r.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync((Session?)null);
+        _membershipLookup.Setup(m => m.FindFirstByUserId(existingUser.Id))
+            .ReturnsAsync(membership);
+
+        await _service.HandleAsync("auth-code");
+
+        _sessionRepository.Verify(r => r.Add(It.Is<Session>(s => s.TenantId == tenantId)), Times.Once);
     }
 
     [Fact]
