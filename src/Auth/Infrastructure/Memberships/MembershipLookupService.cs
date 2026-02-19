@@ -8,7 +8,7 @@ public class MembershipLookupService(IQuery query) : IMembershipLookup
         return await query.Query<Membership>()
             .IgnoreQueryFilters()
             .Include(m => m.Role)
-            .Where(m => m.User!.Id == userId)
+            .Where(m => m.IsActive && m.User!.Id == userId)
             .FirstOrDefaultAsync();
     }
 
@@ -17,7 +17,7 @@ public class MembershipLookupService(IQuery query) : IMembershipLookup
         return await query.Query<Membership>()
             .IgnoreQueryFilters()
             .Include(m => m.Role)
-            .Where(m => m.User!.Id == userId)
+            .Where(m => m.IsActive && m.User!.Id == userId)
             .ToListAsync();
     }
 }
