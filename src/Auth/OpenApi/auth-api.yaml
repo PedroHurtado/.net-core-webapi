@@ -481,10 +481,11 @@ components:
           type: string
           format: email
           maxLength: 200
+          example: admin@fudie.app
         password:
           type: string
           format: password
-
+          example: SecureP@ss123
     UpdateUserRequest:
       type: object
       required: [name, phone]
