@@ -99,7 +99,7 @@ public abstract class IPubSubClientContractTests
         var client = CreateClient();
         await client.CreateTopicAsync("pub-topic");
 
-        var act = () => client.PublishAsync("pub-topic", [0x01, 0x02, 0x03]);
+        var act = () => client.PublishAsync("pub-topic", new { Text = "test" });
 
         await act.Should().NotThrowAsync();
     }
