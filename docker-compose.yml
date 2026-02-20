@@ -19,6 +19,15 @@ services:
       - ./firebase.json:/home/node/firebase.json
     working_dir: /home/node
 
+  pubsub:
+    image: dipjyotimetia/pubsub-emulator
+    ports:
+      - "8085:8085"
+    environment:
+      - PUBSUB_PROJECT=demo-project
+      - PUBSUB_TOPIC=catalog-updates
+      - PUBSUB_SUBSCRIPTION=gateway-catalog-sub
+
   auth-service:
     ports:
       - "5001:8080"
