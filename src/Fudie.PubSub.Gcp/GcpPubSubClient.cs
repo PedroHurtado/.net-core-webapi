@@ -4,7 +4,7 @@ using Grpc.Core;
 
 namespace Fudie.PubSub.Gcp;
 
-internal sealed class GcpPubSubClient(string projectId) : IPubSubClient
+internal sealed class GcpPubSubClient(string projectId) : PubSubClient
 {
     private readonly PublisherServiceApiClient _publisherApi = new PublisherServiceApiClientBuilder
     {
@@ -16,19 +16,19 @@ internal sealed class GcpPubSubClient(string projectId) : IPubSubClient
         EmulatorDetection = Google.Api.Gax.EmulatorDetection.EmulatorOrProduction
     }.Build();
 
-    public async Task CreateTopicAsync(string topicId)
+    protected override async Task CreateTopicAsync(string topicId)
     {
         var topicName = TopicName.FromProjectTopic(projectId, topicId);
         await _publisherApi.CreateTopicAsync(topicName);
     }
 
-    public async Task DeleteTopicAsync(string topicId)
+    protected override async Task DeleteTopicAsync(string topicId)
     {
         var topicName = TopicName.FromProjectTopic(projectId, topicId);
         await _publisherApi.DeleteTopicAsync(topicName);
     }
 
-    public async Task<bool> TopicExistsAsync(string topicId)
+    protected override async Task<bool> TopicExistsAsync(string topicId)
     {
         try
         {
@@ -42,20 +42,20 @@ internal sealed class GcpPubSubClient(string projectId) : IPubSubClient
         }
     }
 
-    public async Task CreateSubscriptionAsync(string subscriptionId, string topicId)
+    protected override async Task CreateSubscriptionAsync(string subscriptionId, string topicId)
     {
         var subscriptionName = SubscriptionName.FromProjectSubscription(projectId, subscriptionId);
         var topicName = TopicName.FromProjectTopic(projectId, topicId);
         await _subscriberApi.CreateSubscriptionAsync(subscriptionName, topicName, pushConfig: null, ackDeadlineSeconds: 60);
     }
 
-    public async Task DeleteSubscriptionAsync(string subscriptionId)
+    protected override async Task DeleteSubscriptionAsync(string subscriptionId)
     {
         var subscriptionName = SubscriptionName.FromProjectSubscription(projectId, subscriptionId);
         await _subscriberApi.DeleteSubscriptionAsync(subscriptionName);
     }
 
-    public async Task<bool> SubscriptionExistsAsync(string subscriptionId)
+    protected override async Task<bool> SubscriptionExistsAsync(string subscriptionId)
     {
         try
         {
@@ -69,14 +69,14 @@ internal sealed class GcpPubSubClient(string projectId) : IPubSubClient
         }
     }
 
-    public async Task PublishAsync(string topicId, byte[] data)
+    protected override async Task PublishAsync(string topicId, byte[] data)
     {
         var topicName = TopicName.FromProjectTopic(projectId, topicId);
         var message = new PubsubMessage { Data = ByteString.CopyFrom(data) };
         await _publisherApi.PublishAsync(topicName, [message]);
     }
 
-    public async Task SubscribeAsync(string subscriptionId, Func<byte[], CancellationToken, Task> handler, CancellationToken ct = default)
+    protected override async Task SubscribeAsync(string subscriptionId, Func<byte[], CancellationToken, Task> handler, CancellationToken ct)
     {
         var subscriptionName = SubscriptionName.FromProjectSubscription(projectId, subscriptionId);
         var subscriber = await new SubscriberClientBuilder
