@@ -488,6 +488,20 @@ paths:
                   amount: 9.99
                   currencyCode: EUR
                   isActive: false
+              quarterly:
+                summary: Tier trimestral
+                value:
+                  billingPeriod: Quarterly
+                  amount: 24.99
+                  currencyCode: EUR
+                  isActive: false
+              semester:
+                summary: Tier semestral
+                value:
+                  billingPeriod: Semester
+                  amount: 49.99
+                  currencyCode: EUR
+                  isActive: false
               yearly:
                 summary: Tier anual
                 value:
@@ -561,6 +575,27 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatePricingTierRequest'
+            examples:
+              monthly:
+                summary: Tier mensual
+                value:
+                  amount: 9.99
+                  currencyCode: EUR
+              quarterly:
+                summary: Tier trimestral
+                value:
+                  amount: 24.99
+                  currencyCode: EUR
+              semester:
+                summary: Tier semestral
+                value:
+                  amount: 49.99
+                  currencyCode: EUR
+              yearly:
+                summary: Tier anual
+                value:
+                  amount: 99.99
+                  currencyCode: EUR
       responses:
         '200':
           description: Pricing tier actualizado exitosamente
