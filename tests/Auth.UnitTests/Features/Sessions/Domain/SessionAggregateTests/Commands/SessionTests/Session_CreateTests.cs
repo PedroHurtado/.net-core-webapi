@@ -8,7 +8,9 @@ public class Session_CreateTests(DomainFixture fixture) : IClassFixture<DomainFi
     public void Execute_WithValidCommand_ReturnsSession()
     {
         var userId = Guid.NewGuid();
-        var command = new CreateSessionCommand(UserId: userId);
+        var now = new DateTime(2025, 6, 15, 10, 0, 0, DateTimeKind.Utc);
+        var expiresAt = now.AddDays(30);
+        var command = new CreateSessionCommand(UserId: userId, Now: now, ExpiresAt: expiresAt);
 
         var result = _create.Execute(command);
 
@@ -20,8 +22,8 @@ public class Session_CreateTests(DomainFixture fixture) : IClassFixture<DomainFi
         result.AdditionalScopes.Should().BeEmpty();
         result.ExcludedScopes.Should().BeEmpty();
         result.IsOwner.Should().BeFalse();
-        result.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2));
-        result.LastActivityAt.Should().Be(result.CreatedAt);
-        result.ExpiresAt.Should().BeCloseTo(result.CreatedAt.AddDays(30), TimeSpan.FromSeconds(2));
+        result.CreatedAt.Should().Be(now);
+        result.LastActivityAt.Should().Be(now);
+        result.ExpiresAt.Should().Be(expiresAt);
     }
 }

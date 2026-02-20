@@ -23,9 +23,14 @@ global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 
 global using Auth.Infrastructure;
+global using Auth.Infrastructure.Customers;
 global using Auth.Infrastructure.Google;
 global using Auth.Infrastructure.Jwt;
+global using Auth.Infrastructure.OAuth;
+global using Auth.Infrastructure.Memberships;
+global using Auth.Infrastructure.SessionManagement;
 
+global using System.Net.Http.Headers;
 global using System.Security.Cryptography;
 global using System.Security.Cryptography.X509Certificates;
 global using System.Text;
@@ -45,6 +50,8 @@ global using Auth.Features.Roles.Domain.TenantRoleAggregate;
 global using Auth.Features.Sessions.Domain.SessionAggregate;
 
 global using Auth.Features.Shared.Enums;
+
+global using Auth.Features.Users.Api.UserAggregate.Commands;
 
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;

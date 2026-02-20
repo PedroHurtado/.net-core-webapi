@@ -24,9 +24,7 @@ TenantRole (Aggregate Root)
 ├─ TenantId: Guid
 ├─ Name: string
 ├─ Description: string
-├─ IsSystem: bool
-├─ IsEditable: bool
-├─ IsDeletable: bool
+├─ IsOwner: bool
 ├─ Groups: IReadOnlyCollection<string>
 ├─ AdditionalScopes: IReadOnlyCollection<string>
 └─ ExcludedScopes: IReadOnlyCollection<string>
@@ -40,9 +38,7 @@ TenantRole (Aggregate Root)
 | TenantId | Guid | init |
 | Name | string | protected set |
 | Description | string | protected set |
-| IsSystem | bool | init |
-| IsEditable | bool | init |
-| IsDeletable | bool | init |
+| IsOwner | bool | protected set |
 
 #### Colecciones
 
@@ -78,12 +74,10 @@ public record TenantRoleResponse(
     Guid Id,
     string Name,
     string Description,
-    bool IsSystem,
-    bool IsEditable,
-    bool IsDeletable,
-    List<string> Groups,
-    List<string> AdditionalScopes,
-    List<string> ExcludedScopes
+    bool IsOwner,
+    IReadOnlyCollection<string> Groups,
+    IReadOnlyCollection<string> AdditionalScopes,
+    IReadOnlyCollection<string> ExcludedScopes
 );
 ```
 
@@ -107,8 +101,8 @@ public record TenantRoleResponse(
 ## 6. Comandos
 
 > ⚠️ **IMPORTANTE**: El orden de los comandos respeta las dependencias.
-> - TenantRole.SeedSystemRoles se ejecuta al crear el tenant (post-compra)
-> - TenantRole.Create es solo para roles custom
+> - TenantRole.CreateOwnerRole se ejecuta al provisionar un tenant (Seed o Subscription)
+> - TenantRole.Create es para todos los demás roles
 > - Las Queries van después de Create
 > - Update y UpdatePermissions van después
 > - Delete va al final
@@ -119,13 +113,13 @@ public record TenantRoleResponse(
 
 ---
 
-### 6.1 TenantRole.SeedSystemRoles
+### 6.1 TenantRole.CreateOwnerRole
 
-> Comando interno que se ejecuta al crear un tenant. Genera los roles de sistema predefinidos.
+> Comando interno que crea el rol Owner de un tenant. Se ejecuta al provisionar un tenant (Seed de plataforma o compra de Subscription). Solo puede haber un Owner por tenant.
 
 #### Event Storming
 ```
-🟠<TenantCreated> → 🟣{SeedSystemRoles} → 🔵(SeedSystemRoles) → 🟤[[TenantRole]] → 🟠<SystemRolesSeeded>
+🟡[System] → 🔵(CreateOwnerRole) → 🟤[[TenantRole]] → 🟠<OwnerRoleCreated>
 ```
 
 #### Input
@@ -137,127 +131,34 @@ public record TenantRoleResponse(
 #### Inyecta
 - `IValidator<TenantRole>`
 
-#### Guards
-
-| Condición | HTTP | Guard | Mensaje |
-|-----------|------|-------|---------|
-| Ya existen roles para este tenant | 409 | ConflictGuard | "System roles already exist for this tenant" |
-
 #### Lógica
 ```csharp
-var systemRoles = await tenantRoleRepository.ExistsByTenantAsync(command.TenantId);
-
-ConflictGuard.ThrowIf(systemRoles, "System roles already exist for this tenant");
-
-var roles = new List<TenantRole>
+var role = new TenantRole(Guid.NewGuid())
 {
-    new TenantRole(Guid.NewGuid())
-    {
-        TenantId = command.TenantId,
-        Name = "Owner",
-        Description = "Propietario. Acceso completo.",
-        IsSystem = true,
-        IsEditable = false,
-        IsDeletable = false,
-        Groups = [],
-        AdditionalScopes = [],
-        ExcludedScopes = []
-    },
-    new TenantRole(Guid.NewGuid())
-    {
-        TenantId = command.TenantId,
-        Name = "Manager",
-        Description = "Encargado. Gestiona operativa diaria.",
-        IsSystem = true,
-        IsEditable = true,
-        IsDeletable = false,
-        Groups = [],
-        AdditionalScopes = [],
-        ExcludedScopes = []
-    },
-    new TenantRole(Guid.NewGuid())
-    {
-        TenantId = command.TenantId,
-        Name = "Waiter",
-        Description = "Camarero. Acceso limitado a operaciones del día a día.",
-        IsSystem = true,
-        IsEditable = true,
-        IsDeletable = false,
-        Groups = [],
-        AdditionalScopes = [],
-        ExcludedScopes = []
-    },
-    new TenantRole(Guid.NewGuid())
-    {
-        TenantId = command.TenantId,
-        Name = "ExternalApp",
-        Description = "Aplicación externa. Acceso programático a la API.",
-        IsSystem = true,
-        IsEditable = true,
-        IsDeletable = false,
-        Groups = [],
-        AdditionalScopes = [],
-        ExcludedScopes = []
-    },
-    new TenantRole(Guid.NewGuid())
-    {
-        TenantId = command.TenantId,
-        Name = "Customer",
-        Description = "Comensal registrado.",
-        IsSystem = true,
-        IsEditable = true,
-        IsDeletable = false,
-        Groups = [],
-        AdditionalScopes = [],
-        ExcludedScopes = []
-    }
+    TenantId = command.TenantId,
+    Name = "Owner",
+    Description = "Propietario. Acceso total al tenant.",
+    IsOwner = true
 };
 
-foreach (var role in roles)
-    tenantRoleValidator.ValidateOrThrow(role);
-
-return roles;
+return tenantRoleValidator.ValidateOrThrow(role);
 ```
 
-#### Slice: Interno (NotificationHandler)
+#### Slice: Interno
 
-> No expuesto como endpoint público. Se ejecuta como reacción al evento TenantCreated.
+> No expuesto como endpoint público. Se invoca desde Seed y desde el flujo de Subscription.
 
 #### Tests Unitarios (Dominio)
 
-✅ Genera 5 roles de sistema
+✅ Crear rol Owner con datos válidos
 - Input: TenantId=valid
-- Resultado: 5 TenantRole con IsSystem=true
-
-✅ Owner no es editable ni eliminable
-- Resultado: IsEditable=false, IsDeletable=false
-
-✅ Manager, Waiter, ExternalApp, Customer son editables pero no eliminables
-- Resultado: IsEditable=true, IsDeletable=false
-
-✅ Todos los roles se crean sin permisos
-- Resultado: Groups=[], AdditionalScopes=[], ExcludedScopes=[]
-
-❌ Roles ya existen para el tenant
-- Precondición: Ya existen roles para TenantId=X
-- Resultado: ConflictException "System roles already exist for this tenant"
-
-#### Tests Unitarios (Servicio)
-
-✅ Verifica existencia antes de crear
-- Verifica que tenantRoleRepository.ExistsByTenantAsync es llamado con tenantId
-
-✅ Añade todos los roles al repositorio
-- Verifica que repository.AddRange es llamado con 5 roles
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
+- Resultado: TenantRole con Name="Owner", IsOwner=true, Groups=[], AdditionalScopes=[], ExcludedScopes=[]
 
 ---
 
 ### 6.2 TenantRole.Create
 
-> Solo para roles custom. Los roles de sistema se crean con SeedSystemRoles.
+> Crea cualquier rol que no sea Owner. El Owner decide qué roles necesita su negocio.
 
 #### Event Storming
 ```
@@ -270,13 +171,14 @@ return roles;
 
 | Campo | Tipo |
 |-------|------|
+| TenantId | Guid |
 | Name | string |
 | Description | string |
 
 #### Inyecta
 - `IValidator<TenantRole>`
 
-#### Guards
+#### Guards (en slice)
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
@@ -284,22 +186,12 @@ return roles;
 
 #### Lógica
 ```csharp
-var duplicate = await tenantRoleRepository.ExistsByNameAsync(
-    command.TenantId, command.Name);
-
-ConflictGuard.ThrowIf(duplicate, "A role with this name already exists");
-
 var role = new TenantRole(Guid.NewGuid())
 {
     TenantId = command.TenantId,
     Name = command.Name,
     Description = command.Description,
-    IsSystem = false,
-    IsEditable = true,
-    IsDeletable = true,
-    Groups = [],
-    AdditionalScopes = [],
-    ExcludedScopes = []
+    IsOwner = false
 };
 
 return tenantRoleValidator.ValidateOrThrow(role);
@@ -319,23 +211,18 @@ public record CreateTenantRoleRequest(
 
 #### Tests Unitarios (Dominio)
 
-✅ Crear rol custom con datos válidos
+✅ Crear rol con datos válidos
 - Input: Name="Sommelier", Description="Carta de vinos"
-- Resultado: TenantRole con IsSystem=false, IsEditable=true, IsDeletable=true, Groups=[]
+- Resultado: TenantRole con IsOwner=false, Groups=[]
 
 ❌ Name vacío
 - Input: Name=""
 - Resultado: ValidationException "Name is required"
 
-❌ Name duplicado
-- Precondición: Ya existe rol "Sommelier" en el tenant
-- Input: Name="Sommelier"
-- Resultado: ConflictException "A role with this name already exists"
-
 #### Tests Unitarios (Servicio)
 
 ✅ Verifica unicidad antes de crear
-- Verifica que tenantRoleRepository.ExistsByNameAsync es llamado con tenantId y name
+- Verifica que se comprueba si ya existe un rol con ese nombre
 
 ✅ Llama a TenantRole.Create con los parámetros correctos
 - Verifica que se invoca tenantRoleCreate.Execute con el command correcto
@@ -351,7 +238,7 @@ public record CreateTenantRoleRequest(
 
 #### Tests Integración
 
-✅ 201 Created → TenantRoleResponse con IsSystem=false
+✅ 201 Created → TenantRoleResponse con IsOwner=false
 
 ❌ 409 → Nombre duplicado
 
@@ -417,13 +304,13 @@ public record CreateTenantRoleRequest(
 
 ### 6.5 TenantRole.Update
 
-> Solo permite cambiar Name y Description. No permite modificar roles con IsEditable=false (Owner).
+> Solo permite cambiar Name y Description. No permite modificar el rol Owner (IsOwner=true). El check de nombre duplicado vive en la slice.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(UpdateTenantRole) → 🟤[[TenantRole]] → 🟠<TenantRoleUpdated>
                                         │
-                                  🟣{IsEditable}
+                                  🟣{IsOwner}
                                   🟣{UniqueName}
 ```
 
@@ -441,17 +328,12 @@ public record CreateTenantRoleRequest(
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Rol no es editable | 409 | ConflictGuard | "This role cannot be edited" |
-| Nombre duplicado en el tenant (otro rol) | 409 | ConflictGuard | "A role with this name already exists" |
+| Rol es Owner | 409 | ConflictGuard | "This role cannot be edited" |
+| Nombre duplicado en el tenant (otro rol) | 409 | ConflictGuard (en slice) | "A role with this name already exists" |
 
 #### Lógica
 ```csharp
-ConflictGuard.ThrowIf(!role.IsEditable, "This role cannot be edited");
-
-var duplicate = await tenantRoleRepository.ExistsByNameExcludingAsync(
-    role.TenantId, command.Name, role.Id);
-
-ConflictGuard.ThrowIf(duplicate, "A role with this name already exists");
+ConflictGuard.ThrowIf(role.IsOwner, "This role cannot be edited");
 
 role.Name = command.Name;
 role.Description = command.Description;
@@ -473,24 +355,14 @@ public record UpdateTenantRoleRequest(
 
 #### Tests Unitarios (Dominio)
 
-✅ Actualizar nombre y descripción de rol editable
-- Precondición: TenantRole con IsEditable=true
+✅ Actualizar nombre y descripción de rol normal
+- Precondición: TenantRole con IsOwner=false
 - Input: Name="Jefe de Sala", Description="Coordina servicio"
 - Resultado: TenantRole actualizado
 
-✅ Actualizar rol de sistema editable (Manager)
-- Precondición: TenantRole con IsSystem=true, IsEditable=true
-- Input: Name="Encargado Senior"
-- Resultado: TenantRole actualizado
-
-❌ Rol no editable (Owner)
-- Precondición: TenantRole con IsEditable=false
+❌ Rol Owner no se puede editar
+- Precondición: TenantRole con IsOwner=true
 - Resultado: ConflictException "This role cannot be edited"
-
-❌ Nombre duplicado
-- Precondición: Ya existe otro rol con Name="Camarero"
-- Input: Name="Camarero"
-- Resultado: ConflictException "A role with this name already exists"
 
 ❌ Name vacío
 - Input: Name=""
@@ -502,7 +374,7 @@ public record UpdateTenantRoleRequest(
 
 ❌ 404 → No encontrado
 
-❌ 409 → No editable o nombre duplicado
+❌ 409 → Es Owner o nombre duplicado
 
 ❌ 422 → Validación fallida
 
@@ -510,13 +382,13 @@ public record UpdateTenantRoleRequest(
 
 ### 6.6 TenantRole.UpdatePermissions
 
-> Actualiza groups, additionalScopes y excludedScopes. No permite modificar roles con IsEditable=false (Owner). Al guardar se invalidan las sesiones de los memberships con este rol.
+> Actualiza groups, additionalScopes y excludedScopes. No permite modificar el rol Owner (IsOwner=true). Al guardar se invalidan las sesiones de los memberships con este rol.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(UpdatePermissions) → 🟤[[TenantRole]] → 🟠<TenantRolePermissionsUpdated>
                                          │
-                                   🟣{IsEditable}
+                                   🟣{IsOwner}
 ```
 
 #### Input
@@ -534,15 +406,15 @@ public record UpdateTenantRoleRequest(
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Rol no es editable | 409 | ConflictGuard | "This role cannot be edited" |
+| Rol es Owner | 409 | ConflictGuard | "This role cannot be edited" |
 
 #### Lógica
 ```csharp
-ConflictGuard.ThrowIf(!role.IsEditable, "This role cannot be edited");
+ConflictGuard.ThrowIf(role.IsOwner, "This role cannot be edited");
 
-role.Groups = command.Groups;
-role.AdditionalScopes = command.AdditionalScopes;
-role.ExcludedScopes = command.ExcludedScopes;
+role._groups = [.. command.Groups];
+role._additionalScopes = [.. command.AdditionalScopes];
+role._excludedScopes = [.. command.ExcludedScopes];
 
 return tenantRoleValidator.ValidateOrThrow(role);
 ```
@@ -562,8 +434,8 @@ public record UpdatePermissionsRequest(
 
 #### Tests Unitarios (Dominio)
 
-✅ Actualizar permisos de rol editable
-- Precondición: TenantRole con IsEditable=true, Groups=[]
+✅ Actualizar permisos de rol normal
+- Precondición: TenantRole con IsOwner=false, Groups=[]
 - Input: Groups=["menu:read", "menu:write"], AdditionalScopes=[], ExcludedScopes=[]
 - Resultado: TenantRole con Groups=["menu:read", "menu:write"]
 
@@ -575,8 +447,8 @@ public record UpdatePermissionsRequest(
 - Input: AdditionalScopes=["res-svc:CancelReservation"]
 - Resultado: TenantRole con scope adicional
 
-❌ Rol no editable (Owner)
-- Precondición: TenantRole con IsEditable=false
+❌ Rol Owner no se puede editar
+- Precondición: TenantRole con IsOwner=true
 - Resultado: ConflictException "This role cannot be edited"
 
 #### Tests Unitarios (Servicio)
@@ -596,19 +468,19 @@ public record UpdatePermissionsRequest(
 
 ❌ 404 → No encontrado
 
-❌ 409 → No editable
+❌ 409 → Es Owner
 
 ---
 
-### 6.7 TenantRole.Delete
+### 6.7 Delete (Slice)
 
-> Solo permite eliminar roles con IsDeletable=true (roles custom). No permite eliminar si hay memberships asignados a este rol.
+> No es un comando de dominio. La lógica vive en la slice. No permite eliminar el rol Owner. No permite eliminar si hay memberships asignados.
 
 #### Event Storming
 ```
 🟡[Owner] → 🔵(DeleteTenantRole) → 🟤[[TenantRole]] → 🟠<TenantRoleDeleted>
                                         │
-                                  🟣{IsDeletable}
+                                  🟣{IsOwner}
                                   🟣{NoMemberships}
 ```
 
@@ -620,51 +492,37 @@ public record UpdatePermissionsRequest(
 
 | Condición | HTTP | Guard | Mensaje |
 |-----------|------|-------|---------|
-| Rol no es eliminable | 409 | ConflictGuard | "This role cannot be deleted" |
+| Rol es Owner | 409 | ConflictGuard | "This role cannot be deleted" |
 | Existen memberships con este rol | 409 | ConflictGuard | "Cannot delete a role that has members assigned" |
 
 #### Lógica
 ```csharp
-ConflictGuard.ThrowIf(!role.IsDeletable, "This role cannot be deleted");
+ConflictGuard.ThrowIf(role.IsOwner, "This role cannot be deleted");
 
 var hasMemberships = await membershipRepository.ExistsByRoleIdAsync(role.Id);
 
 ConflictGuard.ThrowIf(hasMemberships, "Cannot delete a role that has members assigned");
 
-tenantRoleRepository.Delete(role);
+repository.Remove(role);
 ```
 
 #### Slice: DELETE /tenant-roles/{id}
 
 **Response**: 204 No Content
 
-#### Tests Unitarios (Dominio)
+#### Tests Unitarios (Servicio)
 
-✅ Eliminar rol custom sin memberships
-- Precondición: TenantRole con IsDeletable=true, sin memberships asignados
+✅ Eliminar rol normal sin memberships
+- Precondición: TenantRole con IsOwner=false, sin memberships
 - Resultado: Rol eliminado
 
-❌ Rol no eliminable (sistema)
-- Precondición: TenantRole con IsDeletable=false
+❌ Rol Owner no se puede eliminar
+- Precondición: TenantRole con IsOwner=true
 - Resultado: ConflictException "This role cannot be deleted"
 
 ❌ Rol con memberships asignados
-- Precondición: TenantRole con IsDeletable=true, tiene memberships
+- Precondición: TenantRole con IsOwner=false, tiene memberships
 - Resultado: ConflictException "Cannot delete a role that has members assigned"
-
-#### Tests Unitarios (Servicio)
-
-✅ Obtiene el rol del repositorio
-- Verifica que repository.GetByIdAsync es llamado con roleId
-
-✅ Verifica que no hay memberships asignados
-- Verifica que membershipRepository.ExistsByRoleIdAsync es llamado con roleId
-
-✅ Elimina el rol
-- Verifica que repository.Delete es llamado
-
-✅ Guarda los cambios
-- Verifica que unitOfWork.SaveChangesAsync es llamado
 
 #### Tests Integración
 
@@ -672,7 +530,7 @@ tenantRoleRepository.Delete(role);
 
 ❌ 404 → No encontrado
 
-❌ 409 → No eliminable o tiene memberships
+❌ 409 → Es Owner o tiene memberships
 
 ---
 
@@ -704,7 +562,7 @@ tenantRoleRepository.Delete(role);
 | 3 | GET | /tenant-roles | ListTenantRoles | 200 → `TenantRoleResponse[]` |
 | 4 | PUT | /tenant-roles/{id} | TenantRole.Update | 204 |
 | 5 | PUT | /tenant-roles/{id}/permissions | TenantRole.UpdatePermissions | 204 |
-| 6 | DELETE | /tenant-roles/{id} | TenantRole.Delete | 204 |
+| 6 | DELETE | /tenant-roles/{id} | Delete (slice) | 204 |
 
 ---
 
@@ -742,9 +600,7 @@ modelBuilder.Entity<TenantRole>(entity =>
   "tenantId": "tenant-001-guid",
   "name": "Manager",
   "description": "Encargado. Gestiona operativa diaria.",
-  "isSystem": true,
-  "isEditable": true,
-  "isDeletable": false,
+  "isOwner": false,
   "groups": ["menu:read", "menu:write", "reservation:read", "reservation:write"],
   "additionalScopes": ["res-svc:CancelReservation"],
   "excludedScopes": ["menu-svc:SetMenuDepositPolicy", "menu-svc:RemoveMenuDepositPolicy"]
@@ -759,10 +615,9 @@ modelBuilder.Entity<TenantRole>(entity =>
 |---|----------|--------|
 | 1 | ¿Se necesita validar que los groups y scopes existen en algún catálogo al asignarlos? | Pendiente: El Auth no conoce el catálogo — solo copia permisos al JWT |
 | 2 | ¿Se necesita auditoría de cambios en permisos de roles? | Pendiente |
-| 3 | ¿Los roles de sistema deben tener permisos por defecto al crearse o se configuran después? | Decidido: Se crean sin permisos — el Owner los configura |
-| 4 | ¿Se debe invalidar sesiones al actualizar permisos de un rol? | Decidido: Sí — el wireframe lo muestra explícitamente |
+| 3 | ¿Se debe invalidar sesiones al actualizar permisos de un rol? | Decidido: Sí — el wireframe lo muestra explícitamente |
 
 ---
 
-**Fecha**: 2026-02-10
+**Fecha**: 2026-02-18
 **Autor**: Equipo Fudie

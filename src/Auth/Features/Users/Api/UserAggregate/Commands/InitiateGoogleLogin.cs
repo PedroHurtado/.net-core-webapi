@@ -2,18 +2,19 @@ namespace Auth.Features.Users.Api.UserAggregate.Commands;
 
 public class InitiateGoogleLogin : IFeatureModule
 {
-    public static Func<IService, HttpContext, IResult> Handler =>
-        (service, httpContext) =>
+    public static Func<IService, IOAuthSettings, HttpContext, IResult> Handler =>
+        (service, oauthSettings, httpContext) =>
         {
+            var settings = oauthSettings.Get();
             var result = service.Handle();
 
-            httpContext.Response.Cookies.Append("fudie_oauth_state", result.State, new CookieOptions
+            httpContext.Response.Cookies.Append(settings.StateCookieName, result.State, new CookieOptions
             {
                 Path = "/auth/login/google",
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Lax,
-                MaxAge = TimeSpan.FromSeconds(300)
+                MaxAge = TimeSpan.FromSeconds(settings.StateExpirationSeconds)
             });
 
             return Results.Redirect(result.Url);

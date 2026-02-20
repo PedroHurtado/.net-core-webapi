@@ -11,9 +11,9 @@ public class TenantRoleUpdateTests(DomainFixture fixture) : IClassFixture<Domain
             .WithTenantId(Guid.NewGuid())
             .WithName("Manager")
             .WithDescription("Encargado. Gestiona operativa diaria.")
-            .WithIsSystem(true)
-            .WithIsEditable(true)
-            .WithIsDeletable(false);
+            
+            
+            ;
 
         var command = new UpdateTenantRoleCommand(
             Name: "Encargado Senior",
@@ -32,9 +32,9 @@ public class TenantRoleUpdateTests(DomainFixture fixture) : IClassFixture<Domain
             .WithTenantId(Guid.NewGuid())
             .WithName("Owner")
             .WithDescription("Propietario.")
-            .WithIsSystem(true)
-            .WithIsEditable(false)
-            .WithIsDeletable(false);
+            
+            .WithIsOwner(true)
+            ;
 
         var command = new UpdateTenantRoleCommand(
             Name: "Nuevo nombre",

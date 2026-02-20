@@ -7,7 +7,8 @@ public class Session_RefreshTests(DomainFixture fixture) : IClassFixture<DomainF
     [Fact]
     public void Execute_WithActiveSession_UpdatesLastActivityAndExpires()
     {
-        var createdAt = DateTimeOffset.UtcNow.AddDays(-5);
+        var now = DateTime.UtcNow;
+        var createdAt = now.AddDays(-5);
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -20,16 +21,19 @@ public class Session_RefreshTests(DomainFixture fixture) : IClassFixture<DomainF
             .WithLastActivityAt(createdAt)
             .WithExpiresAt(createdAt.AddDays(30));
 
-        var result = _refresh.Execute(session);
+        var expiresAt = now.AddDays(30);
+        var command = new RefreshSessionCommand(Now: now, ExpiresAt: expiresAt);
 
-        result.LastActivityAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2));
-        result.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(30), TimeSpan.FromSeconds(2));
+        var result = _refresh.Execute(session, command);
+
+        result.LastActivityAt.Should().Be(now);
+        result.ExpiresAt.Should().Be(expiresAt);
     }
 
     [Fact]
     public void Execute_WithExpiredSession_ThrowsUnauthorizedException()
     {
-        var createdAt = DateTimeOffset.UtcNow.AddDays(-60);
+        var createdAt = DateTime.UtcNow.AddDays(-60);
         var session = new TestableSession(Guid.NewGuid())
             .WithUserId(Guid.NewGuid())
             .WithTenantId(null)
@@ -42,7 +46,10 @@ public class Session_RefreshTests(DomainFixture fixture) : IClassFixture<DomainF
             .WithLastActivityAt(createdAt.AddDays(29))
             .WithExpiresAt(createdAt.AddDays(30));
 
-        var act = () => _refresh.Execute(session);
+        var now = DateTime.UtcNow;
+        var command = new RefreshSessionCommand(Now: now, ExpiresAt: now.AddDays(30));
+
+        var act = () => _refresh.Execute(session, command);
 
         act.Should().Throw<UnauthorizedException>()
             .WithMessage("*Session expired*");

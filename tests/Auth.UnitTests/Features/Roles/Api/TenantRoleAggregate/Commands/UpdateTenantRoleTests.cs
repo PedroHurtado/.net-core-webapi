@@ -37,7 +37,7 @@ public class UpdateTenantRoleTests : IClassFixture<DomainFixture>
             .WithTenantId(Guid.NewGuid())
             .WithName("OldName")
             .WithDescription("Old description")
-            .WithIsEditable(true);
+            ;
         _repository.Setup(r => r.Get(id)).ReturnsAsync(role);
         _query.Setup(q => q.Query<TenantRole>())
             .Returns(new List<TenantRole>().AsAsyncQueryable());

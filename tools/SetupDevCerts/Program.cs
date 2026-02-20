@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 Console.WriteLine("Generating ES256 (P-256) key pair for JWT signing...\n");
 
 var solutionRoot = FindSolutionRoot()
-    ?? throw new InvalidOperationException("Could not find solution root (webapi.sln)");
+    ?? throw new InvalidOperationException("Could not find solution root (Fudie.sln)");
 
 var authCsproj = Path.Combine(solutionRoot, "src", "Auth", "Auth.csproj");
 
@@ -36,13 +36,21 @@ else
     Console.WriteLine("Run 'git-crypt unlock <key-file>' to decrypt OAuth secrets.");
 }
 
+Console.WriteLine("\nSetting Fudie shared secrets...\n");
+
+SetSecret(authCsproj, "Fudie:SeedKey", Guid.NewGuid().ToString());
+SetSecret(authCsproj, "Fudie:PlatformTenantId", Guid.NewGuid().ToString());
+SetSecret(authCsproj, "Fudie:InternalSecret", Guid.NewGuid().ToString());
+
+Console.WriteLine("\nFudie shared secrets stored.");
+
 static string? FindSolutionRoot()
 {
     var dir = AppContext.BaseDirectory;
 
     while (dir is not null)
     {
-        if (File.Exists(Path.Combine(dir, "webapi.sln")))
+        if (File.Exists(Path.Combine(dir, "Fudie.sln")))
             return dir;
 
         dir = Directory.GetParent(dir)?.FullName;

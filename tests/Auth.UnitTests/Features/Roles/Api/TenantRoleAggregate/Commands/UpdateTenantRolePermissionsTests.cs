@@ -35,7 +35,7 @@ public class UpdateTenantRolePermissionsTests : IClassFixture<DomainFixture>
             .WithTenantId(Guid.NewGuid())
             .WithName("Admin")
             .WithDescription("Admin role")
-            .WithIsEditable(true);
+            ;
         _repository.Setup(r => r.Get(id)).ReturnsAsync(role);
 
         var request = new UpdateTenantRolePermissions.Request(

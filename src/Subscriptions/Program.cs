@@ -57,7 +57,9 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/subscriptions/swagger")).ExcludeFromDescription();
 }
 
+app.UseFudieAuthorization();
 app.MapFeatures();
+app.MapCatalog();
 
 app.UseHttpsRedirection();
 

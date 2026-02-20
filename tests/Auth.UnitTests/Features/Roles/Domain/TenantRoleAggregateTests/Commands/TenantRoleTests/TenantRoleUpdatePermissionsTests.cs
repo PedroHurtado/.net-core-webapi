@@ -11,9 +11,9 @@ public class TenantRoleUpdatePermissionsTests(DomainFixture fixture) : IClassFix
             .WithTenantId(Guid.NewGuid())
             .WithName("Manager")
             .WithDescription("Encargado.")
-            .WithIsSystem(true)
-            .WithIsEditable(true)
-            .WithIsDeletable(false);
+            
+            
+            ;
 
         var command = new UpdatePermissionsCommand(
             Groups: ["menu:read", "menu:write"],
@@ -34,9 +34,9 @@ public class TenantRoleUpdatePermissionsTests(DomainFixture fixture) : IClassFix
             .WithTenantId(Guid.NewGuid())
             .WithName("Manager")
             .WithDescription("Encargado.")
-            .WithIsSystem(true)
-            .WithIsEditable(true)
-            .WithIsDeletable(false)
+            
+            
+            
             .WithGroup("menu:read")
             .WithAdditionalScope("res-svc:CancelReservation")
             .WithExcludedScope("menu-svc:SetMenuDepositPolicy");
@@ -60,9 +60,9 @@ public class TenantRoleUpdatePermissionsTests(DomainFixture fixture) : IClassFix
             .WithTenantId(Guid.NewGuid())
             .WithName("Owner")
             .WithDescription("Propietario.")
-            .WithIsSystem(true)
-            .WithIsEditable(false)
-            .WithIsDeletable(false);
+            
+            .WithIsOwner(true)
+            ;
 
         var command = new UpdatePermissionsCommand(
             Groups: ["menu:read"],

@@ -143,6 +143,7 @@ public class RouteExtensionTests
     {
         var services = new ServiceCollection();
         services.AddRouting();
+        services.AddSingleton<ICatalogRegistry, CatalogRegistry>();
         var serviceProvider = services.BuildServiceProvider();
 
         var builder = new DefaultEndpointRouteBuilder(

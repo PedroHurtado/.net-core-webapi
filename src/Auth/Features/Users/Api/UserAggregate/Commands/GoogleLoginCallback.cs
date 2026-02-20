@@ -2,27 +2,23 @@ namespace Auth.Features.Users.Api.UserAggregate.Commands;
 
 public class GoogleLoginCallback : IFeatureModule
 {
-    public static Func<IService, HttpContext, string, string, Task<IResult>> Handler =>
-        async (service, httpContext, code, state) =>
+    public static Func<IService, ISessionCookieService, IOAuthSettings, HttpContext, string, string, Task<IResult>> Handler =>
+        async (service, sessionCookieService, oauthSettings, httpContext, code, state) =>
         {
-            var cookieState = httpContext.Request.Cookies["fudie_oauth_state"];
+            var settings = oauthSettings.Get();
+            var cookieState = httpContext.Request.Cookies[settings.StateCookieName];
 
             if (cookieState is null || cookieState != state)
                 return Results.Unauthorized();
 
-            httpContext.Response.Cookies.Delete("fudie_oauth_state", new CookieOptions
+            httpContext.Response.Cookies.Delete(settings.StateCookieName, new CookieOptions
             {
                 Path = "/auth/login/google"
             });
 
             var sessionId = await service.HandleAsync(code);
 
-            httpContext.Response.Cookies.Append("fudie_session", sessionId.ToString(), new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax
-            });
+            sessionCookieService.Append(httpContext, sessionId);
 
             return Results.Redirect("/");
         };
@@ -47,6 +43,10 @@ public class GoogleLoginCallback : IFeatureModule
         User.Create createUser,
         User.UpdateFromOAuth updateFromOAuth,
         Session.Create createSession,
+        Session.Refresh refreshSession,
+        Session.SetTenantContext setTenantContext,
+        IRequestTimestamp requestTimestamp,
+        IMembershipLookup membershipLookup,
         IRepository repository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork
@@ -85,6 +85,8 @@ public class GoogleLoginCallback : IFeatureModule
             }
             else
             {
+                UnauthorizedGuard.ThrowIf(!existingUser.IsActive, "User is inactive");
+
                 updateFromOAuth.Execute(existingUser, new UpdateFromOAuthCommand(
                     Email: claims.Email,
                     Name: claims.Name,
@@ -93,8 +95,38 @@ public class GoogleLoginCallback : IFeatureModule
                 userId = existingUser.Id;
             }
 
-            var session = createSession.Execute(new CreateSessionCommand(UserId: userId));
-            sessionRepository.Add(session);
+            var session = await sessionRepository.FindFirstByUserId(userId);
+
+            if (session?.IsExpired == true)
+            {
+                sessionRepository.Remove(session);
+                session = null;
+            }
+
+            if (session is null)
+            {
+                session = createSession.Execute(new CreateSessionCommand(
+                    userId, requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+
+                var membership = await membershipLookup.FindFirstByUserId(userId);
+                if (membership is not null)
+                {
+                    setTenantContext.Execute(session, new SetTenantContextCommand(
+                        membership.TenantId,
+                        membership.Role.Id,
+                        [.. membership.Role.Groups],
+                        [.. membership.Role.AdditionalScopes],
+                        [.. membership.Role.ExcludedScopes],
+                        membership.Role.IsOwner));
+                }
+
+                sessionRepository.Add(session);
+            }
+            else
+            {
+                refreshSession.Execute(session, new RefreshSessionCommand(
+                    requestTimestamp.UtcNow, requestTimestamp.ExpiresAt));
+            }
 
             await unitOfWork.SaveChangesAsync();
 
@@ -109,5 +141,9 @@ public class GoogleLoginCallback : IFeatureModule
         Task<User?> FindFirstByProviderIdAndProvider(string providerId, AuthProvider provider);
     }
 
-    public interface ISessionRepository : IAdd<Session> { }
+    public interface ISessionRepository : IAdd<Session>, IRemove<Session, Guid>
+    {
+        [Tracking]
+        Task<Session?> FindFirstByUserId(Guid userId);
+    }
 }

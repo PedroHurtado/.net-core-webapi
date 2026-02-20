@@ -51,7 +51,9 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/plans/swagger")).ExcludeFromDescription();
 }
 
+app.UseFudieAuthorization();
 app.MapFeatures();
+app.MapCatalog();
 
 app.UseHttpsRedirection();
 

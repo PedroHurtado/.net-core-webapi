@@ -7,6 +7,7 @@ ARG PROJECT_DIR
 ARG FIRESTORE_DIR
 WORKDIR /src
 
+COPY ${PROJECT_DIR}/Directory.Build.props webapi/
 COPY ${PROJECT_DIR}/src/Auth/Auth.csproj webapi/src/Auth/
 COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj webapi/src/Fudie/
 COPY ${PROJECT_DIR}/src/Fudie.Generator/Fudie.Generator.csproj webapi/src/Fudie.Generator/

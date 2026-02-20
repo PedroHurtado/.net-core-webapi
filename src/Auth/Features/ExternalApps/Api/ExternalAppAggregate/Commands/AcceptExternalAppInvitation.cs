@@ -32,7 +32,7 @@ public class AcceptExternalAppInvitation : IFeatureModule
         public async Task<ApiKeyResponse> HandleAsync(Guid id)
         {
             var entity = await repository.Get(id);
-            var user = await entityLookup.GetRequiredAsync<User, Guid>(currentUserId.Value, tracking: false);
+            var user = await entityLookup.GetRequiredAsync<User, Guid>(currentUserId.Value);
 
             var apiKeyResult = apiKeyGenerator.Generate();
 

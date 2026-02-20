@@ -6,13 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-    <UserSecretsId>569f94d2-6a9b-4b8c-b190-7525f739671c</UserSecretsId>
+
   </PropertyGroup>
 
 
   <PropertyGroup>
     <RootNamespace>Auth</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Update="google-oauth.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />

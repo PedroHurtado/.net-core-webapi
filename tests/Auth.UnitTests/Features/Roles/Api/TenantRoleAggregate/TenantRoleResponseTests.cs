@@ -10,9 +10,7 @@ public class TenantRoleResponseTests
         var role = new TestableTenantRole(Guid.NewGuid())
             .WithName("Admin")
             .WithDescription("Administrator role")
-            .WithIsSystem(true)
-            .WithIsEditable(false)
-            .WithIsDeletable(false)
+            .WithIsOwner(true)
             .WithGroup("users")
             .WithAdditionalScope("read:all")
             .WithExcludedScope("delete:all");
@@ -22,9 +20,7 @@ public class TenantRoleResponseTests
         response.Id.Should().Be(role.Id);
         response.Name.Should().Be("Admin");
         response.Description.Should().Be("Administrator role");
-        response.IsSystem.Should().BeTrue();
-        response.IsEditable.Should().BeFalse();
-        response.IsDeletable.Should().BeFalse();
+        response.IsOwner.Should().BeTrue();
         response.Groups.Should().HaveCount(1);
         response.Groups.First().Should().Be("users");
         response.AdditionalScopes.Should().HaveCount(1);

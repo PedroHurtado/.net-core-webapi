@@ -10,7 +10,7 @@ var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 builder.Services.AddScoped(typeof(Guid), _ => tenantId);
 
 // User ID (temporal - hardcoded for development)
-var userId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+var userId = Guid.Parse("42c8927d-33a7-4ae3-a772-5dcd0f46ece1");
 builder.Services.AddScoped(_ => new CurrentUserId(userId));
 
 // Add services to the container.
@@ -44,6 +44,15 @@ builder.Services
 builder.Services
     .AddRefitClient<IGoogleCertsApi>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://www.googleapis.com"));
+
+builder.Services
+    .AddRefitClient<ICustomerApi>()
+    .ConfigureHttpClient((sp, c) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        c.BaseAddress = new Uri(config["Fudie:Services:Customers"]!);
+    })
+    .AddHttpMessageHandler<InternalAuthHandler>();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -89,7 +98,9 @@ if (app.Environment.IsDevelopment())
         .ExcludeFromDescription();
 }
 
+app.UseFudieAuthorization();
 app.MapFeatures();
+app.MapCatalog();
 
 app.UseHttpsRedirection();
 

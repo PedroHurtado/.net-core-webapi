@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Fudie.Features;
@@ -7,17 +8,14 @@ public static class RouteExtension
 {
     public static void MapFeatures(this IEndpointRouteBuilder builder)
     {
-        // Obtener el ensamblado donde está definido IFeatureModule
         var interfaceAssembly = typeof(IFeatureModule).Assembly;
 
-        // Buscar en todos los ensamblados cargados que referencian a Fudie
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic &&
                        (a == interfaceAssembly ||
                         a.GetReferencedAssemblies().Any(ra => ra.Name == interfaceAssembly.GetName().Name)))
             .ToList();
 
-        // Descubrir todos los tipos que implementan IFeatureModule
         var features = assemblies
             .SelectMany(a =>
             {
@@ -27,7 +25,6 @@ public static class RouteExtension
                 }
                 catch (ReflectionTypeLoadException)
                 {
-                    // Ignorar ensamblados que no se pueden cargar
                     return [];
                 }
             })
@@ -35,12 +32,22 @@ public static class RouteExtension
             .Select(Activator.CreateInstance)
             .Cast<IFeatureModule>();
 
-        /*var authorizedGroup = builder.MapGroup(string.Empty)
-            .RequireAuthorization();*/
+        var catalog = builder.ServiceProvider.GetRequiredService<ICatalogRegistry>();
 
         foreach (var feature in features)
         {
+            var countBefore = builder.DataSources
+                .SelectMany(ds => ds.Endpoints).Count();
+
             feature.AddRoutes(builder);
+
+            var className = feature.GetType().Name;
+
+            foreach (var endpoint in builder.DataSources
+                .SelectMany(ds => ds.Endpoints).Skip(countBefore))
+            {
+                catalog.Register(className, endpoint);
+            }
         }
     }
 }

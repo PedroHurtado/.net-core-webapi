@@ -1,7 +1,9 @@
 namespace Auth.Features.Sessions.Domain.SessionAggregate;
 
 public record CreateSessionCommand(
-    Guid UserId
+    Guid UserId,
+    DateTime Now,
+    DateTime ExpiresAt
 );
 
 public partial class Session
@@ -13,8 +15,6 @@ public partial class Session
     {
         public override Session Execute(CreateSessionCommand command)
         {
-            var now = DateTimeOffset.UtcNow;
-
             var session = new Session(Guid.NewGuid())
             {
                 UserId = command.UserId,
@@ -24,9 +24,9 @@ public partial class Session
                 AdditionalScopes = [],
                 ExcludedScopes = [],
                 IsOwner = false,
-                CreatedAt = now,
-                LastActivityAt = now,
-                ExpiresAt = now.AddDays(30)
+                CreatedAt = command.Now,
+                LastActivityAt = command.Now,
+                ExpiresAt = command.ExpiresAt
             };
 
             return sessionValidator.ValidateOrThrow(session);

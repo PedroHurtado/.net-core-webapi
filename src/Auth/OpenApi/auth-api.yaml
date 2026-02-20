@@ -25,6 +25,49 @@ tags:
     description: Gestión de usuarios
 
 paths:
+  /auth/seed:
+    post:
+      tags: [Auth]
+      operationId: seed
+      summary: Seed de plataforma
+      description: |
+        Crea el super admin, el tenant de plataforma, el rol Owner y la Membership.
+        Protegido por `X-Seed-Key`. Solo se puede ejecutar una vez.
+      parameters:
+        - name: X-Seed-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeedRequest'
+      responses:
+        '204':
+          description: Seed ejecutado correctamente
+        '401':
+          description: Seed key inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El owner de plataforma ya existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida (invariantes de User, TenantRole o Membership)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
   /auth/login:
     post:
       tags: [Auth]
@@ -313,6 +356,123 @@ components:
     # Requests
     # ──────────────────────────────────────────────
 
+    SeedRequest:
+      type: object
+      required: [user, customer]
+      properties:
+        user:
+          $ref: '#/components/schemas/SeedUserRequest'
+        customer:
+          $ref: '#/components/schemas/SeedCustomerRequest'
+
+    SeedUserRequest:
+      type: object
+      required: [email, name, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 256
+          example: admin@fudie.app
+        name:
+          type: string
+          maxLength: 200
+          example: Fudie Admin
+        password:
+          type: string
+          format: password
+          example: SecureP@ss123
+
+    SeedCustomerRequest:
+      type: object
+      required: [name, slug, establishmentType, defaultCulture, timeZoneId, address, contactInfo, billingInfo]
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          example: Fudie Platform
+        slug:
+          type: string
+          maxLength: 200
+          example: fudie-platform
+        description:
+          type: string
+          nullable: true
+          example: Tenant de plataforma Fudie
+        establishmentType:
+          type: string
+          example: platform
+        defaultCulture:
+          type: string
+          example: es-ES
+        timeZoneId:
+          type: string
+          example: Europe/Madrid
+        address:
+          $ref: '#/components/schemas/SeedAddressRequest'
+        contactInfo:
+          $ref: '#/components/schemas/SeedContactInfoRequest'
+        billingInfo:
+          $ref: '#/components/schemas/SeedBillingInfoRequest'
+
+    SeedAddressRequest:
+      type: object
+      required: [street, city, postalCode, region, country, latitude, longitude]
+      properties:
+        street:
+          type: string
+          example: Calle Principal 1
+        city:
+          type: string
+          example: Madrid
+        postalCode:
+          type: string
+          example: '28001'
+        region:
+          type: string
+          example: Madrid
+        country:
+          type: string
+          example: ES
+        latitude:
+          type: number
+          format: decimal
+          example: 40.4168
+        longitude:
+          type: number
+          format: decimal
+          example: -3.7038
+
+    SeedContactInfoRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          example: '+34900000000'
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: info@fudie.app
+        websiteUrl:
+          type: string
+          nullable: true
+          example: https://fudie.app
+
+    SeedBillingInfoRequest:
+      type: object
+      required: [businessName, taxId, billingAddress]
+      properties:
+        businessName:
+          type: string
+          example: Fudie Technologies S.L.
+        taxId:
+          type: string
+          example: B12345678
+        billingAddress:
+          $ref: '#/components/schemas/SeedAddressRequest'
+
     LoginWithPasswordRequest:
       type: object
       required: [email, password]
@@ -321,10 +481,11 @@ components:
           type: string
           format: email
           maxLength: 200
+          example: admin@fudie.app
         password:
           type: string
           format: password
-
+          example: SecureP@ss123
     UpdateUserRequest:
       type: object
       required: [name, phone]

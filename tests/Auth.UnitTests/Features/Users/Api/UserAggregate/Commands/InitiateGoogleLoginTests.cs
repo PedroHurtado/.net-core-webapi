@@ -21,9 +21,11 @@ public class InitiateGoogleLoginTests
         var mockService = new Mock<InitiateGoogleLogin.IService>();
         mockService.Setup(s => s.Handle())
             .Returns(new GoogleOAuthUrl("https://accounts.google.com/auth", "test-state"));
+        var mockOAuthSettings = new Mock<IOAuthSettings>();
+        mockOAuthSettings.Setup(s => s.Get()).Returns(new OAuthSettings("fudie_oauth_state", 300));
         var httpContext = new DefaultHttpContext();
 
-        var result = InitiateGoogleLogin.Handler(mockService.Object, httpContext);
+        var result = InitiateGoogleLogin.Handler(mockService.Object, mockOAuthSettings.Object, httpContext);
 
         result.Should().BeOfType<RedirectHttpResult>()
             .Which.Url.Should().Be("https://accounts.google.com/auth");

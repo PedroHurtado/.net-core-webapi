@@ -18,9 +18,9 @@ public class TestableSession : Session
 
     public TestableSession WithIsOwner(bool value) { IsOwner = value; return this; }
 
-    public TestableSession WithCreatedAt(DateTimeOffset value) { CreatedAt = value; return this; }
+    public TestableSession WithCreatedAt(DateTime value) { CreatedAt = value; return this; }
 
-    public TestableSession WithLastActivityAt(DateTimeOffset value) { LastActivityAt = value; return this; }
+    public TestableSession WithLastActivityAt(DateTime value) { LastActivityAt = value; return this; }
 
-    public TestableSession WithExpiresAt(DateTimeOffset value) { ExpiresAt = value; return this; }
+    public TestableSession WithExpiresAt(DateTime value) { ExpiresAt = value; return this; }
 }

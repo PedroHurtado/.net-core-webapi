@@ -14,7 +14,7 @@ public class GetTenantRoleTests
     public async Task Handler_WithValidId_ReturnsOk()
     {
         var expectedResponse = new TenantRoleResponse(
-            Guid.NewGuid(), "Admin", "desc", false, true, true, [], [], []);
+            Guid.NewGuid(), "Admin", "desc", false, [], [], []);
         var mockService = new Mock<GetTenantRole.IService>();
         var id = Guid.NewGuid();
         mockService.Setup(s => s.HandleAsync(id)).ReturnsAsync(expectedResponse);
@@ -33,9 +33,7 @@ public class GetTenantRoleTests
         var role = new TestableTenantRole(id)
             .WithName("Admin")
             .WithDescription("Administrator role")
-            .WithIsSystem(true)
-            .WithIsEditable(false)
-            .WithIsDeletable(false);
+            .WithIsOwner(true);
         _repository.Setup(r => r.Get(id)).ReturnsAsync(role);
 
         var response = await _service.HandleAsync(id);
@@ -43,6 +41,6 @@ public class GetTenantRoleTests
         response.Id.Should().Be(id);
         response.Name.Should().Be("Admin");
         response.Description.Should().Be("Administrator role");
-        response.IsSystem.Should().BeTrue();
+        response.IsOwner.Should().BeTrue();
     }
 }

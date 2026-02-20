@@ -1,19 +1,23 @@
 namespace Auth.Features.Sessions.Domain.SessionAggregate;
 
+public record RefreshSessionCommand(
+    DateTime Now,
+    DateTime ExpiresAt
+);
+
 public partial class Session
 {
     [Injectable(ServiceLifetime.Singleton)]
     public class Refresh(
         IValidator<Session> sessionValidator
-    ) : AbstractModifyCommand<Session>
+    ) : AbstractModifyCommand<RefreshSessionCommand, Session>
     {
-        public override Session Execute(Session session)
+        public override Session Execute(Session session, RefreshSessionCommand command)
         {
             UnauthorizedGuard.ThrowIf(session.IsExpired, "Session expired");
 
-            var now = DateTimeOffset.UtcNow;
-            session.LastActivityAt = now;
-            session.ExpiresAt = now.AddDays(30);
+            session.LastActivityAt = command.Now;
+            session.ExpiresAt = command.ExpiresAt;
 
             return sessionValidator.ValidateOrThrow(session);
         }
