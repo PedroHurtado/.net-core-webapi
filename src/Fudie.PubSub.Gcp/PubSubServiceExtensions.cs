@@ -1,6 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Fudie.PubSub.Gcp;
 
 public static class PubSubServiceExtensions

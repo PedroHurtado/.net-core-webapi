@@ -1,4 +1,4 @@
-namespace Fudie.PubSub;
+namespace Fudie.PubSub.Serialization;
 
 public sealed class JsonPubSubSerializer : ISerializer
 {

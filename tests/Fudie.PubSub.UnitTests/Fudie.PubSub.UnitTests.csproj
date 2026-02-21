@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Fudie.PubSub\Fudie.PubSub.csproj" />
     <ProjectReference Include="..\..\src\Fudie.PubSub.Gcp\Fudie.PubSub.Gcp.csproj" />
+    <ProjectReference Include="..\..\..\Firestore\src\Fudie.Firestore.EntityFrameworkCore\Fudie.Firestore.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 </Project>

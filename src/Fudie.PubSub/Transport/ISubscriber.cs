@@ -1,4 +1,4 @@
-namespace Fudie.PubSub;
+namespace Fudie.PubSub.Transport;
 
 public interface ISubscriber
 {
