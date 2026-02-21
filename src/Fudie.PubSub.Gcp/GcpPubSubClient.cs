@@ -4,7 +4,7 @@ using Grpc.Core;
 
 namespace Fudie.PubSub.Gcp;
 
-internal sealed class GcpPubSubClient(string projectId) : PubSubClient
+internal sealed class GcpPubSubClient(string projectId, ISerializer? serializer = null) : PubSubClient(serializer)
 {
     private readonly PublisherServiceApiClient _publisherApi = new PublisherServiceApiClientBuilder
     {

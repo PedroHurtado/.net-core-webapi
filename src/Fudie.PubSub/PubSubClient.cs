@@ -1,9 +1,9 @@
-using System.Text.Json;
-
 namespace Fudie.PubSub;
 
-public abstract class PubSubClient : IPubSubClient
+public abstract class PubSubClient(ISerializer? serializer = null) : IPubSubClient
 {
+    private readonly ISerializer _serializer = serializer ?? new JsonPubSubSerializer();
+
     Task ITopicAdmin.CreateTopicAsync(string topicId)
     {
         ArgumentException.ThrowIfNullOrEmpty(topicId);
@@ -45,7 +45,7 @@ public abstract class PubSubClient : IPubSubClient
     {
         ArgumentException.ThrowIfNullOrEmpty(topicId);
         ArgumentNullException.ThrowIfNull(message);
-        var data = JsonSerializer.SerializeToUtf8Bytes(message);
+        var data = _serializer.Serialize(message);
         return PublishAsync(topicId, data);
     }
 
@@ -55,8 +55,7 @@ public abstract class PubSubClient : IPubSubClient
         ArgumentNullException.ThrowIfNull(handler);
         return SubscribeAsync(subscriptionId, (data, token) =>
         {
-            var message = JsonSerializer.Deserialize<T>(data)
-                ?? throw new InvalidOperationException($"Failed to deserialize message to {typeof(T).Name}");
+            var message = _serializer.Deserialize<T>(data);
             return handler(message, token);
         }, ct);
     }

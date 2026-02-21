@@ -10,7 +10,8 @@ public static class PubSubServiceExtensions
         var projectId = configuration["PubSub:ProjectId"]
             ?? throw new InvalidOperationException("PubSub:ProjectId is not configured");
 
-        services.AddSingleton<IPubSubClient>(_ => new GcpPubSubClient(projectId));
+        services.AddSingleton<IPubSubClient>(sp =>
+            new GcpPubSubClient(projectId, sp.GetService<ISerializer>()));
 
         return services;
     }
