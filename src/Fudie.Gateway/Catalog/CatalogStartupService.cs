@@ -3,11 +3,18 @@ namespace Fudie.Gateway.Catalog;
 public sealed class CatalogStartupService(
     IConfiguration configuration,
     IHttpClientFactory httpClientFactory,
-    IAnonymousRouteRegistry registry,
+    ICatalogRouteRegistry registry,
     ILogger<CatalogStartupService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var internalSecret = configuration["Fudie:InternalSecret"];
+        if (string.IsNullOrEmpty(internalSecret))
+        {
+            logger.LogWarning("Fudie:InternalSecret not configured — catalog pull skipped");
+            return;
+        }
+
         var clusters = configuration.GetSection("ReverseProxy:Clusters").GetChildren();
 
         foreach (var cluster in clusters)
@@ -20,30 +27,31 @@ public sealed class CatalogStartupService(
             {
                 var client = httpClientFactory.CreateClient();
                 client.BaseAddress = new Uri(address);
-                var catalogService = RestService.For<ICatalogService>(client);
+                client.DefaultRequestHeaders.Add("X-Internal-Key", internalSecret);
 
-                var response = await catalogService.GetAnonymousRoutes();
+                var catalogService = RestService.For<ICatalogService>(client);
+                var response = await catalogService.GetCatalog();
 
                 if (!response.IsSuccessStatusCode)
                 {
                     logger.LogWarning(
-                        "Failed to fetch anonymous routes from {ClusterId} at {Address}: {StatusCode}",
+                        "Failed to fetch catalog from {ClusterId} at {Address}: {StatusCode}",
                         clusterId, address, response.StatusCode);
                     continue;
                 }
 
-                if (response.Content is { Count: > 0 })
+                if (response.Content is not null)
                 {
                     registry.Update(clusterId, response.Content);
                     logger.LogInformation(
-                        "Loaded {Count} anonymous routes from {ClusterId}",
-                        response.Content.Count, clusterId);
+                        "Loaded {Count} catalog entries from {ClusterId} ({ServiceId})",
+                        response.Content.Entries.Count, clusterId, response.Content.ServiceId);
                 }
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex,
-                    "Could not fetch anonymous routes from {ClusterId} at {Address}",
+                    "Could not fetch catalog from {ClusterId} at {Address}",
                     clusterId, address);
             }
         }
