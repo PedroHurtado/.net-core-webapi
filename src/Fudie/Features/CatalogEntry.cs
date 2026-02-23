@@ -1,10 +1,13 @@
 namespace Fudie.Features;
 
 public record CatalogEntry(
-    string DisplayName,
     string ClassName,
     string HttpVerb,
-    bool IsPlatform,
+    string RoutePattern,
+    bool IsAnonymous,
+    bool IsAuthenticated,
     bool IsInternal,
+    bool IsPlatform,
     bool IsExcluded,
-    string? CustomGroup);
+    string? CustomGroup,
+    string? Description);

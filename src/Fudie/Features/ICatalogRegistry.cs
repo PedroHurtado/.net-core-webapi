@@ -5,6 +5,7 @@ namespace Fudie.Features;
 public interface ICatalogRegistry
 {
     void Register(string className, Endpoint endpoint);
+    Endpoint? FindEndpoint(string displayName);
     string? FindClassName(Endpoint endpoint);
     int EndpointMapCount { get; }
     IReadOnlyList<CatalogEntry> GetAll();
