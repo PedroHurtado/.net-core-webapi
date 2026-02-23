@@ -18,8 +18,8 @@ builder.Services
     .AddRefitClient<IAuthService>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(idpAddress));
 
-// Anonymous route catalog
-builder.Services.AddSingleton<IAnonymousRouteRegistry, AnonymousRouteRegistry>();
+// Catalog registry
+builder.Services.AddSingleton<ICatalogRouteRegistry, CatalogRouteRegistry>();
 builder.Services.AddHostedService<CatalogStartupService>();
 
 builder.Services.AddRateLimiter(options =>
@@ -56,6 +56,9 @@ if (app.Environment.IsDevelopment())
     var portalPath = Path.Combine(app.Environment.ContentRootPath, "DevPortal.html");
     app.MapGet("/", () => Results.Content(File.ReadAllText(portalPath), "text/html"));
 }
+
+app.MapGet("/gateway/catalog", (ICatalogRouteRegistry registry) =>
+    Results.Ok(registry.GetAll()));
 
 app.MapReverseProxy(proxyPipeline =>
 {
