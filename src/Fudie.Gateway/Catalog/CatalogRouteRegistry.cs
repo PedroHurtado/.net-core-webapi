@@ -13,6 +13,16 @@ public sealed class CatalogRouteRegistry : ICatalogRouteRegistry
     public bool IsInternal(string method, string path)
         => _internalRules.Any(r => r.Matches(method, path));
 
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _catalogsByCluster.Clear();
+            _anonymousRules = [];
+            _internalRules = [];
+        }
+    }
+
     public void Update(string clusterId, CatalogResponse catalog)
     {
         lock (_lock)

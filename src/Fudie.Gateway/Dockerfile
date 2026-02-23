@@ -11,7 +11,6 @@ COPY ${PROJECT_DIR}/src/Fudie.Gateway/Fudie.Gateway.csproj webapi/src/Fudie.Gate
 RUN dotnet restore webapi/src/Fudie.Gateway/Fudie.Gateway.csproj
 
 COPY ${PROJECT_DIR}/src/Fudie.Gateway/ webapi/src/Fudie.Gateway/
-RUN rm -f webapi/src/Fudie.Gateway/appsettings.Development.json
 
 RUN dotnet publish webapi/src/Fudie.Gateway/Fudie.Gateway.csproj -c Release -o /app
 

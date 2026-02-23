@@ -2,6 +2,7 @@ global using System.Collections.Immutable;
 global using System.Net;
 global using System.Text.RegularExpressions;
 global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Primitives;
 global using Microsoft.Extensions.Options;
 global using Refit;
 global using Fudie.Gateway.Auth;

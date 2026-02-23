@@ -153,4 +153,5 @@ services:
     volumes:
       - user-secrets:/home/appuser/.microsoft/usersecrets:ro
       - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
+      - ./src/Fudie.Gateway/appsettings.Development.json:/app/appsettings.Development.json:ro
       - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro
