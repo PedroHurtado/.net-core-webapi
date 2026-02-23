@@ -23,8 +23,7 @@ public class InitiateGoogleLogin : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/auth/login/google", Handler)
-            .AllowAnonymous()
-            .ExcludeFromDescription();
+            .AllowAnonymous();            
     }
 
     public interface IService

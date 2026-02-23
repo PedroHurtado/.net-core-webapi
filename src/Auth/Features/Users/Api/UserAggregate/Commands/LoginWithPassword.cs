@@ -18,7 +18,7 @@ public class LoginWithPassword : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/auth/login", Handler);
+        app.MapPost("/auth/login", Handler).AllowAnonymous();
     }
 
     public interface IService

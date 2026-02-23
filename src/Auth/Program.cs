@@ -90,12 +90,10 @@ if (app.Environment.IsDevelopment())
         c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
-    app.MapGet("/", () => Results.Redirect("/auth/swagger")).ExcludeFromDescription();
-    app.MapGet("/auth", () => Results.Redirect("/auth/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/auth/swagger")).AllowAnonymous();
 
     app.MapGet("/auth/dev", () => Results.Content(DevLoginPage.Html, "text/html"))
-        .AllowAnonymous()
-        .ExcludeFromDescription();
+        .AllowAnonymous();        
 }
 
 app.UseFudieAuthorization();
