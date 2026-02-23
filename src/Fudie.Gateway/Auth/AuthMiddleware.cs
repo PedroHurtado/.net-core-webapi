@@ -3,13 +3,29 @@ namespace Fudie.Gateway.Auth;
 public sealed class AuthMiddleware(
     RequestDelegate next,
     IOptions<AuthOptions> options,
-    IAnonymousRouteRegistry registry)
+    ICatalogRouteRegistry registry,
+    IHostEnvironment environment)
 {
     private readonly AuthOptions _options = options.Value;
 
     public async Task InvokeAsync(HttpContext context, IAuthService authService)
     {
-        if (registry.IsAnonymous(context.Request.Method, context.Request.Path))
+        var method = context.Request.Method;
+        var path = context.Request.Path.Value ?? "/";
+
+        if (registry.IsInternal(method, path))
+        {
+            if (!environment.IsDevelopment())
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+
+            await next(context);
+            return;
+        }
+
+        if (registry.IsAnonymous(method, path))
         {
             await next(context);
             return;
