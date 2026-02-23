@@ -11,29 +11,43 @@ namespace Fudie.Features;
 public class CatalogRegistry : ICatalogRegistry
 {
     private readonly Dictionary<string, CatalogEntry> _entries = [];
+    private readonly Dictionary<string, Endpoint> _endpointMap = [];
 
     public void Register(string className, Endpoint endpoint)
     {
         var displayName = endpoint.DisplayName ?? className;
 
-        var isExcluded = endpoint.Metadata
-            .GetMetadata<ExcludeFromDescriptionAttribute>() is not null
-            || endpoint.Metadata
+        var isAnonymous = endpoint.Metadata
             .GetMetadata<AllowAnonymousAttribute>() is not null;
+
+        var isExcluded = endpoint.Metadata
+            .GetMetadata<ExcludeFromDescriptionAttribute>() is not null;
 
         var httpMethod = endpoint.Metadata
             .GetMetadata<HttpMethodMetadata>()
             ?.HttpMethods.FirstOrDefault();
 
+        var routePattern = endpoint is RouteEndpoint routeEndpoint
+            ? routeEndpoint.RoutePattern.RawText ?? ""
+            : "";
+
         _entries[displayName] = new CatalogEntry(
-            DisplayName: displayName,
             ClassName: className,
             HttpVerb: httpMethod ?? "GET",
-            IsPlatform: endpoint.Metadata.GetMetadata<PlatformRequirement>() is not null,
+            RoutePattern: routePattern,
+            IsAnonymous: isAnonymous,
+            IsAuthenticated: endpoint.Metadata.GetMetadata<AuthenticatedRequirement>() is not null,
             IsInternal: endpoint.Metadata.GetMetadata<InternalRequirement>() is not null,
+            IsPlatform: endpoint.Metadata.GetMetadata<PlatformRequirement>() is not null,
             IsExcluded: isExcluded,
-            CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group);
+            CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group,
+            Description: endpoint.Metadata.GetMetadata<CatalogDescription>()?.Description);
+
+        _endpointMap[displayName] = endpoint;
     }
+
+    public Endpoint? FindEndpoint(string displayName)
+        => _endpointMap.GetValueOrDefault(displayName);
 
     public string? FindClassName(Endpoint endpoint)
         => endpoint.DisplayName is not null

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Fudie.UnitTests.Features;
 
@@ -16,7 +17,7 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        var endpoint = CreateEndpoint(httpMethod: "GET");
+        var endpoint = CreateEndpoint(httpMethod: "GET", routePattern: "/menus");
 
         // Act
         registry.Register("GetMenu", endpoint);
@@ -26,9 +27,14 @@ public class CatalogRegistryTests
         var entry = registry.GetAll()[0];
         entry.ClassName.Should().Be("GetMenu");
         entry.HttpVerb.Should().Be("GET");
+        entry.RoutePattern.Should().Be("/menus");
+        entry.IsAnonymous.Should().BeFalse();
+        entry.IsAuthenticated.Should().BeFalse();
         entry.IsPlatform.Should().BeFalse();
         entry.IsInternal.Should().BeFalse();
+        entry.IsExcluded.Should().BeFalse();
         entry.CustomGroup.Should().BeNull();
+        entry.Description.Should().BeNull();
     }
 
     [Fact]
@@ -64,7 +70,7 @@ public class CatalogRegistryTests
     #region Register Tests - Filtering
 
     [Fact]
-    public void Register_WithExcludeFromDescription_ShouldSkip()
+    public void Register_WithExcludeFromDescription_ShouldNotAppearInGetAll()
     {
         // Arrange
         var registry = new CatalogRegistry();
@@ -78,7 +84,7 @@ public class CatalogRegistryTests
     }
 
     [Fact]
-    public void Register_WithAllowAnonymous_ShouldSkip()
+    public void Register_WithAllowAnonymous_ShouldSetIsAnonymous()
     {
         // Arrange
         var registry = new CatalogRegistry();
@@ -88,20 +94,23 @@ public class CatalogRegistryTests
         registry.Register("Login", endpoint);
 
         // Assert
-        registry.GetAll().Should().BeEmpty();
+        var entry = registry.GetAll()[0];
+        entry.IsAnonymous.Should().BeTrue();
+        entry.IsExcluded.Should().BeFalse();
     }
 
     [Fact]
-    public void Register_WithBothExcludeAndAllowAnonymous_ShouldSkip()
+    public void Register_WithExcludeFromDescription_ShouldSetIsExcluded()
     {
         // Arrange
         var registry = new CatalogRegistry();
-        var endpoint = CreateEndpoint(excludeFromDescription: true, allowAnonymous: true);
+        var endpoint = CreateEndpoint(excludeFromDescription: true);
 
         // Act
-        registry.Register("DevPage", endpoint);
+        registry.Register("SwaggerRedirect", endpoint);
 
         // Assert
+        registry.EndpointMapCount.Should().Be(1);
         registry.GetAll().Should().BeEmpty();
     }
 
@@ -142,6 +151,21 @@ public class CatalogRegistryTests
     }
 
     [Fact]
+    public void Register_WithAuthenticatedRequirement_ShouldSetIsAuthenticated()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST", isAuthenticated: true);
+
+        // Act
+        registry.Register("Checkout", endpoint);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.IsAuthenticated.Should().BeTrue();
+    }
+
+    [Fact]
     public void Register_WithGroupRequirement_ShouldSetCustomGroup()
     {
         // Arrange
@@ -154,6 +178,36 @@ public class CatalogRegistryTests
         // Assert
         var entry = registry.GetAll()[0];
         entry.CustomGroup.Should().Be("menu:deposit");
+    }
+
+    [Fact]
+    public void Register_WithCatalogDescription_ShouldSetDescription()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST", description: "Create a new menu");
+
+        // Act
+        registry.Register("CreateMenu", endpoint);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.Description.Should().Be("Create a new menu");
+    }
+
+    [Fact]
+    public void Register_WithRoutePattern_ShouldCaptureRoutePattern()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET", routePattern: "/menus/{id}");
+
+        // Act
+        registry.Register("GetMenuById", endpoint);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.RoutePattern.Should().Be("/menus/{id}");
     }
 
     #endregion
@@ -203,6 +257,22 @@ public class CatalogRegistryTests
 
         // Assert
         all.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void GetAll_ShouldIncludeAnonymousEntries()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        registry.Register("Login", CreateEndpoint(httpMethod: "POST", allowAnonymous: true, displayName: "Login"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+
+        // Act
+        var all = registry.GetAll();
+
+        // Assert
+        all.Should().HaveCount(2);
+        all.Select(e => e.ClassName).Should().Contain("Login");
     }
 
     #endregion
@@ -335,6 +405,38 @@ public class CatalogRegistryTests
 
     #endregion
 
+    #region FindEndpoint Tests
+
+    [Fact]
+    public void FindEndpoint_RegisteredEndpoint_ShouldReturnEndpoint()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        registry.Register("GetMenu", endpoint);
+
+        // Act
+        var result = registry.FindEndpoint("test");
+
+        // Assert
+        result.Should().BeSameAs(endpoint);
+    }
+
+    [Fact]
+    public void FindEndpoint_UnregisteredDisplayName_ShouldReturnNull()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+
+        // Act
+        var result = registry.FindEndpoint("nonexistent");
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static Endpoint CreateEndpoint(
@@ -343,7 +445,10 @@ public class CatalogRegistryTests
         bool allowAnonymous = false,
         bool isPlatform = false,
         bool isInternal = false,
+        bool isAuthenticated = false,
         string? customGroup = null,
+        string? description = null,
+        string? routePattern = null,
         string displayName = "test")
     {
         var metadata = new List<object>();
@@ -363,8 +468,24 @@ public class CatalogRegistryTests
         if (isInternal)
             metadata.Add(new InternalRequirement());
 
+        if (isAuthenticated)
+            metadata.Add(new AuthenticatedRequirement());
+
         if (customGroup is not null)
             metadata.Add(new GroupRequirement(customGroup));
+
+        if (description is not null)
+            metadata.Add(new CatalogDescription(description));
+
+        if (routePattern is not null)
+        {
+            return new RouteEndpoint(
+                requestDelegate: _ => Task.CompletedTask,
+                routePattern: RoutePatternFactory.Parse(routePattern),
+                order: 0,
+                metadata: new EndpointMetadataCollection(metadata),
+                displayName: displayName);
+        }
 
         return new Endpoint(
             requestDelegate: null,

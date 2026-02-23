@@ -9,6 +9,40 @@ namespace Fudie.UnitTests.Features;
 
 public class EndpointAuthExtensionsTests
 {
+    #region RequireAuthenticated Tests
+
+    [Fact]
+    public void RequireAuthenticated_ShouldAddAuthenticatedRequirementMetadata()
+    {
+        // Arrange
+        var builder = CreateEndpointRouteBuilder();
+        var endpoint = builder.MapGet("/test", () => Results.Ok());
+
+        // Act
+        endpoint.RequireAuthenticated();
+
+        // Assert
+        var dataSource = builder.DataSources.First();
+        var endpointMetadata = dataSource.Endpoints.First().Metadata;
+        endpointMetadata.GetMetadata<AuthenticatedRequirement>().Should().NotBeNull();
+    }
+
+    [Fact]
+    public void RequireAuthenticated_ShouldReturnBuilder()
+    {
+        // Arrange
+        var builder = CreateEndpointRouteBuilder();
+        var endpoint = builder.MapGet("/test", () => Results.Ok());
+
+        // Act
+        var result = endpoint.RequireAuthenticated();
+
+        // Assert
+        result.Should().BeSameAs(endpoint);
+    }
+
+    #endregion
+
     #region RequirePlatform Tests
 
     [Fact]
@@ -113,6 +147,42 @@ public class EndpointAuthExtensionsTests
 
     #endregion
 
+    #region WithDescriptionCatalog Tests
+
+    [Fact]
+    public void WithDescriptionCatalog_ShouldAddCatalogDescriptionMetadata()
+    {
+        // Arrange
+        var builder = CreateEndpointRouteBuilder();
+        var endpoint = builder.MapGet("/test", () => Results.Ok());
+
+        // Act
+        endpoint.WithDescriptionCatalog("Create menu");
+
+        // Assert
+        var dataSource = builder.DataSources.First();
+        var endpointMetadata = dataSource.Endpoints.First().Metadata;
+        var catalogDescription = endpointMetadata.GetMetadata<CatalogDescription>();
+        catalogDescription.Should().NotBeNull();
+        catalogDescription!.Description.Should().Be("Create menu");
+    }
+
+    [Fact]
+    public void WithDescriptionCatalog_ShouldReturnBuilder()
+    {
+        // Arrange
+        var builder = CreateEndpointRouteBuilder();
+        var endpoint = builder.MapGet("/test", () => Results.Ok());
+
+        // Act
+        var result = endpoint.WithDescriptionCatalog("Create menu");
+
+        // Assert
+        result.Should().BeSameAs(endpoint);
+    }
+
+    #endregion
+
     #region Chaining Tests
 
     [Fact]
@@ -131,6 +201,23 @@ public class EndpointAuthExtensionsTests
         endpointMetadata.GetMetadata<PlatformRequirement>().Should().NotBeNull();
         endpointMetadata.GetMetadata<GroupRequirement>().Should().NotBeNull();
         endpointMetadata.GetMetadata<GroupRequirement>()!.Group.Should().Be("admin:manage");
+    }
+
+    [Fact]
+    public void WithDescriptionCatalog_AndRequireGroup_ShouldAddBothMetadata()
+    {
+        // Arrange
+        var builder = CreateEndpointRouteBuilder();
+        var endpoint = builder.MapGet("/test", () => Results.Ok());
+
+        // Act
+        endpoint.RequireGroup("menus:write").WithDescriptionCatalog("Create menu");
+
+        // Assert
+        var dataSource = builder.DataSources.First();
+        var endpointMetadata = dataSource.Endpoints.First().Metadata;
+        endpointMetadata.GetMetadata<GroupRequirement>().Should().NotBeNull();
+        endpointMetadata.GetMetadata<CatalogDescription>()!.Description.Should().Be("Create menu");
     }
 
     #endregion
