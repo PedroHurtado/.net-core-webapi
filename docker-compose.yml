@@ -131,10 +131,11 @@ services:
       - user-secrets:/home/appuser/.microsoft/usersecrets:ro
 
   gateway:
-
     build:
-      context: ./src/Fudie.Gateway
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: ${PROJECT_DIR:-webapi}/src/Fudie.Gateway/Dockerfile
+      args:
+        PROJECT_DIR: ${PROJECT_DIR:-webapi}
     ports:
       - "5176:8080"
     depends_on:
@@ -150,6 +151,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_USE_POLLING_FILE_WATCHER=true
     volumes:
+      - user-secrets:/home/appuser/.microsoft/usersecrets:ro
       - ./src/Fudie.Gateway/appsettings.json:/app/appsettings.json:ro
-      - ./src/Fudie.Gateway/appsettings.Development.json:/app/appsettings.Development.json:ro
       - ./src/Fudie.Gateway/DevPortal.html:/app/DevPortal.html:ro
