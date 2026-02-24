@@ -15,7 +15,8 @@ public class UpdateCategoryItem : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menus/{id}/categories/{categoryId}/items/{menuItemId}", Handler);
+        app.MapPut("/menus/{id}/categories/{categoryId}/items/{menuItemId}", Handler)
+            .WithDescriptionCatalog("Update a category item");
     }
 
     public static Func<IService, Guid, Guid, Guid, Request, Task<IResult>> Handler => async (service, id, categoryId, menuItemId, request) =>

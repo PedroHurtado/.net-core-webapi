@@ -4,7 +4,9 @@ public class RemoveMenuDepositPolicy : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/menus/{id}/deposit-policy", Handler);
+        app.MapDelete("/menus/{id}/deposit-policy", Handler)
+            .RequireGroup("menu:deposit")
+            .WithDescriptionCatalog("Remove deposit policy from a menu");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

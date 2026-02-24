@@ -4,7 +4,8 @@ public class ActivateMenuItem : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/activate", Handler);
+        app.MapPost("/menu-items/{id}/activate", Handler)
+            .WithDescriptionCatalog("Activate a menu item");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

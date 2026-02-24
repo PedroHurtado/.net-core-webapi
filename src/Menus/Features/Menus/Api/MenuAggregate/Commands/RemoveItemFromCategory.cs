@@ -4,7 +4,8 @@ public class RemoveItemFromCategory : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/menus/{id}/categories/{categoryId}/items/{menuItemId}", Handler);
+        app.MapDelete("/menus/{id}/categories/{categoryId}/items/{menuItemId}", Handler)
+            .WithDescriptionCatalog("Remove an item from a menu category");
     }
 
     public static Func<IService, Guid, Guid, Guid, Task<IResult>> Handler => async (service, id, categoryId, menuItemId) =>

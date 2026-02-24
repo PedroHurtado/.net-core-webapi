@@ -4,7 +4,8 @@ public class GetMenu : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/menus/{id}", Handler);
+        app.MapGet("/menus/{id}", Handler)
+            .WithDescriptionCatalog("Get menu by id");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

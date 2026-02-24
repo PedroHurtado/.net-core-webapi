@@ -4,7 +4,8 @@ public class MarkMenuItemAsUnavailable : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/mark-unavailable", Handler);
+        app.MapPost("/menu-items/{id}/mark-unavailable", Handler)
+            .WithDescriptionCatalog("Mark menu item as unavailable");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

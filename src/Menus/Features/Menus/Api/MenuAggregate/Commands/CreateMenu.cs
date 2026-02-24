@@ -11,7 +11,8 @@ public class CreateMenu : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menus", Handler);
+        app.MapPost("/menus", Handler)
+            .WithDescriptionCatalog("Create a new menu");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

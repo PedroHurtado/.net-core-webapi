@@ -19,7 +19,9 @@ public class UpdateAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/allergens/{id}", Handler);
+        app.MapPut("/allergens/{id}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Update an existing allergen");
     }
 
     public static Func<IService, string, Request, Task<IResult>> Handler => async (service, id, request) =>

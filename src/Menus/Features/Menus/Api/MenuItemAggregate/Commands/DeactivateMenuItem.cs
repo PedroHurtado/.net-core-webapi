@@ -4,7 +4,8 @@ public class DeactivateMenuItem : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/deactivate", Handler);
+        app.MapPost("/menu-items/{id}/deactivate", Handler)
+            .WithDescriptionCatalog("Deactivate a menu item");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

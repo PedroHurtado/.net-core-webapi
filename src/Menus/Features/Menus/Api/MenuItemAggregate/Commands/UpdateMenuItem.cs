@@ -17,7 +17,8 @@ public class UpdateMenuItem : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menu-items/{id}", Handler);
+        app.MapPut("/menu-items/{id}", Handler)
+            .WithDescriptionCatalog("Update menu item details");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

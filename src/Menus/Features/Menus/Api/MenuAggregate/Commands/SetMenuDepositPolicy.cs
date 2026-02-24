@@ -12,7 +12,9 @@ public class SetMenuDepositPolicy : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menus/{id}/deposit-policy", Handler);
+        app.MapPut("/menus/{id}/deposit-policy", Handler)
+            .RequireGroup("menu:deposit")
+            .WithDescriptionCatalog("Set deposit policy for a menu");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

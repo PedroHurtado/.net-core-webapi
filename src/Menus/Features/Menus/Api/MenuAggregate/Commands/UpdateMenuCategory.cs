@@ -10,7 +10,8 @@ public class UpdateMenuCategory : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menus/{id}/categories/{categoryId}", Handler);
+        app.MapPut("/menus/{id}/categories/{categoryId}", Handler)
+            .WithDescriptionCatalog("Update a menu category");
     }
 
     public static Func<IService, Guid, Guid, Request, Task<IResult>> Handler => async (service, id, categoryId, request) =>

@@ -4,7 +4,8 @@ public class GetMenus : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/menus", Handler);
+        app.MapGet("/menus", Handler)
+            .WithDescriptionCatalog("List all menus");
     }
 
     public static Func<IService, bool?, Task<IResult>> Handler => async (service, isActive) =>

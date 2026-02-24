@@ -8,7 +8,8 @@ public class AddMenuItemAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/allergens", Handler);
+        app.MapPost("/menu-items/{id}/allergens", Handler)
+            .WithDescriptionCatalog("Add allergen to a menu item");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

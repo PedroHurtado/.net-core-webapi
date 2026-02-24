@@ -20,7 +20,9 @@ public class CreateAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/allergens", Handler);
+        app.MapPost("/allergens", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Create a new allergen");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

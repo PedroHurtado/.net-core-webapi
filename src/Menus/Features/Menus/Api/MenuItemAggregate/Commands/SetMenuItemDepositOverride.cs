@@ -9,7 +9,9 @@ public class SetMenuItemDepositOverride : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menu-items/{id}/deposit-override", Handler);
+        app.MapPut("/menu-items/{id}/deposit-override", Handler)
+            .RequireGroup("menu:deposit")
+            .WithDescriptionCatalog("Set deposit override for a menu item");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

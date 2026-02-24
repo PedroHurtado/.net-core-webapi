@@ -10,7 +10,8 @@ public class AddMenuCategory : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menus/{id}/categories", Handler);
+        app.MapPost("/menus/{id}/categories", Handler)
+            .WithDescriptionCatalog("Add a category to a menu");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

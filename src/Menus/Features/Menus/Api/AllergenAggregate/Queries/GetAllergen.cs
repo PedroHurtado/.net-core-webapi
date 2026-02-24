@@ -12,7 +12,9 @@ public class GetAllergen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/allergens/{id}", Handler);
+        app.MapGet("/allergens/{id}", Handler)
+            .AllowAnonymous()
+            .WithDescriptionCatalog("Get allergen by id");
     }
 
     public static Func<IService, string, Task<IResult>> Handler => async (service, id) =>

@@ -4,7 +4,8 @@ public class RemoveMenuItemPriceOption : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/menu-items/{id}/price-options/{portionType}", Handler);
+        app.MapDelete("/menu-items/{id}/price-options/{portionType}", Handler)
+            .WithDescriptionCatalog("Remove price option from a menu item");
     }
 
     public static Func<IService, Guid, PortionType, Task<IResult>> Handler => async (service, id, portionType) =>

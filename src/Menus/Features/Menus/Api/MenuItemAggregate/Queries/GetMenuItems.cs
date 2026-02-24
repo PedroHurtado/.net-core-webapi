@@ -11,7 +11,8 @@ public class GetMenuItems : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/menu-items", Handler);
+        app.MapGet("/menu-items", Handler)
+            .WithDescriptionCatalog("List all menu items");
     }
 
     public interface IService

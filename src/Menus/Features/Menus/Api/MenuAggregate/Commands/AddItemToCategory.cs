@@ -16,7 +16,8 @@ public class AddItemToCategory : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menus/{id}/categories/{categoryId}/items", Handler);
+        app.MapPost("/menus/{id}/categories/{categoryId}/items", Handler)
+            .WithDescriptionCatalog("Add an item to a menu category");
     }
 
     public static Func<IService, Guid, Guid, Request, Task<IResult>> Handler => async (service, id, categoryId, request) =>

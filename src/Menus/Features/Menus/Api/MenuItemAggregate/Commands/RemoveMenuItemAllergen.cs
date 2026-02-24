@@ -4,7 +4,8 @@ public class RemoveMenuItemAllergen : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/menu-items/{id}/allergens/{allergenId}", Handler);
+        app.MapDelete("/menu-items/{id}/allergens/{allergenId}", Handler)
+            .WithDescriptionCatalog("Remove allergen from a menu item");
     }
 
     public static Func<IService, Guid, string, Task<IResult>> Handler => async (service, id, allergenId) =>

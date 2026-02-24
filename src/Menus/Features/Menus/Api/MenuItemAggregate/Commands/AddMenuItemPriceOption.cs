@@ -10,7 +10,8 @@ public class AddMenuItemPriceOption : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/price-options", Handler);
+        app.MapPost("/menu-items/{id}/price-options", Handler)
+            .WithDescriptionCatalog("Add price option to a menu item");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

@@ -15,7 +15,8 @@ public class SetMenuItemNutritionalInfo : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/menu-items/{id}/nutritional-info", Handler);
+        app.MapPut("/menu-items/{id}/nutritional-info", Handler)
+            .WithDescriptionCatalog("Set nutritional info for a menu item");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

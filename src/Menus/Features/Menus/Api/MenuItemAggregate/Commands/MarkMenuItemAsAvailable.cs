@@ -4,7 +4,8 @@ public class MarkMenuItemAsAvailable : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/menu-items/{id}/mark-available", Handler);
+        app.MapPost("/menu-items/{id}/mark-available", Handler)
+            .WithDescriptionCatalog("Mark menu item as available");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>
