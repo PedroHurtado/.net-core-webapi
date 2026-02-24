@@ -11,7 +11,9 @@ public class ActivatePlan : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/activate", Handler);
+        app.MapPost("/plans/{id}/activate", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Activate a plan");
     }
 
     public interface IService

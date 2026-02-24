@@ -16,7 +16,9 @@ public class UpdatePlan : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/plans/{id}", Handler);
+        app.MapPut("/plans/{id}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Update plan details");
     }
 
     public interface IService

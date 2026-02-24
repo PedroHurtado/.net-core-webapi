@@ -11,7 +11,9 @@ public class ActivatePlanPricingTier : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/activate", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/activate", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Activate a pricing tier");
     }
 
     public interface IService

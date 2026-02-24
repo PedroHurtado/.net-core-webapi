@@ -11,7 +11,9 @@ public class RemovePlanFeature : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/plans/{id}/features/{code}", Handler);
+        app.MapDelete("/plans/{id}/features/{code}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Remove feature from a plan");
     }
 
     public interface IService

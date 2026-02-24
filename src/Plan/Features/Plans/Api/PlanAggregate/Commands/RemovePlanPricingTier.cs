@@ -11,7 +11,9 @@ public class RemovePlanPricingTier : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/plans/{id}/pricing-tiers/{billingPeriod}", Handler);
+        app.MapDelete("/plans/{id}/pricing-tiers/{billingPeriod}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Remove pricing tier from a plan");
     }
 
     public interface IService

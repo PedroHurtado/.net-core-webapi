@@ -18,7 +18,9 @@ public class AddPlanPricingTier : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/pricing-tiers", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Add pricing tier to a plan");
     }
 
     public interface IService

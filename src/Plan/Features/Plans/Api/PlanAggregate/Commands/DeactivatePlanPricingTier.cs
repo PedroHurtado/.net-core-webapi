@@ -11,7 +11,9 @@ public class DeactivatePlanPricingTier : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/deactivate", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/deactivate", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Deactivate a pricing tier");
     }
 
     public interface IService

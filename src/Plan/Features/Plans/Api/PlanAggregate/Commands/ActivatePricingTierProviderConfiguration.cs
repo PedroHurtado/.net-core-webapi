@@ -11,7 +11,9 @@ public class ActivatePricingTierProviderConfiguration : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/activate", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}/activate", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Activate provider configuration");
     }
 
     public interface IService

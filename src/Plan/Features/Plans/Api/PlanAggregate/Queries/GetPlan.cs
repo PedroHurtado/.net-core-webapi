@@ -11,7 +11,9 @@ public class GetPlan : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/plans/{id}", Handler);
+        app.MapGet("/plans/{id}", Handler)
+            .AllowAnonymous()
+            .WithDescriptionCatalog("Get plan by id");
     }
 
     public interface IService

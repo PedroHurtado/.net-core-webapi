@@ -16,7 +16,9 @@ public class CreatePlan : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans", Handler);
+        app.MapPost("/plans", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Create a new plan");
     }
 
     public interface IService

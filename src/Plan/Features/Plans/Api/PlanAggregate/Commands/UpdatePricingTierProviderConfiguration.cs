@@ -16,7 +16,9 @@ public class UpdatePricingTierProviderConfiguration : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}", Handler);
+        app.MapPut("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations/{provider}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Update provider configuration");
     }
 
     public interface IService

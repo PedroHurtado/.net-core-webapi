@@ -16,7 +16,9 @@ public class UpdatePlanPricingTier : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/plans/{id}/pricing-tiers/{billingPeriod}", Handler);
+        app.MapPut("/plans/{id}/pricing-tiers/{billingPeriod}", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Update a plan pricing tier");
     }
 
     public interface IService

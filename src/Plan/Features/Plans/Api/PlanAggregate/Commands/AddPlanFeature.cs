@@ -20,7 +20,9 @@ public class AddPlanFeature : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/features", Handler);
+        app.MapPost("/plans/{id}/features", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Add feature to a plan");
     }
 
     public interface IService

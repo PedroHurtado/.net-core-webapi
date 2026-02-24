@@ -11,7 +11,9 @@ public class DeactivatePlan : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/deactivate", Handler);
+        app.MapPost("/plans/{id}/deactivate", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Deactivate a plan");
     }
 
     public interface IService

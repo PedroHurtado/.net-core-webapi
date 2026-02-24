@@ -18,7 +18,9 @@ public class AddPricingTierProviderConfiguration : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations", Handler);
+        app.MapPost("/plans/{id}/pricing-tiers/{billingPeriod}/provider-configurations", Handler)
+            .RequirePlatform()
+            .WithDescriptionCatalog("Add provider config to pricing tier");
     }
 
     public interface IService
