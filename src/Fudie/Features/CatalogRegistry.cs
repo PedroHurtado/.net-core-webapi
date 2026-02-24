@@ -13,7 +13,7 @@ public class CatalogRegistry : ICatalogRegistry
     private readonly Dictionary<string, CatalogEntry> _entries = [];
     private readonly Dictionary<string, Endpoint> _endpointMap = [];
 
-    public void Register(string className, Endpoint endpoint)
+    public void Register(string className, Endpoint endpoint, IAggregateDescription aggregate)
     {
         var displayName = endpoint.DisplayName ?? className;
 
@@ -41,7 +41,10 @@ public class CatalogRegistry : ICatalogRegistry
             IsPlatform: endpoint.Metadata.GetMetadata<PlatformRequirement>() is not null,
             IsExcluded: isExcluded,
             CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group,
-            Description: endpoint.Metadata.GetMetadata<CatalogDescription>()?.Description);
+            Description: endpoint.Metadata.GetMetadata<CatalogDescription>()?.Description,
+            AggregateId: aggregate.Id,
+            AggregateDisplayName: aggregate.DisplayName,
+            AggregateIcon: aggregate.Icon);
 
         _endpointMap[displayName] = endpoint;
     }

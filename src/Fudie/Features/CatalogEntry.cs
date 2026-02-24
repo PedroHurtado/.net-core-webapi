@@ -10,4 +10,7 @@ public record CatalogEntry(
     bool IsPlatform,
     bool IsExcluded,
     string? CustomGroup,
-    string? Description);
+    string? Description,
+    string AggregateId,
+    string AggregateDisplayName,
+    string? AggregateIcon);
