@@ -1,4 +1,4 @@
-namespace Auth.UnitTests.Features.Sessions.Api.Queries;
+namespace Auth.UnitTests.Features.Sessions.Api.SessionAggregate.Queries;
 
 public class GetJwksTests
 {

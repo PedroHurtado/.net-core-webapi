@@ -28,8 +28,8 @@ global using Auth.Infrastructure.OAuth;
 global using Auth.Infrastructure.Memberships;
 global using Auth.Infrastructure.SessionManagement;
 
-global using Auth.Features.Sessions.Api.Commands;
-global using Auth.Features.Sessions.Api.Queries;
+global using Auth.Features.Sessions.Api.SessionAggregate.Commands;
+global using Auth.Features.Sessions.Api.SessionAggregate.Queries;
 
 global using Auth.Features.ExternalApps.Api.ExternalAppAggregate;
 global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Commands;

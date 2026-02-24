@@ -1,4 +1,4 @@
-namespace Auth.Features.Sessions.Api.Commands;
+namespace Auth.Features.Sessions.Api.SessionAggregate.Commands;
 
 public class ResolveApiKey : IFeatureModule
 {

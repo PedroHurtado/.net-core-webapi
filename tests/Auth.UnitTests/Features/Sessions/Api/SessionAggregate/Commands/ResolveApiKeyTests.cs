@@ -1,4 +1,4 @@
-namespace Auth.UnitTests.Features.Sessions.Api.Commands;
+namespace Auth.UnitTests.Features.Sessions.Api.SessionAggregate.Commands;
 
 public class ResolveApiKeyTests
 {

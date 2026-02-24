@@ -1,4 +1,4 @@
-namespace Auth.Features.Sessions.Api.Queries;
+namespace Auth.Features.Sessions.Api.SessionAggregate.Queries;
 
 public class GetJwks : IFeatureModule
 {
