@@ -18,7 +18,7 @@ global using Auth.Features.ExternalApps.Api.ExternalAppAggregate;
 global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Commands;
 global using Auth.Features.ExternalApps.Api.ExternalAppAggregate.Queries;
 global using Auth.Features.Users.Api.UserAggregate.Commands;
-global using Auth.Features.Sessions.Api.Queries;
+global using Auth.Features.Sessions.Api.SessionAggregate.Queries;
 global using Auth.IntegrationTests.Fixtures;
 // global using Auth.IntegrationTests.Helpers;
 global using Fudie;
