@@ -10,6 +10,8 @@ namespace Fudie.UnitTests.Features;
 
 public class CatalogRegistryTests
 {
+    private static readonly TestAggregateDescription DefaultAggregate = new("menu", "Menús", "book-open");
+
     #region Register Tests - Basic
 
     [Fact]
@@ -20,7 +22,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "GET", routePattern: "/menus");
 
         // Act
-        registry.Register("GetMenu", endpoint);
+        registry.Register("GetMenu", endpoint, DefaultAggregate);
 
         // Assert
         registry.GetAll().Should().HaveCount(1);
@@ -45,7 +47,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "POST");
 
         // Act
-        registry.Register("CreateMenu", endpoint);
+        registry.Register("CreateMenu", endpoint, DefaultAggregate);
 
         // Assert
         registry.GetAll()[0].HttpVerb.Should().Be("POST");
@@ -59,7 +61,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint();
 
         // Act
-        registry.Register("GetMenu", endpoint);
+        registry.Register("GetMenu", endpoint, DefaultAggregate);
 
         // Assert
         registry.GetAll()[0].HttpVerb.Should().Be("GET");
@@ -77,7 +79,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(excludeFromDescription: true);
 
         // Act
-        registry.Register("SwaggerRedirect", endpoint);
+        registry.Register("SwaggerRedirect", endpoint, DefaultAggregate);
 
         // Assert
         registry.GetAll().Should().BeEmpty();
@@ -91,7 +93,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(allowAnonymous: true);
 
         // Act
-        registry.Register("Login", endpoint);
+        registry.Register("Login", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -107,7 +109,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(excludeFromDescription: true);
 
         // Act
-        registry.Register("SwaggerRedirect", endpoint);
+        registry.Register("SwaggerRedirect", endpoint, DefaultAggregate);
 
         // Assert
         registry.EndpointMapCount.Should().Be(1);
@@ -126,7 +128,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "POST", isPlatform: true);
 
         // Act
-        registry.Register("CreateAllergen", endpoint);
+        registry.Register("CreateAllergen", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -142,7 +144,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "POST", isInternal: true);
 
         // Act
-        registry.Register("SyncCatalog", endpoint);
+        registry.Register("SyncCatalog", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -158,7 +160,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "POST", isAuthenticated: true);
 
         // Act
-        registry.Register("Checkout", endpoint);
+        registry.Register("Checkout", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -173,7 +175,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit");
 
         // Act
-        registry.Register("UpdateDepositPolicy", endpoint);
+        registry.Register("UpdateDepositPolicy", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -188,7 +190,7 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "POST", description: "Create a new menu");
 
         // Act
-        registry.Register("CreateMenu", endpoint);
+        registry.Register("CreateMenu", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
@@ -203,11 +205,119 @@ public class CatalogRegistryTests
         var endpoint = CreateEndpoint(httpMethod: "GET", routePattern: "/menus/{id}");
 
         // Act
-        registry.Register("GetMenuById", endpoint);
+        registry.Register("GetMenuById", endpoint, DefaultAggregate);
 
         // Assert
         var entry = registry.GetAll()[0];
         entry.RoutePattern.Should().Be("/menus/{id}");
+    }
+
+    #endregion
+
+    #region Register Tests - Aggregate
+
+    [Fact]
+    public void Register_ShouldCaptureAggregateId()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST");
+        var aggregate = new TestAggregateDescription("menu-item", "Artículos del menú", "utensils");
+
+        // Act
+        registry.Register("CreateMenuItem", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateId.Should().Be("menu-item");
+    }
+
+    [Fact]
+    public void Register_ShouldCaptureAggregateDisplayName()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST");
+        var aggregate = new TestAggregateDescription("allergen", "Alérgenos", "alert-triangle");
+
+        // Act
+        registry.Register("CreateAllergen", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateDisplayName.Should().Be("Alérgenos");
+    }
+
+    [Fact]
+    public void Register_ShouldCaptureAggregateIcon()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        var aggregate = new TestAggregateDescription("menu", "Menús", "book-open");
+
+        // Act
+        registry.Register("GetMenus", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateIcon.Should().Be("book-open");
+    }
+
+    [Fact]
+    public void Register_WithNullIcon_ShouldSetAggregateIconToNull()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        var aggregate = new TestAggregateDescription("session", "Sesiones", null);
+
+        // Act
+        registry.Register("GetSessions", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateIcon.Should().BeNull();
+    }
+
+    [Fact]
+    public void Register_MultipleEndpointsSameAggregate_ShouldShareAggregateInfo()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var aggregate = new TestAggregateDescription("menu", "Menús", "book-open");
+
+        // Act
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), aggregate);
+        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenu"), aggregate);
+
+        // Assert
+        var entries = registry.GetAll();
+        entries.Should().HaveCount(2);
+        entries.Should().AllSatisfy(e =>
+        {
+            e.AggregateId.Should().Be("menu");
+            e.AggregateDisplayName.Should().Be("Menús");
+        });
+    }
+
+    [Fact]
+    public void Register_DifferentAggregates_ShouldStoreDistinctAggregateInfo()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var menuAggregate = new TestAggregateDescription("menu", "Menús", "book-open");
+        var itemAggregate = new TestAggregateDescription("menu-item", "Artículos", "utensils");
+
+        // Act
+        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenu"), menuAggregate);
+        registry.Register("CreateMenuItem", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenuItem"), itemAggregate);
+
+        // Assert
+        var entries = registry.GetAll();
+        entries.Should().HaveCount(2);
+        entries.Single(e => e.ClassName == "CreateMenu").AggregateId.Should().Be("menu");
+        entries.Single(e => e.ClassName == "CreateMenuItem").AggregateId.Should().Be("menu-item");
     }
 
     #endregion
@@ -221,9 +331,9 @@ public class CatalogRegistryTests
         var registry = new CatalogRegistry();
 
         // Act
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
-        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenu"));
-        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", displayName: "UpdateMenu"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
+        registry.Register("CreateMenu", CreateEndpoint(httpMethod: "POST", displayName: "CreateMenu"), DefaultAggregate);
+        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", displayName: "UpdateMenu"), DefaultAggregate);
 
         // Assert
         registry.GetAll().Should().HaveCount(3);
@@ -248,9 +358,9 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"), DefaultAggregate);
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"), DefaultAggregate);
 
         // Act
         var all = registry.GetAll();
@@ -264,8 +374,8 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("Login", CreateEndpoint(httpMethod: "POST", allowAnonymous: true, displayName: "Login"));
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
+        registry.Register("Login", CreateEndpoint(httpMethod: "POST", allowAnonymous: true, displayName: "Login"), DefaultAggregate);
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
 
         // Act
         var all = registry.GetAll();
@@ -284,8 +394,8 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"), DefaultAggregate);
 
         // Act
         var tenant = registry.GetTenant();
@@ -300,8 +410,8 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"), DefaultAggregate);
 
         // Act
         var tenant = registry.GetTenant();
@@ -316,10 +426,10 @@ public class CatalogRegistryTests
     {
         // Arrange
         var registry = new CatalogRegistry();
-        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"));
-        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"));
-        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"));
-        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit", displayName: "UpdateMenu"));
+        registry.Register("GetMenu", CreateEndpoint(httpMethod: "GET", displayName: "GetMenu"), DefaultAggregate);
+        registry.Register("CreateAllergen", CreateEndpoint(httpMethod: "POST", isPlatform: true, displayName: "CreateAllergen"), DefaultAggregate);
+        registry.Register("SyncCatalog", CreateEndpoint(httpMethod: "POST", isInternal: true, displayName: "SyncCatalog"), DefaultAggregate);
+        registry.Register("UpdateMenu", CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit", displayName: "UpdateMenu"), DefaultAggregate);
 
         // Act
         var tenant = registry.GetTenant();
@@ -350,7 +460,7 @@ public class CatalogRegistryTests
         // Arrange
         var registry = new CatalogRegistry();
         var endpoint = CreateEndpoint(httpMethod: "GET");
-        registry.Register("GetMenu", endpoint);
+        registry.Register("GetMenu", endpoint, DefaultAggregate);
 
         // Act
         var result = registry.FindClassName(endpoint);
@@ -379,7 +489,7 @@ public class CatalogRegistryTests
         // Arrange
         var registry = new CatalogRegistry();
         var endpoint = CreateEndpoint(excludeFromDescription: true);
-        registry.Register("SwaggerRedirect", endpoint);
+        registry.Register("SwaggerRedirect", endpoint, DefaultAggregate);
 
         // Act
         var result = registry.FindClassName(endpoint);
@@ -394,7 +504,7 @@ public class CatalogRegistryTests
         // Arrange
         var registry = new CatalogRegistry();
         var endpoint = CreateEndpoint(allowAnonymous: true);
-        registry.Register("Login", endpoint);
+        registry.Register("Login", endpoint, DefaultAggregate);
 
         // Act
         var result = registry.FindClassName(endpoint);
@@ -413,7 +523,7 @@ public class CatalogRegistryTests
         // Arrange
         var registry = new CatalogRegistry();
         var endpoint = CreateEndpoint(httpMethod: "GET");
-        registry.Register("GetMenu", endpoint);
+        registry.Register("GetMenu", endpoint, DefaultAggregate);
 
         // Act
         var result = registry.FindEndpoint("test");
@@ -492,6 +602,8 @@ public class CatalogRegistryTests
             metadata: new EndpointMetadataCollection(metadata),
             displayName: displayName);
     }
+
+    private record TestAggregateDescription(string Id, string DisplayName, string? Icon) : IAggregateDescription;
 
     #endregion
 }

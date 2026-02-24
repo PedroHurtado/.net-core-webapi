@@ -175,6 +175,83 @@ public class RouteExtensionTests
     #endregion
 }
 
+public class ExtractAggregateNamespaceTests
+{
+    #region Valid Namespaces
+
+    [Fact]
+    public void ExtractAggregateNamespace_CommandsNamespace_ShouldReturnAggregateNamespace()
+    {
+        // Arrange
+        var ns = "Menus.Features.Menus.Api.MenuAggregate.Commands";
+
+        // Act
+        var result = RouteExtension.ExtractAggregateNamespace(ns);
+
+        // Assert
+        result.Should().Be("Menus.Features.Menus.Api.MenuAggregate");
+    }
+
+    [Fact]
+    public void ExtractAggregateNamespace_QueriesNamespace_ShouldReturnAggregateNamespace()
+    {
+        // Arrange
+        var ns = "Auth.Features.Sessions.Api.SessionAggregate.Queries";
+
+        // Act
+        var result = RouteExtension.ExtractAggregateNamespace(ns);
+
+        // Assert
+        result.Should().Be("Auth.Features.Sessions.Api.SessionAggregate");
+    }
+
+    [Fact]
+    public void ExtractAggregateNamespace_MenuItemAggregate_ShouldReturnCorrectNamespace()
+    {
+        // Arrange
+        var ns = "Menus.Features.Menus.Api.MenuItemAggregate.Commands";
+
+        // Act
+        var result = RouteExtension.ExtractAggregateNamespace(ns);
+
+        // Assert
+        result.Should().Be("Menus.Features.Menus.Api.MenuItemAggregate");
+    }
+
+    [Fact]
+    public void ExtractAggregateNamespace_AllergenAggregate_ShouldReturnCorrectNamespace()
+    {
+        // Arrange
+        var ns = "Menus.Features.Menus.Api.AllergenAggregate.Commands";
+
+        // Act
+        var result = RouteExtension.ExtractAggregateNamespace(ns);
+
+        // Assert
+        result.Should().Be("Menus.Features.Menus.Api.AllergenAggregate");
+    }
+
+    #endregion
+
+    #region Invalid Namespaces
+
+    [Fact]
+    public void ExtractAggregateNamespace_SingleSegment_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var ns = "CreateMenu";
+
+        // Act
+        var act = () => RouteExtension.ExtractAggregateNamespace(ns);
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Cannot extract aggregate namespace*");
+    }
+
+    #endregion
+}
+
 public class IFeatureModuleTests
 {
     #region Interface Tests
