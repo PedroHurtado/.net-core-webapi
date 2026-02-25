@@ -56,3 +56,4 @@ global using Auth.Features.Users.Api.UserAggregate.Commands;
 global using Auth.Features.Users.Domain.UserAggregate;
 global using Auth.Features.Users.Domain.UserAggregate.Enums;
 global using Auth.Features.Users.Domain.UserAggregate.ValueObjects;
+global using Fudie.Security;
