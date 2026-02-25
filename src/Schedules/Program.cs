@@ -60,7 +60,7 @@ if (app.Environment.IsDevelopment())
         c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
     });
 
-    app.MapGet("/", () => Results.Redirect("/schedules/swagger")).ExcludeFromDescription();
+    app.MapGet("/", () => Results.Redirect("/schedules/swagger")).AllowAnonymous();
 }
 
 app.UseFudieAuthorization();
