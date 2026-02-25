@@ -43,6 +43,8 @@ paths:
       tags: [Customer]
       operationId: createCustomer
       summary: Crear customere
+      parameters:
+        - $ref: '#/components/parameters/XInternalKey'
       description: |
         Crea un nuevo customere. Se invoca tras completar el flujo de pago.
         El customere se crea con IsActive=false.
@@ -529,6 +531,14 @@ paths:
 
 components:
   parameters:
+    XInternalKey:
+      name: X-Internal-Key
+      in: header
+      required: true
+      description: Shared secret for internal service-to-service calls
+      schema:
+        type: string
+
     imageId:
       name: imageId
       in: path

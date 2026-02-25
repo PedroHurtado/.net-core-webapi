@@ -114,6 +114,8 @@ paths:
       tags:
         - Auth
       summary: Resolver autenticación por cookie y generar JWT efímero
+      parameters:
+        - $ref: '#/components/parameters/XInternalKey'
       description: |
         **Endpoint interno — solo lo llama el gateway.**
 
@@ -191,6 +193,15 @@ paths:
       tags:
         - Auth
       summary: Resolver autenticación por API Key y generar JWT efímero
+      parameters:
+        - $ref: '#/components/parameters/XInternalKey'
+        - name: X-Api-Key
+          in: header
+          required: true
+          description: API Key de la aplicación externa (formato `fud_XXXXXXXX...`)
+          schema:
+            type: string
+            example: fud_a3K9mZ3pX7nR2wQ8vB4cD6eF1gH5jK
       description: |
         **Endpoint interno — solo lo llama el gateway.**
 
@@ -210,14 +221,6 @@ paths:
         5. Valida que la ExternalApp esté activa
         6. Construye JWT efímero con TenantId y permisos de la ExternalApp (Groups, AdditionalScopes, ExcludedScopes)
       operationId: resolveApiKey
-      parameters:
-        - name: X-Api-Key
-          in: header
-          required: true
-          description: API Key de la aplicación externa (formato `fud_XXXXXXXX...`)
-          schema:
-            type: string
-            example: fud_a3K9mZ3pX7nR2wQ8vB4cD6eF1gH5jK
       responses:
         '204':
           description: JWT efímero generado y devuelto en el header `X-Auth-Token`
@@ -268,6 +271,8 @@ paths:
       tags:
         - Auth
       summary: Obtener claves públicas (JWKS)
+      parameters:
+        - $ref: '#/components/parameters/XInternalKey'
       description: |
         Endpoint estándar JWKS. Los microservicios descargan la clave pública de aquí
         al arrancar y la cachean para validar las firmas de los JWT efímeros.
@@ -299,6 +304,19 @@ paths:
                     alg: ES256
 
 components:
+
+  # ──────────────────────────────────────────────
+  # Parameters
+  # ──────────────────────────────────────────────
+
+  parameters:
+    XInternalKey:
+      name: X-Internal-Key
+      in: header
+      required: true
+      description: Shared secret for internal service-to-service calls
+      schema:
+        type: string
 
   # ──────────────────────────────────────────────
   # Schemas
