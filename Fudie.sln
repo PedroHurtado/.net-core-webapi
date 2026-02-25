@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fudie", "src\Fudie\Fudie.cs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menus", "src\Menus\Menus.csproj", "{408A426F-A902-4B4E-A1FC-3DD6E8873984}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheDules", "src\ScheDules\ScheDules.csproj", "{833ED53C-34F4-4E8E-BBB7-4D1DD6A15D4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schedules", "src\Schedules\Schedules.csproj", "{833ED53C-34F4-4E8E-BBB7-4D1DD6A15D4D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheDules.UnitTests", "tests\ScheDules.UnitTests\ScheDules.UnitTests.csproj", "{BA908139-014E-4D4C-87DA-913E41902D74}"
 EndProject
