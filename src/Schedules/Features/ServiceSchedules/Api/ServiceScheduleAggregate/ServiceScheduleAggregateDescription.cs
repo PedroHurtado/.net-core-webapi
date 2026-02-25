@@ -5,4 +5,6 @@ public class ServiceScheduleAggregateDescription : IAggregateDescription
     public string Id => "service-schedule";
     public string DisplayName => "Horarios de Servicio";
     public string? Icon => "calendar";
+    public string ReadDescription => "View service schedules";
+    public string WriteDescription => "Manage service schedules";
 }
