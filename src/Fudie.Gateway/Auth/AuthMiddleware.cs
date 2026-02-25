@@ -13,6 +13,12 @@ public sealed class AuthMiddleware(
         var method = context.Request.Method;
         var path = context.Request.Path.Value ?? "/";
 
+        if (!registry.IsKnownRoute(method, path))
+        {
+            await next(context);
+            return;
+        }
+
         if (registry.IsInternal(method, path))
         {
             if (!environment.IsDevelopment())

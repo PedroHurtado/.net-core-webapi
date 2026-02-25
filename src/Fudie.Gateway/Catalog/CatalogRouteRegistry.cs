@@ -6,12 +6,16 @@ public sealed class CatalogRouteRegistry : ICatalogRouteRegistry
     private readonly Dictionary<string, CatalogResponse> _catalogsByCluster = [];
     private volatile ImmutableList<RouteRule> _anonymousRules = [];
     private volatile ImmutableList<RouteRule> _internalRules = [];
+    private volatile ImmutableList<RouteRule> _allRules = [];
 
     public bool IsAnonymous(string method, string path)
         => _anonymousRules.Any(r => r.Matches(method, path));
 
     public bool IsInternal(string method, string path)
         => _internalRules.Any(r => r.Matches(method, path));
+
+    public bool IsKnownRoute(string method, string path)
+        => _allRules.Any(r => r.Matches(method, path));
 
     public void Clear()
     {
@@ -20,6 +24,7 @@ public sealed class CatalogRouteRegistry : ICatalogRouteRegistry
             _catalogsByCluster.Clear();
             _anonymousRules = [];
             _internalRules = [];
+            _allRules = [];
         }
     }
 
@@ -39,11 +44,14 @@ public sealed class CatalogRouteRegistry : ICatalogRouteRegistry
     {
         var anonymous = new List<RouteRule>();
         var @internal = new List<RouteRule>();
+        var all = new List<RouteRule>();
 
         foreach (var catalog in _catalogsByCluster.Values)
         {
             foreach (var entry in catalog.Entries)
             {
+                all.Add(new RouteRule(entry.HttpVerb, entry.RoutePattern));
+
                 if (entry.IsAnonymous)
                     anonymous.Add(new RouteRule(entry.HttpVerb, entry.RoutePattern));
 
@@ -54,6 +62,7 @@ public sealed class CatalogRouteRegistry : ICatalogRouteRegistry
 
         _anonymousRules = [.. anonymous];
         _internalRules = [.. @internal];
+        _allRules = [.. all];
     }
 
     private sealed class RouteRule
