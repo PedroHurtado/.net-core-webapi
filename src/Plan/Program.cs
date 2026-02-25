@@ -20,6 +20,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Singleton);
+builder.Services.AddFudieSecurity(opts =>
+    builder.Configuration.GetSection(FudieSecurityOptions.SectionName).Bind(opts));
+
 builder.Services.AddInjectables();
 
 var app = builder.Build();

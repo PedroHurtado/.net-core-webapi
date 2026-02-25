@@ -20,3 +20,4 @@ global using Plans.Features.Plans.Domain.PlanAggregate.Enums;
 global using Plans.Features.Plans.Domain.PlanAggregate.ValueObjects;
 global using Plans.Infrastructure;
 
+global using Fudie.Security;
