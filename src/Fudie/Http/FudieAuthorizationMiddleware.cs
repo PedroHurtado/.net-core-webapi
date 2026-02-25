@@ -1,49 +1,101 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 using Fudie.Features;
+using Fudie.Security;
 
 namespace Fudie.Http;
 
-public class FudieAuthorizationMiddleware
+public class FudieAuthorizationMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public FudieAuthorizationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    private const string InternalKeyHeader = "X-Internal-Key";
 
     public async Task InvokeAsync(
         HttpContext context,
-        ICatalogRegistry catalog,
+        IJwtValidator jwtValidator,
         IConfiguration configuration)
     {
         var endpoint = context.GetEndpoint();
-
-        Console.WriteLine($"[Fudie Auth DEBUG] endpoint={endpoint?.DisplayName ?? "NULL"}, map_count={catalog.EndpointMapCount}");
-
-        if (endpoint == null)
+        if (endpoint is null)
         {
-            await _next(context);
+            await next(context);
             return;
         }
 
-        var className = catalog.FindClassName(endpoint);
+        var metadata = endpoint.Metadata;
 
-        Console.WriteLine($"[Fudie Auth DEBUG] className={className ?? "NULL"}, endpoint_hash={endpoint.GetHashCode()}");
-
-        if (className != null)
+        if (metadata.GetMetadata<IAllowAnonymous>() is not null)
         {
-            var serviceId = configuration["Fudie:ServiceId"];
-            var entry = catalog.GetAll().FirstOrDefault(e => e.ClassName == className);
-            var scope = $"{serviceId}:{className}";
-
-            Console.WriteLine(entry != null
-                ? $"[Fudie Auth] {scope} -> found in catalog ({entry.HttpVerb})"
-                : $"[Fudie Auth] {scope} -> NOT in catalog");
+            await TrySetTokenContext(context, jwtValidator);
+            await next(context);
+            return;
         }
 
-        await _next(context);
+        if (metadata.GetMetadata<InternalRequirement>() is not null)
+        {
+            var internalSecret = configuration["Fudie:InternalSecret"];
+            var incomingKey = context.Request.Headers[InternalKeyHeader].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(incomingKey) || incomingKey != internalSecret)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            await TrySetTokenContext(context, jwtValidator);
+            await next(context);
+            return;
+        }
+
+        var tokenContext = await ValidateJwt(context, jwtValidator);
+        if (tokenContext is null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        if (metadata.GetMetadata<PlatformRequirement>() is not null)
+        {
+            if (tokenContext.TenantId is not null)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
+        }
+
+        var groupRequirement = metadata.GetMetadata<GroupRequirement>();
+        if (groupRequirement is not null)
+        {
+            if (!tokenContext.Groups.Contains(groupRequirement.Group))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
+        }
+
+        SetTokenContext(context, tokenContext);
+        await next(context);
+    }
+
+    private static async Task<FudieTokenContext?> ValidateJwt(HttpContext context, IJwtValidator jwtValidator)
+    {
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        if (!authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return await jwtValidator.ValidateTokenAsync(authHeader["Bearer ".Length..]);
+    }
+
+    private static async Task TrySetTokenContext(HttpContext context, IJwtValidator jwtValidator)
+    {
+        var tokenContext = await ValidateJwt(context, jwtValidator);
+        SetTokenContext(context, tokenContext);
+    }
+
+    private static void SetTokenContext(HttpContext context, FudieTokenContext? tokenContext)
+    {
+        if (tokenContext is not null)
+            context.Items["FudieTokenContext"] = tokenContext;
     }
 }

@@ -36,4 +36,5 @@ public class FudieTokenContextTests
 
         context.IsOwner.Should().BeTrue();
     }
+
 }
