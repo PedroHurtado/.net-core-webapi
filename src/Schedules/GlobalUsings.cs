@@ -34,3 +34,4 @@ global using Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate
 global using Schedules.Features.ServiceSchedules.Domain.ServiceScheduleAggregate.ValueObjects;
 
 global using Schedules.Features.ServiceSchedules.Api.ServiceScheduleAggregate;
+global using Fudie.Security;
