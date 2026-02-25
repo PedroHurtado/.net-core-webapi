@@ -13,7 +13,8 @@ public class UpdateAddress : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/address", Handler);
+        app.MapPut("/customer/address", Handler)
+            .WithDescriptionCatalog("Update customer address");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

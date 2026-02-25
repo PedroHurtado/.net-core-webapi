@@ -4,7 +4,8 @@ public class ActivateCustomer : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer/activate", Handler);
+        app.MapPost("/customer/activate", Handler)
+            .WithDescriptionCatalog("Activate customer");
     }
 
     public static Func<IService, Task<IResult>> Handler => async (service) =>

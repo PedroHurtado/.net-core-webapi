@@ -36,7 +36,9 @@ public class CreateCustomer : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer", Handler);
+        app.MapPost("/customer", Handler)
+            .RequireInternal()
+            .WithDescriptionCatalog("Create a new customer");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

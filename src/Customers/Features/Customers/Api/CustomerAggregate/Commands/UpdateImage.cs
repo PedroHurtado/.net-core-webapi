@@ -9,7 +9,8 @@ public class UpdateImage : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/images/{imageId}", Handler);
+        app.MapPut("/customer/images/{imageId}", Handler)
+            .WithDescriptionCatalog("Update customer image");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, imageId, request) =>

@@ -9,7 +9,8 @@ public class UpdateContactInfo : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/contact-info", Handler);
+        app.MapPut("/customer/contact-info", Handler)
+            .WithDescriptionCatalog("Update customer contact info");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

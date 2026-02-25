@@ -4,7 +4,8 @@ public class RemovePriceRange : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/customer/price-range", Handler);
+        app.MapDelete("/customer/price-range", Handler)
+            .WithDescriptionCatalog("Remove customer price range");
     }
 
     public static Func<IService, Task<IResult>> Handler => async (service) =>

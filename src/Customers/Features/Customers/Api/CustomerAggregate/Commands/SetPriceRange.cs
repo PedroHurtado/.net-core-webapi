@@ -8,7 +8,8 @@ public class SetPriceRange : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/price-range", Handler);
+        app.MapPut("/customer/price-range", Handler)
+            .WithDescriptionCatalog("Set customer price range");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

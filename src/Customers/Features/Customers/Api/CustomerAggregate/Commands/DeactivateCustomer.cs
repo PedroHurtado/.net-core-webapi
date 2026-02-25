@@ -4,7 +4,8 @@ public class DeactivateCustomer : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer/deactivate", Handler);
+        app.MapPost("/customer/deactivate", Handler)
+            .WithDescriptionCatalog("Deactivate customer");
     }
 
     public static Func<IService, Task<IResult>> Handler => async (service) =>

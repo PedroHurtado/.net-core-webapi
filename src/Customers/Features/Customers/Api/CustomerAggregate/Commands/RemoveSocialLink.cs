@@ -4,7 +4,8 @@ public class RemoveSocialLink : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/customer/social-links/{platform}", Handler);
+        app.MapDelete("/customer/social-links/{platform}", Handler)
+            .WithDescriptionCatalog("Remove social link");
     }
 
     public static Func<IService, string, Task<IResult>> Handler => async (service, platform) =>

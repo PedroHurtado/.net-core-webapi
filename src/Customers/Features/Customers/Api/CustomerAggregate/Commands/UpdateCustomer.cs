@@ -16,7 +16,8 @@ public class UpdateCustomer : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer", Handler);
+        app.MapPut("/customer", Handler)
+            .WithDescriptionCatalog("Update customer details");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

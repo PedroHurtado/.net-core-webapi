@@ -4,7 +4,8 @@ public class RemoveSupportedCulture : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/customer/supported-cultures/{code}", Handler);
+        app.MapDelete("/customer/supported-cultures/{code}", Handler)
+            .WithDescriptionCatalog("Remove supported culture");
     }
 
     public static Func<IService, string, Task<IResult>> Handler => async (service, code) =>

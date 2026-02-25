@@ -18,7 +18,8 @@ public class UpdateBillingInfo : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/billing-info", Handler);
+        app.MapPut("/customer/billing-info", Handler)
+            .WithDescriptionCatalog("Update customer billing info");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

@@ -6,7 +6,8 @@ public class UpdateSocialLink : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/customer/social-links/{platform}", Handler);
+        app.MapPut("/customer/social-links/{platform}", Handler)
+            .WithDescriptionCatalog("Update social link");
     }
 
     public static Func<IService, string, Request, Task<IResult>> Handler => async (service, platform, request) =>

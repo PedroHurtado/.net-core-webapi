@@ -8,7 +8,8 @@ public class AddSocialLink : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer/social-links", Handler);
+        app.MapPost("/customer/social-links", Handler)
+            .WithDescriptionCatalog("Add social link");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

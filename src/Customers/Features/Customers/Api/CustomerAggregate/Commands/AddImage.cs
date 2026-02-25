@@ -10,7 +10,8 @@ public class AddImage : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer/images", Handler);
+        app.MapPost("/customer/images", Handler)
+            .WithDescriptionCatalog("Add image to customer");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

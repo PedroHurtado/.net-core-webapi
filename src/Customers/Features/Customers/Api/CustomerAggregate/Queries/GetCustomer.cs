@@ -4,7 +4,8 @@ public class GetCustomer : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/customer", Handler);
+        app.MapGet("/customer", Handler)
+            .WithDescriptionCatalog("Get current customer");
     }
 
     public static Func<IService, Task<IResult>> Handler => async (service) =>

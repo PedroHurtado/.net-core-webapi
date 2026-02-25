@@ -6,7 +6,8 @@ public class AddSupportedCulture : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/customer/supported-cultures", Handler);
+        app.MapPost("/customer/supported-cultures", Handler)
+            .WithDescriptionCatalog("Add supported culture");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

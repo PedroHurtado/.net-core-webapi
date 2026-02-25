@@ -4,7 +4,8 @@ public class RemoveImage : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/customer/images/{imageId}", Handler);
+        app.MapDelete("/customer/images/{imageId}", Handler)
+            .WithDescriptionCatalog("Remove customer image");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, imageId) =>
