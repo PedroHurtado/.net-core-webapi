@@ -73,6 +73,36 @@ public class IAggregateDescriptionTests
     }
 
     [Fact]
+    public void IAggregateDescription_ShouldHaveReadDescriptionProperty()
+    {
+        // Arrange
+        var type = typeof(IAggregateDescription);
+
+        // Act
+        var property = type.GetProperty(nameof(IAggregateDescription.ReadDescription));
+
+        // Assert
+        property.Should().NotBeNull();
+        property!.PropertyType.Should().Be(typeof(string));
+        property.CanRead.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IAggregateDescription_ShouldHaveWriteDescriptionProperty()
+    {
+        // Arrange
+        var type = typeof(IAggregateDescription);
+
+        // Act
+        var property = type.GetProperty(nameof(IAggregateDescription.WriteDescription));
+
+        // Assert
+        property.Should().NotBeNull();
+        property!.PropertyType.Should().Be(typeof(string));
+        property.CanRead.Should().BeTrue();
+    }
+
+    [Fact]
     public void IAggregateDescription_ShouldHaveExactlyThreeProperties()
     {
         // Arrange
@@ -82,7 +112,7 @@ public class IAggregateDescriptionTests
         var properties = type.GetProperties();
 
         // Assert
-        properties.Should().HaveCount(3);
+        properties.Should().HaveCount(5);
     }
 
     #endregion
@@ -109,6 +139,8 @@ public class IAggregateDescriptionTests
         implementation.Id.Should().Be("menu");
         implementation.DisplayName.Should().Be("Menús");
         implementation.Icon.Should().Be("book-open");
+        implementation.ReadDescription.Should().Be("View menus");
+        implementation.WriteDescription.Should().Be("Manage menus");
     }
 
     [Fact]
@@ -130,6 +162,8 @@ public class IAggregateDescriptionTests
         public string Id => "menu";
         public string DisplayName => "Menús";
         public string? Icon => "book-open";
+        public string ReadDescription => "View menus";
+        public string WriteDescription => "Manage menus";
     }
 
     private class TestAggregateDescriptionWithoutIcon : IAggregateDescription
@@ -137,6 +171,8 @@ public class IAggregateDescriptionTests
         public string Id => "session";
         public string DisplayName => "Sesiones";
         public string? Icon => null;
+        public string ReadDescription => "View sessions";
+        public string WriteDescription => "Manage sessions";
     }
 
     #endregion

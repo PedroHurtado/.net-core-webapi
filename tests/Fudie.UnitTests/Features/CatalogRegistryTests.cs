@@ -183,6 +183,53 @@ public class CatalogRegistryTests
     }
 
     [Fact]
+    public void Register_WithGroupRequirement_ShouldSetCustomGroupDescription()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit", customGroupDescription: "Menu deposits");
+
+        // Act
+        registry.Register("UpdateDepositPolicy", endpoint, DefaultAggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.CustomGroupDescription.Should().Be("Menu deposits");
+    }
+
+    [Fact]
+    public void Register_ShouldCaptureAggregateReadDescription()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        var aggregate = new TestAggregateDescription("menu", "Menús", "book-open", "View menus", "Manage menus");
+
+        // Act
+        registry.Register("GetMenus", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateReadDescription.Should().Be("View menus");
+    }
+
+    [Fact]
+    public void Register_ShouldCaptureAggregateWriteDescription()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST");
+        var aggregate = new TestAggregateDescription("menu", "Menús", "book-open", "View menus", "Manage menus");
+
+        // Act
+        registry.Register("CreateMenu", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.AggregateWriteDescription.Should().Be("Manage menus");
+    }
+
+    [Fact]
     public void Register_WithCatalogDescription_ShouldSetDescription()
     {
         // Arrange
@@ -557,6 +604,7 @@ public class CatalogRegistryTests
         bool isInternal = false,
         bool isAuthenticated = false,
         string? customGroup = null,
+        string? customGroupDescription = null,
         string? description = null,
         string? routePattern = null,
         string displayName = "test")
@@ -582,7 +630,7 @@ public class CatalogRegistryTests
             metadata.Add(new AuthenticatedRequirement());
 
         if (customGroup is not null)
-            metadata.Add(new GroupRequirement(customGroup));
+            metadata.Add(new GroupRequirement(customGroup, customGroupDescription ?? customGroup));
 
         if (description is not null)
             metadata.Add(new CatalogDescription(description));
@@ -603,7 +651,12 @@ public class CatalogRegistryTests
             displayName: displayName);
     }
 
-    private record TestAggregateDescription(string Id, string DisplayName, string? Icon) : IAggregateDescription;
+    private record TestAggregateDescription(
+        string Id,
+        string DisplayName,
+        string? Icon,
+        string ReadDescription = "View menus",
+        string WriteDescription = "Manage menus") : IAggregateDescription;
 
     #endregion
 }

@@ -31,6 +31,8 @@ public class CatalogRegistry : ICatalogRegistry
             ? routeEndpoint.RoutePattern.RawText ?? ""
             : "";
 
+        var groupRequirement = endpoint.Metadata.GetMetadata<GroupRequirement>();
+
         _entries[displayName] = new CatalogEntry(
             ClassName: className,
             HttpVerb: httpMethod ?? "GET",
@@ -40,11 +42,14 @@ public class CatalogRegistry : ICatalogRegistry
             IsInternal: endpoint.Metadata.GetMetadata<InternalRequirement>() is not null,
             IsPlatform: endpoint.Metadata.GetMetadata<PlatformRequirement>() is not null,
             IsExcluded: isExcluded,
-            CustomGroup: endpoint.Metadata.GetMetadata<GroupRequirement>()?.Group,
+            CustomGroup: groupRequirement?.Group,
+            CustomGroupDescription: groupRequirement?.Description,
             Description: endpoint.Metadata.GetMetadata<CatalogDescription>()?.Description,
             AggregateId: aggregate.Id,
             AggregateDisplayName: aggregate.DisplayName,
-            AggregateIcon: aggregate.Icon);
+            AggregateIcon: aggregate.Icon,
+            AggregateReadDescription: aggregate.ReadDescription,
+            AggregateWriteDescription: aggregate.WriteDescription);
 
         _endpointMap[displayName] = endpoint;
     }

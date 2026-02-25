@@ -17,8 +17,8 @@ public static class EndpointAuthExtensions
         => builder.WithMetadata(new InternalRequirement());
 
     public static TBuilder RequireGroup<TBuilder>(
-        this TBuilder builder, string group) where TBuilder : IEndpointConventionBuilder
-        => builder.WithMetadata(new GroupRequirement(group));
+        this TBuilder builder, string group, string description) where TBuilder : IEndpointConventionBuilder
+        => builder.WithMetadata(new GroupRequirement(group, description));
 
     public static TBuilder WithDescriptionCatalog<TBuilder>(
         this TBuilder builder, string description) where TBuilder : IEndpointConventionBuilder

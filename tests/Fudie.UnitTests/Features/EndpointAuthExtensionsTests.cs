@@ -121,7 +121,7 @@ public class EndpointAuthExtensionsTests
         var endpoint = builder.MapGet("/test", () => Results.Ok());
 
         // Act
-        endpoint.RequireGroup("menu:deposit");
+        endpoint.RequireGroup("menu:deposit", "Menu deposits");
 
         // Assert
         var dataSource = builder.DataSources.First();
@@ -129,6 +129,7 @@ public class EndpointAuthExtensionsTests
         var groupRequirement = endpointMetadata.GetMetadata<GroupRequirement>();
         groupRequirement.Should().NotBeNull();
         groupRequirement!.Group.Should().Be("menu:deposit");
+        groupRequirement.Description.Should().Be("Menu deposits");
     }
 
     [Fact]
@@ -139,7 +140,7 @@ public class EndpointAuthExtensionsTests
         var endpoint = builder.MapGet("/test", () => Results.Ok());
 
         // Act
-        var result = endpoint.RequireGroup("menu:deposit");
+        var result = endpoint.RequireGroup("menu:deposit", "Menu deposits");
 
         // Assert
         result.Should().BeSameAs(endpoint);
@@ -193,7 +194,7 @@ public class EndpointAuthExtensionsTests
         var endpoint = builder.MapGet("/test", () => Results.Ok());
 
         // Act
-        endpoint.RequirePlatform().RequireGroup("admin:manage");
+        endpoint.RequirePlatform().RequireGroup("admin:manage", "Manage administration");
 
         // Assert
         var dataSource = builder.DataSources.First();
@@ -211,7 +212,7 @@ public class EndpointAuthExtensionsTests
         var endpoint = builder.MapGet("/test", () => Results.Ok());
 
         // Act
-        endpoint.RequireGroup("menus:write").WithDescriptionCatalog("Create menu");
+        endpoint.RequireGroup("menus:write", "Manage menus").WithDescriptionCatalog("Create menu");
 
         // Assert
         var dataSource = builder.DataSources.First();
