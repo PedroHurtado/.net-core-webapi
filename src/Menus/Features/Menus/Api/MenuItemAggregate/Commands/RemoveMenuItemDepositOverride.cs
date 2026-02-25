@@ -5,7 +5,7 @@ public class RemoveMenuItemDepositOverride : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapDelete("/menu-items/{id}/deposit-override", Handler)
-            .RequireGroup("menu:deposit")
+            .RequireGroup("menu:deposit", "Fianzas de menús")
             .WithDescriptionCatalog("Remove deposit override from a menu item");
     }
 

@@ -13,7 +13,7 @@ public class SetMenuDepositPolicy : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/menus/{id}/deposit-policy", Handler)
-            .RequireGroup("menu:deposit")
+            .RequireGroup("menu:deposit", "Fianzas de menús")
             .WithDescriptionCatalog("Set deposit policy for a menu");
     }
 

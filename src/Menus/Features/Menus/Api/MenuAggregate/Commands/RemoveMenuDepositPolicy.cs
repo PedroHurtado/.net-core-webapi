@@ -5,7 +5,7 @@ public class RemoveMenuDepositPolicy : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapDelete("/menus/{id}/deposit-policy", Handler)
-            .RequireGroup("menu:deposit")
+            .RequireGroup("menu:deposit", "Fianzas de menús")
             .WithDescriptionCatalog("Remove deposit policy from a menu");
     }
 

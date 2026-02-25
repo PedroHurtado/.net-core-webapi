@@ -10,7 +10,7 @@ public class SetMenuItemDepositOverride : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/menu-items/{id}/deposit-override", Handler)
-            .RequireGroup("menu:deposit")
+            .RequireGroup("menu:deposit", "Fianzas de menús")
             .WithDescriptionCatalog("Set deposit override for a menu item");
     }
 
