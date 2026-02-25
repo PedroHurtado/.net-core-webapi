@@ -4,7 +4,8 @@ public class RemoveServiceScheduleSpecialDate : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/service-schedules/{id}/services/{type}/special-dates/{date}", Handler);
+        app.MapDelete("/service-schedules/{id}/services/{type}/special-dates/{date}", Handler)
+            .WithDescriptionCatalog("Remove service special date");
     }
 
     public static Func<IService, Guid, ServiceType, DateOnly, Task<IResult>> Handler => async (service, id, type, date) =>

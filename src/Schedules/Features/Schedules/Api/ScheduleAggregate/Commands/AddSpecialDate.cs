@@ -14,7 +14,8 @@ public class AddSpecialDate : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/schedules/{id}/special-dates", Handler);
+        app.MapPost("/schedules/{id}/special-dates", Handler)
+            .WithDescriptionCatalog("Add special date");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>

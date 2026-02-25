@@ -4,7 +4,8 @@ public class DeactivateServiceSchedule : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/service-schedules/{id}/deactivate", Handler);
+        app.MapPost("/service-schedules/{id}/deactivate", Handler)
+            .WithDescriptionCatalog("Deactivate service schedule");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

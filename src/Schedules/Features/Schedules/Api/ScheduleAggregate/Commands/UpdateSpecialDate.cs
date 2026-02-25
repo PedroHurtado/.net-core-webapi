@@ -13,7 +13,8 @@ public class UpdateSpecialDate : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/schedules/{id}/special-dates/{date}", Handler);
+        app.MapPut("/schedules/{id}/special-dates/{date}", Handler)
+            .WithDescriptionCatalog("Update special date");
     }
 
     public static Func<IService, Guid, DateOnly, Request, Task<IResult>> Handler => async (service, id, date, request) =>

@@ -11,7 +11,8 @@ public class UpdateServiceScheduleSpecialDate : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/service-schedules/{id}/services/{type}/special-dates/{date}", Handler);
+        app.MapPut("/service-schedules/{id}/services/{type}/special-dates/{date}", Handler)
+            .WithDescriptionCatalog("Update service special date");
     }
 
     public static Func<IService, Guid, ServiceType, DateOnly, Request, Task<IResult>> Handler => async (service, id, type, date, request) =>

@@ -8,7 +8,8 @@ public class CanReserve : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/service-schedules/{id}/can-reserve", Handler);
+        app.MapGet("/service-schedules/{id}/can-reserve", Handler)
+            .WithDescriptionCatalog("Check if reservation is possible");
     }
 
     public static Func<IService, Guid, ServiceType, DateTime, int, Task<IResult>> Handler => async (service, id, type, dateTime, partySize) =>

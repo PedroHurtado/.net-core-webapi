@@ -12,7 +12,8 @@ public class SetWeeklyHours : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/schedules/{id}/weekly-hours/{dayOfWeek}", Handler);
+        app.MapPut("/schedules/{id}/weekly-hours/{dayOfWeek}", Handler)
+            .WithDescriptionCatalog("Set weekly hours for a day");
     }
 
     public static Func<IService, Guid, DayOfWeek, Request, Task<IResult>> Handler => async (service, id, dayOfWeek, request) =>

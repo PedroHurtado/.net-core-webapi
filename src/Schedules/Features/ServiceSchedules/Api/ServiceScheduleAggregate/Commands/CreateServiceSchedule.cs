@@ -15,7 +15,8 @@ public class CreateServiceSchedule : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/service-schedules", Handler);
+        app.MapPost("/service-schedules", Handler)
+            .WithDescriptionCatalog("Create a service schedule");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

@@ -10,7 +10,8 @@ public class ConfigureServiceDay : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/service-schedules/{id}/services/{type}/days/{day}", Handler);
+        app.MapPut("/service-schedules/{id}/services/{type}/days/{day}", Handler)
+            .WithDescriptionCatalog("Configure service day");
     }
 
     public static Func<IService, Guid, ServiceType, DayOfWeek, Request, Task<IResult>> Handler => async (service, id, type, day, request) =>

@@ -4,7 +4,8 @@ public class ActivateSchedule : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/schedules/{id}/activate", Handler);
+        app.MapPost("/schedules/{id}/activate", Handler)
+            .WithDescriptionCatalog("Activate a schedule");
     }
 
     public static Func<IService, Guid, Task<IResult>> Handler => async (service, id) =>

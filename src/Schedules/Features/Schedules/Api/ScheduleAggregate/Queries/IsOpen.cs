@@ -11,7 +11,8 @@ public class IsOpen : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/schedules/{id}/is-open", Handler);
+        app.MapGet("/schedules/{id}/is-open", Handler)
+            .WithDescriptionCatalog("Check if schedule is open");
     }
 
     public static Func<IService, Guid, DateTime?, Task<IResult>> Handler => async (service, id, dateTime) =>

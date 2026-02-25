@@ -8,7 +8,8 @@ public class CreateSchedule : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/schedules", Handler);
+        app.MapPost("/schedules", Handler)
+            .WithDescriptionCatalog("Create a new schedule");
     }
 
     public static Func<IService, Request, Task<IResult>> Handler => async (service, request) =>

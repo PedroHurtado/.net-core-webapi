@@ -4,7 +4,8 @@ public class MarkDayAsClosed : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/schedules/{id}/weekly-hours/{dayOfWeek}/close", Handler);
+        app.MapPost("/schedules/{id}/weekly-hours/{dayOfWeek}/close", Handler)
+            .WithDescriptionCatalog("Mark day as closed");
     }
 
     public static Func<IService, Guid, DayOfWeek, Task<IResult>> Handler => async (service, id, dayOfWeek) =>

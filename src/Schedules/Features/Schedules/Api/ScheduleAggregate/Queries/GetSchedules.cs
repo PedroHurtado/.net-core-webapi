@@ -4,7 +4,8 @@ public class GetSchedules : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/schedules", Handler);
+        app.MapGet("/schedules", Handler)
+            .WithDescriptionCatalog("List all schedules");
     }
 
     public static Func<IService, Task<IResult>> Handler => async (service) =>

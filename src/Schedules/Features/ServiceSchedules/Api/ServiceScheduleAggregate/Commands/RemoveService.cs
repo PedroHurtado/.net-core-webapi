@@ -4,7 +4,8 @@ public class RemoveService : IFeatureModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/service-schedules/{id}/services/{type}", Handler);
+        app.MapDelete("/service-schedules/{id}/services/{type}", Handler)
+            .WithDescriptionCatalog("Remove service");
     }
 
     public static Func<IService, Guid, ServiceType, Task<IResult>> Handler => async (service, id, type) =>

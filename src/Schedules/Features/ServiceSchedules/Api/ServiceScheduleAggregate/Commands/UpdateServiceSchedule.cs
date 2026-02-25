@@ -15,7 +15,8 @@ public class UpdateServiceSchedule : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/service-schedules/{id}", Handler);
+        app.MapPut("/service-schedules/{id}", Handler)
+            .WithDescriptionCatalog("Update service schedule");
     }
 
     public static Func<IService, Guid, Request, Task<IResult>> Handler => async (service, id, request) =>
