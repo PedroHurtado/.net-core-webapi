@@ -5,4 +5,6 @@ public class SessionAggregateDescription : IAggregateDescription
     public string Id => "session";
     public string DisplayName => "Sesiones";
     public string? Icon => "key";
+    public string ReadDescription => "View sessions";
+    public string WriteDescription => "Manage sessions";
 }
