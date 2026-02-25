@@ -11,7 +11,8 @@ public class DeleteTenantRole : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/tenant-roles/{id}", Handler);
+        app.MapDelete("/tenant-roles/{id}", Handler)
+            .WithDescriptionCatalog("Delete tenant role");
     }
 
     public interface IService

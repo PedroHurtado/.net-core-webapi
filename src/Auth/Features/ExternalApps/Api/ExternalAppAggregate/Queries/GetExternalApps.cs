@@ -11,7 +11,8 @@ public class GetExternalApps : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/external-apps", Handler);
+        app.MapGet("/external-apps", Handler)
+            .WithDescriptionCatalog("List all external apps");
     }
 
     public interface IService

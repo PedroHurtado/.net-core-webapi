@@ -19,8 +19,8 @@ public class ResolveApiKey : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/auth/resolve-api-key", Handler)
-            .AllowAnonymous()
-            .ExcludeFromDescription();
+            .RequireInternal()
+            .WithDescriptionCatalog("Resolve API key");
     }
 
     public interface IService

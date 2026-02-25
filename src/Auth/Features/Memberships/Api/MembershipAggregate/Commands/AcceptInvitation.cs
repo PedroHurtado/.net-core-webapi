@@ -11,7 +11,8 @@ public class AcceptInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships/{id}/accept", Handler);
+        app.MapPost("/memberships/{id}/accept", Handler)
+            .WithDescriptionCatalog("Accept membership invitation");
     }
 
     public interface IService

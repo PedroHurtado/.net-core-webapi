@@ -11,7 +11,8 @@ public class CancelExternalAppInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/cancel-invitation", Handler);
+        app.MapPost("/external-apps/{id}/cancel-invitation", Handler)
+            .WithDescriptionCatalog("Cancel external app invitation");
     }
 
     public interface IService

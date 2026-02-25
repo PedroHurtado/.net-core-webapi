@@ -11,7 +11,8 @@ public class ActivateExternalApp : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/activate", Handler);
+        app.MapPost("/external-apps/{id}/activate", Handler)
+            .WithDescriptionCatalog("Activate external app");
     }
 
     public interface IService

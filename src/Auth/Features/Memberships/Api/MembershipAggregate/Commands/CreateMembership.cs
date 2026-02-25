@@ -13,7 +13,8 @@ public class CreateMembership : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships", Handler);
+        app.MapPost("/memberships", Handler)
+            .WithDescriptionCatalog("Create a membership");
     }
 
     public interface IService

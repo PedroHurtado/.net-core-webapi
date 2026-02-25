@@ -11,7 +11,8 @@ public class CancelInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships/{id}/cancel-invitation", Handler);
+        app.MapPost("/memberships/{id}/cancel-invitation", Handler)
+            .WithDescriptionCatalog("Cancel membership invitation");
     }
 
     public interface IService

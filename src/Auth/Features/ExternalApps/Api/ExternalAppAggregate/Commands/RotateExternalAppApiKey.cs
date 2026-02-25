@@ -11,7 +11,8 @@ public class RotateExternalAppApiKey : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/rotate-api-key", Handler);
+        app.MapPost("/external-apps/{id}/rotate-api-key", Handler)
+            .WithDescriptionCatalog("Rotate external app API key");
     }
 
     public interface IService

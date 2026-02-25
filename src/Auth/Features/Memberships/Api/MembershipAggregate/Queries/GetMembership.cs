@@ -11,7 +11,8 @@ public class GetMembership : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/memberships/{id}", Handler);
+        app.MapGet("/memberships/{id}", Handler)
+            .WithDescriptionCatalog("Get membership by id");
     }
 
     public interface IService

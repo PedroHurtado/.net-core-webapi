@@ -11,7 +11,8 @@ public class ActivateMembership : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships/{id}/activate", Handler);
+        app.MapPost("/memberships/{id}/activate", Handler)
+            .WithDescriptionCatalog("Activate membership");
     }
 
     public interface IService

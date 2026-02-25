@@ -15,7 +15,8 @@ public class GetJwks : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/auth/jwks", Handler)
-            .AllowAnonymous();
+            .RequireInternal()
+            .WithDescriptionCatalog("Get JWKS keys");
     }
 
     public interface IService

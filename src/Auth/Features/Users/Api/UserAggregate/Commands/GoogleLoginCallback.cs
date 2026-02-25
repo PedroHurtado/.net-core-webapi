@@ -26,7 +26,8 @@ public class GoogleLoginCallback : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/auth/login/google", Handler)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .WithDescriptionCatalog("Google login callback");
             
     }
 

@@ -16,7 +16,8 @@ public class UpdateTenantRolePermissions : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/tenant-roles/{id}/permissions", Handler);
+        app.MapPut("/tenant-roles/{id}/permissions", Handler)
+            .WithDescriptionCatalog("Update role permissions");
     }
 
     public interface IService

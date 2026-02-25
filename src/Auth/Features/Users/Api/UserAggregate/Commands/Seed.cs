@@ -52,8 +52,8 @@ public class Seed : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/auth/seed", Handler)
-            .WithDescription("")
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .WithDescriptionCatalog("Seed auth data");
     }
 
     public interface IService

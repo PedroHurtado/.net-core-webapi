@@ -16,7 +16,8 @@ public class UpdateExternalAppPermissions : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/external-apps/{id}/permissions", Handler);
+        app.MapPut("/external-apps/{id}/permissions", Handler)
+            .WithDescriptionCatalog("Update external app permissions");
     }
 
     public interface IService

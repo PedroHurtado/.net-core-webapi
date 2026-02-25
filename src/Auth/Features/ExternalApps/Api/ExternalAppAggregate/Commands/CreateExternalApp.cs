@@ -13,7 +13,8 @@ public class CreateExternalApp : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps", Handler);
+        app.MapPost("/external-apps", Handler)
+            .WithDescriptionCatalog("Create external app");
     }
 
     public interface IService

@@ -11,7 +11,8 @@ public class ResendInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships/{id}/resend-invitation", Handler);
+        app.MapPost("/memberships/{id}/resend-invitation", Handler)
+            .WithDescriptionCatalog("Resend membership invitation");
     }
 
     public interface IService

@@ -22,8 +22,8 @@ public class ResolveAuth : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/auth/resolve", Handler)
-            .AllowAnonymous()
-            .ExcludeFromDescription();
+            .RequireInternal()
+            .WithDescriptionCatalog("Resolve authentication");
     }
 
     public interface IService

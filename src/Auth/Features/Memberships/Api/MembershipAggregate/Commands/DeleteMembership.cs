@@ -11,7 +11,8 @@ public class DeleteMembership : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/memberships/{id}", Handler);
+        app.MapDelete("/memberships/{id}", Handler)
+            .WithDescriptionCatalog("Delete membership");
     }
 
     public interface IService

@@ -11,7 +11,8 @@ public class ResendExternalAppInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/resend-invitation", Handler);
+        app.MapPost("/external-apps/{id}/resend-invitation", Handler)
+            .WithDescriptionCatalog("Resend external app invitation");
     }
 
     public interface IService

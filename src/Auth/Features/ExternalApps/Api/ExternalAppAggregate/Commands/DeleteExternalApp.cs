@@ -11,7 +11,8 @@ public class DeleteExternalApp : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/external-apps/{id}", Handler);
+        app.MapDelete("/external-apps/{id}", Handler)
+            .WithDescriptionCatalog("Delete external app");
     }
 
     public interface IService

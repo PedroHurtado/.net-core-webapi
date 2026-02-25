@@ -11,7 +11,8 @@ public class DeactivateMembership : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/memberships/{id}/deactivate", Handler);
+        app.MapPost("/memberships/{id}/deactivate", Handler)
+            .WithDescriptionCatalog("Deactivate membership");
     }
 
     public interface IService

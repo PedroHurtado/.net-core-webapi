@@ -11,7 +11,8 @@ public class AcceptExternalAppInvitation : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/accept", Handler);
+        app.MapPost("/external-apps/{id}/accept", Handler)
+            .WithDescriptionCatalog("Accept external app invitation");
     }
 
     public interface IService

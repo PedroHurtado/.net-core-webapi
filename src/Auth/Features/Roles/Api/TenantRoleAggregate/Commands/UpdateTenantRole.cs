@@ -13,7 +13,8 @@ public class UpdateTenantRole : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/tenant-roles/{id}", Handler);
+        app.MapPut("/tenant-roles/{id}", Handler)
+            .WithDescriptionCatalog("Update tenant role");
     }
 
     public interface IService

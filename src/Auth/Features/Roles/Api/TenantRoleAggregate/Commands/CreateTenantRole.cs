@@ -13,7 +13,8 @@ public class CreateTenantRole : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/tenant-roles", Handler);
+        app.MapPost("/tenant-roles", Handler)
+            .WithDescriptionCatalog("Create a tenant role");
     }
 
     public interface IService

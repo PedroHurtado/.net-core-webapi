@@ -13,7 +13,8 @@ public class ChangeMembershipRole : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/memberships/{id}/role", Handler);
+        app.MapPut("/memberships/{id}/role", Handler)
+            .WithDescriptionCatalog("Change membership role");
     }
 
     public interface IService

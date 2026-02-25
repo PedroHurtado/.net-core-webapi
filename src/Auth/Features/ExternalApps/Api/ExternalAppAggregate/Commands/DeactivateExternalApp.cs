@@ -11,7 +11,8 @@ public class DeactivateExternalApp : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/external-apps/{id}/deactivate", Handler);
+        app.MapPost("/external-apps/{id}/deactivate", Handler)
+            .WithDescriptionCatalog("Deactivate external app");
     }
 
     public interface IService

@@ -11,7 +11,8 @@ public class GetTenantRoles : IFeatureModule
 
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tenant-roles", Handler);
+        app.MapGet("/tenant-roles", Handler)
+            .WithDescriptionCatalog("List all tenant roles");
     }
 
     public interface IService
