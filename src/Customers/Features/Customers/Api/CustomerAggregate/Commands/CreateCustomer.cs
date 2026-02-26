@@ -3,6 +3,7 @@ namespace Customers.Features.Customers.Api.CustomerAggregate.Commands;
 public class CreateCustomer : IFeatureModule
 {
     public record Request(
+        Guid Id,
         string Name,
         string Slug,
         string? Description,
@@ -55,7 +56,6 @@ public class CreateCustomer : IFeatureModule
     [Injectable]
     public class Service(
         Customer.Create createCustomer,
-        Guid tenantId,
         IRepository repository,
         IUnitOfWork unitOfWork) : IService
     {
@@ -66,7 +66,7 @@ public class CreateCustomer : IFeatureModule
                 $"Customer with slug '{request.Slug}' already exists");
 
             var command = new CreateCustomerCommand(
-                Id: tenantId,
+                Id: request.Id,
                 Name: request.Name,
                 Slug: request.Slug,
                 Description: request.Description,

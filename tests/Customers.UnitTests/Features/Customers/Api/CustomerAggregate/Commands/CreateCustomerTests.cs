@@ -11,13 +11,13 @@ public class CreateCustomerTests : IClassFixture<DomainFixture>
     {
         _service = new CreateCustomer.Service(
             fixture.Get<Customer.Create>(),
-            _tenantId,
             _repository.Object,
             _unitOfWork.Object);
     }
 
-    private static CreateCustomer.Request CreateValidRequest(string slug = "el-bar-del-juanjo") =>
+    private CreateCustomer.Request CreateValidRequest(string slug = "el-bar-del-juanjo") =>
         new(
+            _tenantId,
             "El Bar del Juanjo",
             slug,
             "Bar de tapas",

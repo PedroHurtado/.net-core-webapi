@@ -11,6 +11,7 @@ public interface ICustomerApi
 // ──────────────────────────────────────────────
 
 public record CreateCustomerApiRequest(
+    Guid Id,
     string Name,
     string Slug,
     string? Description,

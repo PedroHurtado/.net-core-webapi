@@ -5,7 +5,8 @@ info:
     API de administración del agregado Customer.
 
     Todos los endpoints usan `/customer` (singular) sin identificador en la URL.
-    El tenantId se obtiene exclusivamente del JWT interno.
+    El tenantId se obtiene del ClaimsPrincipal (claim `tid`) establecido por el middleware de autorización.
+    El endpoint POST /customer (internal) recibe el id explícitamente en el body.
     Los sub-recursos mantienen sus identificadores propios en la ruta ({imageId}, {platform}, {code}).
   version: 1.0.0
 
@@ -572,8 +573,12 @@ components:
 
     CreateCustomerRequest:
       type: object
-      required: [name, slug, establishmentType, defaultCulture, timeZoneId, address, contactInfo, billingInfo]
+      required: [id, name, slug, establishmentType, defaultCulture, timeZoneId, address, contactInfo, billingInfo]
       properties:
+        id:
+          type: string
+          format: uuid
+          description: Tenant identifier (PlatformTenantId)
         name:
           type: string
           maxLength: 150

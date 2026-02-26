@@ -106,6 +106,7 @@ public class Seed : IFeatureModule
                 request.Customer.Address.Longitude);
 
             await customerApi.CreateAsync(new CreateCustomerApiRequest(
+                Id: platformTenantId,
                 Name: request.Customer.Name,
                 Slug: request.Customer.Slug,
                 Description: request.Customer.Description,
