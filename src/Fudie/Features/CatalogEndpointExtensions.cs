@@ -22,7 +22,6 @@ public static class CatalogEndpointExtensions
 
             return Results.Ok(response);
         })
-        .RequireInternal()
-        .ExcludeFromDescription();
+        .RequireInternal();
     }
 }

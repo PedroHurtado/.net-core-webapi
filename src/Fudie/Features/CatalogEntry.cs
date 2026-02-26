@@ -8,12 +8,11 @@ public record CatalogEntry(
     bool IsAuthenticated,
     bool IsInternal,
     bool IsPlatform,
-    bool IsExcluded,
-    string? CustomGroup,
-    string? CustomGroupDescription,
     string? Description,
     string AggregateId,
     string AggregateDisplayName,
     string? AggregateIcon,
     string AggregateReadDescription,
-    string AggregateWriteDescription);
+    string AggregateWriteDescription,
+    string Scope,
+    string ScopeDescription);
