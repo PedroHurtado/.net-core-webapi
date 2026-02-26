@@ -2,26 +2,20 @@ namespace Auth.UnitTests.Infrastructure.Customers;
 
 public class InternalAuthHandlerTests
 {
-    private readonly Guid _platformTenantId = Guid.NewGuid();
-    private readonly Mock<IInternalTokenService> _tokenService = new();
+    private readonly string _internalSecret = Guid.NewGuid().ToString();
     private readonly Mock<IConfiguration> _configuration = new();
 
     public InternalAuthHandlerTests()
     {
         _configuration
-            .Setup(c => c["Fudie:PlatformTenantId"])
-            .Returns(_platformTenantId.ToString());
+            .Setup(c => c["Fudie:InternalSecret"])
+            .Returns(_internalSecret);
     }
 
     [Fact]
-    public async Task SendAsync_AddsAuthorizationBearerHeader()
+    public async Task SendAsync_AddsInternalKeyHeader()
     {
-        var expectedToken = "test-jwt-token";
-        _tokenService
-            .Setup(t => t.GenerateTokenInternal(_platformTenantId))
-            .Returns(expectedToken);
-
-        var handler = new InternalAuthHandler(_tokenService.Object, _configuration.Object)
+        var handler = new InternalAuthHandler(_configuration.Object)
         {
             InnerHandler = new FakeInnerHandler()
         };
@@ -29,36 +23,15 @@ public class InternalAuthHandlerTests
 
         await client.GetAsync("http://localhost/customer");
 
-        FakeInnerHandler.LastRequest!.Headers.Authorization!.Scheme.Should().Be("Bearer");
-        FakeInnerHandler.LastRequest.Headers.Authorization.Parameter.Should().Be(expectedToken);
-    }
-
-    [Fact]
-    public async Task SendAsync_GeneratesTokenWithPlatformTenantId()
-    {
-        _tokenService
-            .Setup(t => t.GenerateTokenInternal(_platformTenantId))
-            .Returns("any-token");
-
-        var handler = new InternalAuthHandler(_tokenService.Object, _configuration.Object)
-        {
-            InnerHandler = new FakeInnerHandler()
-        };
-        var client = new HttpClient(handler);
-
-        await client.GetAsync("http://localhost/customer");
-
-        _tokenService.Verify(t => t.GenerateTokenInternal(_platformTenantId), Times.Once);
+        FakeInnerHandler.LastRequest!.Headers
+            .GetValues("X-Internal-Key").First()
+            .Should().Be(_internalSecret);
     }
 
     [Fact]
     public async Task SendAsync_ForwardsRequestToInnerHandler()
     {
-        _tokenService
-            .Setup(t => t.GenerateTokenInternal(It.IsAny<Guid>()))
-            .Returns("any-token");
-
-        var handler = new InternalAuthHandler(_tokenService.Object, _configuration.Object)
+        var handler = new InternalAuthHandler(_configuration.Object)
         {
             InnerHandler = new FakeInnerHandler()
         };
@@ -67,6 +40,22 @@ public class InternalAuthHandlerTests
         var response = await client.GetAsync("http://localhost/customer");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task SendAsync_ThrowsWhenInternalSecretNotConfigured()
+    {
+        var emptyConfig = new Mock<IConfiguration>();
+
+        var handler = new InternalAuthHandler(emptyConfig.Object)
+        {
+            InnerHandler = new FakeInnerHandler()
+        };
+        var client = new HttpClient(handler);
+
+        var act = () => client.GetAsync("http://localhost/customer");
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     private class FakeInnerHandler : DelegatingHandler

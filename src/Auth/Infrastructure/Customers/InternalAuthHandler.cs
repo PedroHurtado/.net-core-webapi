@@ -1,16 +1,14 @@
 namespace Auth.Infrastructure.Customers;
 
 [Injectable(ServiceLifetime.Transient)]
-public class InternalAuthHandler(
-    IInternalTokenService tokenService,
-    IConfiguration configuration) : DelegatingHandler
+public class InternalAuthHandler(IConfiguration configuration) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var tenantId = Guid.Parse(configuration["Fudie:PlatformTenantId"]!);
-        var token = tokenService.GenerateTokenInternal(tenantId);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var internalSecret = configuration["Fudie:InternalSecret"]
+            ?? throw new InvalidOperationException("Fudie:InternalSecret not configured");
+        request.Headers.Add("X-Internal-Key", internalSecret);
         return await base.SendAsync(request, cancellationToken);
     }
 }

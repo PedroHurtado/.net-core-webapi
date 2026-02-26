@@ -10,7 +10,5 @@ public record SessionTokenData(
 
 public interface IInternalTokenService
 {
-    string GenerateTokenInternal(Guid tenantId);
-    string GenerateTokenInternal();
     string GenerateSessionToken(SessionTokenData data);
 }
