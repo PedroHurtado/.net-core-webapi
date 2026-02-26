@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -131,8 +132,22 @@ public class FudieAuthorizationMiddleware(RequestDelegate next)
 
     private static void SetTokenContext(HttpContext context, FudieTokenContext? tokenContext)
     {
-        if (tokenContext is not null)
-            context.Items["FudieTokenContext"] = tokenContext;
+        if (tokenContext is null) return;
+
+        context.Items["FudieTokenContext"] = tokenContext;
+
+        var claims = new List<Claim>
+        {
+            new("sub", tokenContext.UserId.ToString())
+        };
+
+        if (tokenContext.TenantId is not null)
+            claims.Add(new("tid", tokenContext.TenantId.Value.ToString()));
+
+        if (tokenContext.IsOwner)
+            claims.Add(new("owner", "true"));
+
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FudieToken"));
     }
 
     private static async Task WriteProblem(
