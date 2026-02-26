@@ -30,23 +30,6 @@ public class CatalogEndpointExtensionsTests
     }
 
     [Fact]
-    public void MapCatalog_ShouldMarkEndpointAsExcludedFromDescription()
-    {
-        // Arrange
-        var builder = CreateEndpointRouteBuilder();
-
-        // Act
-        builder.MapCatalog();
-
-        // Assert
-        var endpoint = builder.DataSources
-            .SelectMany(ds => ds.Endpoints).First();
-        endpoint.Metadata
-            .GetMetadata<ExcludeFromDescriptionAttribute>()
-            .Should().NotBeNull();
-    }
-
-    [Fact]
     public void MapCatalog_ShouldMarkEndpointAsInternal()
     {
         // Arrange

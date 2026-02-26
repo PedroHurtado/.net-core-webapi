@@ -10,7 +10,7 @@ namespace Fudie.UnitTests.Features;
 
 public class CatalogRegistryTests
 {
-    private static readonly TestAggregateDescription DefaultAggregate = new("menu", "Menús", "book-open");
+    private static readonly TestAggregateDescription DefaultAggregate = new("menu", "Menus", "book-open");
 
     #region Register Tests - Basic
 
@@ -34,8 +34,7 @@ public class CatalogRegistryTests
         entry.IsAuthenticated.Should().BeFalse();
         entry.IsPlatform.Should().BeFalse();
         entry.IsInternal.Should().BeFalse();
-        entry.IsExcluded.Should().BeFalse();
-        entry.CustomGroup.Should().BeNull();
+        entry.Scope.Should().Be("menu:read");
         entry.Description.Should().BeNull();
     }
 
@@ -98,22 +97,6 @@ public class CatalogRegistryTests
         // Assert
         var entry = registry.GetAll()[0];
         entry.IsAnonymous.Should().BeTrue();
-        entry.IsExcluded.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Register_WithExcludeFromDescription_ShouldSetIsExcluded()
-    {
-        // Arrange
-        var registry = new CatalogRegistry();
-        var endpoint = CreateEndpoint(excludeFromDescription: true);
-
-        // Act
-        registry.Register("SwaggerRedirect", endpoint, DefaultAggregate);
-
-        // Assert
-        registry.EndpointMapCount.Should().Be(1);
-        registry.GetAll().Should().BeEmpty();
     }
 
     #endregion
@@ -168,22 +151,7 @@ public class CatalogRegistryTests
     }
 
     [Fact]
-    public void Register_WithGroupRequirement_ShouldSetCustomGroup()
-    {
-        // Arrange
-        var registry = new CatalogRegistry();
-        var endpoint = CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit");
-
-        // Act
-        registry.Register("UpdateDepositPolicy", endpoint, DefaultAggregate);
-
-        // Assert
-        var entry = registry.GetAll()[0];
-        entry.CustomGroup.Should().Be("menu:deposit");
-    }
-
-    [Fact]
-    public void Register_WithGroupRequirement_ShouldSetCustomGroupDescription()
+    public void Register_WithGroupRequirement_ShouldUseCustomGroupAsScope()
     {
         // Arrange
         var registry = new CatalogRegistry();
@@ -194,7 +162,8 @@ public class CatalogRegistryTests
 
         // Assert
         var entry = registry.GetAll()[0];
-        entry.CustomGroupDescription.Should().Be("Menu deposits");
+        entry.Scope.Should().Be("menu:deposit");
+        entry.ScopeDescription.Should().Be("Menu deposits");
     }
 
     [Fact]
@@ -495,6 +464,93 @@ public class CatalogRegistryTests
 
         // Act & Assert
         registry.GetTenant().Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Scope Tests
+
+    [Fact]
+    public void Scope_GetEndpoint_ShouldBeAggregateIdRead()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "GET");
+        var aggregate = new TestAggregateDescription("menu", "Menus", "book-open", "View menus", "Manage menus");
+
+        // Act
+        registry.Register("GetMenus", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.Scope.Should().Be("menu:read");
+        entry.ScopeDescription.Should().Be("View menus");
+    }
+
+    [Fact]
+    public void Scope_PostEndpoint_ShouldBeAggregateIdWrite()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "POST");
+        var aggregate = new TestAggregateDescription("menu", "Menus", "book-open", "View menus", "Manage menus");
+
+        // Act
+        registry.Register("CreateMenu", endpoint, aggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.Scope.Should().Be("menu:write");
+        entry.ScopeDescription.Should().Be("Manage menus");
+    }
+
+    [Theory]
+    [InlineData("PUT")]
+    [InlineData("DELETE")]
+    [InlineData("PATCH")]
+    public void Scope_NonGetEndpoint_ShouldBeAggregateIdWrite(string httpVerb)
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: httpVerb);
+
+        // Act
+        registry.Register("ModifyMenu", endpoint, DefaultAggregate);
+
+        // Assert
+        registry.GetAll()[0].Scope.Should().Be("menu:write");
+    }
+
+    [Fact]
+    public void Scope_WithCustomGroup_ShouldUseCustomGroup()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit", customGroupDescription: "Configurar fianza");
+
+        // Act
+        registry.Register("SetMenuDepositPolicy", endpoint, DefaultAggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.Scope.Should().Be("menu:deposit");
+        entry.ScopeDescription.Should().Be("Configurar fianza");
+    }
+
+    [Fact]
+    public void Scope_WithCustomGroupWithoutDescription_ShouldFallbackToGroupName()
+    {
+        // Arrange
+        var registry = new CatalogRegistry();
+        var endpoint = CreateEndpoint(httpMethod: "PUT", customGroup: "menu:deposit");
+
+        // Act
+        registry.Register("SetMenuDepositPolicy", endpoint, DefaultAggregate);
+
+        // Assert
+        var entry = registry.GetAll()[0];
+        entry.Scope.Should().Be("menu:deposit");
+        entry.ScopeDescription.Should().Be("menu:deposit");
     }
 
     #endregion
