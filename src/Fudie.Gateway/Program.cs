@@ -57,7 +57,7 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Content(File.ReadAllText(portalPath), "text/html"));
 }
 
-app.MapGet("/gateway/catalog", (ICatalogRouteRegistry registry) =>
+app.MapGet("/catalog", (ICatalogRouteRegistry registry) =>
     Results.Ok(registry.GetAll()));
 
 app.MapReverseProxy(proxyPipeline =>
