@@ -5,9 +5,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-// Tenant ID (temporal - hardcoded for development)
-var tenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-builder.Services.AddScoped(typeof(Guid), _ => tenantId);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped(typeof(Guid), sp =>
+    sp.GetRequiredService<IFudieUser>().TenantId
+    ?? throw new InvalidOperationException("TenantId is not available in the current request"));
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
