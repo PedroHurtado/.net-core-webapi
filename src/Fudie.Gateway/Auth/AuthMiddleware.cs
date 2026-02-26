@@ -1,3 +1,6 @@
+using Fudie.Gateway.Catalog;
+using Fudie.OpenApi;
+
 namespace Fudie.Gateway.Auth;
 
 public sealed class AuthMiddleware(
@@ -23,7 +26,9 @@ public sealed class AuthMiddleware(
         {
             if (!environment.IsDevelopment())
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await WriteProblem(context, StatusCodes.Status404NotFound,
+                    "Not Found", "The requested resource was not found",
+                    "https://tools.ietf.org/html/rfc7231#section-6.5.4");
                 return;
             }
 
@@ -33,6 +38,7 @@ public sealed class AuthMiddleware(
 
         if (registry.IsAnonymous(method, path))
         {
+            await TryResolveAuth(context, authService);
             await next(context);
             return;
         }
@@ -51,7 +57,38 @@ public sealed class AuthMiddleware(
             return;
         }
 
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await WriteProblem(context, StatusCodes.Status401Unauthorized,
+            "Unauthorized", "Authentication required",
+            "https://tools.ietf.org/html/rfc7235#section-3.1");
+    }
+
+    private async Task TryResolveAuth(HttpContext context, IAuthService authService)
+    {
+        var sessionCookie = context.Request.Cookies[_options.CookieName];
+        if (sessionCookie is not null)
+        {
+            var cookieHeader = $"{_options.CookieName}={sessionCookie}";
+            var response = await CallAuthService(context, () => authService.ResolveAuth(cookieHeader));
+            if (response is not null)
+            {
+                InjectDownstreamToken(context, response);
+                ForwardSetCookie(context, response);
+            }
+
+            CleanClientCredentials(context);
+            return;
+        }
+
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            var headers = new Dictionary<string, string> { [_options.ApiKeyHeader] = authHeader["Bearer ".Length..] };
+            var response = await CallAuthService(context, () => authService.ResolveApiKey(headers));
+            if (response is not null)
+                InjectDownstreamToken(context, response);
+
+            CleanClientCredentials(context);
+        }
     }
 
     private async Task HandleCookieAuth(HttpContext context, IAuthService authService, string sessionCookie)
@@ -63,6 +100,7 @@ public sealed class AuthMiddleware(
 
         InjectDownstreamToken(context, response);
         ForwardSetCookie(context, response);
+        CleanClientCredentials(context);
 
         await next(context);
     }
@@ -75,11 +113,12 @@ public sealed class AuthMiddleware(
         if (response is null) return;
 
         InjectDownstreamToken(context, response);
+        CleanClientCredentials(context);
 
         await next(context);
     }
 
-    private static async Task<HttpResponseMessage?> CallAuthService(
+    private async Task<HttpResponseMessage?> CallAuthService(
         HttpContext context, Func<Task<HttpResponseMessage>> call)
     {
         HttpResponseMessage response;
@@ -89,19 +128,25 @@ public sealed class AuthMiddleware(
         }
         catch (HttpRequestException)
         {
-            context.Response.StatusCode = StatusCodes.Status502BadGateway;
+            await WriteProblem(context, StatusCodes.Status502BadGateway,
+                "Bad Gateway", "Authentication service unavailable",
+                "https://tools.ietf.org/html/rfc7231#section-6.6.3");
             return null;
         }
 
         if (response.StatusCode is HttpStatusCode.Unauthorized)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await WriteProblem(context, StatusCodes.Status401Unauthorized,
+                "Unauthorized", "Invalid credentials",
+                "https://tools.ietf.org/html/rfc7235#section-3.1");
             return null;
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            context.Response.StatusCode = StatusCodes.Status502BadGateway;
+            await WriteProblem(context, StatusCodes.Status502BadGateway,
+                "Bad Gateway", "Authentication service error",
+                "https://tools.ietf.org/html/rfc7231#section-6.6.3");
             return null;
         }
 
@@ -116,6 +161,12 @@ public sealed class AuthMiddleware(
         }
     }
 
+    private void CleanClientCredentials(HttpContext context)
+    {
+        context.Request.Headers.Remove("Cookie");
+        context.Request.Headers.Remove(_options.ApiKeyHeader);
+    }
+
     private static void ForwardSetCookie(HttpContext context, HttpResponseMessage response)
     {
         if (response.Headers.TryGetValues("Set-Cookie", out var cookies))
@@ -125,5 +176,28 @@ public sealed class AuthMiddleware(
                 context.Response.Headers.Append("Set-Cookie", cookie);
             }
         }
+    }
+
+    private static async Task WriteProblem(
+        HttpContext context, int statusCode, string title, string detail, string type)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/problem+json";
+
+        var problem = new CustomProblemDetails
+        {
+            Status = statusCode,
+            Title = title,
+            Detail = detail,
+            Type = type,
+            Instance = context.Request.Path,
+            Extensions = new Dictionary<string, object>
+            {
+                ["traceId"] = context.TraceIdentifier,
+                ["timestamp"] = DateTime.UtcNow
+            }
+        };
+
+        await context.Response.WriteAsJsonAsync(problem);
     }
 }

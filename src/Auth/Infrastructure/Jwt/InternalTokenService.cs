@@ -8,6 +8,11 @@ public class InternalTokenService(
     private readonly string _internalSecret = configuration["Fudie:InternalSecret"]
         ?? throw new InvalidOperationException("Fudie:InternalSecret secret not found");
 
+    private readonly TimeSpan _sessionTokenLifetime = TimeSpan.FromSeconds(
+        int.TryParse(configuration["Fudie:SessionTokenLifetimeSeconds"], out var seconds)
+            ? seconds
+            : 180);
+
     public string GenerateTokenInternal(Guid tenantId)
     {
         var claims = new Dictionary<string, object>
@@ -52,7 +57,7 @@ public class InternalTokenService(
             }
         }
 
-        return CreateToken(claims, TimeSpan.FromSeconds(45));
+        return CreateToken(claims, _sessionTokenLifetime);
     }
 
     private string CreateToken(Dictionary<string, object> claims, TimeSpan? lifetime = null)
