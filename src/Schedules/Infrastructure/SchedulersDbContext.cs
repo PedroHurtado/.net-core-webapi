@@ -3,18 +3,14 @@ using Fudie.Firestore.EntityFrameworkCore.Extensions;
 namespace Schedules.Infrastructure;
 
 public class SchedulersDbContext(DbContextOptions<SchedulersDbContext> options, Guid tenantId) :
-    DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
+    FudieDbContext(options)
 {
     public DbSet<Schedule> Schedules => Set<Schedule>();
     public DbSet<ServiceSchedule> ServiceSchedules => Set<ServiceSchedule>();
 
-    public IQueryable<T> Query<T>() where T : class, IEntity
-    {
-        return Set<T>().AsQueryable().AsNoTracking();
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
         modelBuilder.Entity<Schedule>(entity =>
