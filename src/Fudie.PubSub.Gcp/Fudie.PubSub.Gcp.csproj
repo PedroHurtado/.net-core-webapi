@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fudie.PubSub\Fudie.PubSub.csproj" />
+    <PackageReference Include="Fudie" Version="1.0.4" />
   </ItemGroup>
 
 </Project>
