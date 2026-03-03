@@ -1,7 +1,7 @@
 namespace Auth.Infrastructure;
 
 public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantId) :
-    DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
+    FudieDbContext(options)
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Session> Sessions => Set<Session>();
@@ -10,13 +10,9 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, Guid tenantI
     public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<ExternalApp> ExternalApps => Set<ExternalApp>();
 
-    public IQueryable<T> Query<T>() where T : class, IEntity
-    {
-        return Set<T>().AsQueryable().AsNoTracking();
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<User>(entity =>
         {
             entity.Ignore(u => u.IsOAuth);

@@ -27,8 +27,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), ServiceLifetime.Singleton);
-builder.Services.AddFudieSecurity(opts =>
-    builder.Configuration.GetSection(FudieSecurityOptions.SectionName).Bind(opts));
+builder.Services.AddFudieLocalJwtValidation();
 
 builder.Services.AddInjectables();
 
@@ -58,48 +57,21 @@ builder.Services
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IGoogleOAuthSettings, DevGoogleOAuthSettings>();
-    builder.Services.AddSingleton<IJwtKeyProvider, DevJwtKeyProvider>();
 }
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
 
-var provider = new FileExtensionContentTypeProvider();
-provider.Mappings[".yaml"] = "application/x-yaml";
+app.UseFudieOpenApi();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "OpenApi")),
-    RequestPath = "/auth/openapi",
-    ContentTypeProvider = provider,
-    OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache, no-store"
-});
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerUI(c =>
-    {
-        c.RoutePrefix = "auth/swagger";
-        c.SwaggerEndpoint("/auth/openapi/auth-api.yaml", "Auth API");
-        c.SwaggerEndpoint("/auth/openapi/session-api.yaml", "Session API");
-        c.SwaggerEndpoint("/auth/openapi/tenant-roles-api.yaml", "Roles API");
-        c.SwaggerEndpoint("/auth/openapi/memberships-api.yaml", "MemberShip API");
-        c.SwaggerEndpoint("/auth/openapi/external-apps-api.yaml", "External Apps API");
-        c.UseRequestInterceptor("(req) => { req.credentials = 'include'; return req; }");
-    });
-
-    app.MapGet("/", () => Results.Redirect("/auth/swagger")).AllowAnonymous();
-
     app.MapGet("/auth/dev", () => Results.Content(DevLoginPage.Html, "text/html"))
-        .AllowAnonymous();        
+        .AllowAnonymous();
 }
 
-app.UseFudieAuthorization();
-app.MapFeatures();
-app.MapCatalog();
+app.MapFeatures(builder => builder.UseFudieAuthorization());
 
 app.UseHttpsRedirection();
 

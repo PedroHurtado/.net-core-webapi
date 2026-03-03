@@ -271,8 +271,6 @@ paths:
       tags:
         - Auth
       summary: Obtener claves públicas (JWKS)
-      parameters:
-        - $ref: '#/components/parameters/XInternalKey'
       description: |
         Endpoint estándar JWKS. Los microservicios descargan la clave pública de aquí
         al arrancar y la cachean para validar las firmas de los JWT efímeros.
