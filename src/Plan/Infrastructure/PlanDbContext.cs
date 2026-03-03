@@ -1,13 +1,14 @@
 namespace Plans.Infrastructure;
 
 public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
-    DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
-{
-    // Root collections (aggregates)
+    FudieDbContext(options)    
+{    
     public DbSet<Plan> Plans => Set<Plan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        
         modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
         modelBuilder.Entity<Plan>(entity =>
@@ -31,9 +32,5 @@ public class PlanDbContext(DbContextOptions<PlanDbContext> options) :
             });
         });
     }
-
-    public IQueryable<T> Query<T>() where T : class, IEntity
-    {
-        return Set<T>().AsQueryable().AsNoTracking();
-    }
+    
 }
