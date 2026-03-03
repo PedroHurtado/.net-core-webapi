@@ -9,17 +9,11 @@ WORKDIR /src
 
 COPY ${PROJECT_DIR}/Directory.Build.props webapi/
 COPY ${PROJECT_DIR}/src/Menus/Menus.csproj webapi/src/Menus/
-COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj webapi/src/Fudie/
-COPY ${PROJECT_DIR}/src/Fudie.Generator/Fudie.Generator.csproj webapi/src/Fudie.Generator/
-COPY ${PROJECT_DIR}/src/Fudie.Security/Fudie.Security.csproj webapi/src/Fudie.Security/
 COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/Fudie.Firestore.EntityFrameworkCore.csproj Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
 RUN dotnet restore webapi/src/Menus/Menus.csproj
 
 COPY ${PROJECT_DIR}/src/Menus/ webapi/src/Menus/
-COPY ${PROJECT_DIR}/src/Fudie/ webapi/src/Fudie/
-COPY ${PROJECT_DIR}/src/Fudie.Generator/ webapi/src/Fudie.Generator/
-COPY ${PROJECT_DIR}/src/Fudie.Security/ webapi/src/Fudie.Security/
 COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/ Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
 RUN dotnet publish webapi/src/Menus/Menus.csproj -c Release -o /app

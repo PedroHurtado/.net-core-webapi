@@ -15,14 +15,14 @@ global using Menus.Features.Menus.Domain.AllergenAggregate;
 
 global using Menus.Features.Menus.Api.MenuItemAggregate;
 
+global using System.Reflection;
+global using System.Text.Json.Serialization;
 global using FluentValidation;
-global using Fudie.Domain;
-global using Fudie.DependencyInjection;
-global using Fudie.Features;
-global using Fudie.Infrastructure;
-global using Fudie.Validation;
+global using Fudie.Firestore.EntityFrameworkCore.Infrastructure;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Diagnostics;
 global using Microsoft.Extensions.DependencyInjection;
 
 global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
-global using Fudie.Security;
+
+global using Menus.Infrastructure;

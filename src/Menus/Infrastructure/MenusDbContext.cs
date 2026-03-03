@@ -1,16 +1,8 @@
 namespace Menus.Infrastructure;
 
-public class MenusDbContext : DbContext, IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
+public class MenusDbContext(DbContextOptions<MenusDbContext> options, Guid tenantId) : FudieDbContext(options)
 {
-    private readonly Guid _tenantId;
-
-    public MenusDbContext(DbContextOptions<MenusDbContext> options, Guid tenantId)
-        : base(options)
-    {
-        _tenantId = tenantId;
-
-       
-    }
+    private readonly Guid _tenantId = tenantId;
 
     // Root collections (aggregates)
     public DbSet<Menu> Menus => Set<Menu>();
@@ -19,6 +11,7 @@ public class MenusDbContext : DbContext, IEntityLookup, IQuery, IChangeTracker, 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.UsePropertyAccessMode(PropertyAccessMode.Field);
 
         modelBuilder.Entity<Menu>(entity =>
@@ -66,8 +59,4 @@ public class MenusDbContext : DbContext, IEntityLookup, IQuery, IChangeTracker, 
         });
     }
 
-    public IQueryable<T> Query<T>() where T : class, IEntity
-    {
-        return Set<T>().AsQueryable().AsNoTracking();
-    }
 }
