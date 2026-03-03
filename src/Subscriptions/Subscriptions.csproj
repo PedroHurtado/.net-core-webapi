@@ -22,9 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fudie\Fudie.csproj" />
-    <ProjectReference Include="..\Fudie.Security\Fudie.Security.csproj" />
-    <ProjectReference Include="..\Fudie.Generator\Fudie.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="Fudie" Version="1.0.3" />
     <ProjectReference Include="..\..\..\Firestore\src\Fudie.Firestore.EntityFrameworkCore\Fudie.Firestore.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
