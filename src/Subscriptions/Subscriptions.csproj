@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fudie" Version="1.0.3" />
+    <PackageReference Include="Fudie" Version="1.0.4" />
     <ProjectReference Include="..\..\..\Firestore\src\Fudie.Firestore.EntityFrameworkCore\Fudie.Firestore.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
