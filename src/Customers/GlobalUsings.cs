@@ -7,12 +7,6 @@ global using System.Text.Json;
 global using System.Text.Json.Serialization;
 
 global using FluentValidation;
-global using Fudie.Domain;
-global using Fudie.DependencyInjection;
-global using Fudie.Features;
-global using Fudie.Http;
-global using Fudie.Infrastructure;
-global using Fudie.Validation;
 global using Microsoft.AspNetCore.StaticFiles;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -25,4 +19,4 @@ global using Fudie.Firestore.EntityFrameworkCore.Metadata.Builders;
 global using Customers.Infrastructure;
 global using Customers.Features.Customers.Api.CustomerAggregate;
 global using Customers.Features.Customers.Domain.CustomerAggregate;
-global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;global using Fudie.Security;
+global using Customers.Features.Customers.Domain.CustomerAggregate.ValueObjects;

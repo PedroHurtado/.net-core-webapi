@@ -1,17 +1,13 @@
 namespace Customers.Infrastructure;
 
 public class CustomersDbContext(DbContextOptions<CustomersDbContext> options) :
-    DbContext(options), IEntityLookup, IQuery, IChangeTracker, IUnitOfWork
+    FudieDbContext(options)
 {
     public DbSet<Customer> Customers => Set<Customer>();
 
-    public IQueryable<T> Query<T>() where T : class, IEntity
-    {
-        return Set<T>().AsQueryable().AsNoTracking();
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.Ignore(r => r.HasPriceRange);
