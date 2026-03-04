@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fudie" Version="1.0.4" />
+    <PackageReference Include="Fudie" Version="1.0.7" />
   </ItemGroup>
 
 </Project>
