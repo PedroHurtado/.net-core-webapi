@@ -16,7 +16,8 @@ RUN dotnet restore webapi/src/Customers/Customers.csproj
 COPY ${PROJECT_DIR}/src/Customers/ webapi/src/Customers/
 COPY ${FIRESTORE_DIR}/src/Fudie.Firestore.EntityFrameworkCore/ Firestore/src/Fudie.Firestore.EntityFrameworkCore/
 
-RUN dotnet publish webapi/src/Customers/Customers.csproj -c Release -o /app
+RUN dotnet publish webapi/src/Customers/Customers.csproj -c Release -o /app \
+    -p:CopyDebugSymbolFilesFromPackages=false -p:DebugType=none
 
 # --- Runtime stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime

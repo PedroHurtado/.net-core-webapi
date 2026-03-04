@@ -7,16 +7,13 @@ WORKDIR /src
 
 COPY ${PROJECT_DIR}/Directory.Build.props webapi/
 COPY ${PROJECT_DIR}/src/Fudie.Gateway/Fudie.Gateway.csproj webapi/src/Fudie.Gateway/
-COPY ${PROJECT_DIR}/src/Fudie/Fudie.csproj webapi/src/Fudie/
-COPY ${PROJECT_DIR}/src/Fudie.Security/Fudie.Security.csproj webapi/src/Fudie.Security/
 
 RUN dotnet restore webapi/src/Fudie.Gateway/Fudie.Gateway.csproj
 
 COPY ${PROJECT_DIR}/src/Fudie.Gateway/ webapi/src/Fudie.Gateway/
-COPY ${PROJECT_DIR}/src/Fudie/ webapi/src/Fudie/
-COPY ${PROJECT_DIR}/src/Fudie.Security/ webapi/src/Fudie.Security/
 
-RUN dotnet publish webapi/src/Fudie.Gateway/Fudie.Gateway.csproj -c Release -o /app
+RUN dotnet publish webapi/src/Fudie.Gateway/Fudie.Gateway.csproj -c Release -o /app \
+    -p:CopyDebugSymbolFilesFromPackages=false -p:DebugType=none
 
 # --- Runtime stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
