@@ -9,6 +9,7 @@ public class CreateCustomerTests(WebApplicationFactory<Program> factory)
         var slug = $"el-bar-del-juanjo-{Guid.NewGuid():N}";
 
         var request = new CreateCustomer.Request(
+            Id: Guid.NewGuid(),
             Name: "El Bar del Juanjo",
             Slug: slug,
             Description: "Un bar con encanto",
@@ -61,6 +62,7 @@ public class CreateCustomerTests(WebApplicationFactory<Program> factory)
         var created = await Client.CreateCustomerAsync();
 
         var request = new CreateCustomer.Request(
+            Id: Guid.NewGuid(),
             Name: "Otro Bar",
             Slug: created.Slug,
             Description: null,
@@ -100,6 +102,7 @@ public class CreateCustomerTests(WebApplicationFactory<Program> factory)
     public async Task Create_WithInvalidData_Returns422()
     {
         var request = new CreateCustomer.Request(
+            Id: Guid.NewGuid(),
             Name: "",
             Slug: $"valid-slug-{Guid.NewGuid():N}",
             Description: null,

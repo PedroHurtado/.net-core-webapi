@@ -8,6 +8,7 @@ public static class CreateCustomerHelper
         slug ??= $"test-{Guid.NewGuid():N}";
 
         var request = new CreateCustomer.Request(
+            Id: Guid.NewGuid(),
             Name: "Test Customer",
             Slug: slug,
             Description: null,

@@ -25,3 +25,5 @@ global using Schedules.Features.ServiceSchedules.Api.ServiceScheduleAggregate.Co
 global using Schedules.Features.ServiceSchedules.Api.ServiceScheduleAggregate.Queries;
 
 global using Schedules.UnitTests.Helpers;
+
+global using Fudie.Tests.Common;

@@ -18,3 +18,5 @@ global using Customers.Features.Customers.Api.CustomerAggregate.Commands;
 global using Customers.Features.Customers.Api.CustomerAggregate.Queries;
 
 global using Customers.UnitTests.Helpers;
+
+global using Fudie.Tests.Common;

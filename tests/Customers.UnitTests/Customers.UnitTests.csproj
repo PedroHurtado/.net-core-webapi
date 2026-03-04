@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Customers\Customers.csproj" />
+    <ProjectReference Include="..\Fudie.Tests.Common\Fudie.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>
