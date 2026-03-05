@@ -35,7 +35,7 @@ public class ResolveAuth : IFeatureModule
     public class Service(
         Session.Refresh refreshSession,
         IRequestTimestamp requestTimestamp,
-        IInternalTokenService tokenService,
+        ITokenGenerator tokenService,
         IMembershipLookup membershipLookup,
         IRepository repository,
         IUserRepository userRepository,
@@ -70,13 +70,13 @@ public class ResolveAuth : IFeatureModule
 
             await unitOfWork.SaveChangesAsync();
 
-            return tokenService.GenerateSessionToken(new SessionTokenData(
+            return tokenService.GenerateUserToken(new FudieTokenContext(
                 session.UserId,
                 session.TenantId,
                 session.IsOwner,
                 session.Groups,
                 session.AdditionalScopes,
-                session.ExcludedScopes));
+                session.ExcludedScopes), session.Id);
         }
     }
 

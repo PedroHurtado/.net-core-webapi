@@ -43,5 +43,6 @@ public class AcceptInvitation : IFeatureModule
     }
 
     [Include<Membership>("User", "Role")]
+    [IgnoreQueryFilters]
     public interface IRepository : IUpdate<Membership, Guid> { }
 }

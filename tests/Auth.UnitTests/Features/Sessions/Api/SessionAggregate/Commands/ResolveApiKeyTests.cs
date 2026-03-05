@@ -7,7 +7,7 @@ public class ResolveApiKeyTests
     private static readonly string TestApiKeyHash = BCrypt.Net.BCrypt.HashPassword(TestApiKey);
 
     private readonly Mock<IQuery> _query = new();
-    private readonly Mock<IInternalTokenService> _tokenService = new();
+    private readonly Mock<ITokenGenerator> _tokenService = new();
     private readonly ResolveApiKey.Service _service;
 
     public ResolveApiKeyTests()
@@ -42,7 +42,7 @@ public class ResolveApiKeyTests
         var externalApp = CreateValidExternalApp();
         _query.Setup(q => q.Query<ExternalApp>())
             .Returns(AsyncQueryable.Of<ExternalApp>(externalApp));
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateAppToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         var token = await _service.HandleAsync(TestApiKey);
@@ -56,15 +56,15 @@ public class ResolveApiKeyTests
         var externalApp = CreateValidExternalApp();
         _query.Setup(q => q.Query<ExternalApp>())
             .Returns(AsyncQueryable.Of<ExternalApp>(externalApp));
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateAppToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(TestApiKey);
 
-        _tokenService.Verify(t => t.GenerateSessionToken(It.Is<SessionTokenData>(d =>
+        _tokenService.Verify(t => t.GenerateAppToken(It.Is<FudieTokenContext>(d =>
             d.UserId == externalApp.User!.Id &&
             d.TenantId == externalApp.TenantId &&
-            d.IsOwner == false)));
+            d.IsOwner == false), It.IsAny<Guid>()));
     }
 
     [Fact]
@@ -91,15 +91,15 @@ public class ResolveApiKeyTests
 
         _query.Setup(q => q.Query<ExternalApp>())
             .Returns(AsyncQueryable.Of<ExternalApp>(externalApp));
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateAppToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(TestApiKey);
 
-        _tokenService.Verify(t => t.GenerateSessionToken(It.Is<SessionTokenData>(d =>
+        _tokenService.Verify(t => t.GenerateAppToken(It.Is<FudieTokenContext>(d =>
             d.Groups.SequenceEqual(new[] { "menu:read", "menu:write" }) &&
             d.AdditionalScopes.SequenceEqual(new[] { "orders:read" }) &&
-            d.ExcludedScopes.SequenceEqual(new[] { "settings:write" }))));
+            d.ExcludedScopes.SequenceEqual(new[] { "settings:write" })), It.IsAny<Guid>()));
     }
 
     // ──────────────────────────────────────────────

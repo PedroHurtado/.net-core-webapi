@@ -12,6 +12,7 @@ public class ActivateMembership : IFeatureModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/memberships/{id}/activate", Handler)
+            .RequireAuthenticated()
             .WithDescriptionCatalog("Activate membership");
     }
 
@@ -40,5 +41,6 @@ public class ActivateMembership : IFeatureModule
     }
 
     [Include<Membership>("User", "Role")]
+    [IgnoreQueryFilters]
     public interface IRepository : IUpdate<Membership, Guid> { }
 }

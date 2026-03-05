@@ -385,6 +385,34 @@ public class {Action}{Aggregate} : IFeatureModule
 
 ---
 
+## Seguridad en Endpoints (Fudie.Security.Http)
+
+Extension methods fluent para `AddRoutes`:
+
+| Método | Propósito |
+|--------|-----------|
+| `RequireAuthenticated()` | JWT válido obligatorio |
+| `RequirePlatform()` | Acceso nivel plataforma |
+| `RequireInternal()` | Solo llamadas service-to-service |
+| `RequireGroup(name)` | Membresía de grupo requerida |
+| `.AllowAnonymous()` | Sin autenticación (endpoints públicos) |
+| `WithDescriptionCatalog(desc)` | Registra metadata en el catálogo |
+
+```csharp
+// Endpoint protegido
+app.MapGet("/orders", Handler)
+    .RequireAuthenticated()
+    .RequireGroup("admin")
+    .WithDescriptionCatalog("List all orders");
+
+// Endpoint público
+app.MapGet("/auth/jwks", Handler)
+    .AllowAnonymous()
+    .WithDescriptionCatalog("Get JWKS keys");
+```
+
+---
+
 ## Reglas
 
 - **No `using`** → Van en `GlobalUsings.cs`

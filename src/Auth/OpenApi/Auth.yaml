@@ -20,9 +20,9 @@ servers:
 
 tags:
   - name: Auth
-    description: Autenticación (login, logout, sesión)
+    description: Autenticación y cuenta del usuario autenticado (login, logout, sesión, /me)
   - name: Users
-    description: Gestión de usuarios
+    description: Gestión de usuarios por plataforma (RequirePlatform)
 
 paths:
   /auth/seed:
@@ -121,64 +121,37 @@ paths:
     get:
       tags: [Auth]
       operationId: getCurrentUser
-      summary: Obtener usuario autenticado
+      summary: Obtener usuario autenticado con sus tenants
       description: |
-        Devuelve los datos del usuario asociado a la sesión actual.
-        No requiere permiso específico, solo estar autenticado.
+        Devuelve los datos del usuario asociado a la sesión actual y la lista de tenants
+        donde tiene membresía activa. Permite al frontend ofrecer cambio de tenant.
+        Solo requiere estar autenticado (RequireAuthenticated).
+      security:
+        - RequireAuthenticated: []
       responses:
         '200':
-          description: Usuario autenticado
+          description: Usuario autenticado con tenants activos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/MeResponse'
         '401':
           description: No autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-
-  /users/{id}:
-    parameters:
-      - $ref: '#/components/parameters/userId'
-
-    get:
-      tags: [Users]
-      operationId: getUser
-      summary: Obtener usuario por ID
-      responses:
-        '200':
-          description: Usuario encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '401':
-          description: No autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-        '403':
-          description: Sin permiso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-        '404':
-          description: Usuario no encontrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
 
     put:
-      tags: [Users]
-      operationId: updateUser
-      summary: Actualizar usuario
+      tags: [Auth]
+      operationId: updateCurrentUser
+      summary: Actualizar datos del usuario autenticado
       description: |
-        Actualiza nombre y teléfono. El email no se modifica — viene del proveedor OAuth o fue definido por script.
+        Actualiza nombre y teléfono del usuario en sesión. El email no se modifica —
+        viene del proveedor OAuth o fue definido por script.
+        Solo requiere estar autenticado (RequireAuthenticated). Cualquier usuario puede cambiar sus propios datos.
+      security:
+        - RequireAuthenticated: []
       requestBody:
         required: true
         content:
@@ -194,8 +167,86 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
+        '422':
+          description: Validación fallida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /auth/me/change-password:
+    post:
+      tags: [Auth]
+      operationId: changePassword
+      summary: Cambiar contraseña del usuario autenticado
+      description: |
+        Exclusivo para el superadmin de Fudie con AuthProvider.Local.
+        No recibe ID — opera sobre el usuario en sesión.
+        Invalida todas las sesiones del usuario excepto la actual.
+        Solo accesible para plataforma (RequirePlatform).
+      security:
+        - RequirePlatform: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Contraseña cambiada
+        '401':
+          description: No autenticado o contraseña actual incorrecta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
         '403':
-          description: Sin permiso
+          description: Sin permiso (no es plataforma)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '409':
+          description: El usuario no es de tipo Local
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+
+  /users:
+    get:
+      tags: [Users]
+      operationId: searchUserByEmail
+      summary: Buscar usuario por email
+      description: |
+        Permite a operarios de Fudie buscar un usuario por email para luego
+        activarlo/desactivarlo por ID.
+        Solo accesible para plataforma (RequirePlatform).
+      security:
+        - RequirePlatform: []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso (no es plataforma)
           content:
             application/json:
               schema:
@@ -206,8 +257,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
-        '422':
-          description: Validación fallida
+
+  /users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Obtener usuario por ID
+      description: |
+        Solo accesible para plataforma (RequirePlatform).
+        Permite a Fudie consultar cualquier usuario por ID.
+      security:
+        - RequirePlatform: []
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '403':
+          description: Sin permiso (no es plataforma)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomProblemDetails'
+        '404':
+          description: Usuario no encontrado
           content:
             application/json:
               schema:
@@ -223,6 +307,10 @@ paths:
       summary: Desactivar usuario
       description: |
         Desactiva el usuario y elimina todas sus sesiones activas.
+        Solo accesible para plataforma (RequirePlatform). Fudie puede desactivar
+        usuarios por mal uso de la plataforma.
+      security:
+        - RequirePlatform: []
       responses:
         '200':
           description: Usuario desactivado
@@ -237,7 +325,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
         '403':
-          description: Sin permiso
+          description: Sin permiso (no es plataforma)
           content:
             application/json:
               schema:
@@ -263,7 +351,11 @@ paths:
       tags: [Users]
       operationId: activateUser
       summary: Activar usuario
-      description: Reactiva un usuario previamente desactivado.
+      description: |
+        Reactiva un usuario previamente desactivado.
+        Solo accesible para plataforma (RequirePlatform).
+      security:
+        - RequirePlatform: []
       responses:
         '200':
           description: Usuario activado
@@ -278,7 +370,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CustomProblemDetails'
         '403':
-          description: Sin permiso
+          description: Sin permiso (no es plataforma)
           content:
             application/json:
               schema:
@@ -291,51 +383,6 @@ paths:
                 $ref: '#/components/schemas/CustomProblemDetails'
         '409':
           description: Ya está activo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-
-  /users/{id}/change-password:
-    parameters:
-      - $ref: '#/components/parameters/userId'
-
-    post:
-      tags: [Users]
-      operationId: changePassword
-      summary: Cambiar contraseña
-      description: |
-        Exclusivo para usuarios con AuthProvider.Local (superadmin).
-        Invalida todas las sesiones del usuario excepto la actual.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangePasswordRequest'
-      responses:
-        '204':
-          description: Contraseña cambiada
-        '401':
-          description: No autenticado o contraseña actual incorrecta
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-        '403':
-          description: Sin permiso
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-        '404':
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomProblemDetails'
-        '409':
-          description: El usuario no es de tipo Local
           content:
             application/json:
               schema:
@@ -511,6 +558,46 @@ components:
     # ──────────────────────────────────────────────
     # Responses
     # ──────────────────────────────────────────────
+
+    MeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        providerId:
+          type: string
+        provider:
+          type: string
+          enum: [Google, Local]
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+        tenants:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeTenantEntry'
+
+    MeTenantEntry:
+      type: object
+      properties:
+        tenantId:
+          type: string
+          format: uuid
 
     UserResponse:
       type: object

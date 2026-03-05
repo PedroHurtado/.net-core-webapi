@@ -14,9 +14,11 @@ var idp = builder.Configuration["Gateway:Auth:Idp"] ?? "auth-cluster";
 var idpAddress = builder.Configuration[$"ReverseProxy:Clusters:{idp}:Destinations:destination1:Address"]
     ?? throw new InvalidOperationException($"IDP cluster '{idp}' not found in YARP configuration");
 
+builder.Services.AddTransient<InternalKeyHandler>();
 builder.Services
     .AddRefitClient<IAuthService>()
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri(idpAddress));
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(idpAddress))
+    .AddHttpMessageHandler<InternalKeyHandler>();
 
 // Catalog registry
 builder.Services.AddSingleton<ICatalogRouteRegistry, CatalogRouteRegistry>();

@@ -5,7 +5,7 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
     private readonly Mock<ResolveAuth.IRepository> _repository = new();
     private readonly Mock<ResolveAuth.IUserRepository> _userRepository = new();
     private readonly Mock<IMembershipLookup> _membershipLookup = new();
-    private readonly Mock<IInternalTokenService> _tokenService = new();
+    private readonly Mock<ITokenGenerator> _tokenService = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IRequestTimestamp> _requestTimestamp = new();
     private readonly ResolveAuth.Service _service;
@@ -42,7 +42,7 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         var session = CreateValidSession();
         _repository.Setup(r => r.FindFirstById(session.Id)).ReturnsAsync(session);
         _userRepository.Setup(r => r.ExistsByIdAndIsActiveTrue(session.UserId)).ReturnsAsync(true);
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateUserToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         var token = await _service.HandleAsync(session.Id);
@@ -57,7 +57,7 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         var previousLastActivity = session.LastActivityAt;
         _repository.Setup(r => r.FindFirstById(session.Id)).ReturnsAsync(session);
         _userRepository.Setup(r => r.ExistsByIdAndIsActiveTrue(session.UserId)).ReturnsAsync(true);
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateUserToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(session.Id);
@@ -71,15 +71,15 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         var session = CreateValidSession();
         _repository.Setup(r => r.FindFirstById(session.Id)).ReturnsAsync(session);
         _userRepository.Setup(r => r.ExistsByIdAndIsActiveTrue(session.UserId)).ReturnsAsync(true);
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateUserToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(session.Id);
 
-        _tokenService.Verify(t => t.GenerateSessionToken(It.Is<SessionTokenData>(d =>
+        _tokenService.Verify(t => t.GenerateUserToken(It.Is<FudieTokenContext>(d =>
             d.UserId == session.UserId &&
             d.TenantId == null &&
-            d.IsOwner == false)));
+            d.IsOwner == false), It.IsAny<Guid>()));
     }
 
     // ──────────────────────────────────────────────
@@ -99,14 +99,14 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         _userRepository.Setup(r => r.ExistsByIdAndIsActiveTrue(session.UserId)).ReturnsAsync(true);
         _membershipLookup.Setup(m => m.ExistsByUserIdAndTenantId(session.UserId, session.TenantId!.Value))
             .ReturnsAsync(true);
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateUserToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(session.Id);
 
-        _tokenService.Verify(t => t.GenerateSessionToken(It.Is<SessionTokenData>(d =>
+        _tokenService.Verify(t => t.GenerateUserToken(It.Is<FudieTokenContext>(d =>
             d.TenantId == session.TenantId &&
-            d.IsOwner == true)));
+            d.IsOwner == true), It.IsAny<Guid>()));
     }
 
     // ──────────────────────────────────────────────
@@ -132,15 +132,15 @@ public class ResolveAuthTests : IClassFixture<DomainFixture>
         _userRepository.Setup(r => r.ExistsByIdAndIsActiveTrue(session.UserId)).ReturnsAsync(true);
         _membershipLookup.Setup(m => m.ExistsByUserIdAndTenantId(session.UserId, session.TenantId!.Value))
             .ReturnsAsync(true);
-        _tokenService.Setup(t => t.GenerateSessionToken(It.IsAny<SessionTokenData>()))
+        _tokenService.Setup(t => t.GenerateUserToken(It.IsAny<FudieTokenContext>(), It.IsAny<Guid>()))
             .Returns("eyJ.test.token");
 
         await _service.HandleAsync(session.Id);
 
-        _tokenService.Verify(t => t.GenerateSessionToken(It.Is<SessionTokenData>(d =>
+        _tokenService.Verify(t => t.GenerateUserToken(It.Is<FudieTokenContext>(d =>
             d.Groups == groups &&
             d.AdditionalScopes == add &&
-            d.ExcludedScopes == exc)));
+            d.ExcludedScopes == exc), It.IsAny<Guid>()));
     }
 
     // ──────────────────────────────────────────────

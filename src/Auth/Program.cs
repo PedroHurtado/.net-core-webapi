@@ -71,13 +71,39 @@ if (app.Environment.IsDevelopment())
         .AllowAnonymous();
 }
 
+app.Use(async (context, next) =>
+{
+    await next();
+
+    var endpoint = context.GetEndpoint();
+    if (endpoint is null) return;
+
+    var catalogRegistry = context.RequestServices.GetRequiredService<ICatalogRegistry>();
+    var className = catalogRegistry.FindClassName(endpoint);
+    var scope = catalogRegistry.FindScope(endpoint);
+    var tokenContext = context.Items["FudieTokenContext"] as FudieTokenContext;
+
+    Console.WriteLine($"[AUTH-DEBUG] Endpoint: {endpoint.DisplayName}");
+    Console.WriteLine($"[AUTH-DEBUG] ClassName: {className ?? "NULL"}");
+    Console.WriteLine($"[AUTH-DEBUG] Scope: {scope ?? "NULL"}");
+    Console.WriteLine($"[AUTH-DEBUG] StatusCode: {context.Response.StatusCode}");
+    if (tokenContext is not null)
+    {
+        Console.WriteLine($"[AUTH-DEBUG] IsOwner: {tokenContext.IsOwner}");
+        Console.WriteLine($"[AUTH-DEBUG] Groups: [{string.Join(", ", tokenContext.Groups)}]");
+        Console.WriteLine($"[AUTH-DEBUG] AdditionalScopes: [{string.Join(", ", tokenContext.AdditionalScopes)}]");
+        Console.WriteLine($"[AUTH-DEBUG] ExcludedScopes: [{string.Join(", ", tokenContext.ExcludedScopes)}]");
+    }
+    Console.WriteLine("[AUTH-DEBUG] ---");
+});
+
 app.MapFeatures(builder => builder.UseFudieAuthorization());
 
 app.UseHttpsRedirection();
 
 app.Run();
 
-public partial class Program { }
+public partial class Program { } 
 
 public static class DevLoginPage
 {

@@ -25,9 +25,11 @@ public class GetTenantRoles : IFeatureModule
     {
         public async Task<List<TenantRoleResponse>> HandleAsync()
         {
-            return await query.Query<TenantRole>()                
+            var roles = await query.Query<TenantRole>()
                 .OrderBy(x => x.Name)
-                .Select(x => new TenantRoleResponse(
+                .ToListAsync();
+
+            return roles.Select(x => new TenantRoleResponse(
                     x.Id,
                     x.Name,
                     x.Description,
@@ -35,7 +37,7 @@ public class GetTenantRoles : IFeatureModule
                     x.Groups,
                     x.AdditionalScopes,
                     x.ExcludedScopes))
-                .ToListAsync();
+                .ToList();
         }
     }
 }

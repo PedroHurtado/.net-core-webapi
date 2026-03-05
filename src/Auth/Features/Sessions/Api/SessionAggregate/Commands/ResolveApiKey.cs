@@ -30,7 +30,7 @@ public class ResolveApiKey : IFeatureModule
 
     [Injectable]
     public class Service(
-        IInternalTokenService tokenService,
+        ITokenGenerator tokenService,
         IQuery query) : IService
     {
         public async Task<string> HandleAsync(string apiKey)
@@ -62,13 +62,13 @@ public class ResolveApiKey : IFeatureModule
                 externalApp.User is null,
                 "External app has no associated user");
 
-            return tokenService.GenerateSessionToken(new SessionTokenData(
+            return tokenService.GenerateAppToken(new FudieTokenContext(
                 externalApp.User!.Id,
                 externalApp.TenantId,
                 false,
                 externalApp.Groups.ToArray(),
                 externalApp.AdditionalScopes.ToArray(),
-                externalApp.ExcludedScopes.ToArray()));
+                externalApp.ExcludedScopes.ToArray()), externalApp.Id);
         }
     }
 

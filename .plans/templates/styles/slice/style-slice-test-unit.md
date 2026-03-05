@@ -297,6 +297,51 @@ global using {Project}.Features.{Feature}.Api.{Aggregate}Aggregate.Queries;
 
 ---
 
+## Test de seguridad en endpoint (AddRoutes)
+
+Cada slice debe tener un test que verifique los extension methods de seguridad configurados en `AddRoutes`. Esto garantiza que no se olvide ni se configure mal la autorización.
+
+### Patrón
+
+```csharp
+[Fact]
+public void AddRoutes_ConfiguresEndpointCorrectly()
+{
+    var slice = new {Action}{Aggregate}();
+    var builder = new TestEndpointRouteBuilder();
+
+    slice.AddRoutes(builder);
+
+    var endpoint = builder.DataSources
+        .SelectMany(ds => ds.Endpoints)
+        .OfType<RouteEndpoint>()
+        .Single();
+
+    endpoint.RoutePattern.RawText.Should().Be("{expectedRoute}");
+    endpoint.Metadata.Should().ContainSingle(m => m is RequireAuthenticatedAttribute);
+    endpoint.Metadata.Should().ContainSingle(m => m is RequireGroupAttribute attr && attr.Group == "{expectedGroup}");
+    endpoint.Metadata.Should().ContainSingle(m => m is DescriptionCatalogAttribute attr && attr.Description == "{expectedDescription}");
+}
+```
+
+### Endpoint público (AllowAnonymous)
+```csharp
+endpoint.Metadata.Should().ContainSingle(m => m is AllowAnonymousAttribute);
+```
+
+### Qué verificar según la spec
+
+| Extension en AddRoutes | Assertion en metadata |
+|---|---|
+| `RequireAuthenticated()` | `RequireAuthenticatedAttribute` |
+| `RequirePlatform()` | `RequirePlatformAttribute` |
+| `RequireInternal()` | `RequireInternalAttribute` |
+| `RequireGroup("name")` | `RequireGroupAttribute` con `.Group == "name"` |
+| `.AllowAnonymous()` | `AllowAnonymousAttribute` |
+| `WithDescriptionCatalog("desc")` | `DescriptionCatalogAttribute` con `.Description == "desc"` |
+
+---
+
 ## Reglas
 
 - No `using` en archivos de test → `GlobalUsings.cs`

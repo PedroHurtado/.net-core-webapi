@@ -18,4 +18,10 @@ public class SessionCookieService(
             Expires = new DateTimeOffset(requestTimestamp.ExpiresAt, TimeSpan.Zero)
         });
     }
+
+    public void Delete(HttpContext httpContext)
+    {
+        var settings = sessionSettings.Get();
+        httpContext.Response.Cookies.Delete(settings.CookieName);
+    }
 }
